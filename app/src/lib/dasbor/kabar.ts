@@ -50,6 +50,22 @@ const UMUR_CACHE_MS = 30 * 60 * 1000
  * Urutan masuk menentukan siapa yang menang: `utama` (paling segar) di depan,
  * lalu snips, lalu arsip.
  */
+/**
+ * Detik epoch dari stempel waktu kabar; `null` untuk yang tak bertanggal.
+ *
+ * Perbandingan STRING sah hanya kalau semua stempel berzona sama, dan di
+ * sini tidak: Google News menulis UTC sementara sumber lain menulis +07:00.
+ * "2026-09-08T17:00:00Z" dan "2026-09-09T00:00:00+07:00" adalah SAAT YANG
+ * SAMA, tapi diurutkan sebagai teks yang satu jatuh tujuh jam di bawah yang
+ * lain — daftar tetap terlihat rapi menurun, cuma isinya di urutan yang
+ * salah, dan itu tak kelihatan sampai ada yang mencocokkan jam beritanya.
+ */
+export function epochKabar(iso: string | null | undefined): number | null {
+  if (!iso) return null
+  const t = Date.parse(iso)
+  return Number.isFinite(t) ? t : null
+}
+
 export function gabungKabar(utama: Kabar, snips: KabarItem[], arsip: KabarItem[]): Kabar {
   const terlihat = new Set<string>()
   const unik = [...utama.item, ...snips, ...arsip].filter((i) => {
@@ -61,7 +77,9 @@ export function gabungKabar(utama: Kabar, snips: KabarItem[], arsip: KabarItem[]
   return {
     ...utama,
     sumber: [...new Set([...(utama.sumber ?? []), ...unik.map((i) => i.sumber)])],
-    item: unik.sort((a, b) => (b.waktu ?? '').localeCompare(a.waktu ?? '')),
+    // Yang tak bertanggal (IPOT tak memuat tanggal di daftarnya) tetap di
+    // bawah — dulu itu efek samping string kosong, sekarang dinyatakan.
+    item: unik.sort((a, b) => (epochKabar(b.waktu) ?? -Infinity) - (epochKabar(a.waktu) ?? -Infinity)),
   }
 }
 
@@ -165,8 +183,15 @@ export function useKabar(denganArsip = false) {
  * segar.
  */
 export function kabarTerbaru(k: Kabar | null): string | null {
-  return (k?.item ?? []).reduce<string | null>(
-    (maks, i) => (i.waktu && (!maks || i.waktu > maks) ? i.waktu : maks), null)
+  // Perbandingan epoch, bukan string: alasan yang sama dengan pengurutan di
+  // `gabungKabar` — kabar Google News berzona UTC akan selalu kalah dari
+  // kabar WIB yang sebenarnya lebih tua.
+  return (k?.item ?? []).reduce<string | null>((maks, i) => {
+    const t = epochKabar(i.waktu)
+    if (t == null) return maks
+    const m = epochKabar(maks)
+    return m == null || t > m ? i.waktu : maks
+  }, null)
 }
 
 /** "2 jam lalu" / "Kamis, 14 Agu" — waktu relatif cuma sampai sehari, lewat

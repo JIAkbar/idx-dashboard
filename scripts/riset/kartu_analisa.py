@@ -696,8 +696,11 @@ def fundamental(kode: str) -> dict:
     if not p.exists():
         return {}
     f = json.loads(p.read_text(encoding="utf-8"))
+    # `pbv` dan `harga_pada` ditulis penyegar harga harian; tanpa disalin ke
+    # sini, kartu memajang PBV dari harga bulan lalu dan tak punya cara
+    # menyebut tanggal harganya sendiri.
     return {k: f.get(k) for k in (
-        "name", "updated", "pe", "pb", "eps", "roe", "der", "npm", "rev_yoy", "ni_yoy",
+        "name", "updated", "harga_pada", "pe", "pb", "pbv", "eps", "roe", "der", "npm", "rev_yoy", "ni_yoy",
         "dividend_yield", "beta", "shares", "float_pct", "week52_high", "week52_low",
     )}
 

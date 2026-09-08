@@ -224,6 +224,30 @@ describe('jawab — mekanisme dua-langkah (berkas per-emiten)', () => {
     expect(j.topik).toBe('valuasiEmiten')
   })
 
+  it('harga memakai tanggal HARGA, bukan tanggal panen laporan keuangan (#133)', () => {
+    // Sampai 9 Sep 2026 jawabannya memakai `updated` — tanggal panen laporan
+    // keuangan yang iramanya bulanan — jadi harga penutupan kemarin dijawab
+    // "per 01 Sep": angka benar, label meleset lima hari bursa.
+    const j = jawab('harga BBCA berapa?', konteks({
+      kamus,
+      data: { jenis: 'fundamental', kode: 'BBCA', payload: { ...fd, updated: '2026-09-01 01:37', harga_pada: '2026-09-08' } },
+    }))
+    expect(j.teks).toContain('per 8 Sep 2026')
+    expect(j.teks).not.toContain('1 Sep 2026')
+  })
+
+  it('valuasi memakai pbv yang disegarkan, dengan pb sebagai cadangan (#133)', () => {
+    const segar = jawab('PER BBCA berapa?', konteks({
+      kamus, data: { jenis: 'fundamental', kode: 'BBCA', payload: { ...fd, pb: 1.45, pbv: 1.61 } },
+    }))
+    expect(segar.teks).toContain('PBV 1,61×')
+    // 61 berkas belum punya `pbv`; tanpa cadangan mereka jadi tanda hubung.
+    const cadangan = jawab('PER BBCA berapa?', konteks({
+      kamus, data: { jenis: 'fundamental', kode: 'BBCA', payload: { ...fd, pb: 1.45, pbv: null } },
+    }))
+    expect(cadangan.teks).toContain('PBV 1,45×')
+  })
+
   it('sektor per-emiten dijawab dari fundamental, bukan sektor pasar', () => {
     const j = jawab('BBCA sektor apa?', konteks({ kamus, data: { jenis: 'fundamental', kode: 'BBCA', payload: fd } }))
     expect(j.teks).toContain('Financial Services')

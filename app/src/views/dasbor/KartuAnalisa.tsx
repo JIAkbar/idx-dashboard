@@ -277,7 +277,9 @@ function KartuSatuEmiten({ kode }: { kode: string }) {
           <div className="blok">
             <h4>Fundamental Ringkas</h4>
             <div className="baris"><span>PER</span><span>{f.pe == null ? '—' : `${fmtDes(f.pe, 1)}×`}</span></div>
-            <div className="baris"><span>PBV</span><span>{f.pb == null ? '—' : `${fmtDes(f.pb, 2)}×`}</span></div>
+            {/* Labelnya PBV, jadi angkanya `pbv` — `pb` cuma cadangan untuk
+                berkas yang belum sempat dihitung ulang saat harga disegarkan. */}
+            <div className="baris"><span>PBV</span><span>{(f.pbv ?? f.pb) == null ? '—' : `${fmtDes((f.pbv ?? f.pb)!, 2)}×`}</span></div>
             <div className="baris"><span>ROE</span><span>{f.roe == null ? '—' : fmtPct0(f.roe * 100, 1)}</span></div>
             <div className="baris"><span>DER</span><span>{f.der == null ? '—' : fmtPct0(f.der, 1)}</span></div>
             <div className="baris"><span>Pendapatan YoY</span><span className={naikTurun(f.rev_yoy)}>{fmtPct(f.rev_yoy, 1)}</span></div>

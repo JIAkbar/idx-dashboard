@@ -264,7 +264,11 @@ function jawabHarga(kode: string, fd: StockFundamental | null, kamus?: KamusEmit
   if (fd?.last_price != null) {
     const prev = fd.prev_close
     const bag = prev ? ` (${pct(((fd.last_price - prev) * 100) / prev)} dari penutupan sebelumnya)` : ''
-    return { teks: `${kode}: Rp${rp(fd.last_price, 0)}${bag}, per ${fmtUpdated(fd.updated)}.`, topik: 'hargaEmiten', ...linkEmiten(kode) }
+    // `harga_pada` dulu, BUKAN `updated`: yang kedua tanggal panen laporan
+    // keuangan (bulanan), jadi harga penutupan kemarin dijawab "per 01 Sep" —
+    // angkanya benar, labelnya meleset lima hari bursa.
+    const per = fmtUpdated(fd.harga_pada ?? fd.updated)
+    return { teks: `${kode}: Rp${rp(fd.last_price, 0)}${bag}, per ${per}.`, topik: 'hargaEmiten', ...linkEmiten(kode) }
   }
   // Cadangan bulanan (harga_terakhir.json) — dipakai kalau harga langsung tak
   // ada di berkas fundamental. Berkas itu sendiri bilang ini "cadangan", jadi
@@ -280,11 +284,14 @@ function jawabHarga(kode: string, fd: StockFundamental | null, kamus?: KamusEmit
 }
 
 function jawabValuasi(kode: string, fd: StockFundamental | null): Jawaban {
-  if (!fd || (fd.pe == null && fd.pb == null && fd.roe == null)) {
+  // `pbv` dihitung ulang tiap harga disegarkan; `pb` ikut tinggal sebagai
+  // cadangan karena 61 berkas belum punya `pbv` (51 di antaranya punya `pb`).
+  const pbv = fd?.pbv ?? fd?.pb
+  if (!fd || (fd.pe == null && pbv == null && fd.roe == null)) {
     return { teks: `Data valuasi ${kode} belum ada.`, takPaham: true, topik: 'valuasiEmiten', ...linkEmiten(kode) }
   }
   return {
-    teks: `${kode}: PER ${fd.pe != null ? `${rp(fd.pe)}×` : '—'}, PBV ${fd.pb != null ? `${rp(fd.pb)}×` : '—'}, ROE ${fd.roe != null ? `${rp(fd.roe * 100)}%` : '—'}.`,
+    teks: `${kode}: PER ${fd.pe != null ? `${rp(fd.pe)}×` : '—'}, PBV ${pbv != null ? `${rp(pbv)}×` : '—'}, ROE ${fd.roe != null ? `${rp(fd.roe * 100)}%` : '—'}.`,
     topik: 'valuasiEmiten', ...linkEmiten(kode),
   }
 }

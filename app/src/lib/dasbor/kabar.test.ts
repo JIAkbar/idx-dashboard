@@ -69,3 +69,29 @@ describe('kabarTerbaru', () => {
     expect(kabarTerbaru(null)).toBeNull()
   })
 })
+
+describe('urutan lintas zona waktu (#135)', () => {
+  it('Google News (UTC) dan sumber WIB diurutkan menurut SAAT sebenarnya', () => {
+    // Kedua stempel ini menunjuk saat yang sama persis. Sebagai teks,
+    // "2026-09-08T17:00:00Z" jatuh tujuh jam di bawah "…T00:00:00+07:00" —
+    // daftar tetap terlihat rapi menurun, isinya saja yang salah urut.
+    const wib = brt({ tautan: 'wib', judul: 'WIB lebih tua', waktu: '2026-09-08T20:00:00+07:00' })
+    const utc = brt({ sumber: 'Google News', tautan: 'utc', judul: 'UTC lebih baru', waktu: '2026-09-08T14:00:00Z' })
+    const urut = gabungKabar(bungkus([wib, utc]), [], []).item.map((i) => i.tautan)
+    expect(urut).toEqual(['utc', 'wib'])
+  })
+
+  it('item tanpa waktu tetap di bawah yang bertanggal', () => {
+    const ada = brt({ tautan: 'ada', waktu: '2026-09-01T09:00:00+07:00' })
+    const kosong = brt({ tautan: 'kosong', waktu: null })
+    expect(gabungKabar(bungkus([kosong, ada]), [], []).item.map((i) => i.tautan)).toEqual(['ada', 'kosong'])
+  })
+
+  it('kabarTerbaru membandingkan saat, bukan teks', () => {
+    const k = bungkus([
+      brt({ tautan: 'wib', waktu: '2026-09-08T20:00:00+07:00' }),
+      brt({ sumber: 'Google News', tautan: 'utc', waktu: '2026-09-08T14:00:00Z' }),
+    ])
+    expect(kabarTerbaru(k)).toBe('2026-09-08T14:00:00Z')
+  })
+})
