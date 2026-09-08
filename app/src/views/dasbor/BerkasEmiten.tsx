@@ -747,243 +747,249 @@ export default function BerkasEmiten() {
         )}
       </section>
 
-      {/* ── BLOK D · LIKUIDITAS ────────────────────────────────────────── */}
-      <section className="be-kartu" style={{ marginTop: 14 }}>
-        <div className="be-kartu-kepala">
-          <span className="be-blok">D</span>
-          <div>
-            <h2>Likuiditas — seberapa ramai emiten ini</h2>
-            <p className="be-ket">
-              {likuid.nHari > 0
-                ? <>{likuid.nHari} hari bursa terakhir. Baca ini dulu sebelum blok lain:
-                    saham yang jarang ditransaksikan tetap menghasilkan angka yang kelihatan rapi,
-                    padahal cuma dari segelintir hari.</>
-                : 'Memuat riwayat harga…'}
-            </p>
-          </div>
-        </div>
-
-        {likuid.nHari > 0 && (
-          <>
-            {labelLik && (
-              <div className={`be-vonis w-${labelLik === 'likuid' ? 'ideal' : labelLik === 'tipis' ? 'defensif' : 'perangkap'}`}>
-                <span className="be-cap">{labelLik === 'likuid' ? 'Likuid' : labelLik === 'tipis' ? 'Tipis' : 'Tidur'}</span>
-                <p>
-                  {labelLik === 'likuid'
-                    ? 'Ramai hampir tiap hari dan harganya bergerak. Angka di blok lain berdiri di atas dasar yang sehat.'
-                    : labelLik === 'tipis'
-                      ? 'Sering sepi atau harganya jalan di tempat. Baca angka blok lain dengan hati-hati.'
-                      : 'Saham tidur — sebagian besar hari tak ada transaksi sama sekali. Angka apa pun tentang emiten ini rapuh.'}
-                </p>
-              </div>
-            )}
-
-            <div className="be-tiga">
-              <div className="be-sisi">
-                <div className="be-lbl"><span>Nihil transaksi</span><span className="be-n">dari {likuid.nHari}</span></div>
-                <div className="be-ang" style={{ fontSize: 26 }}>{likuid.hariSepi}</div>
-                <p className="be-exp">hari tanpa satu lot pun berpindah tangan.</p>
-              </div>
-              <div className="be-sisi">
-                <div className="be-lbl"><span>Harga flat</span><span className="be-n">dari {likuid.nHari}</span></div>
-                <div className="be-ang" style={{ fontSize: 26 }}>{likuid.hariBeku}</div>
-                <p className="be-exp">ada transaksi, tapi harganya tak bergerak sepeser pun.</p>
-              </div>
-              <div className="be-sisi">
-                <div className="be-lbl"><span>Volume harian</span><span className="be-n">median, hari ramai saja</span></div>
-                <div className="be-ang" style={{ fontSize: 26 }}>
-                  {likuid.medianVolume == null ? '—'
-                    : likuid.medianVolume >= 1e6
-                      ? `${(likuid.medianVolume / 1e6).toFixed(1).replace('.', ',')} jt`
-                      : likuid.medianVolume.toLocaleString('id-ID')}
-                </div>
-                <p className="be-exp">
-                  lembar. {likuid.porsiNego == null
-                    ? 'Porsi negosiasi belum ada di arsip.'
-                    : `Papan negosiasi ${Math.round(likuid.porsiNego * 100)}% dari lot.`}
-                </p>
-              </div>
+      {/* D dan E berdampingan (Johan: "D dan E bisa ini jadi 2 kolom"). Dua
+          kartu yang sama-sama menjawab "boleh dipercaya sejauh mana", jadi
+          dibaca bersisian: likuiditas menakar bahan bakunya, probabilitas
+          menakar rekam jejaknya. */}
+      <div className="be-duo-kartu">
+        {/* ── BLOK D · LIKUIDITAS ────────────────────────────────────────── */}
+        <section className="be-kartu">
+          <div className="be-kartu-kepala">
+            <span className="be-blok">D</span>
+            <div>
+              <h2>Likuiditas — seberapa ramai emiten ini</h2>
+              <p className="be-ket">
+                {likuid.nHari > 0
+                  ? <>{likuid.nHari} hari bursa terakhir. Baca ini dulu sebelum blok lain:
+                      saham yang jarang ditransaksikan tetap menghasilkan angka yang kelihatan rapi,
+                      padahal cuma dari segelintir hari.</>
+                  : 'Memuat riwayat harga…'}
+              </p>
             </div>
-
-            {likuid.peringatan.length > 0 && (
-              <div className="be-batas" style={{ marginTop: 14 }}>
-                <b>Baca ini sebelum memakai angka di blok lain</b>
-                <ul>{likuid.peringatan.map((x) => <li key={x}>{x}</li>)}</ul>
-              </div>
-            )}
-          </>
-        )}
-      </section>
-
-      {/* BLOK E — rekam jejak, bukan ramalan. Aturan yang ditegakkan modulnya
-          dan bukan di sini: persentase cuma dicetak kalau sampelnya cukup.
-          Rancangan menyebutnya sebagai satu kalimat — "3 dari 4 bukan 75%" —
-          dan itulah seluruh isi keputusan desain blok ini. */}
-      <section className="be-kartu">
-        <div className="be-kartu-kepala">
-          <span className="be-blok">E</span>
-          <div>
-            <h2>Probabilitas &amp; rekam jejak — dengan angka kejujurannya</h2>
-            <p className="be-ket">
-              Bukan ramalan. Seberapa sering strategi PAPAN benar di emiten ini menurut ujinya
-              sendiri, lengkap dengan seberapa sering ia meleset.
-            </p>
           </div>
-        </div>
 
-        {prob && (
-          <div className="be-prob">
-            <span className="be-lbl">Peluang menyentuh level esok</span>
-            <div className="be-tangga-baris">
-              {([['R1', prob.pR1, prob.jarak?.R1], ['R2', prob.pR2, prob.jarak?.R2],
-                 ['S1', prob.pS1, prob.jarak?.S1]] as const).map(([nama, p, jarak]) => (
-                <span key={nama} className="be-pil">
-                  {nama}
-                  <b className={nama === 'S1' ? 'dn' : 'up'}>
-                    {p == null ? '—' : `${(p * 100).toFixed(0)}%`}
-                  </b>
-                  {/* Jaraknya WAJIB ikut. "80% capai R1" tak bisa dibaca tanpa
-                      tahu R1 cuma +0,9% dari harga sekarang — angka tinggi di
-                      level dekat bukan kabar baik, itu aritmetika. */}
-                  {jarak != null && (
-                    <span className="be-prob-jarak">
-                      {nama === 'S1' ? '−' : '+'}{(Math.abs(jarak) * 100).toFixed(1)}%
+          {likuid.nHari > 0 && (
+            <>
+              {labelLik && (
+                <div className={`be-vonis w-${labelLik === 'likuid' ? 'ideal' : labelLik === 'tipis' ? 'defensif' : 'perangkap'}`}>
+                  <span className="be-cap">{labelLik === 'likuid' ? 'Likuid' : labelLik === 'tipis' ? 'Tipis' : 'Tidur'}</span>
+                  <p>
+                    {labelLik === 'likuid'
+                      ? 'Ramai hampir tiap hari dan harganya bergerak. Angka di blok lain berdiri di atas dasar yang sehat.'
+                      : labelLik === 'tipis'
+                        ? 'Sering sepi atau harganya jalan di tempat. Baca angka blok lain dengan hati-hati.'
+                        : 'Saham tidur — sebagian besar hari tak ada transaksi sama sekali. Angka apa pun tentang emiten ini rapuh.'}
+                  </p>
+                </div>
+              )}
+
+              <div className="be-tiga">
+                <div className="be-sisi">
+                  <div className="be-lbl"><span>Nihil transaksi</span><span className="be-n">dari {likuid.nHari}</span></div>
+                  <div className="be-ang" style={{ fontSize: 26 }}>{likuid.hariSepi}</div>
+                  <p className="be-exp">hari tanpa satu lot pun berpindah tangan.</p>
+                </div>
+                <div className="be-sisi">
+                  <div className="be-lbl"><span>Harga flat</span><span className="be-n">dari {likuid.nHari}</span></div>
+                  <div className="be-ang" style={{ fontSize: 26 }}>{likuid.hariBeku}</div>
+                  <p className="be-exp">ada transaksi, tapi harganya tak bergerak sepeser pun.</p>
+                </div>
+                <div className="be-sisi">
+                  <div className="be-lbl"><span>Volume harian</span><span className="be-n">median, hari ramai saja</span></div>
+                  <div className="be-ang" style={{ fontSize: 26 }}>
+                    {likuid.medianVolume == null ? '—'
+                      : likuid.medianVolume >= 1e6
+                        ? `${(likuid.medianVolume / 1e6).toFixed(1).replace('.', ',')} jt`
+                        : likuid.medianVolume.toLocaleString('id-ID')}
+                  </div>
+                  <p className="be-exp">
+                    lembar. {likuid.porsiNego == null
+                      ? 'Porsi negosiasi belum ada di arsip.'
+                      : `Papan negosiasi ${Math.round(likuid.porsiNego * 100)}% dari lot.`}
+                  </p>
+                </div>
+              </div>
+
+              {likuid.peringatan.length > 0 && (
+                <div className="be-batas" style={{ marginTop: 14 }}>
+                  <b>Baca ini sebelum memakai angka di blok lain</b>
+                  <ul>{likuid.peringatan.map((x) => <li key={x}>{x}</li>)}</ul>
+                </div>
+              )}
+            </>
+          )}
+        </section>
+
+        {/* BLOK E — rekam jejak, bukan ramalan. Aturan yang ditegakkan modulnya
+            dan bukan di sini: persentase cuma dicetak kalau sampelnya cukup.
+            Rancangan menyebutnya sebagai satu kalimat — "3 dari 4 bukan 75%" —
+            dan itulah seluruh isi keputusan desain blok ini. */}
+        <section className="be-kartu">
+          <div className="be-kartu-kepala">
+            <span className="be-blok">E</span>
+            <div>
+              <h2>Probabilitas &amp; rekam jejak — dengan angka kejujurannya</h2>
+              <p className="be-ket">
+                Bukan ramalan. Seberapa sering strategi PAPAN benar di emiten ini menurut ujinya
+                sendiri, lengkap dengan seberapa sering ia meleset.
+              </p>
+            </div>
+          </div>
+
+          {prob && (
+            <div className="be-prob">
+              <span className="be-lbl">Peluang menyentuh level esok</span>
+              <div className="be-tangga-baris">
+                {([['R1', prob.pR1, prob.jarak?.R1], ['R2', prob.pR2, prob.jarak?.R2],
+                   ['S1', prob.pS1, prob.jarak?.S1]] as const).map(([nama, p, jarak]) => (
+                  <span key={nama} className="be-pil">
+                    {nama}
+                    <b className={nama === 'S1' ? 'dn' : 'up'}>
+                      {p == null ? '—' : `${(p * 100).toFixed(0)}%`}
+                    </b>
+                    {/* Jaraknya WAJIB ikut. "80% capai R1" tak bisa dibaca tanpa
+                        tahu R1 cuma +0,9% dari harga sekarang — angka tinggi di
+                        level dekat bukan kabar baik, itu aritmetika. */}
+                    {jarak != null && (
+                      <span className="be-prob-jarak">
+                        {nama === 'S1' ? '−' : '+'}{(Math.abs(jarak) * 100).toFixed(1)}%
+                      </span>
+                    )}
+                  </span>
+                ))}
+              </div>
+
+              <div className="be-prob-naik">
+                <span className="be-lbl">Peluang naik dalam 5 hari</span>
+                <div className="be-tangga-baris">
+                  <span className="be-pil">
+                    emiten ini<b>{prob.p5 == null ? '—' : `${(prob.p5 * 100).toFixed(1)}%`}</b>
+                  </span>
+                  {/* Angka dasar berdiri SEJAJAR, bukan di catatan kaki: itu
+                      satu-satunya cara pembaca melihat bahwa selisihnya nyaris
+                      nol tanpa harus menghitung sendiri. */}
+                  <span className="be-pil">
+                    rata-rata pasar<b>{prob.base5 == null ? '—' : `${(prob.base5 * 100).toFixed(1)}%`}</b>
+                  </span>
+                  <span className="be-pil">
+                    selisih
+                    <b className={(prob.lift5 ?? 0) > 0 ? 'up' : (prob.lift5 ?? 0) < 0 ? 'dn' : ''}>
+                      {prob.lift5 == null ? '—' : `${prob.lift5 > 0 ? '+' : ''}${prob.lift5.toFixed(2)} pp`}
+                    </b>
+                  </span>
+                  {prob.n != null && (
+                    <span className="be-pil">
+                      dari<b>{prob.n.toLocaleString('id-ID')} hari serupa</b>
                     </span>
                   )}
-                </span>
-              ))}
-            </div>
-
-            <div className="be-prob-naik">
-              <span className="be-lbl">Peluang naik dalam 5 hari</span>
-              <div className="be-tangga-baris">
-                <span className="be-pil">
-                  emiten ini<b>{prob.p5 == null ? '—' : `${(prob.p5 * 100).toFixed(1)}%`}</b>
-                </span>
-                {/* Angka dasar berdiri SEJAJAR, bukan di catatan kaki: itu
-                    satu-satunya cara pembaca melihat bahwa selisihnya nyaris
-                    nol tanpa harus menghitung sendiri. */}
-                <span className="be-pil">
-                  rata-rata pasar<b>{prob.base5 == null ? '—' : `${(prob.base5 * 100).toFixed(1)}%`}</b>
-                </span>
-                <span className="be-pil">
-                  selisih
-                  <b className={(prob.lift5 ?? 0) > 0 ? 'up' : (prob.lift5 ?? 0) < 0 ? 'dn' : ''}>
-                    {prob.lift5 == null ? '—' : `${prob.lift5 > 0 ? '+' : ''}${prob.lift5.toFixed(2)} pp`}
-                  </b>
-                </span>
-                {prob.n != null && (
-                  <span className="be-pil">
-                    dari<b>{prob.n.toLocaleString('id-ID')} hari serupa</b>
-                  </span>
-                )}
-              </div>
-            </div>
-
-            {/* Hasil uji penaksirnya SENDIRI, dicetak apa adanya. Kalau ia
-                tak mengalahkan tebakan dasar, halaman mengatakannya — bukan
-                memajang angka meyakinkan sambil menyimpan hasil ujinya. */}
-            {evaluasiProb && (
-              <p className={`be-prob-uji${layakSinyal(evaluasiProb) ? '' : ' be-prob-gagal'}`}>
-                {layakSinyal(evaluasiProb) ? (
-                  <>
-                    Diuji pada {evaluasiProb.n_uji} titik di luar sampel sejak{' '}
-                    {evaluasiProb.mulai_uji}: penaksir ini <b>lebih baik</b> daripada sekadar
-                    memakai rata-rata pasar.
-                  </>
-                ) : (
-                  <>
-                    <b>Baca peluang 5 hari itu sebagai konteks, bukan sinyal.</b> Diuji pada{' '}
-                    {evaluasiProb.n_uji} titik di luar sampel sejak {evaluasiProb.mulai_uji},
-                    penaksir ini <b>tidak</b> lebih baik daripada sekadar memakai rata-rata pasar.
-                    Peluang menyentuh level di atas berdiri terpisah — ia menghitung jarak, bukan
-                    menebak arah.
-                  </>
-                )}
-              </p>
-            )}
-
-            {prob.faktor && prob.faktor.length > 0 && (
-              <div className="be-prob-faktor">
-                <span className="be-lbl">Yang mendorong &amp; menekan hari ini</span>
-                <ul>
-                  {prob.faktor.slice(0, 5).map((f, i) => (
-                    <li key={i}>
-                      <span>{f.nama}</span>
-                      <em>{f.nilai}</em>
-                      <b className={f.delta_pp >= 0 ? 'up' : 'dn'}>
-                        {f.delta_pp >= 0 ? '+' : ''}{f.delta_pp.toFixed(1)} pp
-                      </b>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </div>
-        )}
-
-        {rekamAda.length === 0 ? (
-          <p className="be-bendera-kosong">
-            <b>{kode}</b> belum pernah muncul di satu pun uji strategi yang tersimpan. Itu bukan
-            penilaian atas emitennya — hanya berarti strategi yang diuji tak pernah memberi sinyal
-            di sini.
-          </p>
-        ) : (
-          <div className="be-rekam">
-            {rekamAda.map((r) => (
-              <div key={r.strategi} className="be-rekam-grup">
-                <div className="be-rekam-kepala">
-                  <b>{r.strategi}</b>
-                  <span className={r.layakPersen ? '' : 'be-rekam-tipis'}>{r.label}</span>
-                </div>
-                <div className="be-rekam-angka">
-                  <span className="be-pil">
-                    median
-                    <b className={(r.median ?? 0) >= 0 ? 'up' : 'dn'}>
-                      {r.median == null ? '—' : `${(r.median * 100).toFixed(1)}%`}
-                    </b>
-                  </span>
-                  <span className="be-pil">
-                    terbaik
-                    <b className="up">
-                      {r.terbaik == null ? '—' : `${(r.terbaik * 100).toFixed(1)}%`}
-                    </b>
-                  </span>
-                  {/* Terburuk SELALU dipajang sebesar terbaik. Rekam jejak yang
-                      cuma menyebut kemenangan bukan rekam jejak, itu iklan. */}
-                  <span className="be-pil">
-                    terburuk
-                    <b className="dn">
-                      {r.terburuk == null ? '—' : `${(r.terburuk * 100).toFixed(1)}%`}
-                    </b>
-                  </span>
                 </div>
               </div>
-            ))}
-            <p className="be-rasio-kosong">
-              Tingkat menang hanya dinyatakan dalam persen bila ada minimal {MIN_SAMPEL_PERSEN} kali
-              — di bawah itu satu kejadian menggeser angkanya lebih dari lima poin, dan persentase
-              dari sampel sekecil itu terbaca setara dengan persentase dari dua ratus kejadian.
+
+              {/* Hasil uji penaksirnya SENDIRI, dicetak apa adanya. Kalau ia
+                  tak mengalahkan tebakan dasar, halaman mengatakannya — bukan
+                  memajang angka meyakinkan sambil menyimpan hasil ujinya. */}
+              {evaluasiProb && (
+                <p className={`be-prob-uji${layakSinyal(evaluasiProb) ? '' : ' be-prob-gagal'}`}>
+                  {layakSinyal(evaluasiProb) ? (
+                    <>
+                      Diuji pada {evaluasiProb.n_uji} titik di luar sampel sejak{' '}
+                      {evaluasiProb.mulai_uji}: penaksir ini <b>lebih baik</b> daripada sekadar
+                      memakai rata-rata pasar.
+                    </>
+                  ) : (
+                    <>
+                      <b>Baca peluang 5 hari itu sebagai konteks, bukan sinyal.</b> Diuji pada{' '}
+                      {evaluasiProb.n_uji} titik di luar sampel sejak {evaluasiProb.mulai_uji},
+                      penaksir ini <b>tidak</b> lebih baik daripada sekadar memakai rata-rata pasar.
+                      Peluang menyentuh level di atas berdiri terpisah — ia menghitung jarak, bukan
+                      menebak arah.
+                    </>
+                  )}
+                </p>
+              )}
+
+              {prob.faktor && prob.faktor.length > 0 && (
+                <div className="be-prob-faktor">
+                  <span className="be-lbl">Yang mendorong &amp; menekan hari ini</span>
+                  <ul>
+                    {prob.faktor.slice(0, 5).map((f, i) => (
+                      <li key={i}>
+                        <span>{f.nama}</span>
+                        <em>{f.nilai}</em>
+                        <b className={f.delta_pp >= 0 ? 'up' : 'dn'}>
+                          {f.delta_pp >= 0 ? '+' : ''}{f.delta_pp.toFixed(1)} pp
+                        </b>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          )}
+
+          {rekamAda.length === 0 ? (
+            <p className="be-bendera-kosong">
+              <b>{kode}</b> belum pernah muncul di satu pun uji strategi yang tersimpan. Itu bukan
+              penilaian atas emitennya — hanya berarti strategi yang diuji tak pernah memberi sinyal
+              di sini.
             </p>
-          </div>
-        )}
-
-        {rekomendasi.length > 0 && (
-          <div className="be-rekom">
-            <span className="be-lbl">Pernah masuk daftar PAPAN</span>
-            <ul className="be-rekom-daftar">
-              {rekomendasi.slice(0, 6).map((r, i) => (
-                <li key={i}>
-                  <b>{r.preset}</b> · {r.tanggal}
-                  {r.close != null && <> · harga saat itu {r.close.toLocaleString('id-ID')}</>}
-                  {r.tp1 != null && <> · target {r.tp1.toLocaleString('id-ID')}</>}
-                  {r.sl != null && <> · batas rugi {r.sl.toLocaleString('id-ID')}</>}
-                </li>
+          ) : (
+            <div className="be-rekam">
+              {rekamAda.map((r) => (
+                <div key={r.strategi} className="be-rekam-grup">
+                  <div className="be-rekam-kepala">
+                    <b>{r.strategi}</b>
+                    <span className={r.layakPersen ? '' : 'be-rekam-tipis'}>{r.label}</span>
+                  </div>
+                  <div className="be-rekam-angka">
+                    <span className="be-pil">
+                      median
+                      <b className={(r.median ?? 0) >= 0 ? 'up' : 'dn'}>
+                        {r.median == null ? '—' : `${(r.median * 100).toFixed(1)}%`}
+                      </b>
+                    </span>
+                    <span className="be-pil">
+                      terbaik
+                      <b className="up">
+                        {r.terbaik == null ? '—' : `${(r.terbaik * 100).toFixed(1)}%`}
+                      </b>
+                    </span>
+                    {/* Terburuk SELALU dipajang sebesar terbaik. Rekam jejak yang
+                        cuma menyebut kemenangan bukan rekam jejak, itu iklan. */}
+                    <span className="be-pil">
+                      terburuk
+                      <b className="dn">
+                        {r.terburuk == null ? '—' : `${(r.terburuk * 100).toFixed(1)}%`}
+                      </b>
+                    </span>
+                  </div>
+                </div>
               ))}
-            </ul>
-          </div>
-        )}
-      </section>
+              <p className="be-rasio-kosong">
+                Tingkat menang hanya dinyatakan dalam persen bila ada minimal {MIN_SAMPEL_PERSEN} kali
+                — di bawah itu satu kejadian menggeser angkanya lebih dari lima poin, dan persentase
+                dari sampel sekecil itu terbaca setara dengan persentase dari dua ratus kejadian.
+              </p>
+            </div>
+          )}
+
+          {rekomendasi.length > 0 && (
+            <div className="be-rekom">
+              <span className="be-lbl">Pernah masuk daftar PAPAN</span>
+              <ul className="be-rekom-daftar">
+                {rekomendasi.slice(0, 6).map((r, i) => (
+                  <li key={i}>
+                    <b>{r.preset}</b> · {r.tanggal}
+                    {r.close != null && <> · harga saat itu {r.close.toLocaleString('id-ID')}</>}
+                    {r.tp1 != null && <> · target {r.tp1.toLocaleString('id-ID')}</>}
+                    {r.sl != null && <> · batas rugi {r.sl.toLocaleString('id-ID')}</>}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </section>
+      </div>
 
       {/* BLOK F — yang sudah dihitung halaman lain, dikumpulkan jadi satu
           layar. Tangga harga datang dari kartu yang SUDAH dimuat blok G;

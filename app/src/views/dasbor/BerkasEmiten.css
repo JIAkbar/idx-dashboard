@@ -29,6 +29,20 @@
   padding: 16px 18px;
 }
 .be-kartu-kepala { display: flex; gap: 12px; align-items: flex-start; margin-bottom: 14px; }
+
+/* Dua kartu bersisian. `auto-fit` + `minmax` dipakai, bukan dua kolom tetap
+   dengan media query: ambangnya jadi lebar WADAH, bukan lebar layar — kartu
+   ini juga tampil di lebar yang tersisa sesudah rel kiri, dan angka lebar
+   layar tak pernah cocok dengan keduanya sekaligus. Lajur kosong diciutkan
+   auto-fit, jadi dua kartu selalu berbagi rata. `minmax(0, ...)` menjaga
+   tabel lebar di dalamnya tetap menggulung di wadahnya sendiri, bukan
+   melebarkan lajurnya. */
+.be-duo-kartu {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(420px, 100%), 1fr));
+  gap: 16px;
+  align-items: start;
+}
 .be-blok {
   font-family: var(--mono, ui-monospace, monospace);
   font-size: 12px;
