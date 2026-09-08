@@ -279,6 +279,10 @@ MANIFEST: list[Turunan] = [
     # alarm senyap yang sudah dibayar 28 Agu–1 Sep 2026.
     Turunan("Rencana & rekam jejak", "rencana_saham.json", dari_modus_anak("emiten", "tanggal"),
             "Kartu Analisa (blok rencana dagang)", pembangun="riset/rencana_saham.py"),
+    # Winrate PAPAN (#91): dibangun SESUDAH rencana_saham.py dari arsip yang sama;
+    # ruas `akhir` di index.json = modus tanggal bar terakhir seluruh emiten.
+    Turunan("Winrate PAPAN", "winrate/index.json", dari_ruas("akhir"),
+            "Winrate PAPAN", pembangun="riset/winrate_emiten.py"),
     Turunan("Penilai jejak (hakim)", "nilai_jejak.json", dari_ruas("hariBursaTerakhir"),
             "Screener · Riwayat & Win Rate", pembangun="riset/nilai_jejak.py"),
     Turunan("Selisih-pasar TERKUNCI", "selisih_terkunci.json", dari_ruas("hariBursaTerakhir"),
@@ -543,6 +547,7 @@ def _uji() -> None:
         "keystats_stockbit", "info_stockbit", "daftar_emiten.json",
         # keluaran sistem win rate — dibaca Kartu Analisa & Screener/Riwayat
         "rencana_saham.json", "nilai_jejak.json", "selisih_terkunci.json",
+        "winrate/index.json",
     }
     kurang = wajib - {t.jalur for t in MANIFEST}
     assert not kurang, f"gudang dibaca halaman tapi tak diperiksa gerbang: {sorted(kurang)}"
