@@ -337,7 +337,13 @@ export default function Bandarmologi() {
               beda yang tak ada. */}
           <span className="num bm-hint">{fN(baris.length, 0)} dari {fN(data.n, 0)} emiten · terurut nilai transaksi</span>
         </div>
-        <div className="gulir">
+        {/* `board-tbl-wrap`, bukan kelas sendiri: sebelum ini pembungkusnya
+            bernama `gulir` — nama yang mengumumkan niat tanpa satu pun aturan
+            CSS yang mewujudkannya (grep `.gulir` di seluruh CSS: nol). Di 412
+            tabelnya 923px dan 511px sebelah kanan terpotong tanpa bisa
+            digulung, sementara kelas kanonis yang benar sudah ada dan dipakai
+            halaman lain. */}
+        <div className="board-tbl-wrap">
           <table className="tbl bm-tbl">
             <thead>
               <tr>

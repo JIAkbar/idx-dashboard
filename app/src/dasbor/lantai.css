@@ -873,6 +873,14 @@
    kirinya (temuan Johan 28 Agu "grid di laptop masih berantakan") — di bawah
    ambang ini kelompok kanan mengalir biasa, rata kiri seperti yang lain. */
 @container (max-width:1460px){.lantai .bilah-kendali .grup-kanan{margin-left:0}}
+/* Dan di layar sempit ia tak boleh lebih lebar daripada bilahnya sendiri.
+   `flex:none` di atas membuat kotaknya memakai lebar KONTEN: terukur 457px
+   di layar 412px pada Jago Papan, dan karena kotaknya sudah muat, anak-anaknya
+   tak pernah perlu membungkus — tombol terakhir ("Unduh CSV") jatuh 78px di
+   luar layar dan terbaca "UN". Ambangnya 560px, bukan 1460px seperti aturan
+   di atas: pada lebar laptop kelompok ini MEMANG harus tetap satu baris di
+   ujung kanan, dan yang diperbaiki di sini cuma keadaan sempit. */
+@container (max-width:560px){.lantai .bilah-kendali .grup-kanan{flex:1 1 100%;max-width:100%}}
 
 /* Bilah tanggal + satu baris keterangan di bawahnya (BilahTanggal, opsi A
    yang dipilih Johan 5 Sep 2026). Pembungkusnya kolom, bukan margin pada
