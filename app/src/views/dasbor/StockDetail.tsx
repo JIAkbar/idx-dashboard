@@ -22,6 +22,7 @@ import { IkonMenu, IKON_PERINGATAN, IKON_JAM } from '../../components/dasbor/Iko
 import { usePengendali, pengendaliEmiten, labelPengendali } from '../../lib/dasbor/pengendali'
 import { tanggalPendek } from '../../lib/dasbor/statistikBerkala'
 import { muatTambahanKeystats, type TambahanKeystats } from '../../lib/dasbor/rasioTambahanKeystats'
+import { NilaiRotasi } from '../../components/dasbor/NilaiRotasi'
 import { useKabar, kabarEmiten, waktuKabar } from '../../lib/dasbor/kabar'
 import './StockDetail.css'
 // Baris kabar (.kbr-*) hidup di Kabar.css dan dipakai juga di sini —
@@ -260,6 +261,20 @@ export function StockDetail() {
     setActiveTicker(kode)
   }
 
+  /** "Harga penutupan 8 Sep 2026 (disegarkan 22:37) · Laporan keuangan
+   *  diperbarui 1 Sep 2026" — bagian yang tak ada datanya ikut hilang,
+   *  bukan tampil sebagai tanda hubung. */
+  const umurData = (() => {
+    const bag: string[] = []
+    if (fd?.harga_pada) {
+      const jam = fd.harga_disegarkan?.slice(11, 16)
+      bag.push(`Harga penutupan ${tanggalPendek(fd.harga_pada)}${jam ? ` (disegarkan ${jam})` : ''}`)
+    }
+    // `updated` berformat 'YYYY-MM-DD HH:MM'; yang berarti di sini tanggalnya.
+    if (fd?.updated) bag.push(`Laporan keuangan diperbarui ${tanggalPendek(fd.updated.slice(0, 10))}`)
+    return bag.length ? ` ${bag.join(' · ')}.` : ''
+  })()
+
   // ── Turunan hero & rasio ──
   const lo = fd?.week52_low ?? null
   const hi = fd?.week52_high ?? null
@@ -292,12 +307,14 @@ export function StockDetail() {
             >
             </button>
           </div>
-          {/* "Data delay" saja menyisakan pertanyaan yang justru menentukan:
-              tertinggal lima belas menit atau tiga hari? Tanggalnya membuat
-              pembaca menilai sendiri, bukan menebak. Ditempel hanya kalau
-              memang ada — "Terakhir diperbarui —" lebih buruk daripada diam. */}
+          {/* DUA umur, bukan satu. Sampai 9 Sep 2026 baris ini mencetak
+              `updated` — tanggal panen laporan keuangan — di kalimat yang
+              berbicara tentang HARGA, jadi harga penutupan kemarin terbaca
+              "terakhir diperbarui 1 September". Keduanya memang ada di
+              berkasnya dan iramanya memang berbeda: harga tiap hari bursa,
+              laporan keuangan sebulan sekali. */}
           <p style={{ fontSize: 10, color: 'var(--text3)', lineHeight: 1.6 }}>
-            Data delay, bukan harga real-time.{fd?.updated ? ` Terakhir diperbarui ${fd.updated}.` : ''}
+            Data delay, bukan harga real-time.{umurData}
           </p>
         </div>
       )}
@@ -429,7 +446,13 @@ export function StockDetail() {
           {/* Strip rasio full-width 6 sel */}
           <div className="rasio">
             <RasioCell lbl="P/E (TTM)" v={<>{fvx(fd.pe)}<LencanaTurunan fd={fd} ruas="pe" /></>} sub={fd.forward_pe != null ? `fwd ${fvx(fd.forward_pe)}` : null} />
-            <RasioCell lbl="P/B" v={fvx(fd.pb)} sub={fd.bv != null ? `BV Rp ${fv(fd.bv)}` : null} />
+            {/* P/B dan Div Yield di strip ini dulu memakai angka lama apa adanya,
+                sementara panel Valuasi di halaman YANG SAMA sudah memakai sumber
+                yang dirotasi — BBRI memajang 1,45× di atas dan 1,61× di bawah,
+                13,10% dan 10,15%. Dua angka untuk satu rasio di satu layar. */}
+            <RasioCell lbl="P/B"
+              v={<NilaiRotasi ruas="pb" lama={fd.pbv ?? fd.pb} rasio={tambahan?.rasio ?? null} render={fvx} />}
+              sub={fd.bv != null ? `BV Rp ${fv(fd.bv)}` : null} />
             <RasioCell lbl="P/S (TTM)" v={fvx(fd.ps)} sub={fd.rev_ps != null ? `Rev/shr Rp ${fv(fd.rev_ps)}` : null} />
             <RasioCell
               lbl="Earnings Yield"
@@ -439,7 +462,13 @@ export function StockDetail() {
             />
             <RasioCell
               lbl="Div Yield"
-              v={<>{fd.dividend_yield != null ? '+' + fd.dividend_yield.toFixed(2) + '%' : '—'}<LencanaTurunan fd={fd} ruas="dividend_yield" /></>}
+              v={<NilaiRotasi
+                ruas="dividend_yield"
+                lama={fd.dividend_yield}
+                rasio={tambahan?.rasio ?? null}
+                lencanaLama={<LencanaTurunan fd={fd} ruas="dividend_yield" />}
+                render={(v) => (v != null ? '+' + v.toFixed(2) + '%' : '—')}
+              />}
               cls={fd.dividend_yield != null ? 'up' : undefined}
               sub={fd.dividend != null
                 ? `Rp ${fv(fd.dividend)}${fd.payout_ratio != null ? ` · payout ${(fd.payout_ratio * 100).toFixed(0)}%` : ''}`
@@ -551,7 +580,7 @@ export function StockDetail() {
 
           {tab === 'statistik' && <PanelProfilPerusahaan profil={tambahan?.profil ?? null} />}
 
-          {tab === 'valuasi' && <PanelValuasiInteraktif key={fd.ticker} fd={fd} />}
+          {tab === 'valuasi' && <PanelValuasiInteraktif key={fd.ticker} fd={fd} rasio={tambahan?.rasio ?? null} />}
 
           {tab === 'banding' && (
             /* Banding Emiten — dipindah dari Bedah Emiten. Tab sendiri

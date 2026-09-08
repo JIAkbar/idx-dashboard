@@ -3,6 +3,8 @@ import type { StockFundamental } from '../../../lib/dasbor/stockDetailData'
 import { fp2 } from '../../../lib/dasbor/stockDetailFormat'
 import { FdPercent } from '../../../components/dasbor/FdPercent'
 import { IkonMenu, IKON_PENGGARIS, IKON_KALKULATOR, IKON_LAMPU, IKON_GRAFIK_BATANG, IKON_UANG, IKON_PERINGATAN, IKON_GRAFIK_NAIK } from '../../../components/dasbor/IkonMenu'
+import { pilihRasio } from '../../../lib/dasbor/rasioUtamaKeystats'
+import type { PetaRasio } from '../../../components/dasbor/NilaiRotasi'
 
 /** "Rp "+angka bulat — port fv() lokal fdValuationCalc() baris 4397. */
 function rp(v: number | null): string {
@@ -71,7 +73,10 @@ function RelRow({ label, val, secMed, fmt, invert }: {
  * input reset ke default saham baru tiap ganti kode — sama seperti sumber
  * yang me-rebuild seluruh innerHTML tiap fdRender() dipanggil.
  */
-export function PanelValuasiInteraktif({ fd }: { fd: StockFundamental }) {
+export function PanelValuasiInteraktif({ fd, rasio = null }: { fd: StockFundamental; rasio?: PetaRasio }) {
+  // Angka P/B yang dipajang tabel di bawah harus sama dengan yang dipajang
+  // strip hero dan panel Valuasi — satu rasio, satu angka per halaman.
+  const pb = pilihRasio('pb', fd.pbv ?? fd.pb, rasio).nilai
   const epsDefault = fd.eps || 0
   const bvDefault = fd.bv || 0
   const gDefault = fd.eps_cagr_3y ?? fd.eps_cagr_2y ?? 5
@@ -210,7 +215,7 @@ export function PanelValuasiInteraktif({ fd }: { fd: StockFundamental }) {
                 <thead><tr><th>Metrik</th><th className="r">Saham</th><th className="r">Sektor</th><th className="r">Status</th></tr></thead>
                 <tbody>
                   <RelRow label="P/E Ratio" val={fd.pe ?? null} secMed={secPE} fmt={(v) => v != null ? v.toFixed(1) + 'x' : '—'} invert={false} />
-                  <RelRow label="P/B Ratio" val={fd.pb ?? null} secMed={secPB} fmt={(v) => v != null ? v.toFixed(2) + 'x' : '—'} invert={false} />
+                  <RelRow label="P/B Ratio" val={pb} secMed={secPB} fmt={(v) => v != null ? v.toFixed(2) + 'x' : '—'} invert={false} />
                   {/* EV/EBITDA pindah ke sini dari panel "Current Valuation" lama
                       (dihapus di re-layout) — median sektornya memang sudah ada. */}
                   <RelRow label="EV/EBITDA" val={fd.ev_ebitda ?? null} secMed={fd.sector_ev_ebitda_median ?? null} fmt={(v) => v != null ? v.toFixed(1) + 'x' : '—'} invert={false} />

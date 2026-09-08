@@ -54,7 +54,21 @@ export interface StockFundamental {
   website?: string
   summary?: string
   currency?: string
+  /** Kapan LAPORAN KEUANGANnya dipanen — bukan kapan harganya disegarkan.
+   *  Dua umur yang berbeda dan keduanya perlu dinyatakan: menimpa yang satu
+   *  dengan yang lain membuat laporan bulan lalu tampak sesegar harga hari
+   *  ini (aturan satu stempel per sumber, CLAUDE.md). */
   updated?: string
+  /** Tanggal bar harga yang dipakai ruas-ruas berbasis harga. */
+  harga_pada?: string
+  /** Kapan penyegaran harga itu dijalankan (`YYYY-MM-DD HH:MM`). */
+  harga_disegarkan?: string
+  /** 'idx' = jumlah saham dari bursa, 'yahoo' = dari agregator (bisa
+   *  ketinggalan aksi korporasi — lihat CLAUDE.md). */
+  shares_sumber?: string
+  /** P/BV hasil hitung ulang saat harga disegarkan; `pb` yang lama ikut
+   *  tinggal karena dipakai sebagai cadangan. */
+  pbv?: number | null
 
   last_price?: number | null
   prev_close?: number | null
