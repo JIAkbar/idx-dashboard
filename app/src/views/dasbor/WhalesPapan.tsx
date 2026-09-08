@@ -154,6 +154,16 @@ export default function WhalesPapan() {
   useEffect(() => { if (live && live.kode === kode) setLiveTahan(live) }, [live, kode])
   useEffect(() => { setLiveTahan(null) }, [kode])
   const liveTampil = live ?? (liveTahan && liveTahan.kode === kode ? liveTahan : null)
+  // Detak 30 s hanya untuk menghitung umur angka live di label (tinjauan 8 Sep:
+  // nilai yang dipertahankan saat rantai mati harus berlabel "basi", bukan
+  // "tertunda ≤ 2 menit"). Tidak menyentuh chart.
+  const [kini, setKini] = useState(() => Date.now())
+  useEffect(() => {
+    if (!liveTampil) return
+    const t = setInterval(() => setKini(Date.now()), 30_000)
+    return () => clearInterval(t)
+  }, [liveTampil])
+  const umurLiveDetik = liveTampil ? Math.max(0, Math.round((kini - liveTampil.diambilPada) / 1000)) : 0
 
   const [sel, setSel] = useState<SeleksiArea | null>(null)
   const [selIntra, setSelIntra] = useState<SelIntra | null>(null)
@@ -217,6 +227,8 @@ export default function WhalesPapan() {
 
   const bungkusRef = useRef<HTMLDivElement | null>(null)
   const chartRef = useRef<IChartApi | null>(null)
+  /** Bar hari berjalan yang sedang tergambar (time), null bila tak ada — lihat efek update. */
+  const barLiveTerpasang = useRef<string | null>(null)
   const lilinRef = useRef<ISeriesApi<SeriesType> | null>(null)
   const volRef = useRef<ISeriesApi<SeriesType> | null>(null)
   const seleksiRef = useRef<SeleksiAreaChart | null>(null)
@@ -462,6 +474,7 @@ export default function WhalesPapan() {
     if (tf === 'harian') {
       lilin.setData(candle.lilin)
       vol.setData(candle.volume)
+      barLiveTerpasang.current = null
       const n = candle.lilin.length
       if (n > 0) {
         // Footprint yang SUDAH menyala harus tetap terlihat di emiten baru
@@ -495,12 +508,25 @@ export default function WhalesPapan() {
   // tiap tarikan (temuan tinjauan 8 Sep: efek setData yang bergantung pada
   // objek live mereset pandangan tiap 45 detik). Dideklarasikan SESUDAH efek
   // muat penuh supaya urutannya: setData arsip dulu, lalu bar live.
+  // `barLiveTerpasang` mengingat bar live yang sedang tergambar: update()
+  // hanya bisa menempel/mengganti, tidak mencabut. Saat bar tak lagi sah
+  // (tengah malam pasar.iso berganti, atau tarikan berikutnya cacat) deret
+  // arsip dipasang ulang sekali lewat setData — tinjauan ulang 8 Sep.
   useEffect(() => {
     const lilin = lilinRef.current
     const vol = volRef.current
-    if (!lilin || !vol || tf !== 'harian' || !barLive || !volLive) return
-    lilin.update(barLive)
-    vol.update(volLive)
+    if (!lilin || !vol || tf !== 'harian') return
+    if (barLive && volLive) {
+      lilin.update(barLive)
+      vol.update(volLive)
+      barLiveTerpasang.current = String(barLive.time)
+      return
+    }
+    if (barLiveTerpasang.current !== null) {
+      lilin.setData(candle.lilin)
+      vol.setData(candle.volume)
+      barLiveTerpasang.current = null
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tf, candle, kunciLive])
 
@@ -786,7 +812,11 @@ export default function WhalesPapan() {
                 {liveTampil.value != null && ` · Rp ${rupiahRingkas(liveTampil.value)}`}
                 {liveTampil.frequency != null && ` · ${liveTampil.frequency.toLocaleString('id-ID')} kali`}
                 {` · diterima ${jamPasarJakarta(new Date(liveTampil.diambilPada)).jam} WIB`}
-                {pasar.status === 'buka' ? ' · tertunda ≤ 2 menit' : ' · menunggu arsip'}
+                {pasar.status !== 'buka'
+                  ? ' · menunggu arsip'
+                  : umurLiveDetik < 150
+                    ? ' · tertunda ≤ 2 menit'
+                    : ` · basi ${Math.round(umurLiveDetik / 60)} menit, tarikan gagal`}
               </span>
             </span>
           )}

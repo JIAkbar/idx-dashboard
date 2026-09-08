@@ -7,8 +7,10 @@
  * 1. Token hanya hidup di server — dibaca dari tabel privat `live_token`
  *    (RLS tanpa policy; hanya service_role) lewat env server Vercel. Yang
  *    sampai ke peramban pengunjung cuma angka hasil.
- * 2. Cache CDN 30 detik + stale 90 detik — seribu pengunjung ≠ seribu
- *    permintaan keluar; pola trafik tetap sekecil satu pengguna.
+ * 2. Cache CDN 30 detik + stale 30 detik — seribu pengunjung ≠ seribu
+ *    permintaan keluar; pola trafik tetap sekecil satu pengguna. CDN Vercel
+ *    TIDAK menyinggah 503, jadi jalur gagal dijaga singgah negatif di dalam
+ *    fungsi (`kosongSampai`), bukan lewat header.
  * 3. Fungsi ini TIDAK PERNAH me-refresh token (rotasi sekali-pakai +
  *    serverless concurrent = resep pencabutan sesi). Rotasi milik satu
  *    pelaku: cron `/api/live-refresh` tiap 12 jam.
@@ -35,7 +37,7 @@ async function accessToken() {
   const r = await fetch(`${url}/rest/v1/live_token?id=eq.1&select=access`, {
     headers: { apikey: key, Authorization: `Bearer ${key}` },
   })
-  if (!r.ok) return null
+  if (!r.ok) { kosongSampai = Date.now() + 30 * 1000; return null }
   const rows = await r.json()
   const access = rows?.[0]?.access ?? null
   if (access) singgahan = { access, sampai: Date.now() + 5 * 60 * 1000 }
@@ -65,8 +67,10 @@ export default async function handler(req, res) {
   if (!/^[A-Z0-9]{2,6}$/.test(kode)) {
     return res.status(400).json({ galat: 'Kode tidak dikenal.' })
   }
-  // 503 pun disinggah CDN 30 s supaya rantai mati tidak jadi badai fungsi.
-  const tertunda = () => { res.setHeader('Cache-Control', 's-maxage=30'); return res.status(503).json({ galat: 'tertunda' }) }
+  // 503 tidak disinggah CDN Vercel (hanya 200/404/410/30x) — yang menahan
+  // badai saat rantai mati adalah singgah negatif 30 s di accessToken() dan
+  // pembuangan token mati di bawah, bukan header ini.
+  const tertunda = () => res.status(503).json({ galat: 'tertunda' })
   const access = await accessToken()
   if (!access) return tertunda()
   try {
@@ -84,6 +88,11 @@ export default async function handler(req, res) {
     if (!r.ok) {
       // 401 = rantai akun live mati — klien jatuh ke arsip, cron berikutnya
       // (atau semai ulang) yang menghidupkan lagi. Bukan error pengunjung.
+      // Token yang ditolak dibuang dari singgahan dan 30 s berikutnya tidak
+      // ada permintaan ke Stockbit sama sekali (temuan tinjauan 8 Sep: token
+      // mati yang disinggah 5 menit = 401 berulang tiap tarikan tiap pengunjung).
+      singgahan = { access: null, sampai: 0 }
+      kosongSampai = Date.now() + 30 * 1000
       return tertunda()
     }
     const bar = cariBar(await r.json())

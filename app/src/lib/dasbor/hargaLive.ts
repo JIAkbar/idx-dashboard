@@ -60,7 +60,11 @@ export function useHargaLive(kode: string | null, jedaDetik = 45): HargaLive | n
     setHarga(null)
     tarik()
     timer = setInterval(tarik, jedaDetik * 1000)
-    return () => { batal = true; if (timer) clearInterval(timer) }
+    // Tab yang kembali terlihat langsung menarik ulang, supaya angka 10 menit
+    // lalu tidak sempat tampil berlabel "tertunda ≤ 2 menit".
+    const saatTampak = () => { if (document.visibilityState === 'visible') tarik() }
+    document.addEventListener('visibilitychange', saatTampak)
+    return () => { batal = true; if (timer) clearInterval(timer); document.removeEventListener('visibilitychange', saatTampak) }
   }, [kode, jedaDetik])
   return harga
 }
