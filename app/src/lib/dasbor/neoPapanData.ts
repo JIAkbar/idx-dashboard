@@ -65,7 +65,7 @@ interface RingkasRaw {
   n_beli: number; n_jual: number; total_lot: number; total_nilai: number; avg: number
   top1_pct: number; top3_pct: number; top5_pct: number; accdist: string; cocok_volume: number
 }
-interface HariRaw { ringkas: RingkasRaw | null; broker: Array<[string, number, number, number, number]> }
+interface HariRaw { ringkas: RingkasRaw | null; broker: BarisPadat[] }
 interface BerkasBrokerRaw { kode: string; jendela_hari: number; hari: Record<string, HariRaw> }
 
 export async function muatBrokerHarian(kode: string): Promise<BrokerHarianEmiten | null> {
@@ -117,7 +117,7 @@ export function muatBrokerSemua(): Promise<Map<string, BrokerHarianEmiten>> {
 
 // ── Broker TAHUNAN lintas emiten (Broker Stalker >20 hari — penajaman #1) ──
 
-import { muatRentang } from './brokerEmiten'
+import { muatRentang, type BarisBroker as BarisPadat } from './brokerEmiten'
 import type { HariStalkerV2 } from './neoPapan'
 
 /**
@@ -142,8 +142,8 @@ export async function muatBrokerTahunanBanyak(
   let selesai = 0
   const keV2 = (h: {
     ringkas?: { total_lot?: number | null } | null
-    broker: Array<readonly [string, number, number, number, number]>
-    asing?: { ringkas?: { total_lot?: number | null } | null; broker: Array<readonly [string, number, number, number, number]> }
+    broker: readonly BarisPadat[]
+    asing?: { ringkas?: { total_lot?: number | null } | null; broker: readonly BarisPadat[] }
   }): HariStalkerV2 => ({
     ringkas: h.ringkas ? { totalLot: h.ringkas.total_lot ?? null } : null,
     broker: h.broker.map(([kode, beliLot, beliNilai, jualLot, jualNilai]) => ({ kode, beliLot, beliNilai, jualLot, jualNilai })),

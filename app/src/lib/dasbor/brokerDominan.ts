@@ -32,14 +32,15 @@
  *   realisasi. Kata "estimasi" di judul kolomnya bukan hiasan.
  */
 import { HARI_PRESET, pilRentang } from './periode'
-import { sisiBroker, type SisiBroker } from './pilihGarisBroker'
+import { petaSisiBroker, sisiBroker, type SisiBroker } from './pilihGarisBroker'
 import { namaBroker } from './kelompokBroker'
+import type { BarisBroker } from './brokerEmiten'
 
 /** Bentuk minimum yang dibutuhkan — sengaja bukan `HariBroker` penuh supaya
  *  uji tak perlu merakit ruas yang tak dipakai. */
 export interface HariRingkas {
   tanggal: string
-  broker: Array<[string, number, number, number, number]>
+  broker: BarisBroker[]
 }
 
 export type RentangDominan = 'w1' | 'b1' | 'b3' | 'b6'
@@ -114,6 +115,10 @@ export function hitungDominan(
     }
   }
 
+  // Jenis broker dari data hari-hari yang sedang dibaca; kurasi tangan cuma
+  // dipakai untuk kode yang tak muncul di sana (#82).
+  const sisiData = petaSisiBroker(potong)
+
   const baris = (kode: string, sisi: 'beli' | 'jual'): BarisDominan => {
     const a = per.get(kode)!
     const nilai = sisi === 'beli' ? a.bn : a.jn
@@ -125,7 +130,7 @@ export function hitungDominan(
     return {
       kode,
       nama: namaBroker(kode),
-      sisi: sisiBroker(kode),
+      sisi: sisiBroker(kode, sisiData),
       nilai,
       lot,
       netNilai: a.bn - a.jn,

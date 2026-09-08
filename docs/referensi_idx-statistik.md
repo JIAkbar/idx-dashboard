@@ -351,6 +351,36 @@ Kamus ruas (12 ruas per bar, semuanya diarsipkan mentah):
 | Emiten 301–963 | ❌ sementara | gelombang 2–3 | Johan (300-300-sisanya) |
 | Riwayat sebelum 2017 | ❓ | endpoint mulai 2017 menurut `workflow-panen-rombak.md` — batas sumber, belum diuji ulang | ❓ |
 
+### Kamus ruas per baris broker — apa yang disimpan, apa yang tidak (8 September 2026)
+
+Balasan sumber membawa sepuluh ruas per baris broker. Yang disimpan ke gudang
+hanya yang tak bisa dihitung ulang dari ruas lain:
+
+| Ruas sumber | Arti (dibuktikan dari nilainya) | Disimpan? | Bukti |
+|---|---|---|---|
+| kode broker | identitas anggota bursa | ✅ kolom 0 | — |
+| lot beli / lot jual | lot (1 lot = 100 lembar) | ✅ kolom 1 & 3 | — |
+| nilai beli / nilai jual | rupiah | ✅ kolom 2 & 4 | — |
+| frekuensi, sisi beli | jumlah transaksi sisi beli | ✅ kolom 5 (baru) | dua sisi berbeda di 1.574 dari 1.606 pasangan (98%) |
+| frekuensi, sisi jual | jumlah transaksi sisi jual | ✅ kolom 6 (baru) | idem — satu angka gabungan akan salah di 98% baris |
+| jenis broker | Asing · Lokal · **Pemerintah** | ✅ kolom 7 (baru), disingkat A/L/P | 40 hari sampel: Lokal 2.279 · Asing 1.281 · Pemerintah 301 |
+| harga rata-rata beli | rupiah per lembar | ❌ turunan | = nilai ÷ (lot × 100), simpangan maks 2,2e-16 atas 4.044 baris beli & 3.829 baris jual |
+| harga rata-rata jual | rupiah per lembar | ❌ turunan | idem |
+| lot dalam lembar | lot × 100 | ❌ turunan | median 100,000 atas 2.004 baris |
+| nilai (salinan kedua) | sama dengan nilai | ❌ duplikat | 2.004 dari 2.004 baris identik |
+
+**Kolom 5–7 hanya ada di hari yang dibangun ulang sesudah 8 Sep 2026.** Larik
+yang lebih pendek berarti "belum dibangun ulang", BUKAN nol dan bukan lokal —
+pembacanya (`jenisBaris` di `app/src/lib/dasbor/brokerEmiten.ts`) mengembalikan
+null untuk itu, dan layar jatuh ke kurasi tangan.
+
+**Jenis broker mengganti kurasi tangan sebagai sumber utama (#82).** Terukur
+2026-08-03 atas 962 emiten: sumber menyebut 23 kode asing, daftar tangan
+menyebut 17. Daftar tangan tetap ada sebagai cadangan untuk kode yang tak
+muncul di rentang yang sedang dibaca. Kategori "Pemerintah" dibaca lokal di
+layar yang cuma punya dua sisi, tapi nilainya disimpan apa adanya supaya
+keputusan itu bisa diubah tanpa panen ulang.
+
 ## Stockbit — `keystats`, `emitten` (profil & info), Snips, dan endpoint yang belum terpecahkan
 
 - **URL / endpoint:** `https://exodus.stockbit.com/keystats/<KODE>` (`panen_keystats_stockbit.py:49`); `https://exodus.stockbit.com/emitten/<KODE>` (`panen_profil_stockbit.py:45`, `panen_info_stockbit.py:52`); `https://snips.stockbit.com/sitemap.xml`, `/snips-terbaru`, `?format=json` (`panen_snips.py:13,44,116`)

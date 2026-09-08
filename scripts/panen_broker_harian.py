@@ -213,16 +213,37 @@ def padatkan(mentah: dict) -> tuple[list[list], dict]:
     """Balasan GROSS -> (baris padat per broker, ringkasan bandar_detector).
 
     Mode GROSS menaruh satu broker di KEDUA daftar (beli dan jual) dengan ruas
-    masing-masing; keduanya digabung per kode jadi satu baris tujuh kolom.
-    Tanda negatif sisi jual dibuang — besaran disimpan, arah sudah jelas dari
-    kolomnya.
+    masing-masing; keduanya digabung per kode jadi satu baris. Tanda negatif
+    sisi jual dibuang — besaran disimpan, arah sudah jelas dari kolomnya.
+
+    Kolom internal (yang disimpan ke berkas dipilih `padat_baris`):
+    0 kode · 1 lot beli · 2 nilai beli · 3 harga rata-rata beli · 4 lot jual ·
+    5 nilai jual · 6 harga rata-rata jual · 7 frekuensi beli · 8 frekuensi
+    jual · 9 jenis broker.
+
+    **Frekuensi disimpan DUA, bukan satu.** Terukur atas 40 hari sampel di 8
+    emiten: dari 1.606 broker yang muncul di kedua sisi, 1.574 (98%) punya
+    frekuensi beli dan jual yang BERBEDA (BBCA 31 Agu: TP 63 vs 507).
+    Menyimpan satu angka berarti salah pada 98% baris tanpa satu pun galat.
+
+    **Harga rata-rata TIDAK disimpan** — bukan karena kelihatan tak perlu,
+    melainkan karena terukur turunan murni: `netbs_buy_avg_price` sama dengan
+    `bval ÷ (blot × 100)` dengan simpangan maksimum 2,2e-16 (epsilon float)
+    atas 4.044 baris beli dan 3.829 baris jual, nol baris meleset >0,5%.
+    Halaman sudah menurunkannya sendiri lewat `hargaRata()`. Usulan awal #81
+    menyebut ruas ini; pengukurannya yang membatalkan, dan menyimpannya berarti
+    menambah ±10 byte per baris di gudang 2,1 GB untuk nol informasi baru.
+
+    Dua ruas mentah lain juga terbukti turunan: `blotv` = lot × 100 (lembar;
+    median 100,000 atas 2.004 baris) dan `bvalv` = `bval` persis (2.004 dari
+    2.004 baris identik).
     """
     data = (mentah or {}).get("data") or {}
     bs = data.get("broker_summary") or {}
     per: dict[str, list] = {}
 
     def baris(kode: str) -> list:
-        return per.setdefault(kode, [kode, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
+        return per.setdefault(kode, [kode, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, ""])
 
     for b in bs.get("brokers_buy") or []:
         kode = (b.get("netbs_broker_code") or "").strip().upper()
@@ -231,6 +252,8 @@ def padatkan(mentah: dict) -> tuple[list[list], dict]:
             r[1] += _angka(b.get("blot"))
             r[2] += _angka(b.get("bval"))
             r[3] = r[3] or _angka(b.get("netbs_buy_avg_price"))
+            r[7] += _angka(b.get("freq"))
+            r[9] = r[9] or jenis_broker(b.get("type"))
     for b in bs.get("brokers_sell") or []:
         kode = (b.get("netbs_broker_code") or "").strip().upper()
         if kode:
@@ -238,6 +261,8 @@ def padatkan(mentah: dict) -> tuple[list[list], dict]:
             r[4] += abs(_angka(b.get("slot")))
             r[5] += abs(_angka(b.get("sval")))
             r[6] = r[6] or _angka(b.get("netbs_sell_avg_price"))
+            r[8] += _angka(b.get("freq"))
+            r[9] = r[9] or jenis_broker(b.get("type"))
 
     urut = sorted(per.values(), key=lambda r: (r[2] - r[5]), reverse=True)
     bd = data.get("bandar_detector") or {}
@@ -262,8 +287,39 @@ def cocok_volume(total_lot: float, volume_idx) -> float | None:
     return round(total_lot * 100 / volume_idx, 4)
 
 
+# Jenis broker seperti dilaporkan sumbernya, disingkat satu huruf karena ia
+# terulang di tiap baris di gudang 2,1 GB. TIGA nilai, bukan dua — terukur
+# atas 40 hari sampel: Lokal 2.279, Asing 1.281, **Pemerintah 301**. Kategori
+# ketiga itu tak ada di kurasi tangan yang dipakai layar sekarang, jadi
+# nilainya disimpan APA ADANYA di sini; pemetaannya ke "sisi" di layar
+# diputuskan di tempat lain, dan tak bisa diputuskan dengan membuang datanya.
+JENIS_BROKER = {"Asing": "A", "Lokal": "L", "Pemerintah": "P"}
+
+
+def jenis_broker(nilai) -> str:
+    """"Asing"/"Lokal"/"Pemerintah" -> "A"/"L"/"P"; yang tak dikenal -> "".
+
+    Nilai baru dari sumber sengaja jatuh ke "" (tidak diketahui), bukan ke
+    salah satu huruf yang ada: menebak kategori broker salah lebih mahal
+    daripada mengakui belum tahu, dan "" gampang dicari kalau sumbernya
+    menambah kategori.
+    """
+    return JENIS_BROKER.get((nilai or "").strip(), "")
+
+
 def padat_baris(baris: list[list]) -> list[list]:
-    return [[r[0], round(r[1]), round(r[2]), round(r[4]), round(r[5])] for r in baris]
+    """Baris untuk disimpan — sepuluh kolom, indeks 0-4 TIDAK bergeser.
+
+    Ruas baru (#81) ditambahkan di UJUNG dengan sengaja: pembaca lama membaca
+    `r[0]`..`r[4]` dan tetap benar tanpa disentuh, dan pembaca yang belum tahu
+    ruas baru cukup memeriksa panjang lariknya.
+
+    5 frekuensi beli · 6 frekuensi jual · 7 jenis broker (A/L/P). Harga
+    rata-rata tak ikut: terbukti turunan dari nilai ÷ lot (lihat `padatkan`).
+    """
+    return [[r[0], round(r[1]), round(r[2]), round(r[4]), round(r[5]),
+             round(r[7]), round(r[8]), r[9]]
+            for r in baris]
 
 
 def perbarui_ringkas(lama: dict | None, kode: str, tanggal: str, baris: list[list],
@@ -696,12 +752,16 @@ def swauji() -> int:
         "from": "2026-08-21", "to": "2026-08-21",
         "broker_summary": {
             "brokers_buy": [
-                {"netbs_broker_code": "AK", "blot": 450276, "bval": 47472579000, "netbs_buy_avg_price": 1053},
-                {"netbs_broker_code": "OD", "blot": 1000, "bval": 1053000, "netbs_buy_avg_price": 1053},
+                {"netbs_broker_code": "AK", "blot": 450276, "bval": 47472579000,
+                 "netbs_buy_avg_price": 1053.4567, "freq": "63", "type": "Asing"},
+                {"netbs_broker_code": "OD", "blot": 1000, "bval": 1053000,
+                 "netbs_buy_avg_price": 1053, "freq": "7", "type": "Pemerintah"},
             ],
             "brokers_sell": [
-                {"netbs_broker_code": "OD", "slot": -429953, "sval": -45226967500, "netbs_sell_avg_price": 1053},
-                {"netbs_broker_code": "AK", "slot": -10, "sval": -10530, "netbs_sell_avg_price": 1053},
+                {"netbs_broker_code": "OD", "slot": -429953, "sval": -45226967500,
+                 "netbs_sell_avg_price": 1052.1, "freq": "512", "type": "Pemerintah"},
+                {"netbs_broker_code": "AK", "slot": -10, "sval": -10530,
+                 "netbs_sell_avg_price": 1053, "freq": "507", "type": "Asing"},
             ],
         },
         "bandar_detector": {"average": 1055.17, "broker_accdist": "Acc",
@@ -715,6 +775,28 @@ def swauji() -> int:
     assert od[4] == 429953 and od[5] == 45226967500 and od[1] == 1000, "dua sisi harus digabung"
     assert ringkas["n_beli"] == 2 and ringkas["accdist"] == "Acc" and ringkas["top3_pct"] == -4.69
     assert ringkas["total_lot"] == 451276
+
+    # #81 — ruas baru di UJUNG larik: indeks lama tak boleh bergeser.
+    p = padat_baris(baris)
+    assert [r[:5] for r in p] == [["AK", 450276, 47472579000, 10, 10530],
+                                  ["OD", 1000, 1053000, 429953, 45226967500]], p
+    assert len(p[0]) == 8, "delapan kolom: 5 lama + freq beli/jual + jenis"
+    # Frekuensi DUA sisi — 98% baris nyata punya angka yang berbeda di sini.
+    assert p[0][5] == 63 and p[0][6] == 507, p[0]
+    assert p[1][5] == 7 and p[1][6] == 512, p[1]
+    assert p[0][7] == "A" and p[1][7] == "P", "jenis broker: tiga nilai, bukan dua"
+    # Harga rata-rata sengaja TIDAK disimpan: bval ÷ (blot x 100) memberi angka
+    # yang sama sampai epsilon float, dan halaman sudah menurunkannya sendiri.
+    assert round(p[0][2] / (p[0][1] * 100), 2) == 1054.30
+    assert jenis_broker("Lokal") == "L" and jenis_broker(None) == ""
+    # Kategori yang belum dikenal jatuh ke "" — menebaknya lebih mahal.
+    assert jenis_broker("Sovereign Wealth") == ""
+
+    # Broker yang cuma muncul di satu sisi: sisi lain nol, jenisnya tetap terisi.
+    sesisi = padat_baris(padatkan({"data": {"broker_summary": {"brokers_buy": [
+        {"netbs_broker_code": "XL", "blot": 5, "bval": 500,
+         "netbs_buy_avg_price": 100, "freq": "2", "type": "Lokal"}]}}})[0])
+    assert sesisi == [["XL", 5, 500, 0, 0, 2, 0, "L"]], sesisi
 
     assert cocok_volume(6093831, 609383100) == 1.0
     assert cocok_volume(100, None) is None
@@ -735,7 +817,7 @@ def swauji() -> int:
     r4 = perbarui_ringkas(r3, "BUMI", "2026-08-23", baris, ringkas, jendela=2)
     assert list(r4["hari"]) == ["2026-08-23"] and r4["kode"] == "BUMI"
 
-    print("12/12 lulus")
+    print("14/14 lulus")
     return 0
 
 

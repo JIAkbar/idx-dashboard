@@ -39,9 +39,11 @@
  * kuadrannya salah nama karena bug.
  */
 
-/** Satu baris broker apa adanya dari berkas tahunan: urutannya mengikuti
- *  `kolom` = ['broker','beli_lot','beli_nilai','jual_lot','jual_nilai']. */
-export type BarisBroker = [string, number, number, number, number]
+/** Satu baris broker apa adanya dari berkas tahunan. Bentuknya SATU, dipakai
+ *  bersama `brokerEmiten.ts` — dua salinan tipe yang sama akan berbeda diam-diam
+ *  begitu kolomnya bertambah, dan itu persis yang terjadi di #81. */
+import type { BarisBroker } from './brokerEmiten'
+export type { BarisBroker }
 
 export interface HariBroker {
   tanggal: string

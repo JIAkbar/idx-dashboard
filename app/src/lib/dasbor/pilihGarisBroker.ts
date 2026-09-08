@@ -24,26 +24,59 @@
  * dari palet kategorikal yang jaraknya terukur, dan broker yang sudah lama
  * tak bertransaksi dikecualikan.
  *
- * ## Sumber sisi lokal/asing — dikoreksi dari premis antreannya
+ * ## Sumber sisi lokal/asing — data dulu, kurasi tangan jadi cadangan (#82)
  *
  * Baris antrean #46 menulis tipe Lokal/Asing "ada di data pasar IDX, ruas
- * `type`". Diperiksa: rekap broker level pasar yang kita simpan berisi
- * kode, nama, volume, nilai, frekuensi — **tak ada ruas tipe**. Yang benar
- * ada di repo adalah kurasi `kelompokBroker.ts` (kelompok `asing` berisi 17
- * sekuritas berinduk luar negeri), dan itulah yang dipakai di sini.
- * Konsekuensinya jujur: broker yang belum dikurasi terbaca LOKAL, bukan
- * "tidak diketahui" — dan itu pilihan yang benar untuk bursa ini, di mana
- * mayoritas anggota memang lokal, tapi wajib disebut supaya tak ada yang
- * membaca sisi asing sebagai daftar lengkap.
+ * `type`". Yang diperiksa saat itu adalah rekap broker LEVEL PASAR, dan di
+ * sana ruas itu memang tak ada — kesimpulannya benar untuk berkas yang
+ * dibuka, dan salah untuk pertanyaannya. Rincian broker PER EMITEN membawa
+ * ruas itu di tiap baris, dan sejak #81 ruasnya ikut tersimpan di gudang.
+ *
+ * Jadi urutannya sekarang: **jenis dari data** kalau harinya sudah dibangun
+ * ulang, **kurasi `kelompokBroker.ts` sebagai cadangan** untuk kode yang tak
+ * muncul di rentang yang sedang dibaca (dan untuk halaman yang cuma memegang
+ * kode broker tanpa datanya). Terukur 2026-08-03 atas 962 emiten: sumbernya
+ * menyebut 23 kode asing, kurasi tangan menyebut 17 — enam kode yang benar
+ * ada di data tak pernah terbaca asing sebelum ini.
+ *
+ * Kategori PEMERINTAH dibaca sebagai lokal. Sumbernya punya tiga nilai
+ * (terukur: Lokal 2.279 · Asing 1.281 · Pemerintah 301), sementara layar ini
+ * cuma punya dua sisi; memetakan pemerintah ke "asing" akan mengubah arti
+ * kolomnya. Nilai aslinya tetap tersimpan di gudang, jadi kalau nanti layar
+ * perlu tiga sisi, datanya sudah ada tanpa panen ulang.
  */
 import { kelompokBroker } from './kelompokBroker'
+import { jenisBaris, type BarisBroker } from './brokerEmiten'
 import type { AgregatBroker, HariBroker } from './brokerEmiten'
 
 export type SisiBroker = 'lokal' | 'asing'
 
-/** Sisi kepemilikan satu kode broker. Belum dikurasi = lokal (lihat kepala). */
-export function sisiBroker(kode: string): SisiBroker {
-  return kelompokBroker(kode) === 'asing' ? 'asing' : 'lokal'
+/**
+ * Peta kode broker → sisi, dibaca dari baris gudang hari-hari yang diberikan.
+ *
+ * Kosong untuk hari yang dipanen sebelum 8 Sep 2026 — baris lama cuma punya
+ * lima kolom, dan itu berarti "belum tahu", bukan "lokal". Pemanggil yang
+ * mendapat peta kosong otomatis jatuh ke kurasi lewat `sisiBroker`.
+ */
+export function petaSisiBroker(
+  hari: ReadonlyArray<{ broker: readonly BarisBroker[] }>,
+): Map<string, SisiBroker> {
+  const peta = new Map<string, SisiBroker>()
+  for (const h of hari) {
+    for (const r of h.broker) {
+      const j = jenisBaris(r)
+      if (j) peta.set(r[0], j === 'A' ? 'asing' : 'lokal')
+    }
+  }
+  return peta
+}
+
+/**
+ * Sisi kepemilikan satu kode broker: dari data kalau petanya memuatnya,
+ * kalau tidak dari kurasi tangan (dan kode yang belum dikurasi = lokal).
+ */
+export function sisiBroker(kode: string, peta?: ReadonlyMap<string, SisiBroker>): SisiBroker {
+  return peta?.get(kode) ?? (kelompokBroker(kode) === 'asing' ? 'asing' : 'lokal')
 }
 
 /**

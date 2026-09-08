@@ -21,10 +21,33 @@ import { urlData } from './baseData'
  * Kolom larik padat per broker, urutannya dari `panen_broker_harian.KOLOM`.
  * Tanpa avg: terukur 22 Agu 2026 (26.172 baris) avg Stockbit = nilai ÷ (lot×100)
  * sampai pembulatan rupiah, jadi diturunkan di sini — lebih teliti, berkas −38%.
+ * Diukur ulang 8 Sep 2026 langsung dari arsip mentah (7.873 baris): simpangan
+ * maksimum 2,2e-16, jadi keputusan lama itu bertahan dan ruas avg tetap tak
+ * disimpan walau #81 sempat mengusulkannya.
+ *
+ * Tiga kolom terakhir baru (#81) dan **hanya ada di hari yang dibangun ulang
+ * sesudah 8 Sep 2026**. Kolom 0–4 tak bergeser, jadi pembaca lama tetap benar;
+ * pembaca kolom baru wajib memperlakukan `undefined` sebagai "belum dibangun
+ * ulang", bukan sebagai nol.
  */
-export const KOLOM_BROKER = ['broker', 'beli_lot', 'beli_nilai', 'jual_lot', 'jual_nilai'] as const
+export const KOLOM_BROKER = ['broker', 'beli_lot', 'beli_nilai', 'jual_lot', 'jual_nilai',
+  'freq_beli', 'freq_jual', 'jenis'] as const
 
-export type BarisBroker = [string, number, number, number, number]
+export type BarisBroker = [
+  broker: string, beliLot: number, beliNilai: number, jualLot: number, jualNilai: number,
+  freqBeli?: number, freqJual?: number, jenis?: string,
+]
+
+/**
+ * Jenis broker seperti dilaporkan sumbernya: A = asing, L = lokal,
+ * P = pemerintah. `null` kalau baris itu dari hari yang belum dibangun ulang
+ * atau sumbernya memakai kategori yang belum dikenal — dua keadaan yang
+ * sama-sama berarti "belum tahu", dan tak boleh terbaca sebagai "lokal".
+ */
+export function jenisBaris(r: BarisBroker): 'A' | 'L' | 'P' | null {
+  const j = r[7]
+  return j === 'A' || j === 'L' || j === 'P' ? j : null
+}
 
 /** Harga rata-rata rupiah per lembar dari nilai & lot; null kalau lot 0. */
 export const hargaRata = (nilai: number, lot: number): number | null =>

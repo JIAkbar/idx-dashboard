@@ -1855,6 +1855,91 @@ Bangun HTML (tiap berkas ini berubah): <code>python "C:\1-Johan\10. Pengembangan
 </tr>
 </tbody>
 </table>
+<h3>Kamus ruas per baris broker — apa yang disimpan, apa yang tidak (8 September 2026)</h3>
+<p>Balasan sumber membawa sepuluh ruas per baris broker. Yang disimpan ke gudang<br />
+hanya yang tak bisa dihitung ulang dari ruas lain:</p>
+<table>
+<thead>
+<tr>
+<th>Ruas sumber</th>
+<th>Arti (dibuktikan dari nilainya)</th>
+<th>Disimpan?</th>
+<th>Bukti</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>kode broker</td>
+<td>identitas anggota bursa</td>
+<td>✅ kolom 0</td>
+<td>—</td>
+</tr>
+<tr>
+<td>lot beli / lot jual</td>
+<td>lot (1 lot = 100 lembar)</td>
+<td>✅ kolom 1 &amp; 3</td>
+<td>—</td>
+</tr>
+<tr>
+<td>nilai beli / nilai jual</td>
+<td>rupiah</td>
+<td>✅ kolom 2 &amp; 4</td>
+<td>—</td>
+</tr>
+<tr>
+<td>frekuensi, sisi beli</td>
+<td>jumlah transaksi sisi beli</td>
+<td>✅ kolom 5 (baru)</td>
+<td>dua sisi berbeda di 1.574 dari 1.606 pasangan (98%)</td>
+</tr>
+<tr>
+<td>frekuensi, sisi jual</td>
+<td>jumlah transaksi sisi jual</td>
+<td>✅ kolom 6 (baru)</td>
+<td>idem — satu angka gabungan akan salah di 98% baris</td>
+</tr>
+<tr>
+<td>jenis broker</td>
+<td>Asing · Lokal · <strong>Pemerintah</strong></td>
+<td>✅ kolom 7 (baru), disingkat A/L/P</td>
+<td>40 hari sampel: Lokal 2.279 · Asing 1.281 · Pemerintah 301</td>
+</tr>
+<tr>
+<td>harga rata-rata beli</td>
+<td>rupiah per lembar</td>
+<td>❌ turunan</td>
+<td>= nilai ÷ (lot × 100), simpangan maks 2,2e-16 atas 4.044 baris beli &amp; 3.829 baris jual</td>
+</tr>
+<tr>
+<td>harga rata-rata jual</td>
+<td>rupiah per lembar</td>
+<td>❌ turunan</td>
+<td>idem</td>
+</tr>
+<tr>
+<td>lot dalam lembar</td>
+<td>lot × 100</td>
+<td>❌ turunan</td>
+<td>median 100,000 atas 2.004 baris</td>
+</tr>
+<tr>
+<td>nilai (salinan kedua)</td>
+<td>sama dengan nilai</td>
+<td>❌ duplikat</td>
+<td>2.004 dari 2.004 baris identik</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Kolom 5–7 hanya ada di hari yang dibangun ulang sesudah 8 Sep 2026.</strong> Larik<br />
+yang lebih pendek berarti "belum dibangun ulang", BUKAN nol dan bukan lokal —<br />
+pembacanya (<code>jenisBaris</code> di <code>app/src/lib/dasbor/brokerEmiten.ts</code>) mengembalikan<br />
+null untuk itu, dan layar jatuh ke kurasi tangan.</p>
+<p><strong>Jenis broker mengganti kurasi tangan sebagai sumber utama (#82).</strong> Terukur<br />
+2026-08-03 atas 962 emiten: sumber menyebut 23 kode asing, daftar tangan<br />
+menyebut 17. Daftar tangan tetap ada sebagai cadangan untuk kode yang tak<br />
+muncul di rentang yang sedang dibaca. Kategori "Pemerintah" dibaca lokal di<br />
+layar yang cuma punya dua sisi, tapi nilainya disimpan apa adanya supaya<br />
+keputusan itu bisa diubah tanpa panen ulang.</p>
 
 </div>
 </div></div>

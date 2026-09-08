@@ -1,4 +1,5 @@
 import type { BarisOhlc } from './ihsgOhlc'
+import type { BarisBroker } from './brokerEmiten'
 
 /**
  * Watchlist sebagai indeks (spek §E) — anggota watchlist digabung jadi satu
@@ -216,7 +217,7 @@ export interface TopBrokerHarian {
 }
 
 interface BrokerHarianMentah {
-  hari: Record<string, { broker: [string, number, number, number, number][] }>
+  hari: Record<string, { broker: BarisBroker[] }>
 }
 
 const cacheTopBroker = new Map<string, Promise<TopBrokerHarian | null>>()

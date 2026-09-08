@@ -8,6 +8,7 @@ import {
   brokerAktif,
   pilihGarisBroker,
   sisiBroker,
+  petaSisiBroker,
 } from './pilihGarisBroker'
 import type { AgregatBroker, HariBroker } from './brokerEmiten'
 
@@ -90,6 +91,31 @@ describe('sisiBroker', () => {
 
   it('kode yang belum dikurasi terbaca lokal, bukan galat', () => {
     expect(sisiBroker('ZZZ')).toBe('lokal')
+  })
+
+  it('data MENANG atas kurasi tangan (#82)', () => {
+    // Enam kode yang sumbernya sebut asing tak pernah terbaca asing selama
+    // jawabannya datang dari daftar tangan.
+    const peta = petaSisiBroker([{ broker: [['ZZZ', 1, 1, 0, 0, 3, 0, 'A']] }])
+    expect(sisiBroker('ZZZ', peta)).toBe('asing')
+  })
+
+  it('pemerintah dibaca lokal — layar ini cuma punya dua sisi', () => {
+    const peta = petaSisiBroker([{ broker: [['PP', 1, 1, 0, 0, 3, 0, 'P']] }])
+    expect(sisiBroker('PP', peta)).toBe('lokal')
+  })
+
+  it('hari lama (lima kolom) tidak memberi jawaban, jadi kurasi yang dipakai', () => {
+    // Baris tanpa kolom jenis berarti BELUM TAHU. Membacanya sebagai lokal
+    // akan menimpa kurasi yang benar dengan tebakan.
+    const peta = petaSisiBroker([{ broker: [['AK', 1, 1, 0, 0]] }])
+    expect(peta.size).toBe(0)
+    expect(sisiBroker('AK', peta)).toBe('asing')
+  })
+
+  it('kode yang tak muncul di rentang tetap dijawab kurasi', () => {
+    const peta = petaSisiBroker([{ broker: [['XL', 1, 1, 0, 0, 1, 0, 'L']] }])
+    expect(sisiBroker('BK', peta)).toBe('asing')
   })
 })
 

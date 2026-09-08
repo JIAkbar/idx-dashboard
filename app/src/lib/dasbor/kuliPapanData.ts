@@ -6,6 +6,8 @@
  * tak ada, halamannya MENGATAKAN begitu alih-alih menampilkan nol.
  */
 
+import type { BarisBroker } from './brokerEmiten'
+
 export interface Antrean {
   bid: number
   bidLot: number
@@ -17,8 +19,8 @@ export interface Antrean {
 
 export interface BrokerHari {
   tanggal: string
-  /** [kode, beliLot, beliNilai, jualLot, jualNilai] */
-  broker: Array<[string, number, number, number, number]>
+  /** [kode, beliLot, beliNilai, jualLot, jualNilai, freqBeli?, freqJual?, jenis?] */
+  broker: BarisBroker[]
 }
 
 export interface Fundamental {
@@ -59,7 +61,7 @@ export async function muatAntrean(kode: string): Promise<{ tanggal: string; a: A
 }
 
 interface BerkasBroker {
-  hari: Record<string, { broker: Array<[string, number, number, number, number]> }>
+  hari: Record<string, { broker: BarisBroker[] }>
 }
 
 /** Hari bursa TERAKHIR yang punya rincian broker; null kalau emiten belum dipanen. */

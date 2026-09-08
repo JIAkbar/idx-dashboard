@@ -244,6 +244,9 @@ def main() -> int:
     ±2 menit/8 emiten = ±30 jam untuk 962)."""
     if "--uji" in sys.argv:
         return swauji()
+    if "-h" in sys.argv or "--help" in sys.argv:
+        print(main.__doc__)
+        return 0
     argv = sys.argv[1:]
     tahun: tuple[str, ...] = TAHUN_PENUH
     paralel = 1
@@ -268,7 +271,18 @@ def main() -> int:
             paralel = max(1, int(argv[i]))
         elif a == "--lanjut":
             pass  # ditangani setelah daftar kode tersusun
-        elif not a.startswith("-"):
+        elif a.startswith("-"):
+            # Flag tak dikenal DULU diabaikan diam-diam, dan itu mahal:
+            # `--help` (flag yang wajar dicoba siapa pun) melewati semua
+            # cabang di atas, tak menyisakan satu pun kode emiten di `arg`,
+            # lalu daftar emiten jatuh ke "semua direktori arsip" — jalan
+            # penuh 963 emiten x 11 tahun, ±30 jam serial, tanpa satu pun
+            # kata peringatan. Salah ketik flag akan melakukan hal yang sama.
+            raise SystemExit(
+                f"flag tak dikenal: {a}. Yang ada: --tahun, --paralel, --lanjut, --uji. "
+                "Tanpa flag = seluruh tahun, seluruh emiten."
+            )
+        else:
             arg.append(a)
         i += 1
     # Daftar-lewati ikut dipatuhi di sini (#75), bukan cuma di

@@ -36,9 +36,11 @@ const FONT_PX = 9
 /** Bentuk hari yang dibutuhkan penghitung outlier — dipenuhi `HariBroker`
  *  milik `brokerEmiten.ts` maupun `whalesPapan.ts` (baris broker keduanya
  *  `[kode, beli_lot, beli_nilai, jual_lot, jual_nilai]`). */
+import type { BarisBroker } from './brokerEmiten'
+
 export interface HariBrokerRingan {
   tanggal: string
-  broker: ReadonlyArray<readonly [string, number, number, number, number]>
+  broker: readonly BarisBroker[]
 }
 
 /**
