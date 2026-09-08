@@ -193,28 +193,6 @@
 .be-tip b { font-family: var(--mono, ui-monospace, monospace); font-size: 11.5px; }
 .be-tip span { font-size: 10.5px; color: var(--text2); }
 
-/* Daftar per kuadran — jalan masuk ponsel (tak ada hover di layar sentuh). */
-.be-kuad-daftar {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr));
-  gap: 10px;
-  margin-top: 14px;
-}
-.be-kuad-kotak {
-  border: 1px solid var(--line);
-  border-radius: 9px;
-  padding: 9px 11px;
-  min-width: 0;
-}
-.be-kuad-judul {
-  display: block;
-  font-size: 11px; font-weight: 700; letter-spacing: .04em;
-  margin-bottom: 7px;
-}
-.be-kuad-judul small { color: var(--text3); font-weight: 500; }
-.be-kuad-chip { display: flex; flex-wrap: wrap; gap: 5px; }
-.be-kuad-chip .chip-t { padding: 4px 9px; font-size: 10.5px; }
-
 .be-titik {
   position: absolute;
   width: 11px; height: 11px;

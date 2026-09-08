@@ -132,6 +132,9 @@ export default function BerkasEmiten() {
    *  halaman untuk sesuatu yang cuma satu yang terlihat. */
   const [sorot, setSorot] = useState<TitikAwan | null>(null)
   const kuadRef = useRef<HTMLDivElement>(null)
+  // Jalur sentuh: alat penunjuknya apa, dan titik mana yang barusan diketuk.
+  const sentuhan = useRef(false)
+  const ketuk = useRef<string | null>(null)
 
   /** Titik terdekat dari kursor/sentuhan dalam radius 14px.
    *
@@ -154,28 +157,6 @@ export default function BerkasEmiten() {
     }
     return jarak <= 14 * 14 ? terbaik : null
   }
-
-  /** Sepuluh teratas per kuadran — jalan masuk untuk PONSEL, yang tak punya
-   *  hover sama sekali. Urutannya jarak dari persilangan sumbu: makin jauh
-   *  dari tengah, makin murni wataknya. */
-  const kuadran = useMemo(() => {
-    const kotak: { id: string; judul: string; sub: string; isi: TitikAwan[] }[] = [
-      { id: 'z1', judul: 'Naik kencang', sub: 'turun tertahan', isi: [] },
-      { id: 'z2', judul: 'Naik kencang', sub: 'turun kencang', isi: [] },
-      { id: 'z3', judul: 'Naik pelan', sub: 'turun tertahan', isi: [] },
-      { id: 'z4', judul: 'Naik pelan', sub: 'turun kencang', isi: [] },
-    ]
-    for (const t of awan) {
-      const atas = t.y >= 50
-      const kanan = t.x >= 50
-      kotak[atas ? (kanan ? 1 : 0) : (kanan ? 3 : 2)].isi.push(t)
-    }
-    for (const k of kotak) {
-      k.isi.sort((m, n) => ((n.x - 50) ** 2 + (n.y - 50) ** 2) - ((m.x - 50) ** 2 + (m.y - 50) ** 2))
-      k.isi = k.isi.slice(0, 10)
-    }
-    return kotak
-  }, [awan])
 
   // Blok B — arsip broker emiten ini (hook yang sama dipakai Whales Papan,
   // jadi berkasnya tersinggah bersama, bukan diunduh dua kali).
@@ -536,7 +517,8 @@ export default function BerkasEmiten() {
               <h3>Posisi di antara empat watak</h3>
               <p className="be-ket">
                 Titik terang = {kode}. Titik redup = {awan.length} emiten lain.
-                Arahkan kursor untuk melihat kodenya, klik untuk membuka emiten itu.
+                Arahkan kursor untuk melihat kodenya, klik untuk membuka emiten itu —
+                di layar sentuh: ketuk sekali untuk kodenya, ketuk lagi untuk membukanya.
               </p>
               <div className="be-kuad-bung">
                 <div
@@ -544,12 +526,24 @@ export default function BerkasEmiten() {
                   ref={kuadRef}
                   onMouseMove={(ev) => setSorot(titikDekat(ev.clientX, ev.clientY))}
                   onMouseLeave={() => setSorot(null)}
+                  onPointerDown={(ev) => { sentuhan.current = ev.pointerType !== 'mouse' }}
                   onClick={(ev) => {
                     const t = titikDekat(ev.clientX, ev.clientY)
+                    if (!t || t.kode === kode) return
+                    // Layar sentuh tak punya hover, jadi ketukan PERTAMA cuma
+                    // memunculkan kodenya dan ketukan kedua di titik yang sama
+                    // yang membuka — pertanyaan "yang paling kencang siapa"
+                    // tetap terjawab di ponsel sesudah daftar kuadran dibuang,
+                    // sekaligus mencegah pindah halaman karena serempet jari.
+                    if (sentuhan.current && ketuk.current !== t.kode) {
+                      ketuk.current = t.kode
+                      setSorot(t)
+                      return
+                    }
                     // Klik = pindah ke emiten itu (jawaban Johan: "otomatis ke
                     // saham tersebut"). Halaman ini membaca emitennya dari
                     // alamat, jadi cukup menggantinya — bukan pindah rute.
-                    if (t && t.kode !== kode) setParams({ kode: t.kode })
+                    setParams({ kode: t.kode })
                   }}
                 >
                   <div className="be-zona z1"><span>Naik kencang</span><small>turun tertahan</small></div>
@@ -577,35 +571,6 @@ export default function BerkasEmiten() {
                   <span className="be-sumbu x">tangkap saat turun →</span>
                   <span className="be-sumbu y">tangkap saat naik →</span>
                 </div>
-              </div>
-
-              {/* Jalan masuk untuk PONSEL — layar sentuh tak punya hover, jadi
-                  tanpa daftar ini pertanyaan "yang paling kencang siapa" cuma
-                  terjawab di desktop. Sepuluh per kuadran, terjauh dari
-                  persilangan sumbu lebih dulu. */}
-              <div className="be-kuad-daftar">
-                {kuadran.map((k) => (
-                  <div className="be-kuad-kotak" key={k.id}>
-                    <span className="be-kuad-judul">{k.judul} <small>{k.sub}</small></span>
-                    <div className="be-kuad-chip">
-                      {k.isi.map((t) => (
-                        <button
-                          type="button"
-                          key={t.kode}
-                          className={'chip-t' + (t.kode === kode ? ' on' : '')}
-                          onMouseEnter={() => setSorot(t)}
-                          onFocus={() => setSorot(t)}
-                          onMouseLeave={() => setSorot(null)}
-                          onBlur={() => setSorot(null)}
-                          title={`naik ${fmtX(t.naik)} · turun ${fmtX(t.turun)}`}
-                          onClick={() => { if (t.kode !== kode) setParams({ kode: t.kode }) }}
-                        >
-                          {t.kode}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                ))}
               </div>
 
             </div>
