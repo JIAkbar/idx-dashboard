@@ -1200,6 +1200,14 @@
 .lantai .tabs{display:flex;gap:2px;background:var(--bg2);border:1px solid var(--line);border-radius:var(--r);padding:3px;width:max-content;max-width:100%;overflow-x:auto}
 .lantai .tab{font-family:var(--disp);font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);padding:6px 14px;border-radius:4px;white-space:nowrap}
 .lantai .tab.on{background:var(--amber);color:var(--amber-ink)}
+/* Tab TIDAK boleh menyusut (#128). `.tabs` sudah punya overflow-x auto, tapi
+   anak flex bawaannya boleh menyusut (flex-shrink 1) — jadi saat strip lebih
+   lebar daripada layar, tab dipepet sampai label yang `white-space:nowrap`
+   saling menimpa, dan gulirnya tak pernah aktif karena tak ada yang meluap.
+   Terukur di 412 px /kabar sesudah #121 C: "SEMUA" menimpa "PENGUMUMAN IDX".
+   Dengan flex 0 0 auto, tab yang muat tetap seperti semula dan yang meluap
+   menggulir — perilaku yang memang diputuskan 7 Sep. */
+.lantai .tabs>.tab{flex:0 0 auto}
 .lantai .tab:not(.on):hover{color:var(--text2)}
 
 /* Chart/heatmap TradingView (Task 8) — Fullscreen API bawaan peramban sudah
