@@ -17,6 +17,28 @@ REM tetap dapat jalur bawaan yang sama seperti sebelumnya.
 if not defined PYEXE set PYEXE=C:\Python314\python.exe
 if not exist "%PYEXE%" set PYEXE=python
 
+REM ---- Batas akhir 22:00 (Johan, 8 Sep 2026) ----------------------------
+REM Pemicunya 18:00, tapi `StartWhenAvailable` membuat jalan yang terlewat
+REM dijalankan begitu laptop tersedia — TANPA batas jam. Terbukti: 7 Sep ia
+REM jalan 19:42, bukan 18:00. Jadi kalau laptop baru dibuka tengah malam,
+REM tanpa penjaga ini panen sore jalan tengah malam juga.
+REM
+REM Penjaganya di sini, bukan di Task Scheduler: Scheduler tak punya opsi
+REM "jangan mulai sesudah jam sekian" (EndBoundary mematikan pemicu per
+REM TANGGAL, ExecutionTimeLimit membatasi lama jalan). Di bat ia ikut git
+REM dan berlaku juga saat dijalankan tangan.
+REM
+REM Jam dibaca dari %TIME%, dan jam satu digit datang dengan SPASI di depan
+REM (" 9:05") — itu sebabnya dipakai substring %TIME:~0,2% lalu spasi
+REM dibuang, pola yang sama dengan pembaca jam di bat buka-laptop.
+set JAM=%TIME:~0,2%
+set JAM=%JAM: =%
+if %JAM% GEQ 22 (
+  echo Sudah lewat 22:00 - panen sore dilewati hari ini.
+  echo Panen manual: jalankan bat ini lagi, atau tunggu jadwal besok.
+  goto akhir
+)
+
 if exist "%~dp0.panen.lock" (
   echo Pipeline lain sedang jalan - .panen.lock ada - keluar.
   goto akhir
