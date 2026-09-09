@@ -15,8 +15,8 @@
    tak melompat saat teksnya berubah. Dilebarkan 30 Agu 2026 mengikuti
    placeholder yang kini menyebut contoh kode ("Cari emiten: BUMI, BBCA…");
    pada 150px contohnya terpotong jadi "BBC" dan justru kehilangan gunanya. */
-.lantai .hp-cari { width: 186px; }
-@media (max-width: 700px) { .lantai .hp-cari { width: 100%; } }
+/* Lebar dicabut #136 — batasnya sekarang milik `.sa-cari` di lantai.css,
+   satu tempat untuk seluruh aplikasi. Yang tersisa di sini penempatan. */
 
 /* Lebar kolom DIKUNCI supaya tabel tak "goyang" saat saringan berubah.
    Tanpa `table-layout: fixed`, peramban menghitung ulang lebar tiap kolom

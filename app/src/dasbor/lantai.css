@@ -974,6 +974,19 @@
    pun peringatan — itu sebabnya teksnya menempel ke elemen di atasnya
    (1px) sementara jaraknya ke grafik di bawah 16px. */
 .lantai .lbl-rentang{display:block;margin:10px 0 0}
+/* Kotak cari emiten — SATU batas lebar untuk seluruh aplikasi (#136).
+   Sebelum ini tiap halaman menetapkan lebarnya sendiri dan tiga kanon
+   bersaing tanpa keputusan tertulis: 190 px di lima halaman, 210-320 px di
+   bilah kendali, 480 px di Stock Detail. Akibatnya kolom emiten memanjang
+   sampai memakan ruang yang dibutuhkan kendali di sebelahnya (Johan 8 Sep
+   2026: "kolom emiten terlalu panjang coba sweep semua page").
+   190 px karena itu yang sudah dipakai paling banyak halaman, dan cukup
+   untuk memuat kode plus potongan nama emiten. */
+.lantai .sa-cari{flex:1 1 auto;min-width:160px;max-width:190px}
+/* Di layar sempit batasnya dilepas: kotak 190 px di layar 412 px menyisakan
+   ruang kosong yang tak dipakai apa pun. Satu ambang (700 px, sama dengan
+   `useLayarSempit`) menggantikan empat ambang berbeda per halaman. */
+@media (max-width:700px){.lantai .sa-cari{max-width:none}}
 /* Proporsi kolom di kelas, BUKAN inline style — inline menang atas media query
    sehingga tata letak dua kolom bertahan di telepon dan kontennya terpotong
    (kemampuan-web-dev §178). */

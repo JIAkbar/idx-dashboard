@@ -294,15 +294,17 @@ export function StockDetail() {
       {activeTicker && (
         <div>
           {/* Proporsi #81: input dominan (flex:1 di StockAutocomplete, cap
-              lebar wajar di wrap), tombol ramping ikon-saja + aria-label. */}
+              lebar wajar di wrap) + tombol kirim BERTEKS.
+
+              Dulu ikon-saja, lalu ikonnya ikut terhapus sapuan ikon dan yang
+              tersisa kotak kuning 24x32 tanpa isi — lolos tsc dan lolos audit
+              aksesibilitas (aria-label-nya masih ada), tapi nol piksel yang
+              terbaca (Johan 8 Sep 2026: "tombol kuning itu gak guna gitu ya").
+              Teksnya disamakan dengan tombol kembar di keadaan kosong. */}
           <div className="fd-search-wrap" style={{ maxWidth: 480, marginBottom: 6, flexWrap: 'nowrap' }}>
             <StockAutocomplete stocks={index?.stocks ?? []} value={inputVal} onChange={setInputVal} onSelect={handleSubmit} />
-            <button
-              type="button" className="btn-p" aria-label="Tampilkan"
-              style={{ padding: '7px 12px', flexShrink: 0 }}
-              onClick={() => handleSubmit(inputVal)}
-            >
-            </button>
+            <button type="button" className="btn-p" style={{ flexShrink: 0 }}
+              onClick={() => handleSubmit(inputVal)}>Tampilkan</button>
           </div>
           {/* DUA umur, bukan satu. Sampai 9 Sep 2026 baris ini mencetak
               `updated` — tanggal panen laporan keuangan — di kalimat yang

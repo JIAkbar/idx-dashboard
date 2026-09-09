@@ -10,7 +10,7 @@ import { tanggalPendek } from '../../lib/dasbor/statistikBerkala'
 import { IkonMenu, IKON_JAM } from './IkonMenu'
 import { PemilihRentang } from './PemilihRentang'
 import { LabelRentang } from './LabelRentang'
-import { LABEL_RENTANG } from '../../lib/dasbor/periode'
+import { LABEL_RENTANG, HARI_PRESET } from '../../lib/dasbor/periode'
 
 /**
  * Panel "Aliran Asing" (per-emiten) — lembar dari sumber bursa resmi (riwayat
@@ -94,15 +94,28 @@ export function kumulatifNet(d: AsingHarian[], mulai: string, akhir: string): Ti
 
 // ── Rentang chart — preset kalender-hari mundur, sama polanya dgn BrokerSummary.tsx ──
 
-type PresetId = 'w1' | 'b1' | 'b3' | 'ytd' | 'semua'
+type PresetId = 'w1' | 'b1' | 'b3' | 'b6' | 'y1' | 'ytd' | 'semua'
 
+/** Panjang tiap preset diambil dari `HARI_PRESET`, tidak diketik ulang.
+ *  Angkanya kebetulan sama (7/30/91), dan justru itu bahayanya: dua salinan
+ *  yang identik hari ini adalah dua salinan yang bisa menyimpang besok,
+ *  tanpa satu pun galat — halaman ini dan bilah rentang di sebelahnya akan
+ *  memberi dua jawaban untuk satu kata "1 Bulan".
+ *
+ *  `hariIni` dan `mtd` sengaja TIDAK ada: grafiknya kumulatif, dan rentang
+ *  satu-dua titik menghasilkan garis yang tak bisa dibaca. */
 const PRESET: { id: PresetId; label: string; hari: number }[] = [
-  { id: 'w1', label: LABEL_RENTANG.w1, hari: 7 },
-  { id: 'b1', label: LABEL_RENTANG.b1, hari: 30 },
-  { id: 'b3', label: LABEL_RENTANG.b3, hari: 91 },
+  { id: 'w1', label: LABEL_RENTANG.w1, hari: HARI_PRESET.w1 },
+  { id: 'b1', label: LABEL_RENTANG.b1, hari: HARI_PRESET.b1 },
+  { id: 'b3', label: LABEL_RENTANG.b3, hari: HARI_PRESET.b3 },
+  { id: 'b6', label: LABEL_RENTANG.b6, hari: HARI_PRESET.b6 },
+  { id: 'y1', label: LABEL_RENTANG.y1, hari: HARI_PRESET.y1 },
   { id: 'ytd', label: LABEL_RENTANG.sejakJan, hari: 0 },
   { id: 'semua', label: LABEL_RENTANG.semua, hari: 0 },
 ]
+
+/** Berapa hari bursa terakhir yang dipajang tabel di kaki panel. */
+const JENDELA_TABEL = 20
 
 function mundurIso(iso: string, hari: number): string {
   const d = new Date(`${iso}T12:00:00`)
@@ -268,7 +281,11 @@ export function PanelAliranAsing({ ticker }: { ticker: string }) {
     ? { mulai: titik[0].tanggal, akhir: titik[titik.length - 1].tanggal, hari: titik.length }
     : null
 
-  const recent = data ? data.d.slice(-15).slice().reverse() : []
+  // 20, bukan 15: kartu di atasnya memakai jendela 1/5/20 hari, jadi tabel
+  // 15 baris di bawahnya tak bisa dicocokkan dengan angka mana pun di layar
+  // yang sama. Jumlahnya juga TIDAK diikutkan pil rentang — pil mengatur
+  // grafik kumulatif, dan tabel yang ikut memanjang jadi 157 baris di YTD.
+  const recent = data ? data.d.slice(-JENDELA_TABEL).slice().reverse() : []
 
   return (
     <div className="panel" ref={wrapRef} style={{ marginBottom: 12 }}>
@@ -314,7 +331,12 @@ export function PanelAliranAsing({ ticker }: { ticker: string }) {
                 <div className="bar-tr" style={{ marginTop: 6 }}>
                   <div className={`bar-fl${pct.persentil < 50 ? ' neg' : ''}`} style={{ width: `${Math.max(2, Math.min(100, pct.persentil))}%` }} />
                 </div>
-                <span className="sub">Persentil ke-{Math.round(pct.persentil)} — {fNet(pct.netHariIni)} lembar</span>
+                {/* `.sub` itu inline, dan margin vertikal pada elemen inline
+                    diabaikan tanpa peringatan — itu sebabnya teksnya menempel
+                    ke bilah di atasnya. `.lbl-rentang` sudah menyelesaikan
+                    persis itu untuk keterangan di atas grafik; dipakai ulang
+                    di sini alih-alih menambah kelas kedua yang artinya sama. */}
+                <span className="sub lbl-rentang">Persentil ke-{Math.round(pct.persentil)} — {fNet(pct.netHariIni)} lembar</span>
               </div>
             ) : (
               <p style={{ fontSize: 10, color: 'var(--text3)', marginTop: 10 }}>Riwayat belum cukup (min. 5 hari bursa) untuk konteks persentil.</p>
@@ -340,6 +362,12 @@ export function PanelAliranAsing({ ticker }: { ticker: string }) {
               </p>
             )}
 
+            {/* Jendelanya disebut. Tanpa ini tabelnya terbaca sebagai "seluruh
+                rentang yang dipilih di atas" — Johan 9 Sep 2026 membacanya
+                sebagai satu bulan, padahal isinya 15 baris terakhir. */}
+            <p className="lbl" style={{ marginBottom: 6 }}>
+              Rincian harian — {JENDELA_TABEL} hari bursa terakhir
+            </p>
             <div style={{ overflowX: 'auto' }}>
               <table style={{ minWidth: 320 }}>
                 <thead>

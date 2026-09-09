@@ -45,7 +45,9 @@ const INFO_STALKER: ItemInfoIndikator[] = [
  *  preset panjang y3/y5/y10 menyusul arsip broker 2016-2026. Label rentang
  *  baku dieja LABEL_RENTANG (#170), bukan di sini. */
 const PRESET_JENDELA = [
-  { id: '1', label: 'Hari ini' },
+  // Kata untuk hari ini milik kamus, bukan halaman: dieja 'Hari ini' di sini
+  // sementara sembilan pemilih lain menulis 'Hari Ini' (#120 4C).
+  { id: '1', label: LABEL_RENTANG.hariIni },
   { id: '2', label: '2 hari' },
   { id: '3', label: '3 hari' },
   { id: '5', label: '5 hari' },

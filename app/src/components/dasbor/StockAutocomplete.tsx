@@ -84,7 +84,10 @@ export function StockAutocomplete({ stocks, value, onChange, onSelect, placehold
   const showMenu = open && matches.length > 0
 
   return (
-    <div ref={wadah} className={`dd${showMenu ? ' open' : ''}`} style={{ flex: 1, minWidth: 160, position: 'relative' }}>
+    // `sa-cari` membawa batas lebarnya (#136). Lewat KELAS, bukan inline:
+    // gaya inline menang atas media query, jadi batas yang dipasang inline
+    // tak bisa dilepas di layar sempit dan kotaknya tetap 190 px di 412 px.
+    <div ref={wadah} className={`dd sa-cari${showMenu ? ' open' : ''}`} style={{ position: 'relative' }}>
       <input
         className="inp"
         type="text"

@@ -10,7 +10,8 @@
  * sekarang `.bilah-kendali .tp-atur`, sudah menyediakan flex/gap/border/
  * padding (lihat blok SISTEM TATA C+A lantai.css). Yang tersisa di sini
  * cuma lebar kendali khas halaman ini, sesuai #170. */
-.tp-atur .tp-emiten { width: 190px; }
+/* Lebar dicabut #136 — batasnya sekarang milik `.sa-cari` di lantai.css,
+   satu tempat untuk seluruh aplikasi. Yang tersisa di sini penempatan. */
 .tp-kecil { font-size: 12px; }
 
 .tp-sub {
@@ -125,5 +126,4 @@
 }
 
 @media (max-width: 900px) {
-  .tp-atur .tp-emiten { width: 100%; }
 }
