@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { urlData } from './baseData'
 
 /** Satu kabar dari `data-idx/json/kabar.json` (ditulis `scripts/panen_kabar.py`). */
 export interface KabarItem {
@@ -166,9 +167,9 @@ export function useKabar(denganArsip = false) {
     // membayar megabita untuk empat baris kabar terbaru.
     const kosong = Promise.resolve({ item: [] as KabarItem[] })
     Promise.all([
-      fetch('/data-idx/json/kabar.json')
+      fetch(urlData('/data-idx/json/kabar.json'))
         .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status))))),
-      fetch('/data-idx/json/snips.json')
+      fetch(urlData('/data-idx/json/snips.json'))
         .then((r) => (r.ok ? r.json() : { item: [] }))
         .catch(() => ({ item: [] })),
       denganArsip

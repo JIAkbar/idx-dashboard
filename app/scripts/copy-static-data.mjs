@@ -104,6 +104,14 @@ for (const usang of ['data-idx', 'arus-pasar']) {
 // kosongkan `LUAR` di bawah dan `BASE_DATA_LUAR` di berkas itu.
 const LUAR = new Set(['broker_tahunan'])
 
+// BERKAS (bukan folder) yang juga disajikan Pages sejak 9 Sep 2026 (#138):
+// kabar dipanen tiap dua jam, dan dorongannya sengaja TIDAK memicu
+// pembangunan Vercel (`ignoreCommand`). Kalau salinannya tetap ikut ke
+// dist, halaman yang kelak dikembalikan ke jalur lokal akan membaca berkas
+// dari bangunan terakhir - basi berjam-jam, tanpa satu pun galat. Dengan
+// tak disalin, kesalahan itu langsung terlihat sebagai 404.
+const LUAR_BERKAS = new Set(['kabar.json', 'snips.json'])
+
 const targets = [
   { src: path.join(repoRoot, 'data-idx', 'json'), dest: path.join(distDir, 'data-idx', 'json'), saring: true },
   { src: path.join(repoRoot, 'data-idx', 'radar'), dest: path.join(distDir, 'data-idx', 'radar') },
@@ -122,11 +130,14 @@ for (const { src, dest, saring } of targets) {
     // `filter` dipanggil untuk TIAP berkas; hanya anak langsung yang diperiksa
     // supaya tak ada emiten bernama sama di kedalaman lain ikut terbuang.
     filter: saring
-      ? (s) => !LUAR.has(path.relative(src, s).split(path.sep)[0])
+      ? (s) => {
+          const rel = path.relative(src, s).split(path.sep)
+          return !LUAR.has(rel[0]) && !(rel.length === 1 && LUAR_BERKAS.has(rel[0]))
+        }
       : undefined,
   })
   const nama = path.relative(repoRoot, src)
   console.log(`[copy-static-data] ${nama} -> dist/${path.relative(distDir, dest)}`
-    + (saring ? `  (dikecualikan: ${[...LUAR].join(', ')} — disajikan GitHub Pages)` : ''))
+    + (saring ? `  (dikecualikan: ${[...LUAR, ...LUAR_BERKAS].join(', ')} — disajikan GitHub Pages)` : ''))
 }
 

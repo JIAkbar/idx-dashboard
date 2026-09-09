@@ -32,6 +32,21 @@ const BASE_DATA_LUAR = 'https://jiakbar.github.io/idx-dashboard'
 const DI_LUAR = ['broker_tahunan']
 
 /**
+ * BERKAS tunggal yang disajikan dari luar Vercel (#138).
+ *
+ * Beda dari `DI_LUAR` yang mencocokkan folder: kabar dipanen tiap dua jam,
+ * dan tiap dorongannya memicu pembangunan Vercel penuh. Dengan berkasnya
+ * diambil dari Pages — yang menyajikan repo yang sama dan terbukti lebih
+ * segar — kabar bisa lebih sering tanpa membayar satu pun deploy.
+ *
+ * Diperiksa 9 Sep 2026 sebelum dipakai, bukan diasumsikan:
+ *   `/data-idx/json/kabar.json` di Pages -> HTTP 200, 717.637 byte,
+ *   `dipanen` 2026-09-09T06:42 (lebih baru daripada bangunan Vercel saat itu)
+ *   `/data-idx/json/snips.json` -> HTTP 200, 77.144 byte
+ */
+const BERKAS_DI_LUAR = ['kabar.json', 'snips.json']
+
+/**
  * Ubah jalur data jadi URL yang benar untuk lingkungan saat ini.
  *
  * Menerima jalur apa adanya (`/data-idx/json/...`) supaya pemanggil tak perlu
@@ -42,5 +57,6 @@ export function urlData(jalur: string): string {
   if (!import.meta.env.PROD) return jalur
   if (!BASE_DATA_LUAR) return jalur
   const cocok = DI_LUAR.some((f) => jalur.startsWith(`/data-idx/json/${f}/`))
+    || BERKAS_DI_LUAR.some((f) => jalur === `/data-idx/json/${f}`)
   return cocok ? BASE_DATA_LUAR + jalur : jalur
 }
