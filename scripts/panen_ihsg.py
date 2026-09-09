@@ -58,6 +58,7 @@ from pathlib import Path
 
 from panen_ohlc import JEDA, Ditolak, ambil, ke_baris
 from gabung_ohlc_stockbit import padatkan_rentang
+from penanda_sumber import kode_lama as _kode_lama, milik_sumber_utama  # satu penanda, dua pemanen (#161 A)
 
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
@@ -100,41 +101,6 @@ def tarik_penuh() -> list[list]:
         awal = akhir
         time.sleep(random.uniform(*JEDA))
     return baris
-
-
-def _kode_lama(tgl: str, rentang: list[list] | None) -> str | None:
-    """Kode sumber sebuah tanggal menurut penanda LAMA, atau None."""
-    for dari, sampai, kode in (rentang or []):
-        if dari <= tgl <= sampai:
-            return kode
-    return None
-
-
-def tanggal_sumber_utama(sumber_lama: list[list] | None) -> set[str]:
-    """Tanggal yang penanda sumbernya BUKAN Yahoo — milik sumber utama.
-
-    Dikembalikan sebagai rentang, bukan tanggal satu-satu: penanda `sumber_bar`
-    memang disimpan padat (`[dari, sampai, kode]`), dan pemanggil cuma perlu
-    menanyakan keanggotaan.
-    """
-    return {f"{dari}|{sampai}" for dari, sampai, kode in (sumber_lama or []) if kode != "yh"}
-
-
-def milik_sumber_utama(tgl: str, sumber_lama: list[list] | None) -> bool:
-    """Benar kalau tanggal ini sudah dipegang sumber utama (#134 D).
-
-    Inilah gerbang yang membuat berkas ini punya SATU penulis efektif. Sampai
-    9 Sep 2026 pemanen ini menimpa apa pun yang ada di tanggal yang ditariknya,
-    termasuk bar yang baru saja ditulis sumber utama — terukur pada satu jalan:
-    empat bar berganti penanda `sb` menjadi `yh` dan volumenya bergeser 5%.
-    Nol galat; yang berubah cuma angka di berkas yang sudah benar.
-
-    Yahoo tetap dipakai, dan itu memang keputusannya: ia mengisi tanggal yang
-    sumber utama TIDAK punya — riwayat sebelum Juli 1997, dan hari berjalan
-    yang panen utamanya belum tiba. Begitu sumber utama datang, penjahit
-    menaikkannya dan tanggal itu tak pernah ditimpa lagi.
-    """
-    return (_kode_lama(tgl, sumber_lama) or "yh") != "yh"
 
 
 def tulis(baris: list[list], sumber_lama: list[list] | None = None,

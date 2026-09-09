@@ -61,6 +61,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import arsip_mentah  # noqa: E402 — reuse, lihat CLAUDE.md rung 2
 from gabung_ohlc_stockbit import padatkan_rentang  # noqa: E402 — satu pemadat, bukan salinan kedua
+from penanda_sumber import kode_lama as _kode_lama, milik_sumber_utama  # noqa: E402 — satu penanda, dua pemanen
 
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
@@ -168,14 +169,6 @@ def ke_baris(data: dict) -> list[list]:
     from bar_berisi import buang_bar_hari_berjalan
     return buang_bar_hari_berjalan(baris)
 
-
-
-def _kode_lama(tgl: str, rentang: list[list] | None) -> str | None:
-    """Kode sumber sebuah tanggal menurut penanda LAMA, atau None."""
-    for dari, sampai, kode in (rentang or []):
-        if dari <= tgl <= sampai:
-            return kode
-    return None
 
 
 def simpan(kode: str, baris: list[list], th_full: int | None = None,
@@ -347,6 +340,24 @@ def main() -> None:
             # Gabung menurut tanggal: hari yang sudah ada DITIMPA, bukan
             # ditambahkan — panen ulang di hari yang sama tidak boleh
             # menggandakan barisnya.
+            # Tanggal yang penandanya sudah milik SUMBER UTAMA tidak disentuh
+            # (#161 A, keputusan Johan 9 Sep 2026: "161 A"). Sebelum gerbang
+            # ini, pemanen cadangan menarik jendela lima hari tiap malam dan
+            # menimpanya — terukur dari riwayat commit `ohlc/BBCA.json`: dua
+            # malam berturut CI mengubah 1-7 lalu 2-8 Sep dari `sb` jadi `yh`.
+            #
+            # Rancangan aslinya sudah menyadari separuh masalahnya: docstring
+            # `simpan` menulis "Penggabung akan memperhalusnya lagi saat ia
+            # jalan". Yang tak terpikir, penggabung TIDAK ada di CI — panen
+            # sumber utama hanya jalan di mesin lokal — jadi cadangan menjadi
+            # jawaban akhir, bukan sementara. Kelas yang sama dengan #134 D:
+            # dua penulis tanpa urutan.
+            penanda_lama = lama.get("sumber_bar")
+            dilewati = [b for b in baris if milik_sumber_utama(b[0], penanda_lama)]
+            baris = [b for b in baris if not milik_sumber_utama(b[0], penanda_lama)]
+            if dilewati:
+                print(f"    {kode}: {len(dilewati)} bar dilewati (milik sumber utama, "
+                      f"{dilewati[0][0]}..{dilewati[-1][0]})")
             peta = {b[0]: b for b in lama["d"]}
             for b in baris:
                 peta[b[0]] = b
@@ -412,7 +423,16 @@ def swauji() -> int:
     for b in bar:
         assert any(a <= b[0] <= z for a, z, _ in r), f"bar {b[0]} tak berpenanda"
 
-    print("swauji OK — 8/8 assert lulus")
+    # 4. GERBANG #161 A: bar yang tanggalnya milik sumber utama tak boleh
+    #    ikut ditulis, dan hari yang belum bertanda harus tetap lolos.
+    penanda = [["2020-01-01", "2026-09-08", "sb"]]
+    tarikan = [["2026-09-05"], ["2026-09-08"], ["2026-09-09"]]
+    sisa = [b for b in tarikan if not milik_sumber_utama(b[0], penanda)]
+    assert sisa == [["2026-09-09"]], sisa
+    # Tanpa penanda sama sekali (berkas lama), perilakunya seperti dulu.
+    assert [b for b in tarikan if not milik_sumber_utama(b[0], None)] == tarikan
+
+    print("swauji OK — 11/11 assert lulus")
     return 0
 
 
