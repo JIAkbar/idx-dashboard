@@ -1,6 +1,8 @@
 /**
  * Rotasi token akun-kedua Stockbit — SATU-SATUNYA pelaku refresh untuk rantai
- * live (syarat desain #3). Dipanggil Vercel Cron tiap 12 jam (access berumur
+ * live (syarat desain #3). Dipanggil Vercel Cron HARIAN (`0 0 * * *`; tertulis
+ * "tiap 12 jam" di sini sampai 9 Sep 2026 — jadwalnya tak pernah 12 jam).
+ * Marginnya karena itu praktis nol: access berumur
  * 24 jam — dua kali cadangan), atau manual dengan secret yang sama.
  *
  * Kenapa satu pelaku: refresh token sekali-pakai (rotasi). Dua pemutar pada

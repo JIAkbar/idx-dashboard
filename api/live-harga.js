@@ -6,7 +6,12 @@ import { periksaPagar, tglWib } from './_pagar.js'
 /**
  * Harga live per emiten — proxy server-side ke arsip harga Stockbit memakai
  * token AKUN KEDUA (nganggur) milik Johan (keputusan 28 Agu 2026: "boleh kita
- * bangun saja"; akun utama TETAP khusus panen, dua rantai tak saling sentuh).
+ * bangun saja"). SATU RANTAI sejak 8 Sep 2026 (#105/#108): akunnya tetap yang
+ * kedua — akun utama Johan bebas dipakai di peramban — tapi pemutarnya cuma
+ * satu, dan pemanen membaca access dari tabel yang sama alih-alih memutar
+ * sendiri. Dulu tertulis "dua rantai tak saling sentuh"; itu rancangan 28 Agu
+ * yang sudah diganti, dan komentar yang tertinggal akan menyesatkan orang
+ * berikutnya yang mencari pemutar kedua.
  *
  * Empat syarat desain yang membuat ini layak (lihat percakapan keputusannya):
  * 1. Token hanya hidup di server — dibaca dari tabel privat `live_token`
@@ -18,7 +23,15 @@ import { periksaPagar, tglWib } from './_pagar.js'
  *    fungsi (`kosongSampai`), bukan lewat header.
  * 3. Fungsi ini TIDAK PERNAH me-refresh token (rotasi sekali-pakai +
  *    serverless concurrent = resep pencabutan sesi). Rotasi milik satu
- *    pelaku: cron `/api/live-refresh` tiap 12 jam.
+ *    pelaku: cron `/api/live-refresh`, HARIAN (`0 0 * * *`) — bukan tiap 12
+ *    jam seperti tertulis di sini sampai 9 Sep 2026.
+ *
+ *    Catatan margin, ditulis BUKAN sebagai perubahan jadwal: access berumur
+ *    24 jam dan cron-nya juga 24 jam, jadi margin cadangannya praktis nol —
+ *    satu jalan cron yang gagal langsung berarti rantai mati sampai jalan
+ *    berikutnya. Menaikkannya jadi dua kali sehari perlu paket Vercel di atas
+ *    Hobby (Hobby membatasi cron harian), jadi ia keputusan Johan, bukan
+ *    tambalan.
  * 4. Degradasi anggun: token mati/limit → 503 {galat:'tertunda'} — klien
  *    jatuh diam-diam ke arsip EOD berlabel jujur, bukan error di layar.
  */

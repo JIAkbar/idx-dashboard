@@ -17,7 +17,14 @@
  * Padanan dev-server-nya ada di `app/vite.config.ts` (`server.proxy`), dengan
  * bentuk URL yang PERSIS SAMA supaya kode klien tak perlu tahu ia sedang
  * berjalan di mana.
+ *
+ * PAGAR (#153 (3)): fungsi ini lahir sebelum pagar bersama ada, jadi sampai
+ * 9 Sep 2026 ia satu-satunya proksi tanpa pemeriksa asal maupun pembatas laju
+ * — situs lain bisa memakainya sebagai proksi Yahoo gratis atas nama kuota
+ * fungsi Johan, dan tak ada satu pun jejak yang akan menyebutnya. Sekarang
+ * memakai `periksaPagar` yang sama dengan proksi harga live.
  */
+import { periksaPagar } from './_pagar.js'
 
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
   + ' (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36'
@@ -29,6 +36,11 @@ const INTERVAL = new Set(['5m', '15m', '30m', '60m'])
 const RENTANG = new Set(['1mo', '2y'])
 
 export default async function handler(req, res) {
+  const tolak = periksaPagar(req)
+  if (tolak) {
+    if (tolak.kode === 429) res.setHeader('Retry-After', '60')
+    return res.status(tolak.kode).json(tolak.badan)
+  }
   const { simbol = '', interval = '', rentang = '' } = req.query ?? {}
   // Simbol dibatasi ke bentuk kode emiten IDX (`BBCA.JK`) — sekali lagi:
   // daftar tertutup, bukan teruskan-apa-adanya.

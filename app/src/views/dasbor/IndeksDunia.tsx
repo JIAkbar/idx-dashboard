@@ -510,8 +510,8 @@ export function PapanIhsg({ hari, tanggalTersedia, buka, kepala, tanpaMeta }: {
 }) {
   const naik = hari.ihsg_pct >= 0
   const ytdPct = hitungYtdPct(hari.ihsg_value, tanggalTersedia)
-  /* Harga berjalan dari proxy server PAPAN (akun kedua, keputusan Johan
-   * 28 Agu). null saat gagal/dev lokal — chip LIVE hanya tampil bila hidup
+  /* Harga berjalan dari proxy server PAPAN (rantai live tunggal sejak 8 Sep
+   * 2026). null saat gagal/dev lokal — chip LIVE hanya tampil bila hidup
    * dan nilainya beda dari penutupan resmi yang sedang dipajang. */
   // Gerbang bursa (#153 (1), ikut disetujui bersama #156 A): tanpa syarat ini
   // halaman menjajak sepanjang malam untuk angka yang tak bergerak — dan sejak

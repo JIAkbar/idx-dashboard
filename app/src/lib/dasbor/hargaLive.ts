@@ -1,5 +1,5 @@
 /**
- * Harga live via proxy server PAPAN (`/api/live-harga`) — token akun kedua
+ * Harga live via proxy server PAPAN (`/api/live-harga`) — token rantai live
  * Stockbit hidup HANYA di server (keputusan Johan 28 Agu 2026); yang sampai
  * ke peramban cuma angka. Gagal dalam bentuk apa pun (503 rantai mati, 404
  * di dev lokal karena fungsi hanya hidup di Vercel, timeout) = null — pemakai

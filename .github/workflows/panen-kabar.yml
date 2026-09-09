@@ -197,39 +197,10 @@ jobs:
           # pembangunan Pages.
           #
           # Yang dibandingkan karena itu ISI daftarnya, bukan berkasnya.
-          ITEM_BARU=$(python3 - <<'PY'
-          import json, subprocess, sys
-
-          def kunci(teks):
-              try:
-                  d = json.loads(teks)
-              except Exception:
-                  return None
-              return {f"{i.get('tautan')}|{i.get('judul')}|{i.get('waktu')}"
-                      for i in (d.get("item") or [])}
-
-          beda = 0
-          for f in ("data-idx/json/kabar.json", "data-idx/json/snips.json"):
-              try:
-                  lama = subprocess.run(["git", "show", f"HEAD:{f}"], capture_output=True,
-                                        text=True, encoding="utf-8").stdout
-                  baru = open(f, encoding="utf-8").read()
-              except Exception:
-                  beda += 1        # tak terbaca = perlakukan sebagai berubah
-                  continue
-              a, b = kunci(lama), kunci(baru)
-              if a is None or b is None or a != b:
-                  # Selisih SIMETRIS, bukan cuma yang bertambah (#142 B).
-                  # Dedup tautan hanya MEMBUANG item: dengan `b - a` saja,
-                  # jalan yang membersihkan 38 salinan menghitung nol item
-                  # baru, berkasnya dipulihkan, dan pembersihannya tak pernah
-                  # mendarat — sementara log berkata "tak ada item baru" dan
-                  # semuanya tampak normal. Stempel waktu yang berubah sendiri
-                  # tetap menghasilkan nol, jadi tujuan aslinya utuh.
-                  beda += len(b ^ a) if (a is not None and b is not None) else 1
-          print(beda)
-          PY
-          )
+          # Pembandingnya BERKAS BERSAMA, bukan potongan di sini (#138):
+          # sejak ada pendorong rumahan, dua tempat memutuskan hal yang
+          # sama, dan pembanding yang disalin akan menyimpang satu per satu.
+          ITEM_BARU=$(python3 scripts/beda_kabar.py)
           if [ "${ITEM_BARU:-0}" = "0" ]; then
             echo "Berkas berubah tapi DAFTARNYA sama (cuma stempel waktu) — tidak commit."
             git checkout -- data-idx/json/kabar.json data-idx/json/snips.json || true

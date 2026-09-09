@@ -11,6 +11,7 @@
  */
 import { asalDiizinkan, catatLaju, ipPemanggil, periksaPagar, tglWib } from './_pagar.js'
 import { sidikKunjungan, garamEfektif } from './kunjungan.js'
+import yahoo from './yahoo.js'
 
 let gagal = 0
 const cek = (n, ok) => { if (!ok) gagal++; console.log((ok ? '  ok   ' : '  GAGAL ') + n) }
@@ -60,6 +61,29 @@ cek('sidik panjang sha256', /^[0-9a-f]{64}$/.test(s1))
 cek('garam: env dipakai lebih dulu', garamEfektif({ KUNJUNGAN_GARAM: 'X', SUPABASE_SERVICE_ROLE_KEY: 'Y' }).asal === 'env')
 cek('garam: jatuh ke turunan kunci server', garamEfektif({ SUPABASE_SERVICE_ROLE_KEY: 'Y' }).asal === 'turunan-kunci-server')
 cek('garam: tanpa keduanya -> tidak ada', garamEfektif({}).garam === null)
+
+
+// -- proksi Yahoo ikut berpagar (#153 (3)) ---------------------------------
+// Diuji lewat HANDLER-nya, bukan lewat `asalDiizinkan` lagi: yang bocor bukan
+// pagarnya melainkan berkas yang lupa memanggilnya, dan uji yang memanggil
+// pagar langsung akan hijau justru pada berkas yang tak memakainya.
+{
+  const balasan = () => {
+    const r = { kode: null, badan: null, header: {} }
+    r.setHeader = (k, v) => { r.header[k] = v }
+    r.status = (k) => { r.kode = k; return { json: (b) => { r.badan = b; return r } } }
+    return r
+  }
+  const r1 = balasan()
+  await yahoo({ headers: { origin: 'https://situs-lain.example' },
+                query: { simbol: 'BBCA.JK', interval: '60m', rentang: '2y' } }, r1)
+  cek('proksi Yahoo: asal luar -> 403 (tanpa menyentuh jaringan)', r1.kode === 403)
+
+  const r2 = balasan()
+  await yahoo({ headers: { origin: 'https://papan-idx.vercel.app' },
+                query: { simbol: 'salah', interval: '60m', rentang: '2y' } }, r2)
+  cek('proksi Yahoo: asal sah lolos pagar, ditolak validasi simbol (400)', r2.kode === 400)
+}
 
 console.log(gagal ? `GAGAL ${gagal} kasus` : 'semua kasus lolos')
 process.exit(gagal ? 1 : 0)
