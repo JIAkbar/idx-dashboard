@@ -28,9 +28,27 @@ export interface HargaLive {
    *
    *  Tanpa ini umur di layar akan berbohong ke arah yang menyenangkan: angka
    *  yang tiba 2 detik lalu bisa saja sudah 12 detik umurnya, karena yang
-   *  dikirim adalah salinan singgahan. Dibaca dari header umur jawaban —
-   *  sekawasan, jadi tak ada larangan membacanya. */
+   *  dikirim adalah salinan singgahan.
+   *
+   *  Dihitung dari stempel di BADAN jawaban, bukan dari header umur: terukur
+   *  di produksi, tepi memakan `s-maxage` dan mengirim umur nol walau jawaban
+   *  itu jelas dari singgahan. Badan yang disinggah membawa waktunya sendiri,
+   *  jadi ia lolos. */
   umurSumber: number
+}
+
+/** Umur singgahan dari stempel server, 0 bila tak masuk akal.
+ *
+ *  Jam perangkat bisa meleset menit atau jam; hasil negatif atau raksasa itu
+ *  tanda skew, bukan data basi. Dalam keadaan itu umur singgahan dilepas dan
+ *  layar kembali ke umur sisi peramban saja — mengurangkan dua jam yang tak
+ *  sinkron akan mencetak "basi 43 menit" pada angka yang baru saja tiba.
+ *  Batas 120 detik: singgahan tepi paling lama 15 detik, jadi apa pun di atas
+ *  itu bukan singgahan. */
+export function umurSinggahan(pada: number | undefined, kini: number): number {
+  if (pada == null || !Number.isFinite(pada)) return 0
+  const d = Math.round((kini - pada) / 1000)
+  return d >= 0 && d <= 120 ? d : 0
 }
 
 export async function ambilHargaLive(kode: string): Promise<HargaLive | null> {
@@ -39,11 +57,10 @@ export async function ambilHargaLive(kode: string): Promise<HargaLive | null> {
   try {
     const r = await fetch(`/api/live-harga?kode=${encodeURIComponent(kode)}`, { signal: kendali.signal })
     if (!r.ok) return null
-    const d = (await r.json()) as Omit<HargaLive, 'diambilPada' | 'umurSumber'>
-    const umur = Number(r.headers.get('Age'))
-    return Number.isFinite(d?.close)
-      ? { ...d, diambilPada: Date.now(), umurSumber: Number.isFinite(umur) ? Math.max(0, umur) : 0 }
-      : null
+    const d = (await r.json()) as Omit<HargaLive, 'diambilPada' | 'umurSumber'> & { pada?: number }
+    if (!Number.isFinite(d?.close)) return null
+    const kini = Date.now()
+    return { ...d, diambilPada: kini, umurSumber: umurSinggahan(d.pada, kini) }
   } catch {
     return null
   } finally {

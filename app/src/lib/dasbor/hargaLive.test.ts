@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { umurLiveDetik, type HargaLive } from './hargaLive'
+import { umurLiveDetik, umurSinggahan, type HargaLive } from './hargaLive'
 
 const h = (diambilPada: number, umurSumber: number): HargaLive => ({
   kode: 'BIPI', tanggal: '2026-09-09', close: 160, prev: 158, pct: 1.27,
@@ -27,5 +27,27 @@ describe('umurLiveDetik', () => {
     const tanpa = { ...h(1_000_000, 0) } as HargaLive & { umurSumber?: number }
     delete tanpa.umurSumber
     expect(umurLiveDetik(tanpa as HargaLive, 1_005_000)).toBe(5)
+  })
+})
+
+describe('umurSinggahan', () => {
+  it('stempel server jadi umur singgahan dalam detik', () => {
+    expect(umurSinggahan(1_000_000, 1_012_000)).toBe(12)
+  })
+
+  it('tanpa stempel, nol — bukan NaN yang menjalar ke layar', () => {
+    expect(umurSinggahan(undefined, 1_000_000)).toBe(0)
+  })
+
+  it('jam perangkat yang meleset dilepas, bukan dicetak sebagai basi', () => {
+    // Skew jam pengguna bisa berjam-jam. Selisihnya lalu terbaca "basi 43
+    // menit" pada angka yang baru saja tiba — kebohongan ke arah sebaliknya.
+    expect(umurSinggahan(1_000_000, 900_000)).toBe(0)          // jam mundur
+    expect(umurSinggahan(1_000_000, 1_000_000 + 3.6e6)).toBe(0) // jam maju sejam
+  })
+
+  it('batasnya 120 detik — singgahan tepi paling lama 15 detik', () => {
+    expect(umurSinggahan(1_000_000, 1_120_000)).toBe(120)
+    expect(umurSinggahan(1_000_000, 1_121_000)).toBe(0)
   })
 })

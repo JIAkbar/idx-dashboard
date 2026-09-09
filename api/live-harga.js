@@ -161,6 +161,11 @@ export default async function handler(req, res) {
     // 30 menit: nol 429.
     res.setHeader('Cache-Control', 's-maxage=5, stale-while-revalidate=10')
     return res.status(200).json({
+      // Kapan fungsi ini benar-benar jalan (epoch ms). Bukan hiasan: tepi
+      // menyinggah jawaban ini sampai 15 detik dan TIDAK meneruskan umurnya
+      // (`Age` selalu 0 di klien, walau `X-Vercel-Cache` HIT), jadi tanpa
+      // stempel ini layar akan melaporkan angka 14 detik sebagai "baru saja".
+      pada: Date.now(),
       kode,
       tanggal: kini.date ?? null,
       close,
