@@ -59,10 +59,18 @@ export function DetakHariIni({ tape, tema, rupiah }: {
       crosshair: { horzLine: { visible: false } },
       timeScale: {
         timeVisible: true, secondsVisible: true, borderVisible: false,
+        // Jarak batang TETAP, bukan `fitContent()`: dengan empat titik pertama
+        // fitContent meregangkannya jadi balok selebar 300 px, dan panel yang
+        // seharusnya menunjukkan irama justru terbaca seperti kesalahan render.
+        barSpacing: 7, rightOffset: 2,
         // Sumbu jam WIB, bukan UTC: pustaka memformat stempel dalam UTC kalau
         // dibiarkan, dan "06:30" di bawah batang pukul setengah dua siang
         // adalah kebingungan yang tak perlu.
-        tickMarkFormatter: (t: UTCTimestamp) => jamDetikJakarta(new Date((t as number) * 1000)).slice(0, 5),
+        // BERDETIK, bukan HH:MM. Batangnya berjarak 10 detik, jadi label yang
+        // berhenti di menit mencetak "14:38" lima kali berturut-turut — sumbu
+        // waktu yang tak menunjukkan waktu. Kesalahan yang sama pernah dibuat
+        // di daftar tape sebelum ia diganti panel ini.
+        tickMarkFormatter: (t: UTCTimestamp) => jamDetikJakarta(new Date((t as number) * 1000)),
       },
       localization: {
         timeFormatter: (t: UTCTimestamp) => jamDetikJakarta(new Date((t as number) * 1000)),
@@ -107,7 +115,9 @@ export function DetakHariIni({ tape, tema, rupiah }: {
       }))
     s.setData(data)
     petaTape.current = new Map([...tape].map((b) => [Math.floor(b.pada / 1000), b]))
-    chart.current?.timeScale().fitContent()
+    // Digulir ke ujung kanan, bukan dipaskan: yang menarik selalu tarikan
+    // terakhir, dan jarak batangnya sengaja tetap (lihat opsi timeScale).
+    chart.current?.timeScale().scrollToRealTime()
   }, [tape, tema])
 
   return (
