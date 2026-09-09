@@ -726,9 +726,9 @@ Bangun HTML (tiap berkas ini berubah): <code>python "C:\1-Johan\10. Pengembangan
 <tr>
 <td>Indeks Dunia <code>/indeks</code></td>
 <td><code>index.json</code> (dataHarian), <code>ihsg_harian.json</code>, <code>ihsg_ohlc_ringkas.json</code></td>
-<td>IDX PDF harian; <strong>IHSG jahitan Yahoo 1990–1999 + Stockbit 2000→</strong></td>
-<td><strong>ya</strong></td>
-<td>23 Agu 2026</td>
+<td>IDX PDF harian; <strong>IHSG: Stockbit utama, Yahoo hanya untuk tanggal yang tak dimilikinya (praktis sebelum Juli 1997)</strong></td>
+<td><strong>ya — kartu IHSG menyebut bagian cadangan beserta tanggalnya (<code>CatatanSumberBar</code>)</strong></td>
+<td>9 Sep 2026</td>
 </tr>
 <tr>
 <td>Sektor &amp; Indeks <code>/sector</code></td>
@@ -1056,7 +1056,7 @@ Bangun HTML (tiap berkas ini berubah): <code>python "C:\1-Johan\10. Pengembangan
 <td><code>jahit_ihsg.py</code> (commit <code>d217d247</code>); Yahoo melapor volume dalam <strong>lot</strong>, Stockbit <strong>lembar</strong> (rasio median tepat 100,00) → disamakan</td>
 <td>8.861 bar; volume 0 tinggal 1.261 (semua pra-2000)</td>
 <td>agen, dilaporkan ke Johan</td>
-<td><strong>DIPUTUSKAN 5 Sep 2026</strong> bersama J1 — Johan: <em>"pakai penanda sumber per bar, riwayat lama jangan dipotong"</em>. Jawabannya "tampilkan dengan penanda", bukan "potong di 2000". <code>jahit_ihsg.py</code> kini memakai fungsi penanda yang sama dengan penggabung emiten biasa (<code>rentang_sumber</code>, satu rumah, bukan salinan kedua) dan menulis <code>sumber_bar</code> ke berkas IHSG. Terukur sesudahnya: 8.870 bar, <strong>1.811 dari cadangan (20,4%)</strong> tersebar di <strong>13 blok</strong> — jadi jahitannya bukan satu potongan pra-2000 seperti dikira, melainkan berselang sampai 2017-12-01. Angka itu sendiri alasan penanda per bar dipilih: penanda "per periode" akan salah untuk 12 blok dari 13.</td>
+<td><strong>DIPUTUSKAN 5 Sep 2026</strong> bersama J1 — Johan: <em>"pakai penanda sumber per bar, riwayat lama jangan dipotong"</em>. Jawabannya "tampilkan dengan penanda", bukan "potong di 2000". <code>jahit_ihsg.py</code> kini memakai fungsi penanda yang sama dengan penggabung emiten biasa (<code>rentang_sumber</code>, satu rumah, bukan salinan kedua) dan menulis <code>sumber_bar</code> ke berkas IHSG. Terukur sesudahnya: 8.870 bar, <strong>1.811 dari cadangan (20,4%)</strong> tersebar di <strong>13 blok</strong> — jadi jahitannya bukan satu potongan pra-2000 seperti dikira, melainkan berselang sampai 2017-12-01. Angka itu sendiri alasan penanda per bar dipilih: penanda "per periode" akan salah untuk 12 blok dari 13. <strong>DIPERTEGAS 9 Sep 2026 (#134 D pilihan A, keputusan Johan: <code>"saya ikuti rekomendasimu dan kerjakan sampai tuntas"</code>).</strong> Sampai hari itu berkas ini punya DUA penulis yang tak bisa diurutkan: penjahit dijalankan panen lokal, pemanen Yahoo dijalankan CI di awan — dan pemanen menimpa apa pun di tanggal yang ditariknya, termasuk bar yang baru saja ditulis sumber utama. Terukur pada satu jalan: empat bar berganti penanda <code>sb</code> menjadi <code>yh</code> dan volumenya bergeser 5%, tanpa satu pun galat. Sekarang <code>panen_ihsg.py</code> MELEWATI tanggal yang penandanya bukan <code>yh</code> (<code>milik_sumber_utama()</code>, berswauji): Stockbit utama, Yahoo hanya mengisi tanggal yang tak dimilikinya — praktis sebelum Juli 1997, ditambah hari berjalan yang panen utamanya belum tiba dan akan dinaikkan penjahit. Ikutannya: <code>ihsg_harian.json</code> kini ikut membawa <code>sumber_bar</code>, dan kartu IHSG di Indeks Dunia merender <code>CatatanSumberBar</code> untuk rentang 5 tahun ke atas — sebelumnya bagian cadangan di grafik itu tampil sama meyakinkannya dengan sisanya.</td>
 </tr>
 <tr>
 <td>J3</td>
@@ -1096,7 +1096,7 @@ Bangun HTML (tiap berkas ini berubah): <code>python "C:\1-Johan\10. Pengembangan
 <td><code>panen_ihsg.py</code></td>
 <td>tercatat di <code>status-panen.md</code> 21 Agu</td>
 <td>tercatat, Johan tahu</td>
-<td>sah sebagai cadangan sementara <strong>asalkan</strong> antarmuka menandai "sementara (Yahoo)" sampai PDF masuk — belum dicek apakah ditandai</td>
+<td>sah sebagai cadangan sementara <strong>asalkan</strong> antarmuka menandai "sementara (Yahoo)" sampai PDF masuk. <strong>Ditutup 9 Sep 2026 bersama J2:</strong> berkasnya membawa <code>sumber_bar</code> dan halaman yang menggambar deretnya menyebut bagian cadangan beserta tanggalnya lewat <code>CatatanSumberBar</code>; pemanen Yahoo tak lagi boleh menimpa tanggal milik sumber utama</td>
 </tr>
 <tr>
 <td>J7</td>

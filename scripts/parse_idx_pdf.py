@@ -69,7 +69,14 @@ def parse_page1(text):
     m = re.search(r'Volume\s*\n\s*IDX Composite.*?\n([\d,]+)\s*\n\s*\(million shares\)', text, re.S)
     if not m:
         m = re.search(r'([\d,]+)\s*\n\s*\(million shares\)', text)
-    out["vol_today"] = num(m.group(1)) if m else 0
+    # None, bukan 0 (#144). Nol volume pasar tak pernah terjadi di hari bursa,
+    # jadi angka itu selalu berarti "tabelnya tak terbaca" — tapi di layar ia
+    # tak bisa dibedakan dari nol yang sungguhan, dan ikut dihitung sebagai
+    # hari berdata sehingga rata-rata harian tertekan diam-diam. Terukur pada
+    # tiga hari bursa (23 & 27 Jul, 26 Agu 2026) yang IHSG dan net asingnya
+    # justru terisi. Penulis manifest sudah melewatkan ruas non-angka; yang
+    # salah cuma nilai gantinya di sini.
+    out["vol_today"] = num(m.group(1)) if m else None
 
     # Value today
     m = re.search(r'([\d,]+)\s+([\d,]+)\s*\n\s*\(billion IDR\)\s+\(million USD', text)
@@ -79,7 +86,7 @@ def parse_page1(text):
 
     # Frequency today
     m = re.search(r'([\d,]+)\s*\n\s*\(thousand times\)', text)
-    out["freq_today"] = num(m.group(1)) if m else 0
+    out["freq_today"] = num(m.group(1)) if m else None
 
     # Market Cap IDX
     m = re.search(r'IDX Market Cap\s*\n\s*([\d,]+)\s+([\d,]+)', text)

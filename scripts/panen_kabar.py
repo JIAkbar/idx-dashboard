@@ -430,6 +430,20 @@ def urut(items: list[dict]) -> list[dict]:
     return berwaktu + tanpa
 
 
+def kunci_tautan(it: dict) -> str:
+    """Kunci dedup per tautan, dengan pengecualian pengumuman resmi.
+
+    Pengumuman bursa tanpa lampiran berbagi satu URL generik, jadi tautannya
+    sendiri bukan identitas. Untuk jenis itu kuncinya tautan+judul+waktu —
+    bentuk yang sama dipakai `gabungKabar()` di halaman, supaya dua sisi tidak
+    memutuskan hal berbeda tentang item yang sama.
+    """
+    t = (it.get("tautan") or "").strip()
+    if it.get("jenis") == "pengumuman":
+        return f"{t}|{it.get('judul', '')}|{it.get('waktu') or ''}"
+    return t
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description="Panen kabar pasar untuk halaman Kabar PAPAN")
     ap.add_argument("--batas", type=int, default=30, help="item per sumber (default 30)")
@@ -497,12 +511,31 @@ def main() -> int:
     # Buang judul kembar lintas sumber (Kontan & IPOT sering memberitakan hal
     # yang sama); yang pertama masuk menang karena urutannya sudah dari yang
     # paling otoritatif (IDX duluan).
-    unik, terlihat = [], set()
+    #
+    # Judul saja TIDAK cukup (#142 B). Terukur 9 Sep 2026: 1.419 item, 1.351
+    # tautan unik, 38 tautan kembar — semuanya lolos gerbang judul karena
+    # judulnya memang berbeda tipis (agregator menulis ulang kepala berita),
+    # sementara tautannya menunjuk artikel yang sama persis. Yang tampak di
+    # layar: satu berita dua kali, dan satu dari delapan slot panel emiten
+    # terbuang untuk salinan.
+    #
+    # Tapi tautan pun tak bisa dipakai rata. Pengumuman resmi bursa TANPA
+    # LAMPIRAN semuanya menunjuk satu URL generik (halaman keterbukaan
+    # informasi), jadi dedup per tautan akan meringkas belasan pengumuman
+    # berbeda jadi SATU baris — tanpa galat, cuma daftar yang menyusut
+    # diam-diam dan terbaca sebagai "beritanya tidak ada". Karena itu
+    # pengumuman memakai kunci tautan+judul+waktu, sama seperti `gabungKabar()`
+    # di sisi halaman.
+    unik, terlihat, tautan_terlihat = [], set(), set()
     for it in semua:
         kunci = re.sub(r"\W+", "", it["judul"].lower())[:70]
         if kunci in terlihat:
             continue
+        kt = kunci_tautan(it)
+        if kt in tautan_terlihat:
+            continue
         terlihat.add(kunci)
+        tautan_terlihat.add(kt)
         unik.append(it)
 
     # ── Gabung dengan panen sebelumnya ──────────────────────────────────────
@@ -520,8 +553,10 @@ def main() -> int:
 
     for it in lama:
         kunci = re.sub(r"\W+", "", it.get("judul", "").lower())[:70]
-        if kunci and kunci not in terlihat:
+        kt = kunci_tautan(it)
+        if kunci and kunci not in terlihat and kt not in tautan_terlihat:
             terlihat.add(kunci)
+            tautan_terlihat.add(kt)
             unik.append(it)
 
     batas_waktu = (datetime.now(WIB) - timedelta(days=args.hari)).isoformat()

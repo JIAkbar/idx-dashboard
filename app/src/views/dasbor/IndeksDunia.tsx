@@ -16,6 +16,8 @@ import { useChartCanvas } from '../../lib/dasbor/useChartJs'
 import { useIhsgBuka, useIhsgOhlc, type BarisOhlc } from '../../lib/dasbor/ihsgOhlc'
 import { useHargaLive } from '../../lib/dasbor/hargaLive'
 import { jamPasarJakarta } from '../../lib/tanggalBursa'
+import { CatatanSumberBar } from '../../components/dasbor/CatatanSumberBar'
+import type { RentangSumber } from '../../lib/dasbor/sumberBar'
 import { useTheme } from '../../context/ThemeContext'
 import { IkonMenu, IKON_PERINGATAN, IKON_GLOBE, IKON_PENGGARIS, IKON_GRAFIK_BATANG } from '../../components/dasbor/IkonMenu'
 import { LilinHarian } from '../../components/dasbor/LilinHarian'
@@ -66,13 +68,19 @@ function IhsgYtdChart({ dates }: { dates: TanggalIndex[] }) {
   // YTD dipilih — pengunjung yang cuma melihat tahun berjalan tak perlu
   // membayarnya, karena seri YTD sudah ikut index.json yang memang termuat.
   const [riwayat, setRiwayat] = useState<TanggalIndex[] | null>(null)
+  /** Penanda sumber per bar (#134 D). Riwayat terpanjang di sini bukan dari
+   *  sumber utama — sumber itu mulai pertengahan 1997 — jadi rentang 10 tahun
+   *  dan "Semua" menggambar bagian yang berasal dari cadangan. Tanpa penanda,
+   *  bagian itu tampil sama meyakinkannya dengan sisanya. */
+  const [sumberBar, setSumberBar] = useState<RentangSumber[] | undefined>(undefined)
   useEffect(() => {
     if (rentang === 'ytd' || riwayat) return
     let batal = false
     fetch('/data-idx/json/ihsg_harian.json')
       .then((r) => r.json())
-      .then((j: { tutup: Record<string, number> }) => {
+      .then((j: { tutup: Record<string, number>; sumber_bar?: RentangSumber[] }) => {
         if (batal) return
+        setSumberBar(j.sumber_bar)
         setRiwayat(Object.entries(j.tutup).map(([iso, ihsg]) => ({
           date_iso: iso, date_id: tglSingkatTahun(iso), ihsg,
         } as TanggalIndex)))
@@ -304,6 +312,9 @@ function IhsgYtdChart({ dates }: { dates: TanggalIndex[] }) {
           <span>Tertinggi <span className="up">{fN(info.hi.ihsg)}</span> · {(pilih.tahun === null ? tglSingkat : tglSingkatTahun)(info.hi.date_iso)}</span>
           <span>Terendah <span className="dn">{fN(info.lo.ihsg)}</span> · {(pilih.tahun === null ? tglSingkat : tglSingkatTahun)(info.lo.date_iso)}</span>
         </div>
+      )}
+      {seri.length >= 1 && (
+        <CatatanSumberBar sumberBar={sumberBar} mulai={seri[0].date_iso} akhir={seri[seri.length - 1].date_iso} />
       )}
     </div>
   )

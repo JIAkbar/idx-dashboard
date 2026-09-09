@@ -6,6 +6,7 @@ import { KonteksData } from '../../components/dasbor/KonteksData'
 import { useDataHarian, fetchHari, cariHariResmiTerakhir, type DataHarian } from '../../lib/dasbor/dataHarian'
 import type { RentangTanggal } from '../../lib/dasbor/periode'
 import { useUrut } from '../../lib/dasbor/useUrut'
+import { ringkasDariIndex } from '../../lib/dasbor/rentangPasar'
 import { fN, fp, persen } from '../../lib/dasbor/format'
 import type { StockContribRow, StockMoveRow } from '../../lib/dasbor/dataHarian'
 import { IkonMenu, IKON_PERINGATAN } from '../../components/dasbor/IkonMenu'
@@ -75,28 +76,20 @@ export function TopStocks() {
     [rentang, tanggalTersedia],
   )
   // Agregat ringkasan pasar dibaca dari MANIFEST (#117 D2), bukan dari satu
-  // berkas harian per hari bursa: ketiga ruas ini memang sudah disalin ke
-  // sana. Sebelum ini panel memanggil `useDataRentang`, yang menolak rentang
-  // di atas 60 hari bursa — jadi 3 Bulan, 6 Bulan, YTD, dan 1 Tahun semuanya
-  // menjawab "terlalu panjang" alih-alih menjawab pertanyaannya.
+  // berkas harian per hari bursa: ketiga ruas ini memang sudah disalin ke sana.
   //
-  // Satuan mengikuti berkas harian (vol juta lembar, val miliar IDR, freq ribu
-  // transaksi). Hari tanpa ruas ringkasan dilewati dan dihitung jujur lewat `n`.
-  const agg = useMemo(() => {
-    if (!rentangTanggal.length) return null
-    let vol = 0; let val = 0; let frek = 0; let n = 0
-    for (const d of rentangTanggal) {
-      if (d.vol_today == null && d.val_idr_today == null && d.freq_today == null) continue
-      vol += d.vol_today ?? 0
-      val += d.val_idr_today ?? 0
-      frek += d.freq_today ?? 0
-      n += 1
-    }
-    return { vol, val, frek, n }
-  }, [rentangTanggal])
-  const ihsgMulai = rentang ? tanggalTersedia.find((t) => t.date_iso === rentang.mulai)?.ihsg : undefined
-  const ihsgAkhir = rentang ? tanggalTersedia.find((t) => t.date_iso === rentang.akhir)?.ihsg : undefined
-  const ihsgPctRentang = ihsgMulai && ihsgAkhir ? (ihsgAkhir / ihsgMulai - 1) * 100 : null
+  // Penghitungnya `ringkasDariIndex()` — fungsi YANG SAMA dengan kartu
+  // Ringkasan rentang di Indeks Dunia (#144 A). Sebelumnya panel ini menghitung
+  // sendiri, dan dua jalur hitung berdampingan menyimpang persis seperti yang
+  // sudah diperingatkan di komentar fungsi itu: "6 Bulan" terbaca -8,87% di
+  // satu halaman dan -10,14% di halaman lain, karena yang satu memulai dari
+  // penutupan hari SEBELUM rentang dan yang lain dari penutupan hari pertama.
+  // Keduanya berlabel, tapi pembaca melihat dua angka untuk satu pertanyaan.
+  //
+  // Ikutannya: cakupan dihitung PER RUAS. Penghitung lama menambah `n` bila
+  // salah satu dari tiga ruas ada, jadi hari bervolume 0 masuk sebagai hari
+  // berdata dan menekan rata-rata harian diam-diam.
+  const r = useMemo(() => ringkasDariIndex(rentangTanggal), [rentangTanggal])
 
   // Fallback P1 (27 Agu): hari.sementara = ruas peringkat cuma berisi IHSG
   // (cadangan Yahoo minimal) — panel-panel di bawah pakai hari RESMI terakhir
@@ -222,29 +215,40 @@ export function TopStocks() {
           <div className="panel-b">
             {/* Tak ada lagi keadaan memuat maupun galat di sini: angkanya datang
                 dari manifest yang sudah ada di tangan saat halaman terbuka. */}
-            {agg && (
+            {r && (
               <div className="grid3">
                 <div className="vcard">
                   <span className="lbl">IHSG Rentang</span>
-                  <span className={`v-num num ${(ihsgPctRentang ?? 0) >= 0 ? 'up' : 'dn'}`}>
-                    {ihsgPctRentang === null ? '—' : fp(ihsgPctRentang)}
+                  <span className={`v-num num ${(r.ihsg_pct ?? 0) >= 0 ? 'up' : 'dn'}`}>
+                    {r.ihsg_pct === null ? '—' : fp(r.ihsg_pct)}
                   </span>
-                  <span className="v-note">close {labelRentang}</span>
+                  {/* Titik awalnya dinyatakan: penutupan hari SEBELUM rentang,
+                      bukan penutupan hari pertama. Tanpa itu rentang satu hari
+                      selalu terbaca 0%. */}
+                  <span className="v-note">
+                    {r.ihsg_awal != null ? `dari ${fN(r.ihsg_awal, 2)} (penutupan sebelum rentang)` : `close ${labelRentang}`}
+                  </span>
                 </div>
                 <div className="vcard">
                   <span className="lbl">Total Volume</span>
-                  <span className="v-num num">{fN(agg.vol / 1e3, 1)} M lembar</span>
-                  <span className="v-note">rata-rata {fN(agg.n ? agg.vol / agg.n / 1e3 : 0, 1)} M/hari · {agg.n} hari berdata</span>
+                  <span className="v-num num">{r.vol == null ? '—' : `${fN(r.vol / 1e3, 1)} M lembar`}</span>
+                  <span className="v-note">
+                    rata-rata {fN((r.vol_rerata ?? 0) / 1e3, 1)} M/hari · {r.n_vol} dari {r.n_hari} hari berdata
+                  </span>
                 </div>
                 <div className="vcard">
                   <span className="lbl">Total Nilai Transaksi</span>
-                  <span className="v-num num">Rp {fN(agg.val / 1e3, 1)} T</span>
-                  <span className="v-note">rata-rata Rp {fN(agg.n ? agg.val / agg.n / 1e3 : 0, 1)} T/hari</span>
+                  <span className="v-num num">{r.val == null ? '—' : `Rp ${fN(r.val / 1e3, 1)} T`}</span>
+                  <span className="v-note">
+                    rata-rata Rp {fN((r.val_rerata ?? 0) / 1e3, 1)} T/hari · {r.n_val} dari {r.n_hari} hari berdata
+                  </span>
                 </div>
                 <div className="vcard">
                   <span className="lbl">Total Frekuensi</span>
-                  <span className="v-num num">{fN(agg.frek / 1e3, 1)} jt</span>
-                  <span className="v-note">rata-rata {fN(agg.n ? agg.frek / agg.n / 1e3 : 0, 2)} jt/hari</span>
+                  <span className="v-num num">{r.frek == null ? '—' : `${fN(r.frek / 1e3, 1)} jt`}</span>
+                  <span className="v-note">
+                    rata-rata {fN((r.frek_rerata ?? 0) / 1e3, 2)} jt/hari · {r.n_frek} dari {r.n_hari} hari berdata
+                  </span>
                 </div>
               </div>
             )}

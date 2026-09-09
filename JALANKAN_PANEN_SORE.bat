@@ -32,8 +32,12 @@ if not defined PAPAN_LOG (
   set PAPAN_LOG=1
   if not exist logs md logs
   for /f %%d in ('call "%PYEXE%" -c "import datetime;print(datetime.date.today().isoformat())"') do set TGL_LOG=%%d
-  call :TEE %*
-  exit /b %errorlevel%
+  REM `goto`, bukan `call ... & exit /b %errorlevel%` (#146 A). Di cmd, SELURUH
+  REM blok dalam kurung diurai sekali sebelum baris pertamanya jalan, jadi
+  REM `%errorlevel%` di dalamnya sudah diganti angka lama saat blok ini dibaca —
+  REM nilainya nol, selalu, apa pun yang terjadi sesudahnya. `:TEE` sekarang
+  REM yang mengurus keluarnya sendiri.
+  goto :TEE
 )
 
 
@@ -104,6 +108,10 @@ REM emiten sambil melaporkan sukses; ini yang membuatnya terlihat pada menit
 REM yang sama. Tidak menghentikan pipa - turunan tetap dibangun dari yang ada,
 REM dan daftarnya tertulis di logs\panen_tertinggal.txt.
 "%PYEXE%" scripts\cek_panen_ohlcv.py
+REM Gerbang ini TIDAK menghentikan pipa (turunan tetap dibangun dari yang ada),
+REM tapi sejak #146 A ia menentukan kode keluar bat — supaya Task Scheduler
+REM mencatat kegagalannya walau tak ada yang membaca lognya malam itu.
+if errorlevel 1 set PAPAN_RC=1
 if errorlevel 1 echo   [B] PERINGATAN: ada emiten tertinggal - lihat logs\panen_tertinggal.txt
 
 echo.
@@ -282,14 +290,33 @@ git push origin main
 :akhir
 if defined PAPAN_KUNCI_MILIK rmdir "%~dp0.panen.lock" 2>nul
 :keluar_tanpa_kunci
+REM Kode keluar dititipkan ke berkas untuk induk di :TEE (#146 A) — lihat
+REM alasannya di sana. Ditulis SEBELUM pause supaya jalan manual yang ditutup
+REM paksa tetap meninggalkan statusnya.
+if not defined PAPAN_RC set PAPAN_RC=0
+> "logs\status_%LOG_NAMA%_%TGL_LOG%.txt" echo %PAPAN_RC%
 if not "%1"=="auto" pause
 
 REM Batas alur: tanpa exit di sini, bat jatuh ke :TEE sesudah pause dan
 REM menjalankan dirinya sekali lagi.
-exit /b %errorlevel%
+exit /b %PAPAN_RC%
 
 :TEE
 REM Dipanggil sekali dari blok log di atas; `PAPAN_LOG` sudah terpasang di
 REM lingkungan ini, jadi panggilan kedua langsung menjalankan isi bat.
+REM
+REM Kode keluar anak dititipkan lewat BERKAS, bukan lewat pipa (#146 A): kode
+REM keluar sebuah pipa di cmd adalah kode keluar perintah TERAKHIR, yaitu
+REM powershell yang menulis log — dan powershell hampir selalu berhasil. Karena
+REM itu Task Scheduler mencatat 0x0 walau panennya gagal, dan satu-satunya
+REM tanda kegagalan justru hilang di tempat yang dibuat untuk mencatatnya.
+REM
+REM Berkas lama dihapus dulu: kalau anak mati sebelum sempat menulis, yang
+REM tersisa status kemarin, dan kegagalan hari ini terbaca sebagai sukses.
+set "PAPAN_STATUS=logs\status_%LOG_NAMA%_%TGL_LOG%.txt"
+del "%PAPAN_STATUS%" 2>nul
 call "%~f0" %* 2>&1 | powershell -NoProfile -Command "$input | Tee-Object -FilePath 'logs\%LOG_NAMA%_%TGL_LOG%.log' -Append"
-exit /b %errorlevel%
+REM Bawaannya 1: berkas yang tak ada berarti anak tak sampai ke ujung.
+set PAPAN_RC=1
+for /f "usebackq tokens=1" %%r in ("%PAPAN_STATUS%") do set PAPAN_RC=%%r
+exit /b %PAPAN_RC%

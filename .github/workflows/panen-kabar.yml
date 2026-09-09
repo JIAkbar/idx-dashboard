@@ -219,12 +219,19 @@ jobs:
                   continue
               a, b = kunci(lama), kunci(baru)
               if a is None or b is None or a != b:
-                  beda += len(b - a) if (a is not None and b is not None) else 1
+                  # Selisih SIMETRIS, bukan cuma yang bertambah (#142 B).
+                  # Dedup tautan hanya MEMBUANG item: dengan `b - a` saja,
+                  # jalan yang membersihkan 38 salinan menghitung nol item
+                  # baru, berkasnya dipulihkan, dan pembersihannya tak pernah
+                  # mendarat — sementara log berkata "tak ada item baru" dan
+                  # semuanya tampak normal. Stempel waktu yang berubah sendiri
+                  # tetap menghasilkan nol, jadi tujuan aslinya utuh.
+                  beda += len(b ^ a) if (a is not None and b is not None) else 1
           print(beda)
           PY
           )
           if [ "${ITEM_BARU:-0}" = "0" ]; then
-            echo "Berkas berubah tapi TAK ADA item baru (cuma stempel waktu) — tidak commit."
+            echo "Berkas berubah tapi DAFTARNYA sama (cuma stempel waktu) — tidak commit."
             git checkout -- data-idx/json/kabar.json data-idx/json/snips.json || true
             # `kabar-sumber-awan.json` TETAP dicommit kalau ia sendiri berubah:
             # isinya catatan sumber mana yang tembus, dan itu memang berubah
@@ -232,7 +239,7 @@ jobs:
             if git diff --quiet -- data-idx/json/kabar-sumber-awan.json; then exit 0; fi
             BERKAS="data-idx/json/kabar-sumber-awan.json"
           else
-            echo "Item baru: $ITEM_BARU"
+            echo "Item berubah (tambah/hapus): $ITEM_BARU"
           fi
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"

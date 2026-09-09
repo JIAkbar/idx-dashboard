@@ -110,6 +110,33 @@ def _kode_lama(tgl: str, rentang: list[list] | None) -> str | None:
     return None
 
 
+def tanggal_sumber_utama(sumber_lama: list[list] | None) -> set[str]:
+    """Tanggal yang penanda sumbernya BUKAN Yahoo — milik sumber utama.
+
+    Dikembalikan sebagai rentang, bukan tanggal satu-satu: penanda `sumber_bar`
+    memang disimpan padat (`[dari, sampai, kode]`), dan pemanggil cuma perlu
+    menanyakan keanggotaan.
+    """
+    return {f"{dari}|{sampai}" for dari, sampai, kode in (sumber_lama or []) if kode != "yh"}
+
+
+def milik_sumber_utama(tgl: str, sumber_lama: list[list] | None) -> bool:
+    """Benar kalau tanggal ini sudah dipegang sumber utama (#134 D).
+
+    Inilah gerbang yang membuat berkas ini punya SATU penulis efektif. Sampai
+    9 Sep 2026 pemanen ini menimpa apa pun yang ada di tanggal yang ditariknya,
+    termasuk bar yang baru saja ditulis sumber utama — terukur pada satu jalan:
+    empat bar berganti penanda `sb` menjadi `yh` dan volumenya bergeser 5%.
+    Nol galat; yang berubah cuma angka di berkas yang sudah benar.
+
+    Yahoo tetap dipakai, dan itu memang keputusannya: ia mengisi tanggal yang
+    sumber utama TIDAK punya — riwayat sebelum Juli 1997, dan hari berjalan
+    yang panen utamanya belum tiba. Begitu sumber utama datang, penjahit
+    menaikkannya dan tanggal itu tak pernah ditimpa lagi.
+    """
+    return (_kode_lama(tgl, sumber_lama) or "yh") != "yh"
+
+
 def tulis(baris: list[list], sumber_lama: list[list] | None = None,
           tanggal_ditulis: set[str] | None = None) -> None:
     OHLC.parent.mkdir(parents=True, exist_ok=True)
@@ -141,11 +168,16 @@ def tulis(baris: list[list], sumber_lama: list[list] | None = None,
 
     HARIAN.write_text(json.dumps({
         "dibuat": datetime.now(timezone.utc).isoformat(timespec="seconds"),
-        "sumber": "Yahoo Finance ^JKSE, OHLCV harian",
+        "sumber": "Stockbit utama; Yahoo Finance ^JKSE untuk tanggal yang tak dimilikinya (praktis sebelum Juli 1997)",
         "catatan": "Diminta per potongan 5 tahun: range=max menurunkan resolusi jadi bulanan walau interval=1d.",
         "mulai": baris[0][0], "akhir": baris[-1][0], "n": len(baris),
         "tutup": {b[0]: b[4] for b in baris},
         "buka": {b[0]: b[1] for b in baris},
+        # Penanda sumber ikut ke berkas ini (#134 D). Kartu Ringkasan IHSG di
+        # halaman Indeks Dunia membacanya untuk rentang 5 tahun ke atas, dan
+        # tanpa penanda itu bagian riwayat yang datang dari penyedia cadangan
+        # tampil sama meyakinkannya dengan bar sumber utama.
+        "sumber_bar": padatkan_rentang(baris, _kode),
     }, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
     ekor = baris[-HARI_RINGKAS:]
     RINGKAS.write_text(json.dumps({
@@ -267,6 +299,25 @@ def swauji() -> None:
     print("swauji lolos")
 
 
+def swauji_penulis_tunggal() -> None:
+    """Bar bertanda sumber utama tak boleh tergeser Yahoo (#134 D)."""
+    penanda = [["1990-04-06", "1997-06-30", "yh"], ["1997-07-01", "2026-09-08", "sb"]]
+    assert milik_sumber_utama("2026-09-08", penanda) is True
+    assert milik_sumber_utama("1995-01-03", penanda) is False
+    assert milik_sumber_utama("2026-09-09", penanda) is False, "hari di luar rentang penanda = boleh diisi"
+    assert milik_sumber_utama("2026-09-09", None) is False, "berkas tanpa penanda = perilaku lama"
+
+    lama = [["1995-01-03", 1, 2, 1, 2, 100], ["2026-09-08", 10, 11, 9, 10, 900]]
+    baru = [["1995-01-03", 9, 9, 9, 9, 1], ["2026-09-08", 9, 9, 9, 9, 1], ["2026-09-09", 5, 6, 4, 5, 7]]
+    sisa = [r for r in baru if not milik_sumber_utama(r[0], penanda)]
+    hasil = gabung(lama, sisa)
+    peta = {r[0]: r for r in hasil}
+    assert peta["2026-09-08"][5] == 900, "bar sumber utama ikut tertimpa"
+    assert peta["1995-01-03"][5] == 1, "bar pra-1997 justru harus disegarkan Yahoo"
+    assert "2026-09-09" in peta, "hari baru harus masuk"
+    print("swauji penulis tunggal lolos")
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--penuh", action="store_true", help="tarik riwayat 1990-sekarang")
@@ -274,6 +325,7 @@ def main() -> None:
     arg = ap.parse_args()
     if arg.swauji:
         swauji()
+        swauji_penulis_tunggal()
         return
 
     lama = json.loads(OHLC.read_text(encoding="utf-8"))["d"] if OHLC.exists() else []
@@ -297,6 +349,14 @@ def main() -> None:
     # di titik masuk membuat pengaliannya mustahil menumpuk: bar yang sudah ada
     # di berkas tak pernah disentuh lagi oleh siapa pun.
     baru_lembar = [[r[0], r[1], r[2], r[3], r[4], (r[5] or 0) * LOT_KE_LEMBAR] for r in baru]
+    # Tanggal milik sumber utama TIDAK disentuh (#134 D pilihan A, keputusan
+    # Johan 9 Sep 2026). Yang tersisa untuk Yahoo: tanggal yang memang tak
+    # dimiliki sumber utama.
+    dipertahankan = [r for r in baru_lembar if milik_sumber_utama(r[0], sumber_lama)]
+    baru_lembar = [r for r in baru_lembar if not milik_sumber_utama(r[0], sumber_lama)]
+    if dipertahankan:
+        print(f"{len(dipertahankan)} bar dilewati - tanggalnya milik sumber utama "
+              f"({dipertahankan[0][0]}..{dipertahankan[-1][0]})")
     gabungan = gabung(lama, baru_lembar)
     tulis(gabungan, sumber_lama=sumber_lama, tanggal_ditulis={r[0] for r in baru_lembar})
 
