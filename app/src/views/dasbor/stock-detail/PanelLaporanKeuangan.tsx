@@ -184,7 +184,7 @@ export function PanelLaporanKeuangan({ ticker }: { ticker: string }) {
                 </div>
 
                 <div style={{ overflowX: 'auto' }}>
-                  <table style={{ minWidth: 360 }}>
+                  <table className="tbl-isi" style={{ minWidth: 360 }}>
                     <thead>
                       <tr>
                         <th>Metrik</th>

@@ -983,6 +983,22 @@
    190 px karena itu yang sudah dipakai paling banyak halaman, dan cukup
    untuk memuat kode plus potongan nama emiten. */
 .lantai .sa-cari{flex:1 1 auto;min-width:160px;max-width:190px}
+/* Tabel yang lebarnya mengikuti ISI, bukan wadah (#130).
+
+   Tabel bawaan meregang penuh, jadi di layar 1536 px kolom label dan
+   kolom nilainya terpisah 850-900 px ruang kosong — mata harus melompati
+   separuh layar untuk memasangkan satu nama dengan satu angka. Yang
+   diperbaiki jarak bacanya, bukan lebar panelnya: panel tetap penuh,
+   tabelnya yang berhenti melar.
+
+   `max-width:100%` menjaganya tetap bisa menyusut di layar sempit; wadah
+   bergulir di sekelilingnya (kalau ada) tetap bekerja seperti biasa.
+
+   Diangkat dari `.bdh-cmp-tbl` yang sudah melakukan persis ini di tab
+   Banding sejak #81 — namanya saja yang terlalu khusus untuk dipakai
+   panel lain. Kelas lama tetap ada sebagai penimpa yang menambah aturan
+   kolomnya sendiri. */
+.lantai .tbl-isi{width:max-content;max-width:100%}
 /* Di layar sempit batasnya dilepas: kotak 190 px di layar 412 px menyisakan
    ruang kosong yang tak dipakai apa pun. Satu ambang (700 px, sama dengan
    `useLayarSempit`) menggantikan empat ambang berbeda per halaman. */

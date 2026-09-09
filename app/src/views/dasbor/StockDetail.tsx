@@ -559,11 +559,21 @@ export function StockDetail() {
           )}
 
           {tab === 'statistik' && (
-            /* Panel Khas PAPAN — dipindah dari Bedah Emiten: Altman Z-Score,
-               Piotroski F-Score, ROIC, ROCE, siklus konversi kas, tiap angka
-               disertai satu kalimat bacaan (beda dari angka mentah yang sudah
-               ada di panel Solvabilitas/Efektivitas/Skor di atas). */
-            <PanelKhasPapan fd={fd} />
+            /* Panel Khas PAPAN (Altman Z, Piotroski F, ROIC, ROCE, siklus kas —
+               tiap angka disertai satu kalimat bacaan) BERDAMPINGAN dengan
+               Profil Perusahaan.
+
+               Keduanya dulu penuh-lebar sendiri-sendiri, dan karena tak punya
+               chart, isinya cuma memakai 780 dan 421 px dari 1.405 — sisanya
+               kosong (Johan 9 Sep 2026: "masih bnyk spce kosong misal masuk akal
+               di view laptop jadi 2 atau 3 atau 4 kolom"). `.grid2` menjadikan
+               keduanya satu kolom sendiri di bawah 700 px, jadi ponsel tak
+               berubah. Panel yang PUNYA chart (Laporan Keuangan, Aliran Asing)
+               tetap penuh: chartnya memang selebar panel. */
+            <div className="grid2">
+              <PanelKhasPapan fd={fd} />
+              <PanelProfilPerusahaan profil={tambahan?.profil ?? null} />
+            </div>
           )}
 
           {tab === 'statistik' && (
@@ -577,7 +587,6 @@ export function StockDetail() {
             </div>
           )}
 
-          {tab === 'statistik' && <PanelProfilPerusahaan profil={tambahan?.profil ?? null} />}
 
           {tab === 'valuasi' && <PanelValuasiInteraktif key={fd.ticker} fd={fd} rasio={tambahan?.rasio ?? null} />}
 

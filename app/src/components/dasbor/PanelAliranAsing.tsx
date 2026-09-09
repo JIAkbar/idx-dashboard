@@ -369,7 +369,7 @@ export function PanelAliranAsing({ ticker }: { ticker: string }) {
               Rincian harian — {JENDELA_TABEL} hari bursa terakhir
             </p>
             <div style={{ overflowX: 'auto' }}>
-              <table style={{ minWidth: 320 }}>
+              <table className="tbl-isi" style={{ minWidth: 320 }}>
                 <thead>
                   <tr>
                     <th>Tanggal</th>

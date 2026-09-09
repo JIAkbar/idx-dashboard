@@ -23,7 +23,7 @@ export function PanelKhasPapan({ fd }: { fd: StockFundamental }) {
           apa adanya — tak pernah ditambal taksiran.
         </p>
         <div style={{ overflowX: 'auto' }}>
-          <table className="tbl" style={{ minWidth: 460 }}>
+          <table className="tbl tbl-isi" style={{ minWidth: 460 }}>
             <thead>
               <tr><th>Ukuran</th><th className="r">Nilai</th><th>Bacaannya</th></tr>
             </thead>
