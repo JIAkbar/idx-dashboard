@@ -5,6 +5,7 @@ import type { KabarItem } from './kabar'
 import { rangkumHari, ASAL_AMBANG } from './ringkasHarian'
 import type { KamusEmiten, EmitenEntry, GrupEntry } from './kamusEmiten'
 import type { StockFundamental } from './stockDetailData'
+import { pilihRasio, type PetaRasio } from './rasioUtamaKeystats'
 import type { InvestorMapEntry } from './petaInvestorData'
 import { holderType } from './petaInvestorData'
 import type { BarisOhlc } from './ihsgOhlc'
@@ -45,7 +46,7 @@ export interface OhlcRingkas {
  *  BEDA dengan "belum dicoba" (kalau itu, field ini simply tak cocok kode
  *  yang sedang ditanya, dan `jawab()` akan minta `butuh` lagi). */
 export type DataButuh =
-  | { jenis: 'fundamental'; kode: string; payload: StockFundamental | null }
+  | { jenis: 'fundamental'; kode: string; payload: StockFundamental | null; rasio?: PetaRasio }
   | { jenis: 'ohlc'; kode: string; payload: OhlcRingkas | null }
   | { jenis: 'investor'; kode: string; payload: InvestorMapEntry | null }
 
@@ -283,15 +284,23 @@ function jawabHarga(kode: string, fd: StockFundamental | null, kamus?: KamusEmit
   return { teks: `Harga ${kode} tidak ditemukan.`, takPaham: true, ...linkEmiten(kode) }
 }
 
-function jawabValuasi(kode: string, fd: StockFundamental | null): Jawaban {
-  // `pbv` dihitung ulang tiap harga disegarkan; `pb` ikut tinggal sebagai
-  // cadangan karena 61 berkas belum punya `pbv` (51 di antaranya punya `pb`).
-  const pbv = fd?.pbv ?? fd?.pb
+function jawabValuasi(kode: string, fd: StockFundamental | null, rasio?: PetaRasio): Jawaban {
+  // P/B sumber utama dulu, `pbv` cadangan (#143). Sebelum ini halaman ini
+  // memakai `pbv` saja sementara Stock Detail sudah memakai sumber utama —
+  // BBRI terbaca 1,52× di sini dan 1,61× di sana, dan kalimatnya tak
+  // menyebutkan sumber sama sekali, jadi tak ada cara tahu mana yang mana.
+  // `pb` tetap cadangan terakhir: 61 berkas belum punya `pbv`.
+  const { nilai: pbv, asal } = pilihRasio('pb', fd?.pbv ?? fd?.pb, rasio)
   if (!fd || (fd.pe == null && pbv == null && fd.roe == null)) {
     return { teks: `Data valuasi ${kode} belum ada.`, takPaham: true, topik: 'valuasiEmiten', ...linkEmiten(kode) }
   }
+  // Sumbernya disebut hanya saat yang tayang angka CADANGAN — menempelkan
+  // "sumber utama" pada tiap jawaban cuma menambah kata tanpa menambah kabar.
+  const catatan = pbv != null && asal === 'cadangan-lama'
+    ? ' (PBV dari sumber cadangan — penyedia utama belum memuat rasio ini untuk emiten tersebut)'
+    : ''
   return {
-    teks: `${kode}: PER ${fd.pe != null ? `${rp(fd.pe)}×` : '—'}, PBV ${pbv != null ? `${rp(pbv)}×` : '—'}, ROE ${fd.roe != null ? `${rp(fd.roe * 100)}%` : '—'}.`,
+    teks: `${kode}: PER ${fd.pe != null ? `${rp(fd.pe)}×` : '—'}, PBV ${pbv != null ? `${rp(pbv)}×` : '—'}, ROE ${fd.roe != null ? `${rp(fd.roe * 100)}%` : '—'}.${catatan}`,
     topik: 'valuasiEmiten', ...linkEmiten(kode),
   }
 }
@@ -982,7 +991,7 @@ function jawabInti(pertanyaan: string, k: KonteksTanya): Jawaban {
       if (k.data && k.data.jenis === 'fundamental' && k.data.kode === kode) {
         const fd = k.data.payload
         if (sebutHarga) return jawabHarga(kode, fd, k.kamus)
-        if (sebutValuasi) return jawabValuasi(kode, fd)
+        if (sebutValuasi) return jawabValuasi(kode, fd, k.data.rasio)
         return jawabSektor(kode, fd)
       }
       return { butuh: { jenis: 'fundamental', kode }, teks: `Mengambil data ${kode}…` }

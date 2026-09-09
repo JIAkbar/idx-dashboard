@@ -248,6 +248,35 @@ describe('jawab — mekanisme dua-langkah (berkas per-emiten)', () => {
     expect(cadangan.teks).toContain('PBV 1,45×')
   })
 
+  it('valuasi memakai P/B sumber utama bila ada, dan menyebut sumbernya saat jatuh ke cadangan (#143)', () => {
+    // Inti #143: BBRI terbaca 1,52× di sini dan 1,61× di Stock Detail karena
+    // halaman ini berhenti di `pbv` sementara halaman itu sudah dirotasi.
+    const utama = jawab('PER BBCA berapa?', konteks({
+      kamus,
+      data: {
+        jenis: 'fundamental', kode: 'BBCA',
+        payload: { ...fd, pb: 1.45, pbv: 1.52 },
+        rasio: { 'Current Price to Book Value': 1.61 },
+      },
+    }))
+    expect(utama.teks).toContain('PBV 1,61×')
+    expect(utama.teks).not.toContain('sumber cadangan')
+
+    // Sumber utama tak memuat rasio emiten ini: angka lama tetap tayang, TAPI
+    // kalimatnya menyebutkannya — dua angka berbeda tanpa keterangan itu yang
+    // membuat #143 lahir.
+    const cadangan = jawab('PER BBCA berapa?', konteks({
+      kamus,
+      data: {
+        jenis: 'fundamental', kode: 'BBCA',
+        payload: { ...fd, pb: 1.45, pbv: 1.52 },
+        rasio: { 'Current Price to Sales (TTM)': 3.1 },
+      },
+    }))
+    expect(cadangan.teks).toContain('PBV 1,52×')
+    expect(cadangan.teks).toContain('sumber cadangan')
+  })
+
   it('sektor per-emiten dijawab dari fundamental, bukan sektor pasar', () => {
     const j = jawab('BBCA sektor apa?', konteks({ kamus, data: { jenis: 'fundamental', kode: 'BBCA', payload: fd } }))
     expect(j.teks).toContain('Financial Services')

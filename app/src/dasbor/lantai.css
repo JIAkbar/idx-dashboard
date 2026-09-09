@@ -1624,7 +1624,14 @@
    tapi tak pernah ikut kalau gaya bersamanya berubah. Yang tersisa khas di
    sini: field selalu selebar barisnya, dan nilai ketikan huruf besar (kode
    saham). */
-.lantai .af-cari.pi-srch-container { flex: 1; max-width: none; }
+/* Batas lebar 320 px di layar lebar (#149, pola `.sa-cari`). Sapuan #136 A
+   menyeragamkan kotak cari lewat komponen bersama; halaman ini punya kotak
+   sendiri karena mencari DUA jenis (emiten dan investor), jadi ia lolos dari
+   sapuan itu dan terukur 1.013 px di 1920 — kotak terpanjang di aplikasi.
+   Lebih lebar dari 190 px milik `.sa-cari` karena placeholder dan hasilnya
+   dua jenis; lepas di bawah 700 px, di mana penuh justru yang benar. */
+.lantai .af-cari.pi-srch-container { flex: 1 1 auto; min-width: 180px; max-width: 320px; }
+@media (max-width: 700px) { .lantai .af-cari.pi-srch-container { max-width: none; } }
 .lantai .pi-search { padding-right: 30px; text-transform: uppercase; letter-spacing: .3px; }
 /* #77b: uppercase hanya untuk nilai ketikan (kode saham) — placeholder tetap
    sentence case seperti konvensi placeholder lain. */
@@ -1680,9 +1687,10 @@
 .lantai .pi-loadmore { padding: 7px 20px; border-radius: 8px; background: var(--bg3); border: 0.5px solid var(--border); color: var(--text2); cursor: pointer; font-size: 12px; font-family: inherit; }
 
 @media (max-width: 768px) {
-  /* #109: .pi-head-actions/.pi-srch-container/.pi-search sudah full-width di
-     SEMUA ukuran layar (lihat aturan dasar di atas) — tinggal aturan dropdown
-     yang masih perlu override mobile. Lebar dropdown = lebar kontainer input
+  /* #109: .pi-head-actions/.pi-search sudah full-width di sini (aturan dasar
+     di atas); .pi-srch-container dibatasi 320 px hanya di ≥700 px (#149), jadi
+     di lebar ini ia sudah penuh lagi — tinggal aturan dropdown yang masih
+     perlu override mobile. Lebar dropdown = lebar kontainer input
      (calc 100vw dulu menabrak tepi kanan karena kontainer tidak mulai dari
      x=0 — ada rail/padding kiri). */
   .lantai .pi-search-drop { width: 100% !important; min-width: 0; right: auto !important; left: 0 !important; max-height: 240px !important; }

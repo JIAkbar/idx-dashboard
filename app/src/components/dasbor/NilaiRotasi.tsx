@@ -1,8 +1,8 @@
 import type { ReactNode } from 'react'
-import { pilihRasio, JUDUL_ASAL, type RuasRotasi } from '../../lib/dasbor/rasioUtamaKeystats'
+import { pilihRasio, JUDUL_ASAL, type PetaRasio, type RuasRotasi } from '../../lib/dasbor/rasioUtamaKeystats'
 
 /** Peta rasio dari sumber utama yang sedang dipegang halaman; null = belum termuat. */
-export type PetaRasio = Record<string, number | null> | null
+export type { PetaRasio } from '../../lib/dasbor/rasioUtamaKeystats'
 
 /**
  * Satu angka yang sumbernya DIROTASI (#36 A) beserta lencana asalnya.

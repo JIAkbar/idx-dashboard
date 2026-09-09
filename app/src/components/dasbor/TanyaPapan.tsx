@@ -6,6 +6,7 @@ import { useKabar } from '../../lib/dasbor/kabar'
 import { useKamusEmiten } from '../../lib/dasbor/kamusEmiten'
 import { fetchFundamental } from '../../lib/dasbor/stockDetailData'
 import { loadInvestorMap } from '../../lib/dasbor/petaInvestorData'
+import { muatTambahanKeystats } from '../../lib/dasbor/rasioTambahanKeystats'
 import { jawab, CONTOH_TANYA, type Jawaban, type Topik, type DataButuh, type OhlcRingkas } from '../../lib/dasbor/tanyaPapan'
 import { useTopBrokerHari } from '../../lib/dasbor/brokerHarian'
 import { tanyaAI, rakitKonteks } from '../../lib/dasbor/tanyaAI'
@@ -45,7 +46,14 @@ function fetchOhlcRingkas(kode: string): Promise<OhlcRingkas | null> {
  *  fetch untuk fitur Tanya PAPAN terjadi. */
 async function ambilButuh(butuh: NonNullable<Jawaban['butuh']>): Promise<DataButuh> {
   if (butuh.jenis === 'fundamental') {
-    return { jenis: 'fundamental', kode: butuh.kode, payload: await fetchFundamental(butuh.kode) }
+    // Rasio sumber utama ikut ditarik (#143) supaya jawaban valuasi memakai
+    // angka yang sama dengan Stock Detail. Berkasnya di-cache modul, jadi
+    // tanya kedua tentang emiten yang sama tak menariknya lagi.
+    const [payload, tambahan] = await Promise.all([
+      fetchFundamental(butuh.kode),
+      muatTambahanKeystats(butuh.kode).catch(() => null),
+    ])
+    return { jenis: 'fundamental', kode: butuh.kode, payload, rasio: tambahan?.rasio ?? null }
   }
   if (butuh.jenis === 'ohlc') {
     return { jenis: 'ohlc', kode: butuh.kode, payload: await fetchOhlcRingkas(butuh.kode) }

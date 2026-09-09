@@ -239,6 +239,10 @@ export function dariYahoo(
   j: YahooIntradayJson,
   warnaNaik: string,
   warnaTurun: string,
+  /** Panjang satu slot dalam detik (300 untuk 5m, 3600 untuk 60m). Bila
+   *  diberikan, bar semu kutipan di ujung deret dilebur ke slotnya (#150 B).
+   *  Tanpa ini perilakunya persis seperti sebelumnya. */
+  detikSlot?: number,
 ): { lilin: LilinData[]; volume: VolumeData[] } {
   const res = j?.chart?.result?.[0]
   const t = res?.timestamp
@@ -246,12 +250,42 @@ export function dariYahoo(
   if (!t || !q) return { lilin: [], volume: [] }
   const lilin: LilinData[] = []
   const volume: VolumeData[] = []
+  const epoch: number[] = []
   for (let i = 0; i < t.length; i++) {
     const o = q.open?.[i]; const h = q.high?.[i]; const l = q.low?.[i]; const c = q.close?.[i]
     if (o == null || h == null || l == null || c == null) continue
     const waktu = dariEpoch(t[i])
     lilin.push({ time: waktu, open: o, high: h, low: l, close: c })
     volume.push({ time: waktu, value: q.volume?.[i] ?? 0, color: c >= o ? warnaNaik : warnaTurun })
+    epoch.push(t[i])
+  }
+  /* Bar semu kutipan (#150 B). Yahoo menempelkan KUTIPAN TERAKHIR di ujung
+   * deret intraday sebagai baris tambahan: stempelnya bukan kelipatan slot
+   * (mis. 09:10:50 di deret satu jam), volumenya 0, dan O=H=L=C. Digambar apa
+   * adanya ia jadi lilin datar bervolume nol di sebelah lilin sungguhan —
+   * pembaca melihat "satu jam tanpa transaksi" pada jam yang justru sedang
+   * ramai. Isinya sendiri BENAR dan berguna: itu harga terkini. Karena itu
+   * dilebur ke slot induknya, bukan dibuang: high/low melebar bila perlu dan
+   * close ikut yang terbaru, jadi lilin berjalan bergerak seperti seharusnya.
+   *
+   * Dibuang hanya bila slotnya bukan slot bar sebelumnya — melebur ke slot
+   * yang salah akan memindahkan harga ke jam yang keliru.
+   */
+  if (detikSlot && detikSlot > 0 && lilin.length >= 2) {
+    const n = lilin.length - 1
+    if (epoch[n] % detikSlot !== 0) {
+      const semu = lilin[n]
+      if (Math.floor(epoch[n] / detikSlot) === Math.floor(epoch[n - 1] / detikSlot)) {
+        const induk = lilin[n - 1]
+        induk.high = Math.max(induk.high, semu.high)
+        induk.low = Math.min(induk.low, semu.low)
+        induk.close = semu.close
+        volume[n - 1].value += volume[n].value
+        volume[n - 1].color = induk.close >= induk.open ? warnaNaik : warnaTurun
+      }
+      lilin.pop()
+      volume.pop()
+    }
   }
   return { lilin, volume }
 }
@@ -291,7 +325,10 @@ export async function ambilIntraday(
     { signal: sinyal ? AbortSignal.any([sinyal, AbortSignal.timeout(15000)]) : AbortSignal.timeout(15000) },
   )
   if (!r.ok) throw new Error(`Yahoo menolak permintaan intraday ${kode} (HTTP ${r.status}).`)
-  const mentah = dariYahoo((await r.json()) as YahooIntradayJson, warnaNaik, warnaTurun)
+  // Panjang slot dari label intervalnya sendiri ('5m' → 300, '60m' → 3600):
+  // satu sumber, jadi menambah kerangka baru tak perlu tabel kedua.
+  const detikSlot = Number(k.interval.replace('m', '')) * 60
+  const mentah = dariYahoo((await r.json()) as YahooIntradayJson, warnaNaik, warnaTurun, detikSlot)
   if (mentah.lilin.length === 0) throw new Error(`Yahoo tak punya candle ${k.label} untuk ${kode}.`)
   return k.rakitDari ? rakitBar(mentah.lilin, mentah.volume, kunci4Jam, warnaNaik, warnaTurun) : mentah
 }

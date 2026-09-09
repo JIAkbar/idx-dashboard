@@ -699,10 +699,28 @@ def fundamental(kode: str) -> dict:
     # `pbv` dan `harga_pada` ditulis penyegar harga harian; tanpa disalin ke
     # sini, kartu memajang PBV dari harga bulan lalu dan tak punya cara
     # menyebut tanggal harganya sendiri.
-    return {k: f.get(k) for k in (
+    out = {k: f.get(k) for k in (
         "name", "updated", "harga_pada", "pe", "pb", "pbv", "eps", "roe", "der", "npm", "rev_yoy", "ni_yoy",
         "dividend_yield", "beta", "shares", "float_pct", "week52_high", "week52_low",
     )}
+    # P/B sumber UTAMA ikut disalin (#143). Stock Detail sudah memakainya lewat
+    # rotasi 8 Sep; kartu masih memajang `pbv` (harga terakhir dibagi nilai buku
+    # sumber lama) sehingga BBRI terbaca 1,52x di sini dan 1,61x di sana — satu
+    # rasio, dua angka, dan tak ada yang menyatakan bedanya. Disalin di sini,
+    # bukan dimuat halaman: kartu sudah satu berkas per emiten, dan menambah
+    # tarikan kedua demi satu angka membuat halaman menunggu dua kali.
+    out["pb_keystats"] = rasio_keystats(kode).get("Current Price to Book Value")
+    return out
+
+
+def rasio_keystats(kode: str) -> dict:
+    p = AKAR / "data-idx" / "json" / "keystats_stockbit" / f"{kode}.json"
+    if not p.exists():
+        return {}
+    try:
+        return json.loads(p.read_text(encoding="utf-8")).get("rasio") or {}
+    except (json.JSONDecodeError, OSError):
+        return {}
 
 
 # --------------------------------------------------------------------- asing

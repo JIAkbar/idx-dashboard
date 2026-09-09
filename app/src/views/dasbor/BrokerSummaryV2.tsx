@@ -1,5 +1,6 @@
 import { persen } from '../../lib/dasbor/format'
 import { useEffect, useMemo, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { PemilihRentang } from '../../components/dasbor/PemilihRentang'
 import { DatePicker } from '../../components/dasbor/DatePicker'
 import { Dropdown, type OpsiDropdown } from '../../components/dasbor/Dropdown'
@@ -102,7 +103,19 @@ const INFO_BSV2: ItemInfoIndikator[] = [
  */
 export function BrokerSummaryV2() {
   const { index } = useStockIndex()
-  const [kode, setKode] = useState('BBCA')
+  // Emiten dibaca dari alamat lebih dulu (#140). Dulu `useState('BBCA')`
+  // polos: tiap tautan ke halaman ini mendarat di BBCA tanpa satu pun galat,
+  // dan alamat yang disalin dari bilah alamat tak bisa dibagikan. Ditulis balik
+  // tiap ganti emiten supaya arahnya dua arah — `replace` supaya tombol Kembali
+  // tidak berisi satu entri per emiten yang pernah dilihat.
+  const [sp, setSp] = useSearchParams()
+  const [kode, setKode] = useState(() => sp.get('kode')?.toUpperCase() ?? 'BBCA')
+  useEffect(() => {
+    setSp((p) => { p.set('kode', kode); return p }, { replace: true })
+    // `setSp` identitasnya berganti tiap render router — memasukkannya ke
+    // dependensi membuat efek ini berjalan terus-menerus.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [kode])
   const [cari, setCari] = useState('')
   const [investor, setInvestor] = useState('semua')
   const [pasar, setPasar] = useState('reguler')

@@ -79,8 +79,12 @@ export interface FundamentalRingkas {
   pe?: number | null
   /** P/BV lama (ikut umur laporan keuangan); cadangan untuk `pbv`. */
   pb?: number | null
-  /** P/BV yang dihitung ulang tiap harga disegarkan — ini yang dipajang. */
+  /** P/BV yang dihitung ulang tiap harga disegarkan — cadangan sejak #143. */
   pbv?: number | null
+  /** P/B sumber utama, disalin saat kartu dibangun (#143). Kosong pada kartu
+   *  lama dan pada emiten yang rasionya tak dimuat sumber utama; dua-duanya
+   *  jatuh ke `pbv` dan ditandai cadangan di layar. */
+  pb_keystats?: number | null
   /** Tanggal bar harga yang dipakai ruas berbasis harga di kartu ini. */
   harga_pada?: string | null
   eps?: number | null

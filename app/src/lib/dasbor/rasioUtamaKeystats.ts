@@ -45,6 +45,9 @@ export type RuasRotasi = keyof typeof PETA_KEYSTATS
 
 export type AsalRasio = 'keystats' | 'cadangan-lama'
 
+/** Peta rasio keystats apa adanya; null saat berkasnya tak ada. */
+export type PetaRasio = Record<string, number | null> | null
+
 export interface RasioTerpilih {
   nilai: number | null
   /** null kalau kedua sumber kosong — tak ada yang perlu ditandai. */
@@ -68,6 +71,15 @@ export function pilihRasio(
   if (baru != null && Number.isFinite(baru)) return { nilai: baru, asal: 'keystats' }
   if (lama != null && Number.isFinite(lama)) return { nilai: lama, asal: 'cadangan-lama' }
   return { nilai: null, asal: null }
+}
+
+/** Peta rasio satu-ruas, untuk pemanggil yang cuma punya SATU angka keystats
+ *  (kartu analisa membawa `pb_keystats` saja, bukan seluruh berkas 94 rasio).
+ *
+ *  Ada supaya nama ruas mentahnya tidak perlu dieja di halaman: satu tempat
+ *  yang tahu ejaannya, sama seperti `pilihRasio`. */
+export function petaRasio(ruas: RuasRotasi, nilai: number | null | undefined): Record<string, number | null> | null {
+  return nilai != null && Number.isFinite(nilai) ? { [PETA_KEYSTATS[ruas]]: nilai } : null
 }
 
 /** Keterangan hover per asal — dipakai lencana di layar. */

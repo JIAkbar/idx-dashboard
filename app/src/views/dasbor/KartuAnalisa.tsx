@@ -5,6 +5,8 @@ import { DatePicker } from '../../components/dasbor/DatePicker'
 import { useKamusEmiten } from '../../lib/dasbor/kamusEmiten'
 import { fRingkas } from '../../lib/dasbor/stockDetailFormat'
 import { fN, fp } from '../../lib/dasbor/format'
+import { NilaiRotasi } from '../../components/dasbor/NilaiRotasi'
+import { petaRasio } from '../../lib/dasbor/rasioUtamaKeystats'
 import { papanBerisiko } from '../../lib/dasbor/sektorIdx'
 import { hariBursaSejak, todayIsoJakarta } from '../../lib/tanggalBursa'
 import { BULAN } from '../../lib/seasonality'
@@ -279,7 +281,14 @@ function KartuSatuEmiten({ kode }: { kode: string }) {
             <div className="baris"><span>PER</span><span>{f.pe == null ? '—' : `${fmtDes(f.pe, 1)}×`}</span></div>
             {/* Labelnya PBV, jadi angkanya `pbv` — `pb` cuma cadangan untuk
                 berkas yang belum sempat dihitung ulang saat harga disegarkan. */}
-            <div className="baris"><span>PBV</span><span>{(f.pbv ?? f.pb) == null ? '—' : `${fmtDes((f.pbv ?? f.pb)!, 2)}×`}</span></div>
+            <div className="baris"><span>PBV</span><span>
+              <NilaiRotasi
+                ruas="pb"
+                lama={f.pbv ?? f.pb}
+                rasio={petaRasio('pb', f.pb_keystats)}
+                render={(v) => (v == null ? '—' : `${fmtDes(v, 2)}×`)}
+              />
+            </span></div>
             <div className="baris"><span>ROE</span><span>{f.roe == null ? '—' : fmtPct0(f.roe * 100, 1)}</span></div>
             <div className="baris"><span>DER</span><span>{f.der == null ? '—' : fmtPct0(f.der, 1)}</span></div>
             <div className="baris"><span>Pendapatan YoY</span><span className={naikTurun(f.rev_yoy)}>{fmtPct(f.rev_yoy, 1)}</span></div>

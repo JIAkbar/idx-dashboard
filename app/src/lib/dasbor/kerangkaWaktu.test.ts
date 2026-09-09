@@ -220,3 +220,57 @@ describe('deret pembanding wajib dirakit ke kerangka yang sama (#57)', () => {
     expect(harian).toEqual(salinan)
   })
 })
+
+describe('dariYahoo — bar semu kutipan (#150 B)', () => {
+  // 02:00Z = 09:00 WIB. Deret satu jam: dua bar sejam, lalu kutipan 09:10:50
+  // yang stempelnya BUKAN kelipatan jam, volumenya 0, dan O=H=L=C.
+  const jam = (h: number, m = 0, d = 0) => Date.UTC(2026, 8, 9, h, m, d) / 1000
+  const deret = {
+    chart: { result: [{
+      timestamp: [jam(2), jam(3), jam(3, 10, 50)],
+      indicators: { quote: [{
+        open: [6700, 6600, 6575], high: [6700, 6650, 6575],
+        low: [6575, 6560, 6575], close: [6600, 6580, 6575],
+        volume: [12_200_000, 4_100_000, 0],
+      }] },
+    }] },
+  }
+
+  it('tanpa panjang slot, perilakunya persis seperti dulu — tiga lilin', () => {
+    expect(dariYahoo(deret, HIJAU, MERAH).lilin).toHaveLength(3)
+  })
+
+  it('dengan panjang slot, kutipan dilebur ke bar jamnya — bukan lilin sendiri', () => {
+    const h = dariYahoo(deret, HIJAU, MERAH, 3600)
+    expect(h.lilin).toHaveLength(2)
+    const akhir = h.lilin[1]
+    expect(akhir.close).toBe(6575)   // harga terkini ikut
+    expect(akhir.open).toBe(6600)    // pembukaan slotnya tak berubah
+    expect(akhir.low).toBe(6560)     // low slot tetap menang
+    expect(h.volume[1].value).toBe(4_100_000)
+  })
+
+  it('kutipan yang melebarkan kisaran menaikkan high slotnya', () => {
+    const naik = structuredClone(deret)
+    naik.chart.result[0].indicators.quote[0].open[2] = 6800
+    naik.chart.result[0].indicators.quote[0].high[2] = 6800
+    naik.chart.result[0].indicators.quote[0].low[2] = 6800
+    naik.chart.result[0].indicators.quote[0].close[2] = 6800
+    const h = dariYahoo(naik, HIJAU, MERAH, 3600)
+    expect(h.lilin[1].high).toBe(6800)
+  })
+
+  it('kutipan milik slot LAIN dibuang, tidak dipindah ke jam yang salah', () => {
+    const jauh = structuredClone(deret)
+    jauh.chart.result[0].timestamp[2] = jam(5, 10, 50)
+    const h = dariYahoo(jauh, HIJAU, MERAH, 3600)
+    expect(h.lilin).toHaveLength(2)
+    expect(h.lilin[1].close).toBe(6580)   // bar jam 10 tak tersentuh
+  })
+
+  it('bar yang stempelnya pas di slot tidak diapa-apakan', () => {
+    const rapi = structuredClone(deret)
+    rapi.chart.result[0].timestamp[2] = jam(4)
+    expect(dariYahoo(rapi, HIJAU, MERAH, 3600).lilin).toHaveLength(3)
+  })
+})
