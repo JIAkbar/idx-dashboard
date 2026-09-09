@@ -147,7 +147,7 @@ export default function WhalesPapan() {
   )
 
   // Bar hari berjalan (#97 A): ditarik hanya selama bursa buka, lewat proxy
-  // server (token tidak pernah ke peramban), tiap 45 detik — mengikuti cache
+  // server (token tidak pernah ke peramban), tiap 10 detik — mengikuti cache
   // CDN 30 s proxy. Di luar jam bursa tak ada permintaan; gagal = null dan
   // halaman diam-diam tetap memakai arsip harian.
   const [pasar, setPasar] = useState(() => jamPasarJakarta())
@@ -175,7 +175,7 @@ export default function WhalesPapan() {
    *
    *  Hidup di MEMORI HALAMAN saja: tak ditulis ke arsip, tak dikirim ke
    *  mana pun, hilang saat halaman ditutup. Yang disimpan cuma selisih dari
-   *  angka yang memang sudah tiba tiap 45 detik — nol permintaan tambahan. */
+   *  angka yang memang sudah tiba tiap 10 detik — nol permintaan tambahan. */
   const [tape, setTape] = useState<BarisTape[]>([])
   const titikSebelum = useRef<TitikLive | null>(null)
   useEffect(() => { setTape([]); titikSebelum.current = null }, [kode])
@@ -577,7 +577,7 @@ export default function WhalesPapan() {
   // Bar hari berjalan: series.update() menempel/mengganti bar terakhir TANPA
   // menyentuh autoScale atau jendela waktu — zoom/geser pengguna tidak direset
   // tiap tarikan (temuan tinjauan 8 Sep: efek setData yang bergantung pada
-  // objek live mereset pandangan tiap 45 detik). Dideklarasikan SESUDAH efek
+  // objek live mereset pandangan tiap 10 detik). Dideklarasikan SESUDAH efek
   // muat penuh supaya urutannya: setData arsip dulu, lalu bar live.
   // `barLiveTerpasang` mengingat bar live yang sedang tergambar: update()
   // hanya bisa menempel/mengganti, tidak mencabut. Saat bar tak lagi sah
@@ -1089,7 +1089,7 @@ export default function WhalesPapan() {
         </div>
       ) : (
         <>
-        {/* Transaksi hari berjalan — angka yang sudah tiba tiap 45 detik,
+        {/* Transaksi hari berjalan — angka yang sudah tiba tiap 10 detik,
             diangkat dari ekor baris LIVE jadi kartu yang bisa dibaca (Johan
             9 Sep 2026: "di whales sudah live tapi perlu muncul transaksi juga
             bisa gak ?").
@@ -1133,12 +1133,15 @@ export default function WhalesPapan() {
               {tape.length > 0 && (
                 <>
                   <p className="lbl lbl-rentang">
-                    Pertambahan tiap tarikan — ringkasan tiap ±45 detik, bukan catatan tiap transaksi
+                    Pertambahan tiap tarikan — ringkasan tiap ±10 detik, bukan catatan tiap transaksi
                   </p>
                   <div className="wp-tx-tape">
                     {tape.map((b) => (
                       <div key={b.pada} className="wp-tx-baris">
-                        <span className="num muted">{jamPasarJakarta(new Date(b.pada)).jam}</span>
+                        {/* Berdetik sejak jeda tarikan jadi 10 detik (#156 A): tanpa
+                            detik, enam baris berturut-turut tercetak "13:30" dan tape
+                            terbaca seperti daftar yang macet. */}
+                        <span className="num muted">{jamDetikJakarta(new Date(b.pada))}</span>
                         <span className="num">+{lotRingkas(b.volume / 100)} lot</span>
                         <span className="num">Rp {rupiahRingkas(b.value)}</span>
                         <span className="num muted">{b.frequency.toLocaleString('id-ID')} kali</span>
@@ -1217,7 +1220,7 @@ export default function WhalesPapan() {
                     <div className="wp-tx-tape">
                       {tape.slice(0, 5).map((b) => (
                         <div key={b.pada} className="wp-tx-baris">
-                          <span className="num muted">{jamPasarJakarta(new Date(b.pada)).jam}</span>
+                          <span className="num muted">{jamDetikJakarta(new Date(b.pada))}</span>
                           <span className="num">+{lotRingkas(b.volume / 100)} lot</span>
                           <span className="num">Rp {rupiahRingkas(b.value)}</span>
                           <span className="num muted">{b.frequency.toLocaleString('id-ID')} kali</span>

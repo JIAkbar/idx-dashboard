@@ -14,8 +14,13 @@ import { useEffect, useState } from 'react'
 import { jamDetikJakarta } from '../../lib/tanggalBursa'
 import { umurLiveDetik, type HargaLive } from '../../lib/dasbor/hargaLive'
 
-/** Di atas ini, tarikan dianggap gagal — bukan sekadar tertunda. */
-const AMBANG_BASI = 150
+/** Di atas ini, tarikan dianggap gagal — bukan sekadar tertunda.
+ *
+ *  60 detik, bukan 150 seperti saat jeda tarikan masih 45 (#156 A): dengan
+ *  tarikan 10 detik dan singgahan tepi paling lama 15, umur normal terburuk
+ *  ada di 25 detik. Ambang yang tak ikut mengetat berarti enam tarikan bisa
+ *  hilang berturut-turut sementara layar tetap berkata "baru saja". */
+const AMBANG_BASI = 60
 
 export function UmurLive({ live, kelas }: { live: HargaLive; kelas?: string }) {
   const [, detak] = useState(0)

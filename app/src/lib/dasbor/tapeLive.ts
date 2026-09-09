@@ -3,7 +3,7 @@
  *
  * Yang tersedia dari proxy hanya AKUMULASI hari ini (volume, nilai, frekuensi
  * sejak pembukaan), bukan daftar transaksi. Jadi yang bisa disusun di sini
- * adalah selisih antara dua tarikan berurutan — "sejak 45 detik lalu, bertambah
+ * adalah selisih antara dua tarikan berurutan — "sejak 10 detik lalu, bertambah
  * 12.400 lot senilai Rp 1,2 M dalam 87 transaksi".
  *
  * Itu BUKAN catatan per transaksi, dan bedanya penting: satu baris di sini bisa
@@ -43,8 +43,13 @@ export interface BarisTape {
 }
 
 /** Jarak tarikan normal (detik). Dipakai untuk menaksir berapa jendela yang
- *  tergabung saat satu tarikan hilang — bukan untuk menebak isinya. */
-export const JEDA_TARIKAN_DETIK = 45
+ *  tergabung saat satu tarikan hilang — bukan untuk menebak isinya.
+ *
+ *  Ikut #156 A: 45 menjadi 10. Angka ini WAJIB sama dengan jeda yang dipakai
+ *  Whales; kalau ia tertinggal, tiap baris tape akan mengaku "gabungan 4
+ *  jendela" padahal tak satu pun tarikan hilang — dan penanda yang selalu
+ *  menyala persis sama tak bergunanya dengan penanda yang tak pernah menyala. */
+export const JEDA_TARIKAN_DETIK = 10
 
 const angka = (v: number | null | undefined): number | null =>
   typeof v === 'number' && Number.isFinite(v) ? v : null
@@ -68,8 +73,8 @@ export function barisTape(lama: TitikLive, baru: TitikLive): BarisTape | null {
     volume: dv,
     value: dn,
     frequency: df,
-    // Dibulatkan ke bawah lalu dijepit minimal 1: jendela 46 detik masih satu
-    // tarikan, 95 detik berarti satu tarikan hilang di tengah.
+    // Dibulatkan lalu dijepit minimal 1: jendela 11 detik masih satu tarikan,
+    // 21 detik berarti satu tarikan hilang di tengah.
     jendela: Math.max(1, Math.round(jarak / JEDA_TARIKAN_DETIK)),
   }
 }

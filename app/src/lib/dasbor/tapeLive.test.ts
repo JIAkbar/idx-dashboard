@@ -6,13 +6,14 @@ const t = (pada: number, volume: number | null, value: number | null, frequency:
 
 describe('barisTape', () => {
   it('dua tarikan berurutan jadi satu baris selisih', () => {
-    const b = barisTape(t(0, 1_000_000, 5_000_000_000, 500), t(45_000, 1_012_400, 6_200_000_000, 587))
-    expect(b).toEqual({ pada: 45_000, volume: 12_400, value: 1_200_000_000, frequency: 87, jendela: 1 })
+    // Jarak 10 detik = satu jendela, sesuai jeda tarikan sejak #156 A.
+    const b = barisTape(t(0, 1_000_000, 5_000_000_000, 500), t(10_000, 1_012_400, 6_200_000_000, 587))
+    expect(b).toEqual({ pada: 10_000, volume: 12_400, value: 1_200_000_000, frequency: 87, jendela: 1 })
   })
 
   it('satu tarikan gagal → baris berikutnya bertanda gabungan dua jendela', () => {
-    // 90 detik = dua jendela 45 detik; angkanya TIDAK dibagi dua.
-    const b = barisTape(t(0, 1_000_000, 5e9, 500), t(90_000, 1_030_000, 8e9, 700))
+    // 20 detik = dua jendela 10 detik; angkanya TIDAK dibagi dua.
+    const b = barisTape(t(0, 1_000_000, 5e9, 500), t(20_000, 1_030_000, 8e9, 700))
     expect(b?.jendela).toBe(2)
     expect(b?.volume).toBe(30_000)
     expect(b?.frequency).toBe(200)

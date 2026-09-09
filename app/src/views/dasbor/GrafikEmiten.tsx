@@ -172,7 +172,7 @@ const BULAN = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'O
  * 'yyyy-mm-dd', sedangkan lib bersama memakai `Time` lightweight-charts (yang
  * MEMUAT string tapi lebih luas); dan warna volume di sini mengikuti tema,
  * bukan tetapan lib. Yang disalin cuma bar TERAKHIR, dan hanya kalau memang
- * ada yang ditempel — memetakan ulang 6.000 bar tiap 45 detik sekadar untuk
+ * ada yang ditempel — memetakan ulang 6.000 bar tiap 10 detik sekadar untuk
  * mengganti tipe waktu adalah biaya yang tak pernah kembali.
  */
 function tempelBarBerjalan(
@@ -1937,9 +1937,9 @@ export function GrafikEmiten() {
     // dipasang: saat replay tak aktif (perilaku lama), dan SEKALI saat replay
     // baru dinyalakan.
     const replayAktif = replay !== null
-    // Bar berjalan memperbarui dirinya tiap 45 detik. Tanpa penjaga ini,
+    // Bar berjalan memperbarui dirinya tiap 10 detik. Tanpa penjaga ini,
     // tiap tarikan memasang ulang jendela pandang dan zoom/geser pengguna
-    // dilempar balik ke rentang chip — tiap 45 detik, selama bursa buka.
+    // dilempar balik ke rentang chip — tiap 10 detik, selama bursa buka.
     // Kuncinya sengaja TIDAK memuat nilai OHLC bar terakhir: yang boleh
     // memicu pemasangan ulang cuma pergantian emiten/kerangka/rentang/
     // replay dan bertambahnya JUMLAH lilin (bar baru muncul), bukan
@@ -3958,7 +3958,7 @@ export function GrafikEmiten() {
           )}
           {barBerjalanTampil && liveTampil && (
             <span className="grf-live" title={pasar.status === 'buka'
-              ? 'Bar hari berjalan lewat server PAPAN: singgahan server 30 detik + tarikan tiap 45 detik, jadi umur terburuknya sekitar dua menit. Indikator dan pola ikut menghitung bar ini.'
+              ? 'Bar hari berjalan lewat server PAPAN: singgahan server 5 detik (boleh basi 10 detik lagi) + tarikan tiap 10 detik, jadi umur terburuknya sekitar 25 detik — umur sebenarnya tertulis di sebelah angkanya. Indikator dan pola ikut menghitung bar ini.'
               : 'Bursa tutup: ini bar terakhir yang diterima hari ini, ditahan sampai arsip harian memuat tanggal yang sama.'}>
               <b className="grf-live-tanda">{pasar.status === 'buka' ? 'LIVE' : 'PENUTUPAN SEMENTARA'}</b>
               <b className={`num ${(liveTampil.pct ?? 0) < 0 ? 'down' : 'up'}`}>
