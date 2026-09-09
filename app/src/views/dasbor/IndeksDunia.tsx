@@ -15,6 +15,7 @@ import { fN, fp, fmtNF, persen } from '../../lib/dasbor/format'
 import { useChartCanvas } from '../../lib/dasbor/useChartJs'
 import { useIhsgBuka, useIhsgOhlc, type BarisOhlc } from '../../lib/dasbor/ihsgOhlc'
 import { useHargaLive } from '../../lib/dasbor/hargaLive'
+import { jamPasarJakarta } from '../../lib/tanggalBursa'
 import { useTheme } from '../../context/ThemeContext'
 import { IkonMenu, IKON_PERINGATAN, IKON_GLOBE, IKON_PENGGARIS, IKON_GRAFIK_BATANG } from '../../components/dasbor/IkonMenu'
 import { LilinHarian } from '../../components/dasbor/LilinHarian'
@@ -501,7 +502,16 @@ export function PapanIhsg({ hari, tanggalTersedia, buka, kepala, tanpaMeta }: {
   /* Harga berjalan dari proxy server PAPAN (akun kedua, keputusan Johan
    * 28 Agu). null saat gagal/dev lokal — chip LIVE hanya tampil bila hidup
    * dan nilainya beda dari penutupan resmi yang sedang dipajang. */
-  const live = useHargaLive('IHSG', 60)
+  // Gerbang bursa (#153 (1), ikut disetujui bersama #156 A): tanpa syarat ini
+  // halaman menjajak sepanjang malam untuk angka yang tak bergerak — dan sejak
+  // jedanya 15 detik, biayanya enam kali lipat dari sebelumnya. Whales dan
+  // Diary sudah bergerbang sejak awal; halaman ini yang tertinggal.
+  const [pasar, setPasar] = useState(() => jamPasarJakarta())
+  useEffect(() => {
+    const t = setInterval(() => setPasar(jamPasarJakarta()), 60_000)
+    return () => clearInterval(t)
+  }, [])
+  const live = useHargaLive(pasar.status === 'buka' ? 'IHSG' : null, 15)
   const liveBeda = live !== null && Math.round(live.close * 100) !== Math.round(hari.ihsg_value * 100)
   // Perubahan poin dihitung dari ihsg_prev, bukan dibaca dari ihsg_change:
   // ruas itu bolong di 38 dari 93 berkas harian (lihat dataHarian.ts).
@@ -536,7 +546,7 @@ export function PapanIhsg({ hari, tanggalTersedia, buka, kepala, tanpaMeta }: {
           {liveBeda && (
             <span
               className={`chip ${live.pct != null && live.pct >= 0 ? 'up' : 'dn'}`}
-              title="Harga berjalan lewat proxy PAPAN — tertunda ±1 menit, bukan angka penutupan resmi"
+              title="Harga berjalan lewat proxy PAPAN — tertunda paling lama sekitar 25 detik, bukan angka penutupan resmi"
             >
               LIVE {fN(live.close)}{live.pct != null ? ` (${fp(live.pct)})` : ''}
             </span>

@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest'
 import {
-  hariBursa, hariBursaSejak, jamPasarJakarta, lupakanDaftarHariBursa, pasangDaftarHariBursa,
+  hariBursa, hariBursaSejak, jamDetikJakarta, jamPasarJakarta, lupakanDaftarHariBursa, pasangDaftarHariBursa,
   tanggalBursaTerakhir,
 } from './tanggalBursa'
 
@@ -146,5 +146,22 @@ describe('jamPasarJakarta', () => {
   it('lintas tengah malam UTC: tanggalnya ikut Jakarta, bukan UTC', () => {
     const r = jamPasarJakarta(new Date('2026-09-06T23:30:00Z')) // 06:30 WIB, 7 Sep
     expect(r).toEqual({ status: 'tutup', jam: '06:30', iso: '2026-09-07' })
+  })
+})
+
+describe('jamDetikJakarta', () => {
+  it('memberi jam Jakarta lengkap detik, bukan jam perangkat', () => {
+    // 2026-09-09T03:47:32Z = 10:47:32 WIB (UTC+7).
+    expect(jamDetikJakarta(new Date('2026-09-09T03:47:32Z'))).toBe('10:47:32')
+  })
+
+  it('tengah malam Jakarta jadi 00, bukan 24', () => {
+    expect(jamDetikJakarta(new Date('2026-09-08T17:00:05Z'))).toBe('00:00:05')
+  })
+
+  it('detik berjalan terbaca — inilah sebabnya ia ada', () => {
+    const a = jamDetikJakarta(new Date('2026-09-09T03:47:32Z'))
+    const b = jamDetikJakarta(new Date('2026-09-09T03:47:33Z'))
+    expect(a).not.toBe(b)
   })
 })

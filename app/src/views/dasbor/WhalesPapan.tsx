@@ -1,13 +1,15 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { TAHUN_AWAL } from '../../lib/dasbor/brokerEmitenV2'
 import {
-  CandlestickSeries, CrosshairMode, HistogramSeries, createChart, createTextWatermark,
-  type IChartApi, type ISeriesApi, type ITextWatermarkPluginApi, type SeriesType, type Time,
+  CandlestickSeries, CrosshairMode, HistogramSeries, createChart, createSeriesMarkers, createTextWatermark,
+  type IChartApi, type ISeriesApi, type ISeriesMarkersPluginApi, type ITextWatermarkPluginApi,
+  type SeriesType, type Time,
 } from 'lightweight-charts'
 import { gabungBarBerjalan, muatCandle, type DataCandle } from '../../lib/dasbor/candleStockbit'
 import { useHargaLive, type HargaLive } from '../../lib/dasbor/hargaLive'
+import { UmurLive } from '../../components/dasbor/UmurLive'
 import { langkahTape, vwapTaksiran, nilaiPerTransaksi, type BarisTape, type TitikLive } from '../../lib/dasbor/tapeLive'
-import { jamPasarJakarta } from '../../lib/tanggalBursa'
+import { jamPasarJakarta, jamDetikJakarta } from '../../lib/tanggalBursa'
 import { StockAutocomplete } from '../../components/dasbor/StockAutocomplete'
 import { ModalKecil } from '../../components/dasbor/ModalKecil'
 import { LencanaBeku, tidakDiperdagangkan } from '../../components/dasbor/LencanaBeku'
@@ -19,7 +21,7 @@ import { bacaTokenTema } from '../../lib/dasbor/useChartJs'
 import { warnaGrid, gridDariTemplate, GRID_BAWAAN, type SetelanGrid } from '../../lib/dasbor/grafikEmiten'
 import { useTheme } from '../../context/ThemeContext'
 import { SeleksiAreaChart } from '../../lib/dasbor/seleksiAreaChart'
-import { GarisAvgBroker } from '../../lib/dasbor/garisAvgBroker'
+import { GarisAvgBroker, type GarisBroker } from '../../lib/dasbor/garisAvgBroker'
 import { BubbleBroker, bubbleOutlierHarian, type BubbleHari } from '../../lib/dasbor/bubbleBroker'
 import { ProfilHargaChart } from '../../lib/dasbor/profilHargaChart'
 import {
@@ -156,7 +158,7 @@ export default function WhalesPapan() {
     }), 60_000)
     return () => clearInterval(t)
   }, [])
-  const live = useHargaLive(pasar.status === 'buka' ? kode : null, 45)
+  const live = useHargaLive(pasar.status === 'buka' ? kode : null, 10)
   // Sesudah tutup (16:15) polling berhenti, tetapi bar terakhir yang sudah
   // diterima DITAHAN sampai arsip memuat tanggal yang sama (gabungBarBerjalan
   // otomatis memenangkan arsip) atau kode berganti — temuan tinjauan 8 Sep:
@@ -165,16 +167,9 @@ export default function WhalesPapan() {
   useEffect(() => { if (live && live.kode === kode) setLiveTahan(live) }, [live, kode])
   useEffect(() => { setLiveTahan(null) }, [kode])
   const liveTampil = live ?? (liveTahan && liveTahan.kode === kode ? liveTahan : null)
-  // Detak 30 s hanya untuk menghitung umur angka live di label (tinjauan 8 Sep:
-  // nilai yang dipertahankan saat rantai mati harus berlabel "basi", bukan
-  // "tertunda ≤ 2 menit"). Tidak menyentuh chart.
-  const [kini, setKini] = useState(() => Date.now())
-  useEffect(() => {
-    if (!liveTampil) return
-    const t = setInterval(() => setKini(Date.now()), 30_000)
-    return () => clearInterval(t)
-  }, [liveTampil])
-  const umurLiveDetik = liveTampil ? Math.max(0, Math.round((kini - liveTampil.diambilPada) / 1000)) : 0
+  // Detak umur label pindah ke <UmurLive> (#156 C): dulu halaman ini berdetak
+  // sendiri tiap 30 detik, jadi seluruh Whales — kanvas dan semuanya — dirender
+  // ulang demi satu angka kecil. Sekarang yang berdetak cuma span itu.
 
   /** Tape transaksi hari berjalan (#152 A) — selisih antar tarikan.
    *
@@ -224,6 +219,8 @@ export default function WhalesPapan() {
   const [footprintAktif, setFootprintAktif] = useState(false)
   /** Sel footprint yang sedang di-hover/tap — isi tooltip (spek §1). */
   const [fpHover, setFpHover] = useState<{ tanggal: string; sel: SelFootprintWarna; x: number; y: number } | null>(null)
+  /** Lilin hari berjalan yang sedang disorot — isi tooltip #155 B. */
+  const [txHover, setTxHover] = useState<{ x: number; y: number } | null>(null)
   /** Bubble yang di-hover/tap — tooltip penjelas (Johan 28 Agu: "bubble ini
    *  fungsi nya kurang jelas ... tooltips nya lebih di yakinkan lagi"). */
   const [bubHover, setBubHover] = useState<{ b: BubbleHari; x: number; y: number } | null>(null)
@@ -273,6 +270,11 @@ export default function WhalesPapan() {
   const profilRef = useRef<ProfilHargaChart | null>(null)
   const bubbleRef = useRef<BubbleBroker | null>(null)
   const footprintRef = useRef<FootprintHarian | null>(null)
+  const penandaRef = useRef<ISeriesMarkersPluginApi<Time> | null>(null)
+  /** Waktu lilin hari berjalan, dibaca penangan crosshair yang dipasang sekali
+   *  saat chart dibuat — ref, bukan state, supaya penangannya tak perlu
+   *  dipasang ulang tiap tarikan live. */
+  const barLiveRef = useRef<string | null>(null)
   const seretRef = useRef<{ x0: number; y0: number } | null>(null)
 
   // Zoom pas satu klik (masukan Johan 27 Agu: "berikan tombol auto ... gak
@@ -416,6 +418,11 @@ export default function WhalesPapan() {
       const footprint = new FootprintHarian(() => lilinRef.current)
       pane0.attachPrimitive(footprint)
       footprintRef.current = footprint
+      // Penanda seri (#155 B): dipasang sekali di sini, isinya disetel efek di
+      // bawah. Dibuat bersama chart supaya ia mati bersama chart juga —
+      // penanda yang menunjuk seri yang sudah dibongkar akan menggambar ke
+      // koordinat basi tanpa satu pun galat.
+      penandaRef.current = createSeriesMarkers(lilin, [])
     }
     if (import.meta.env.DEV) (el as HTMLDivElement & { __papanChart?: unknown }).__papanChart = chart
     // Pill AVG clickable (Johan 26 Agu: "mgkn clickable"): hitTest primitive
@@ -426,8 +433,14 @@ export default function WhalesPapan() {
       const m = id.startsWith('fp:') ? footprintRef.current?.getSel(id) : null
       return m ?? null
     }
-    const saatGeser = (p: { hoveredObjectId?: unknown; point?: { x: number; y: number } }) => {
+    const saatGeser = (p: { hoveredObjectId?: unknown; point?: { x: number; y: number }; time?: unknown }) => {
       const id = typeof p.hoveredObjectId === 'string' ? p.hoveredObjectId : ''
+      // Lilin hari berjalan dikenali dari WAKTU kursor, bukan dari hitTest:
+      // penanda seri tak menyetor `hoveredObjectId`, jadi menunggu id di sini
+      // berarti tooltipnya tak pernah muncul sama sekali.
+      const waktuLive = barLiveRef.current
+      if (waktuLive && p.point && String(p.time ?? '') === waktuLive) setTxHover({ x: p.point.x, y: p.point.y })
+      else setTxHover((cur) => (cur ? null : cur))
       const m = bacaFp(id)
       if (m && p.point) setFpHover({ ...m, x: p.point.x, y: p.point.y })
       else setFpHover((cur) => (cur ? null : cur))
@@ -458,6 +471,7 @@ export default function WhalesPapan() {
       profilRef.current = null
       bubbleRef.current = null
       footprintRef.current = null
+      penandaRef.current = null
     }
   }, [])
 
@@ -610,11 +624,35 @@ export default function WhalesPapan() {
   useEffect(() => {
     const prim = avgRef.current
     if (!prim) return
-    if (tf !== 'harian' || !avgAktif || hari.length === 0) { prim.setGaris([]); return }
+    const garis: GarisBroker[] = []
+    // Garis harga rata-rata HARI INI (#155 A, Johan 9 Sep 2026: "Munculkan
+    // transaksi nya di candle"). Ikut primitive yang sama dengan garis AVG
+    // broker supaya penata kolom label melihat keduanya — dua garis berharga
+    // mirip akan saling geser, bukan saling tindih.
+    //
+    // Hidup HANYA selagi bursa buka: sesudah tutup arsip yang menang, dan
+    // garis "hari ini" di atas lilin arsip akan mengaku sebagai angka resmi.
+    // Ia juga tidak ikut tombol Garis AVG — sumbernya bukan broker, dan
+    // mematikannya bersama garis broker berarti menyembunyikan angka live.
+    if (pasar.status === 'buka' && liveTampil && vwapHariIni != null) {
+      const bagian = [`HARI INI · VWAP ${Math.round(vwapHariIni).toLocaleString('id-ID')}`]
+      if (liveTampil.value != null) bagian.push(`Rp ${rupiahRingkas(liveTampil.value)}`)
+      if (liveTampil.frequency != null) bagian.push(`${liveTampil.frequency.toLocaleString('id-ID')}×`)
+      if (liveTampil.volume != null) bagian.push(`${lotRingkas(liveTampil.volume / 100)} lot`)
+      garis.push({
+        broker: 'HARI INI',
+        harga: vwapHariIni,
+        pct: 0,
+        warna: bacaTokenTema('--amber', '#F2C230'),
+        teks: bagian.join(' · '),
+        id: 'live:vwap',
+      })
+    }
+    if (tf !== 'harian' || !avgAktif || hari.length === 0) { prim.setGaris(garis); return }
     const agg = agregatArea(hari, sel ?? SEMUA)
     const totalBeli = agg.grossBeli.reduce((s, r) => s + r.beliNilai, 0)
-    prim.setGaris(
-      agg.netBeli
+    garis.push(
+      ...agg.netBeli
         .filter((r) => r.beliLot > 0)
         .slice(0, 5)
         // Warna per GARIS dari palet seri DISTINCT, bukan warna kelompok
@@ -629,7 +667,28 @@ export default function WhalesPapan() {
           warna: bacaTokenTema(WARNA_GARIS_AVG[i % WARNA_GARIS_AVG.length]),
         })),
     )
-  }, [tf, avgAktif, hari, sel, theme])
+    prim.setGaris(garis)
+  }, [tf, avgAktif, hari, sel, theme, pasar.status, liveTampil, vwapHariIni])
+
+  // Penanda ringkas di atas lilin hari berjalan (#155 B). Isinya sengaja cuma
+  // dua angka: nilai dan frekuensi. Empat angka di atas lilin akan menutupi
+  // lilin tetangganya di zoom rapat — sisanya ada di tooltip saat disorot.
+  useEffect(() => {
+    barLiveRef.current = barLive ? String(barLive.time) : null
+    const prim = penandaRef.current
+    if (!prim) return
+    if (!barLive || pasar.status !== 'buka' || !liveTampil) { prim.setMarkers([]); return }
+    const bagian: string[] = []
+    if (liveTampil.value != null) bagian.push(`Rp ${rupiahRingkas(liveTampil.value)}`)
+    if (liveTampil.frequency != null) bagian.push(`${lotRingkas(liveTampil.frequency)}×`)
+    prim.setMarkers(bagian.length === 0 ? [] : [{
+      time: barLive.time,
+      position: 'aboveBar',
+      color: bacaTokenTema('--amber', '#F2C230'),
+      shape: 'arrowDown',
+      text: bagian.join(' · '),
+    }])
+  }, [barLive, liveTampil, pasar.status, theme])
 
   // W4 — profil harga (lot per pita dari broker harian), lapisan bawah candle.
   // Hanya mode Harian: sumbernya broker harian, tak punya pecahan intraday.
@@ -863,7 +922,7 @@ export default function WhalesPapan() {
             <span
               className="wp-live"
               title={pasar.status === 'buka'
-                ? 'Bar hari berjalan dari Stockbit lewat server PAPAN: cache server 30 detik (boleh basi 30 detik lagi) + tarikan tiap 45 detik, jadi tertunda paling lama sekitar 2 menit. Tidak ditulis ke arsip. Angka asing tidak ditampilkan karena sumbernya baru sah sesudah tutup.'
+                ? 'Bar hari berjalan dari Stockbit lewat server PAPAN: singgahan server 5 detik (boleh basi 10 detik lagi) + tarikan tiap 10 detik, jadi tertunda paling lama sekitar 25 detik — umur sebenarnya tertulis di sebelah angkanya. Tidak ditulis ke arsip. Angka asing tidak ditampilkan karena sumbernya baru sah sesudah tutup.'
                 : 'Bursa sudah tutup: ini bar terakhir yang diterima hari ini, ditahan sampai arsip harian hasil panen memuat tanggal yang sama. Bukan angka penutupan resmi.'}
             >
               <b className="wp-live-tanda">{pasar.status === 'buka' ? 'LIVE' : 'PENUTUPAN SEMENTARA'}</b>
@@ -875,12 +934,10 @@ export default function WhalesPapan() {
                 {liveTampil.volume != null && ` · vol ${lotRingkas(liveTampil.volume / 100)} lot`}
                 {liveTampil.value != null && ` · Rp ${rupiahRingkas(liveTampil.value)}`}
                 {liveTampil.frequency != null && ` · ${liveTampil.frequency.toLocaleString('id-ID')} kali`}
-                {` · diterima ${jamPasarJakarta(new Date(liveTampil.diambilPada)).jam} WIB`}
+                {' · '}
                 {pasar.status !== 'buka'
-                  ? ' · menunggu arsip'
-                  : umurLiveDetik < 150
-                    ? ' · tertunda ≤ 2 menit'
-                    : ` · basi ${Math.round(umurLiveDetik / 60)} menit, tarikan gagal`}
+                  ? <>diterima {jamDetikJakarta(new Date(liveTampil.diambilPada))} · menunggu arsip</>
+                  : <UmurLive live={liveTampil} />}
               </span>
             </span>
           )}
@@ -1044,13 +1101,9 @@ export default function WhalesPapan() {
           <div className="panel wp-tx">
             <div className="panel-h">
               <span className="lbl">Transaksi hari ini — seluruh pasar, belum dipecah per broker</span>
-              <span className="muted wp-tx-umur">
-                {pasar.status !== 'buka'
-                  ? 'PENUTUPAN SEMENTARA · menunggu arsip'
-                  : umurLiveDetik < 150
-                    ? 'tertunda ≤ 2 menit'
-                    : `basi ${Math.round(umurLiveDetik / 60)} menit, tarikan gagal`}
-              </span>
+              {pasar.status !== 'buka'
+                ? <span className="muted wp-tx-umur">PENUTUPAN SEMENTARA · menunggu arsip</span>
+                : <UmurLive live={liveTampil} kelas="muted wp-tx-umur" />}
             </div>
             <div className="panel-b">
               <div className="grid3">
@@ -1136,6 +1189,45 @@ export default function WhalesPapan() {
                 onPointerCancel={onUp}
               />
             )}
+            {/* Tooltip lilin hari berjalan (#155 B) — empat angka hari ini plus
+                lima baris tape terakhir. Tape-nya hidup di memori halaman,
+                jadi daftarnya kosong sampai tarikan kedua tiba; itu keadaan
+                yang benar, bukan kegagalan. */}
+            {txHover && liveTampil && pasar.status === 'buka' && (() => {
+              const lebar = bungkusRef.current?.clientWidth ?? 0
+              const kanan = lebar > 0 && txHover.x > lebar / 2
+              return (
+                <div
+                  className="wp-fp-tip"
+                  style={{
+                    left: kanan ? undefined : txHover.x + 14,
+                    right: kanan ? lebar - txHover.x + 14 : undefined,
+                    top: Math.max(8, txHover.y - 10),
+                  }}
+                >
+                  <div className="wp-fp-tip-judul">Hari berjalan · seluruh pasar</div>
+                  <div className="wp-fp-tip-total">
+                    Nilai Rp {liveTampil.value != null ? rupiahRingkas(liveTampil.value) : '—'}
+                    {' · '}{liveTampil.frequency != null ? liveTampil.frequency.toLocaleString('id-ID') : '—'} kali
+                    <br />
+                    Volume {liveTampil.volume != null ? lotRingkas(liveTampil.volume / 100) : '—'} lot
+                    {' · '}VWAP taksiran {vwapHariIni != null ? Math.round(vwapHariIni).toLocaleString('id-ID') : '—'}
+                  </div>
+                  {tape.length > 0 && (
+                    <div className="wp-tx-tape">
+                      {tape.slice(0, 5).map((b) => (
+                        <div key={b.pada} className="wp-tx-baris">
+                          <span className="num muted">{jamPasarJakarta(new Date(b.pada)).jam}</span>
+                          <span className="num">+{lotRingkas(b.volume / 100)} lot</span>
+                          <span className="num">Rp {rupiahRingkas(b.value)}</span>
+                          <span className="num muted">{b.frequency.toLocaleString('id-ID')} kali</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )
+            })()}
             {/* Tooltip sel footprint (spek §1: hover desktop, tap ponsel —
                 dua-duanya menyetor lewat hoveredObjectId chart). */}
             {footprintAktif && fpHover && (() => {

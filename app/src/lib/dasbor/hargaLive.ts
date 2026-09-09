@@ -24,6 +24,13 @@ export interface HargaLive {
   /** Kapan angkanya sampai di peramban (epoch ms) — label jam di layar
    *  dibaca dari sini, karena server tak mengirim stempel waktu. */
   diambilPada: number
+  /** Berapa detik jawabannya sudah duduk di singgahan tepi saat sampai (#156).
+   *
+   *  Tanpa ini umur di layar akan berbohong ke arah yang menyenangkan: angka
+   *  yang tiba 2 detik lalu bisa saja sudah 12 detik umurnya, karena yang
+   *  dikirim adalah salinan singgahan. Dibaca dari header umur jawaban —
+   *  sekawasan, jadi tak ada larangan membacanya. */
+  umurSumber: number
 }
 
 export async function ambilHargaLive(kode: string): Promise<HargaLive | null> {
@@ -32,8 +39,11 @@ export async function ambilHargaLive(kode: string): Promise<HargaLive | null> {
   try {
     const r = await fetch(`/api/live-harga?kode=${encodeURIComponent(kode)}`, { signal: kendali.signal })
     if (!r.ok) return null
-    const d = (await r.json()) as Omit<HargaLive, 'diambilPada'>
-    return Number.isFinite(d?.close) ? { ...d, diambilPada: Date.now() } : null
+    const d = (await r.json()) as Omit<HargaLive, 'diambilPada' | 'umurSumber'>
+    const umur = Number(r.headers.get('Age'))
+    return Number.isFinite(d?.close)
+      ? { ...d, diambilPada: Date.now(), umurSumber: Number.isFinite(umur) ? Math.max(0, umur) : 0 }
+      : null
   } catch {
     return null
   } finally {
@@ -41,8 +51,19 @@ export async function ambilHargaLive(kode: string): Promise<HargaLive | null> {
   }
 }
 
-/** Segar tiap `jedaDetik` selama halaman terlihat; null selama belum/gagal. */
-export function useHargaLive(kode: string | null, jedaDetik = 45): HargaLive | null {
+/** Umur angka live dalam detik: seberapa lama sejak ia sampai, DITAMBAH
+ *  seberapa lama ia sudah duduk di singgahan sebelum sampai. Yang kedua sering
+ *  lebih besar daripada yang pertama tepat sesudah tarikan. */
+export function umurLiveDetik(h: HargaLive, kini = Date.now()): number {
+  return Math.max(0, Math.round((kini - h.diambilPada) / 1000)) + (h.umurSumber ?? 0)
+}
+
+/** Segar tiap `jedaDetik` selama halaman terlihat; null selama belum/gagal.
+ *
+ *  Jeda 10-15 detik sejak #156 A (dulu 45-60). Ukuran 9 Sep 2026 menunjukkan
+ *  sumbernya bergerak median 1,77 detik saat ramai, jadi jeda lama membuang
+ *  angka yang sebenarnya ada — tundaannya pilihan kita, bukan batas sumber. */
+export function useHargaLive(kode: string | null, jedaDetik = 15): HargaLive | null {
   const [harga, setHarga] = useState<HargaLive | null>(null)
   useEffect(() => {
     if (!kode) { setHarga(null); return }

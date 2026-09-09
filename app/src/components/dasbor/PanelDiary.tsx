@@ -6,6 +6,7 @@ import {
 } from '../../lib/dasbor/diaryPasar'
 import { LangkahTanggal } from './LangkahTanggal'
 import { useHargaLive } from '../../lib/dasbor/hargaLive'
+import { UmurLive } from './UmurLive'
 import { jamPasarJakarta } from '../../lib/tanggalBursa'
 
 /**
@@ -145,7 +146,7 @@ export function PanelDiary() {
     const t = setInterval(() => setPasar(jamPasarJakarta()), 60_000)
     return () => clearInterval(t)
   }, [])
-  const live = useHargaLive(pasar.status === 'buka' ? 'IHSG' : null, 60)
+  const live = useHargaLive(pasar.status === 'buka' ? 'IHSG' : null, 15)
 
   const bulan = useMemo(() => {
     if (!sel.length) return null
@@ -220,8 +221,7 @@ export function PanelDiary() {
                 {fangka(live.close, 2)}{live.pct != null && ` · ${fpersen(live.pct)}`}
               </b>
               <span>
-                {jamPasarJakarta(new Date(live.diambilPada)).jam} WIB · tertunda ≤ 2 menit ·
-                angka resmi menyusul sesudah tutup
+                <UmurLive live={live} /> · angka resmi menyusul sesudah tutup
               </span>
             </>
           ) : (

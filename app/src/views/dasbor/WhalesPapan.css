@@ -320,3 +320,12 @@
      memepet angka rupiah sampai terpotong. */
   .lantai .wp-tx-baris { grid-template-columns: 46px 1fr 1fr; }
 }
+
+/* Ponsel: kartu Transaksi turun ke BAWAH kanvas (#155, catatan pengawas yang
+   disetujui Johan 9 Sep). Di 412 px kartu setinggi ~210 px mendorong lilin
+   melewati lipatan 810 px, jadi halaman Whales dibuka tanpa satu lilin pun
+   terlihat. `.lantai` itu flex kolom dan kartu ini anak langsungnya, jadi
+   satu `order` sudah cukup — nol JavaScript, nol perubahan struktur. */
+@media (max-width: 760px) {
+  .lantai .wp-tx { order: 1; }
+}

@@ -152,9 +152,14 @@ export default async function handler(req, res) {
     // BASI (salinan kemarin) — jadi asing sengaja TIDAK dikirim. Angka ini
     // tidak pernah ditulis ke arsip; arsip tetap harian sesudah tutup.
     const angka = (v) => (Number.isFinite(Number(v)) ? Number(v) : null)
-    // stale-while-revalidate diturunkan 90 → 30 (temuan tinjauan 8 Sep): umur
-    // terburuk di CDN 60 s + jeda tarikan klien 45 s ≈ 2 menit, sesuai label.
-    res.setHeader('Cache-Control', 's-maxage=30, stale-while-revalidate=30')
+    // Diperpendek 30/30 → 5/10 (#156 A, keputusan Johan 9 Sep 2026: "kenapa
+    // tertunda ? harusnya bisa dong realtime tertunda 1-5 detik"). Umur
+    // terburuk di tepi jadi 15 detik, ditambah jeda tarikan klien 10 detik =
+    // ≤25 detik, dari sebelumnya ≈2 menit. Penggabungan tetap ada: seribu
+    // pengunjung pada satu emiten tetap satu panggilan tiap 5 detik, bukan
+    // seribu. Diukur 9 Sep di jam bursa, 317 tarikan tanpa singgahan selama
+    // 30 menit: nol 429.
+    res.setHeader('Cache-Control', 's-maxage=5, stale-while-revalidate=10')
     return res.status(200).json({
       kode,
       tanggal: kini.date ?? null,

@@ -37,6 +37,7 @@ import {
 } from '../../lib/dasbor/kerangkaWaktu'
 import { gabungBarBerjalan } from '../../lib/dasbor/candleStockbit'
 import { useHargaLive, type HargaLive } from '../../lib/dasbor/hargaLive'
+import { UmurLive } from '../../components/dasbor/UmurLive'
 import { jamPasarJakarta } from '../../lib/tanggalBursa'
 import { Dropdown } from '../../components/dasbor/Dropdown'
 import {
@@ -974,19 +975,12 @@ export function GrafikEmiten() {
     }), 60_000)
     return () => clearInterval(t)
   }, [])
-  const live = useHargaLive(pasar.status === 'buka' ? kode : null, 45)
+  const live = useHargaLive(pasar.status === 'buka' ? kode : null, 10)
   const [liveTahan, setLiveTahan] = useState<HargaLive | null>(null)
   useEffect(() => { if (live && live.kode === kode) setLiveTahan(live) }, [live, kode])
   useEffect(() => { setLiveTahan(null) }, [kode])
   const liveTampil = live ?? (liveTahan && liveTahan.kode === kode ? liveTahan : null)
-  // Detak 30 s hanya untuk umur label — tak menyentuh kanvas.
-  const [kiniLive, setKiniLive] = useState(() => Date.now())
-  useEffect(() => {
-    if (!liveTampil) return
-    const t = setInterval(() => setKiniLive(Date.now()), 30_000)
-    return () => clearInterval(t)
-  }, [liveTampil])
-  const umurLiveDetik = liveTampil ? Math.max(0, Math.round((kiniLive - liveTampil.diambilPada) / 1000)) : 0
+  // Detak umur label pindah ke <UmurLive> (#156 C) — kanvas tak ikut dirender.
 
   // Ruas kaya (nilai transaksi, frekuensi, aliran asing, saham beredar) —
   // fetch TERPISAH dari `ohlc/` (lihat `ohlcvKaya.ts`). Cakupannya lebih
@@ -3971,13 +3965,9 @@ export function GrafikEmiten() {
                 {liveTampil.close.toLocaleString('id-ID')}
                 {liveTampil.pct != null && ` · ${liveTampil.pct > 0 ? '+' : ''}${liveTampil.pct.toLocaleString('id-ID')}%`}
               </b>
-              <span className="muted">
-                {pasar.status !== 'buka'
-                  ? 'menunggu arsip'
-                  : umurLiveDetik < 150
-                    ? 'tertunda ≤ 2 menit'
-                    : `basi ${Math.round(umurLiveDetik / 60)} menit, tarikan gagal`}
-              </span>
+              {pasar.status !== 'buka'
+                ? <span className="muted">menunggu arsip</span>
+                : <UmurLive live={liveTampil} kelas="muted" />}
             </span>
           )}
           <span className="grf-toolbar-isi" />

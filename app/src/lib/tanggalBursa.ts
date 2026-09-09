@@ -174,6 +174,24 @@ export function hariBursaSejak(dariIso: string, sampaiIso: string): number {
  * memutuskan KAPAN angka hari berjalan ditarik: di luar jam bursa tak ada yang
  * berubah, jadi tak ada yang diminta ke server.
  */
+/** Jam dinding Jakarta lengkap dengan detik, "HH:MM:SS" (#156 C).
+ *
+ *  `jamPasarJakarta().jam` sengaja berhenti di menit — ia menjawab "sudah jam
+ *  berapa bursa", dan detik tak berarti di sana. Label umur live justru hidup
+ *  di detik: tanpa ini stempel "diterima 10:47" terbaca sama persis selama
+ *  enam puluh detik berturut-turut, jadi angka yang menua tampak diam.
+ */
+export function jamDetikJakarta(kini: Date = new Date()): string {
+  const bagian = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Jakarta', hour12: false,
+    hour: '2-digit', minute: '2-digit', second: '2-digit',
+  }).formatToParts(kini)
+  const ambil = (t: string) => bagian.find((b) => b.type === t)?.value ?? '00'
+  // Beberapa mesin memberi "24" untuk tengah malam saat hour12:false.
+  const j = String(Number(ambil('hour')) % 24).padStart(2, '0')
+  return `${j}:${ambil('minute')}:${ambil('second')}`
+}
+
 export function jamPasarJakarta(kini: Date = new Date()): {
   status: 'buka' | 'tutup'
   /** Jam dinding Jakarta, "HH:MM". */

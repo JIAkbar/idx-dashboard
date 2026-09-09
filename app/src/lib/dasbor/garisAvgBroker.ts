@@ -30,6 +30,15 @@ export interface GarisBroker {
   /** Porsi nilai beli broker ini terhadap total beli rentang (0..1). */
   pct: number
   warna: string
+  /** Label pill, bila bentuk bakunya tidak cocok. Dipakai garis VWAP hari
+   *  berjalan (#155 A), yang bukan broker dan tak punya porsi beli — memaksanya
+   *  ke bentuk "KODE AVG 160 (0%)" akan mencetak porsi nol yang tak berarti.
+   *  Penata kolom, garis penunjuk, dan hitTest tetap sama; yang berbeda cuma
+   *  kalimatnya. */
+  teks?: string
+  /** Id hitTest, bawaannya `avg:<broker>`. Garis non-broker memakai awalan
+   *  lain supaya penangan klik tak menyangkanya pill broker. */
+  id?: string
 }
 
 const FONT_PX = 12
@@ -69,7 +78,7 @@ export class GarisAvgBroker implements IPanePrimitive<Time> {
   /** Kotak pill terakhir yang digambar, RUANG MEDIA — bahan hitTest supaya
    *  pill bisa diklik (id `avg:<broker>` muncul di `hoveredObjectId` event
    *  chart; pemakai yang memutuskan mau diapakan). */
-  private pillRect: Array<{ x0: number; y0: number; x1: number; y1: number; broker: string }> = []
+  private pillRect: Array<{ x0: number; y0: number; x1: number; y1: number; id: string }> = []
   // Satu larik view yang stabil — lightweight-charts meng-cache berdasarkan
   // referensi larik, jadi larik baru tiap panggilan membatalkan cache-nya.
   private views: IPanePrimitivePaneView[] = [{ renderer: () => this.renderer() }]
@@ -100,7 +109,7 @@ export class GarisAvgBroker implements IPanePrimitive<Time> {
   hitTest(x: number, y: number): PrimitiveHoveredItem | null {
     for (const r of this.pillRect) {
       if (x >= r.x0 && x <= r.x1 && y >= r.y0 && y <= r.y1) {
-        return { externalId: `avg:${r.broker}`, zOrder: 'top', cursorStyle: 'pointer' }
+        return { externalId: r.id, zOrder: 'top', cursorStyle: 'pointer' }
       }
     }
     return null
@@ -146,7 +155,8 @@ export class GarisAvgBroker implements IPanePrimitive<Time> {
             ctx.setLineDash([])
 
             const tanda = g.sisi === 'asing' ? ' (A)' : g.sisi === 'lokal' ? ' (L)' : ''
-            const teks = `${g.broker}${tanda} AVG ${Math.round(g.harga).toLocaleString('id-ID')} (${Math.round(g.pct * 100)}%)`
+            const teks = g.teks
+              ?? `${g.broker}${tanda} AVG ${Math.round(g.harga).toLocaleString('id-ID')} (${Math.round(g.pct * 100)}%)`
             const lebarTeks = ctx.measureText(teks).width
             const lebarPill = lebarTeks + PAD_X * 2 * hp
             const x = bitmapSize.width - TEPI_KANAN * hp - lebarPill
@@ -169,7 +179,7 @@ export class GarisAvgBroker implements IPanePrimitive<Time> {
             this.pillRect.push({
               x0: x / hp, x1: (x + lebarPill) / hp,
               y0: yPill / vp, y1: (yPill + tinggiPill) / vp,
-              broker: g.broker,
+              id: g.id ?? `avg:${g.broker}`,
             })
           }
           ctx.restore()
