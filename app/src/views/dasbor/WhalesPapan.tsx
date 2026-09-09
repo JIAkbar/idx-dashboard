@@ -189,8 +189,16 @@ export default function WhalesPapan() {
     const kiniTitik: TitikLive = {
       pada: live.diambilPada, volume: live.volume, value: live.value, frequency: live.frequency,
     }
-    setTape((t) => tambahTape(t, titikSebelum.current, kiniTitik))
+    // Titik pembanding DISALIN dulu, lalu ref-nya diperbarui, baru tape
+    // dihitung. Versi pertama membaca `titikSebelum.current` DI DALAM updater
+    // `setTape` — dan updater fungsional dijalankan React belakangan, saat
+    // ref-nya sudah tertimpa oleh baris di bawahnya. Selisihnya jadi titik
+    // dikurangi dirinya sendiri: selalu nol, jadi tape tak pernah terisi
+    // walau angkanya jelas bergerak (terukur di produksi: lima tarikan, nol
+    // baris). Nol galat, dan dari layar tak bisa dibedakan dari 'pasar sepi'.
+    const sebelum = titikSebelum.current
     titikSebelum.current = kiniTitik
+    setTape((t) => tambahTape(t, sebelum, kiniTitik))
   }, [live, kode])
 
   const vwapHariIni = vwapTaksiran(liveTampil?.value, liveTampil?.volume)
