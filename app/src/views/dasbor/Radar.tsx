@@ -12,6 +12,7 @@ import { rollupBulanan, rollupMingguan } from '../../lib/radar/rollup'
 import { DatePicker } from '../../components/dasbor/DatePicker'
 import { LightboxGambar, type GambarLightbox } from '../../components/dasbor/LightboxGambar'
 import { KonteksData } from '../../components/dasbor/KonteksData'
+import { useDataHarian } from '../../lib/dasbor/dataHarian'
 // Gaya lightbox (.af-lb-*) hidup di AdminShared.css (dulu AdminHome.css,
 // pindah folder saat rombak shell tab #shell-tab), ter-scope .lantai —
 // diimpor di sini juga supaya pratinjau RBU jalan tanpa mampir halaman admin.
@@ -223,6 +224,10 @@ function CaraBaca() {
  * baca resmi, dan analisa mingguan/bulanan dari akumulasi arsip. Port setia
  * artifact papan-radar-wdwl.html v2 ke token lantai.css.
  */
+/** Di atas ini, usia edisi disebut di layar. Lima hari bursa = satu pekan
+ *  penuh tanpa terbit; di bawah itu, jeda sehari-dua masih irama normal. */
+const AMBANG_EDISI_TUA = 5
+
 export function Radar() {
   const { arsip, error } = useArsipRadar()
   const ihsg = useIhsgClose()
@@ -233,6 +238,19 @@ export function Radar() {
 
   const idx = pilih ?? (arsip ? arsip.length - 1 : 0)
   const edisi: EdisiRadar | null = arsip?.[idx] ?? null
+
+  /** Berapa HARI BURSA sejak edisi terakhir terbit.
+   *
+   *  Hari bursa, bukan hari kalender: akhir pekan panjang dan libur bursa
+   *  bukan kemunduran, dan penjaga yang menghitung kalender akan menuduh tiap
+   *  Senin. Dihitung hanya untuk edisi TERBARU — saat orang membuka arsip
+   *  lama, usianya memang sengaja dipilih dan tak perlu diperingatkan. */
+  const { tanggalTersedia } = useDataHarian()
+  const umurEdisi = useMemo(() => {
+    const terbaru = arsip?.[arsip.length - 1]
+    if (!terbaru || !edisi || edisi.date_iso !== terbaru.date_iso || !tanggalTersedia.length) return null
+    return tanggalTersedia.filter((t) => t.date_iso > terbaru.date_iso).length
+  }, [arsip, edisi, tanggalTersedia])
 
   /** Tanggal yang PUNYA edisi - sel kalender di luar ini mati sendiri,
    *  jadi tak ada klik yang berujung halaman kosong. */
@@ -304,6 +322,16 @@ export function Radar() {
         </div>
       </div>
       <KonteksData tanggal={edisi.date_iso} />
+      {umurEdisi != null && umurEdisi >= AMBANG_EDISI_TUA && (
+        /* Usia edisi disebut apa adanya (#139 A). Halaman ini memajang edisi
+           TERAKHIR, dan tanpa keterangan usia, edisi 26 Agustus terbaca sama
+           meyakinkannya dengan edisi hari ini — pembaca tak punya cara tahu
+           bahwa Radar sedang jeda. Ambangnya hari BURSA, bukan hari kalender:
+           akhir pekan panjang bukan kemunduran. */
+        <p className="muted" style={{ margin: '4px 0 0', fontSize: 11 }}>
+          Edisi terakhir {umurEdisi} hari bursa lalu — Radar belum terbit sejak itu.
+        </p>
+      )}
 
       <div className="tabs" role="tablist" aria-label="Bagian radar">
         {TABS.map((t) => (

@@ -3634,15 +3634,66 @@ export function GrafikEmiten() {
     return () => document.removeEventListener('fullscreenchange', saatGanti)
   }, [])
 
-  /** Simpan kanvas jadi PNG. `takeScreenshot()` API bawaan lightweight-charts
-   *  — menggambar ulang seluruh pane ke satu kanvas lepas, jadi hasilnya ikut
-   *  memuat panel indikator di bawahnya, bukan cuma yang terlihat di layar. */
+  /** Simpan kanvas jadi PNG — berlatar solid dan bertanda kode emiten.
+   *
+   *  `takeScreenshot()` bawaan lightweight-charts menggambar ulang seluruh
+   *  pane ke satu kanvas lepas (jadi panel indikator ikut), tapi latarnya
+   *  TRANSPARAN. Di aplikasi chat dan galeri yang berlatar putih, chart
+   *  bertema gelap jadi nyaris tak terbaca — Johan 8 Sep 2026: "hasil dari
+   *  grafik bukan PNG tranparan gini, tapi ada kode emiten warna sesuai latar
+   *  nya".
+   *
+   *  Karena itu hasilnya digambar ulang di atas kanvas baru: latar diisi warna
+   *  `--bg` TEMA YANG SEDANG AKTIF (dibaca dari elemen, bukan dikunci ke satu
+   *  warna — supaya tema terang menghasilkan PNG terang), lalu kode emiten
+   *  ditulis samar di tengah sebagai tanda asal, dan kerangka + tanggal di
+   *  sudut bawah.
+   */
   const simpanGambar = useCallback(() => {
     const kanvas = chartRef.current?.takeScreenshot()
     if (!kanvas) return
+    const keluar = document.createElement('canvas')
+    keluar.width = kanvas.width
+    keluar.height = kanvas.height
+    const ctx = keluar.getContext('2d')
+    if (!ctx) return
+
+    // Warna diambil dari elemen yang sedang tampil, bukan dari konstanta:
+    // halaman ini punya tema terang dan gelap, dan PNG yang selalu gelap akan
+    // salah di salah satunya. Cadangannya warna latar lantai gelap.
+    const gaya = getComputedStyle(bungkusRef.current ?? document.body)
+    const bg = gaya.getPropertyValue('--bg').trim() || '#0b0e11'
+    const teks = gaya.getPropertyValue('--text3').trim() || '#8b949e'
+    ctx.fillStyle = bg
+    ctx.fillRect(0, 0, keluar.width, keluar.height)
+    ctx.drawImage(kanvas, 0, 0)
+
+    // Tanda kode emiten — samar (alfa 0,16) supaya tak menutupi lilin, tapi
+    // cukup terbaca untuk menjawab "ini chart apa" saat gambarnya beredar
+    // lepas dari halamannya.
+    const skala = Math.max(1, Math.round(keluar.width / 1000))
+    ctx.save()
+    ctx.globalAlpha = 0.16
+    ctx.fillStyle = teks
+    ctx.font = `700 ${28 * skala}px "IBM Plex Mono", ui-monospace, monospace`
+    ctx.textAlign = 'center'
+    ctx.textBaseline = 'middle'
+    ctx.fillText(kode, keluar.width / 2, keluar.height / 2)
+    ctx.restore()
+
+    const tgl = new Date().toISOString().slice(0, 10)
+    ctx.save()
+    ctx.globalAlpha = 0.6
+    ctx.fillStyle = teks
+    ctx.font = `${11 * skala}px "IBM Plex Mono", ui-monospace, monospace`
+    ctx.textAlign = 'right'
+    ctx.textBaseline = 'bottom'
+    ctx.fillText(`PAPAN · ${kode} · ${kerangka} · ${tgl}`, keluar.width - 8 * skala, keluar.height - 6 * skala)
+    ctx.restore()
+
     const a = document.createElement('a')
-    a.download = `PAPAN-${kode}-${kerangka}-${new Date().toISOString().slice(0, 10)}.png`
-    a.href = kanvas.toDataURL('image/png')
+    a.download = `PAPAN-${kode}-${kerangka}-${tgl}.png`
+    a.href = keluar.toDataURL('image/png')
     a.click()
   }, [kode, kerangka])
 
