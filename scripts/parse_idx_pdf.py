@@ -504,6 +504,19 @@ def save_json(data: dict, stem: str):
         json.dump(data, f, ensure_ascii=False, indent=2)
     return out
 
+# Ruas ringkas yang IKUT ke index.json (#117 D2). Semuanya sudah ada di
+# tiap ds_*.json; yang baru cuma menyalinnya ke satu berkas manifest.
+#
+# Sebabnya terukur: ringkasan pasar per rentang butuh persis tujuh angka
+# ini, dan mengambilnya berarti mengunduh SATU berkas harian per hari
+# bursa — 156 berkas (4,3 MB) untuk pertanyaan "IHSG naik berapa sejak
+# Januari". Karena itu rentang panjang dulu ditolak mentah oleh pembatas
+# 60 hari, dan empat dari enam pil di layar tak pernah bisa dipakai.
+# Dengan ruas ini, jawabannya ada di manifest yang memang sudah diunduh.
+RUAS_RINGKAS = ("ihsg_prev", "ihsg_high", "ihsg_low",
+                "vol_today", "val_idr_today", "freq_today", "nf_today_idr")
+
+
 def update_index(stem: str, data: dict):
     idx_file = OUTPUT_DIR / "index.json"
     idx = json.load(open(idx_file, encoding="utf-8")) if idx_file.exists() else {"dates":[]}
@@ -516,6 +529,13 @@ def update_index(stem: str, data: dict):
         "ihsg_pct":   round(data.get("ihsg_pct",0), 2),
         "trading_day":data.get("trading_day",0)
     }
+    # Hanya yang benar-benar ada. Menulis 0 untuk ruas yang tak terbaca
+    # membuat "nol transaksi" dan "tak diketahui" terlihat sama — dan yang
+    # satu bisa salah.
+    for k in RUAS_RINGKAS:
+        v = data.get(k)
+        if isinstance(v, (int, float)):
+            entry[k] = v
     stems = [d["stem"] for d in idx["dates"]]
     if stem in stems: idx["dates"][stems.index(stem)] = entry
     else:             idx["dates"].append(entry)

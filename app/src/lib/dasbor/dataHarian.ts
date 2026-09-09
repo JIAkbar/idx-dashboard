@@ -10,6 +10,18 @@ export interface TanggalIndex {
   ihsg: number
   ihsg_pct: number
   trading_day: number
+  /** Tujuh ruas ringkas pasar (#117 D2) — ikut manifest sejak 9 Sep 2026
+   *  supaya ringkasan rentang panjang tak perlu mengunduh satu berkas per
+   *  hari bursa. Opsional karena entri yang dibangun sebelum itu, dan entri
+   *  cadangan Yahoo, tak memuatnya — pembacanya wajib menyiapkan diri untuk
+   *  keadaan "tak diketahui", bukan menganggapnya nol. */
+  ihsg_prev?: number
+  ihsg_high?: number
+  ihsg_low?: number
+  vol_today?: number
+  val_idr_today?: number
+  freq_today?: number
+  nf_today_idr?: number
   /** Hadir & bernilai 'yahoo' HANYA untuk hari cadangan (B28) — PDF resmi IDX
    * gagal diunduh hari itu, angka ditambal dari penutupan ^JKSE Yahoo Finance.
    * Ditimpa otomatis begitu PDF resminya berhasil diparse (lihat panen_ihsg.py

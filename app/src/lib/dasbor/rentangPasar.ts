@@ -1,4 +1,4 @@
-import type { DataHarian } from './dataHarian'
+import type { DataHarian, TanggalIndex } from './dataHarian'
 
 /**
  * Ringkasan pasar untuk SEBUAH RENTANG hari bursa — jumlah, rata-rata, dan
@@ -69,6 +69,40 @@ function jumlah(hari: DataHarian[], ambil: (d: DataHarian) => number | undefined
  * di DataHarian. Mengurutkan di sini, bukan mempercayai pemanggil, supaya salah
  * urut tidak diam-diam membalik arah persentase.
  */
+/**
+ * Ringkasan rentang dari MANIFEST, tanpa mengunduh berkas harian (#117 D2).
+ *
+ * Angkanya sama — tujuh ruas yang dipakai `ringkasRentang` memang disalin
+ * apa adanya dari berkas harian ke manifest saat panen. Yang berbeda cuma
+ * biayanya: satu berkas 70 KB yang sudah diunduh, bukan 156 berkas 4,3 MB.
+ *
+ * Itulah yang dulu membuat pembatas 60 hari perlu ada, dan pembatas itu
+ * menolak empat dari enam pil rentang di layar — 3 Bulan, 6 Bulan, YTD, dan
+ * 1 Tahun semuanya lebih panjang daripada 60 hari bursa.
+ *
+ * Entri lama tanpa ruas ringkas dilewati, dan `n_vol`/`n_val`/`n_frek`/`n_nf`
+ * di hasilnya menyatakan berapa hari yang benar-benar terhitung — jadi
+ * cakupan yang bolong terlihat, bukan tersamar jadi angka yang lebih kecil.
+ */
+export function ringkasDariIndex(tanggal: TanggalIndex[]): RingkasRentang | null {
+  if (!tanggal.length) return null
+  // Dibentuk jadi `DataHarian` parsial lalu diserahkan ke fungsi yang sama —
+  // dua jalur hitung yang berdampingan pasti menyimpang cepat atau lambat.
+  return ringkasRentang(tanggal.map((t) => ({
+    date_iso: t.date_iso,
+    date_id: t.date_id,
+    trading_day: t.trading_day,
+    ihsg_value: t.ihsg,
+    ihsg_prev: t.ihsg_prev,
+    ihsg_high: t.ihsg_high,
+    ihsg_low: t.ihsg_low,
+    vol_today: t.vol_today,
+    val_idr_today: t.val_idr_today,
+    freq_today: t.freq_today,
+    nf_today_idr: t.nf_today_idr,
+  } as unknown as DataHarian)))
+}
+
 export function ringkasRentang(hariMasuk: DataHarian[]): RingkasRentang | null {
   const hari = [...hariMasuk].sort((a, b) => a.trading_day - b.trading_day)
   if (!hari.length) return null

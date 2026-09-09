@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { BilahTanggal } from '../../components/dasbor/BilahTanggal'
 import { fmtTanggalPendek } from '../../components/dasbor/Kalender'
 import { KonteksData } from '../../components/dasbor/KonteksData'
-import { useDataHarian, useDataRentang, fetchHari, cariHariResmiTerakhir, type DataHarian } from '../../lib/dasbor/dataHarian'
+import { useDataHarian, fetchHari, cariHariResmiTerakhir, type DataHarian } from '../../lib/dasbor/dataHarian'
 import type { RentangTanggal } from '../../lib/dasbor/periode'
 import { useUrut } from '../../lib/dasbor/useUrut'
 import { fN, fp } from '../../lib/dasbor/format'
@@ -74,14 +74,18 @@ export function TopStocks() {
     () => (rentang ? tanggalTersedia.filter((t) => t.date_iso >= rentang.mulai && t.date_iso <= rentang.akhir) : []),
     [rentang, tanggalTersedia],
   )
-  const { days, loading: loadingR, selesai, total, error: errorR } = useDataRentang(rentangTanggal)
-  // Agregat ringkasan pasar: satuan mengikuti DataHarian (vol juta lembar,
-  // val miliar IDR, freq ribu transaksi). Hari tanpa ruas ringkasan dilewati
-  // dan dihitung jujur lewat `n`.
+  // Agregat ringkasan pasar dibaca dari MANIFEST (#117 D2), bukan dari satu
+  // berkas harian per hari bursa: ketiga ruas ini memang sudah disalin ke
+  // sana. Sebelum ini panel memanggil `useDataRentang`, yang menolak rentang
+  // di atas 60 hari bursa — jadi 3 Bulan, 6 Bulan, YTD, dan 1 Tahun semuanya
+  // menjawab "terlalu panjang" alih-alih menjawab pertanyaannya.
+  //
+  // Satuan mengikuti berkas harian (vol juta lembar, val miliar IDR, freq ribu
+  // transaksi). Hari tanpa ruas ringkasan dilewati dan dihitung jujur lewat `n`.
   const agg = useMemo(() => {
-    if (!days) return null
+    if (!rentangTanggal.length) return null
     let vol = 0; let val = 0; let frek = 0; let n = 0
-    for (const d of days) {
+    for (const d of rentangTanggal) {
       if (d.vol_today == null && d.val_idr_today == null && d.freq_today == null) continue
       vol += d.vol_today ?? 0
       val += d.val_idr_today ?? 0
@@ -89,7 +93,7 @@ export function TopStocks() {
       n += 1
     }
     return { vol, val, frek, n }
-  }, [days])
+  }, [rentangTanggal])
   const ihsgMulai = rentang ? tanggalTersedia.find((t) => t.date_iso === rentang.mulai)?.ihsg : undefined
   const ihsgAkhir = rentang ? tanggalTersedia.find((t) => t.date_iso === rentang.akhir)?.ihsg : undefined
   const ihsgPctRentang = ihsgMulai && ihsgAkhir ? (ihsgAkhir / ihsgMulai - 1) * 100 : null
@@ -216,13 +220,9 @@ export function TopStocks() {
             <span className="lbl">Agregat Pasar — {labelRentang} ({rentangTanggal.length} hari bursa)</span>
           </div>
           <div className="panel-b">
-            {loadingR && <p className="lbl" style={{ textAlign: 'center', padding: '14px 0' }}>Memuat {selesai}/{total} hari…</p>}
-            {errorR && (
-              <div className="chip dn" style={{ display: 'flex', whiteSpace: 'normal', height: 'auto', lineHeight: 1.5 }}>
-                <span><IkonMenu d={IKON_PERINGATAN} size={14} /> {errorR} — pilih rentang lebih pendek untuk agregat pasar.</span>
-              </div>
-            )}
-            {agg && !loadingR && (
+            {/* Tak ada lagi keadaan memuat maupun galat di sini: angkanya datang
+                dari manifest yang sudah ada di tangan saat halaman terbuka. */}
+            {agg && (
               <div className="grid3">
                 <div className="vcard">
                   <span className="lbl">IHSG Rentang</span>

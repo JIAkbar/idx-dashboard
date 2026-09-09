@@ -8,8 +8,7 @@ import { BilahTanggal } from '../../components/dasbor/BilahTanggal'
 import { KonteksData } from '../../components/dasbor/KonteksData'
 import { Papan } from '../../components/dasbor/Papan'
 import { useDataHarian, type DataHarian, type TanggalIndex } from '../../lib/dasbor/dataHarian'
-import { useDataRentang } from '../../lib/dasbor/dataHarian'
-import { ringkasRentang } from '../../lib/dasbor/rentangPasar'
+import { ringkasDariIndex } from '../../lib/dasbor/rentangPasar'
 import type { RentangTanggal } from '../../lib/dasbor/periode'
 import { hitungYtdPct } from '../../lib/dasbor/ytd'
 import { fN, fp, fmtNF } from '../../lib/dasbor/format'
@@ -602,7 +601,7 @@ export function PapanIhsg({ hari, tanggalTersedia, buka, kepala, tanpaMeta }: {
  * menjumlahkannya tak punya arti, dan merata-ratakannya menyembunyikan
  * pergerakan. Keduanya tetap dibaca dari panel harian di bawah.
  */
-function PanelRentangPasar({ r }: { r: NonNullable<ReturnType<typeof ringkasRentang>> }) {
+function PanelRentangPasar({ r }: { r: NonNullable<ReturnType<typeof ringkasDariIndex>> }) {
   const naik = (r.ihsg_pct ?? 0) >= 0
   const cakupan = (n: number) => (n < r.n_hari ? ` · ${n} dari ${r.n_hari} hari berdata` : '')
   const ruas: [string, string, string][] = [
@@ -663,11 +662,16 @@ export function IndeksDunia() {
       : []),
     [tanggalTersedia, rentangPasar],
   )
-  const { days: hariRentang, loading: memuatRentang } = useDataRentang(tanggalRentang)
-  const ringkas = useMemo(
-    () => (hariRentang ? ringkasRentang(hariRentang.filter(Boolean)) : null),
-    [hariRentang],
-  )
+  // Ringkasan pasar dibaca dari MANIFEST, bukan dari 156 berkas harian
+  // (#117 D2). Sebelum ini halaman memanggil `useDataRentang`, dan pembatas
+  // 60 hari di sana menolak empat dari enam pil — 3 Bulan, 6 Bulan, YTD, dan
+  // 1 Tahun semuanya lebih panjang. Yang lebih buruk: galatnya dibuang di
+  // sini, jadi kartunya cuma lenyap tanpa satu kata pun penjelasan.
+  const ringkas = useMemo(() => ringkasDariIndex(tanggalRentang), [tanggalRentang])
+  const memuatRentang = false
+  // Entri manifest lama (dan entri cadangan) tak memuat ruas ringkas. Itu
+  // tidak disembunyikan: panel di bawah sudah mencetak "n dari N hari
+  // berdata" per ruas begitu angkanya tak lengkap.
 
   const world = hari?.world ?? []
 
