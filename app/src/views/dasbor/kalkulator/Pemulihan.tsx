@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { fN } from '../../../lib/dasbor/format'
+import { fN, persen } from '../../../lib/dasbor/format'
 import { keFraksi, hariAraMinimal } from '../../../lib/fraksiHarga'
 import { ambilHargaTerakhir } from '../../../lib/hargaTerakhir'
 import { StockAutocomplete } from '../../../components/dasbor/StockAutocomplete'
@@ -167,10 +167,10 @@ export function Pemulihan() {
           {posisi && posisi.rugi > 0 && (
             <div className={`kalk-vonis ${tingkat(posisi.rugi)}`}>
               <span className="lbl">Posisi Anda turun</span>
-              <span className="angka">{posisi.rugi.toFixed(2)}%</span>
+              <span className="angka">{persen(posisi.rugi, 2)}</span>
               <p>
                 Untuk balik modal, harga harus naik{' '}
-                <b>{butuhNaik(posisi.rugi) === Infinity ? '∞' : `${butuhNaik(posisi.rugi).toFixed(2)}%`}</b>{' '}
+                <b>{butuhNaik(posisi.rugi) === Infinity ? '∞' : `${persen(butuhNaik(posisi.rugi), 2)}`}</b>{' '}
                 {/* Harga sekarang sekadar ditampilkan (arah 'dekat'); harga sasaran
                     dibulatkan ke ATAS karena itu titik yang harus benar-benar
                     tercapai di bursa — dibulatkan ke bawah malah mengecoh, terasa
@@ -204,7 +204,7 @@ export function Pemulihan() {
           {posisi && posisi.rugi <= 0 && (
             <div className="kalk-vonis untung">
               <span className="lbl">Posisi Anda naik</span>
-              <span className="angka">+{Math.abs(posisi.rugi).toFixed(2)}%</span>
+              <span className="angka">+{persen(Math.abs(posisi.rugi), 2)}</span>
               <p>Tidak ada yang perlu dipulihkan. Tabel di sebelah tetap berguna sebagai ukuran risiko sebelum menambah posisi.</p>
             </div>
           )}
@@ -260,7 +260,7 @@ export function Pemulihan() {
                 return (
                   <tr key={r} className={`t-${tingkat(r)}${dekat ? ' sorot' : ''}${pisah ? ' pisah25' : ''}`}>
                     <td><b>{r}%</b></td>
-                    <td className="num">{naik.toFixed(2)}%</td>
+                    <td className="num">{persen(naik, 2)}</td>
                     <td className="num">{th === null ? '—' : th < 1 ? `${Math.round(th * 12)} bln` : `${th.toFixed(1)} thn`}</td>
                     <td className="num">
                       {posisi && acuan !== null

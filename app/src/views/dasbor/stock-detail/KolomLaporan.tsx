@@ -1,3 +1,4 @@
+import { persen } from '../../../lib/dasbor/format'
 import { LABEL_RENTANG } from '../../../lib/dasbor/periode'
 import type { ReactNode } from 'react'
 import type { PricePerf, StockFundamental } from '../../../lib/dasbor/stockDetailData'
@@ -44,7 +45,7 @@ function PerfRow({ label, pct, low, high, cur }: { label: string; pct?: number; 
   return (
     <div className="fd-perf-row">
       <span className="fd-perf-lbl">{label}</span>
-      <span className={`fd-perf-pct ${isUp ? 'green' : 'red'}`}>{isUp ? '+' : ''}{pct.toFixed(2)}%</span>
+      <span className={`fd-perf-pct ${isUp ? 'green' : 'red'}`}>{isUp ? '+' : ''}{persen(pct, 2)}</span>
       <div className="fd-perf-bar"><div className="fd-perf-dot" style={{ left: `${dotPct}%`, background: isUp ? 'var(--green)' : 'var(--red)' }} /></div>
       <span className="fd-range" style={{ color: 'var(--text3)' }}>{rangeStr}</span>
     </div>

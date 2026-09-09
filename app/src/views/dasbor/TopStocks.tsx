@@ -6,7 +6,7 @@ import { KonteksData } from '../../components/dasbor/KonteksData'
 import { useDataHarian, fetchHari, cariHariResmiTerakhir, type DataHarian } from '../../lib/dasbor/dataHarian'
 import type { RentangTanggal } from '../../lib/dasbor/periode'
 import { useUrut } from '../../lib/dasbor/useUrut'
-import { fN, fp } from '../../lib/dasbor/format'
+import { fN, fp, persen } from '../../lib/dasbor/format'
 import type { StockContribRow, StockMoveRow } from '../../lib/dasbor/dataHarian'
 import { IkonMenu, IKON_PERINGATAN } from '../../components/dasbor/IkonMenu'
 
@@ -268,7 +268,7 @@ export function TopStocks() {
             <div className="mc-row" key={m.c}>
               <span className={'mc-rk' + (i < 3 ? ` rk${i + 1}` : '')}>{i + 1}</span>
               <Link to={`/grafik?kode=${m.c}`} className="tick">{m.c}</Link>
-              <div className="bar-tr"><div className="bar-fl" style={{ width: `${(m.v / mx * 100).toFixed(0)}%` }} /></div>
+              <div className="bar-tr"><div className="bar-fl" style={{ width: `${persen(m.v / mx * 100, 0)}` }} /></div>
               <span className="mc-v num">{m.v}T</span>
               {/* Badge, bukan angka telanjang (#107): kolom ini bersebelahan
                   dengan nilai kapitalisasi yang juga angka, dan dua angka

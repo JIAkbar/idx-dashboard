@@ -6,7 +6,7 @@ import { Dropdown } from '../../components/dasbor/Dropdown'
 import { TautanBroker, useBrokerBerhalaman } from '../../components/dasbor/TautanBroker'
 import { useStockIndex } from '../../lib/dasbor/stockDetailData'
 import { useKategoriBroker, LABEL_KATEGORI, KETERANGAN_KATEGORI } from '../../lib/dasbor/kategoriBroker'
-import { fN } from '../../lib/dasbor/format'
+import { fN, persen } from '../../lib/dasbor/format'
 import {
   useBandarmologi, ciriLot, ciriTimpang, ciriFase,
   LABEL_LOT, LABEL_TIMPANG, LABEL_FASE, type BarisBandar,
@@ -293,7 +293,7 @@ export default function Bandarmologi() {
           'Jadi saringan ini sedikit lebih buruk daripada tidak menyaring sama sekali. Angkanya ' +
           'tetap ditampilkan supaya bisa diperiksa ulang, bukan karena ia layak dipakai. ' +
           `Terpisah dari itu, ambang pangsa nilai juga tak berlaku pada kadens harian: pangsa tertinggi ` +
-          `hari ini hanya ${((ringkas?.shareTertinggi ?? 0) * 100).toFixed(1)}% — nol emiten mencapai 8%. ` +
+          `hari ini hanya ${persen((ringkas?.shareTertinggi ?? 0) * 100, 1)} — nol emiten mencapai 8%. ` +
           'Sebabnya jelas begitu diperiksa: aturan itu dirancang untuk lima sampai sepuluh menit ' +
           'pertama perdagangan, saat nilai pasar masih kecil, bukan untuk sehari penuh. Ambangnya ' +
           'tidak kami geser supaya “ada yang lolos” — yang benar adalah menyatakan bahwa aturan ini ' +
@@ -388,7 +388,7 @@ export default function Bandarmologi() {
                       {ct && <small className="bm-lbl"> {LABEL_TIMPANG[ct]}</small>}
                     </td>
                     <td className={'r num ' + ((b.share_asing ?? 0) > 0 ? 'up' : (b.share_asing ?? 0) < 0 ? 'dn' : '')}>
-                      {b.share_asing == null ? '—' : `${(b.share_asing * 100).toFixed(1)}%`}
+                      {b.share_asing == null ? '—' : `${persen(b.share_asing * 100, 1)}`}
                     </td>
                     <td className="r num">
                       {b.fase ? (

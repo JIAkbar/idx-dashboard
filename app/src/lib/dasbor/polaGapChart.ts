@@ -30,6 +30,7 @@ import type {
   ISeriesApi, PaneAttachedParameter, PrimitiveHoveredItem, SeriesType, Time,
 } from 'lightweight-charts'
 import type { GapEvent } from './polaGap'
+import { persen } from './format'
 
 const FONT_PX = 10
 const PAD_X = 6
@@ -177,7 +178,7 @@ export class PolaGapChart implements IPanePrimitive<Time> {
             // Gap antar-sesi ditandai, bukan disamakan: ruang kosongnya nyata
             // tapi sebabnya bursanya tutup, bukan harga yang melompat.
             const awalan = g.antarSesi ? 'SESI' : 'GAP'
-            const teks = `${awalan} ${tanda}${g.gapPct.toFixed(1)}% · ${keadaan}`
+            const teks = `${awalan} ${tanda}${persen(g.gapPct, 1)} · ${keadaan}`
             labelAntri.push({
               y: yTengah, x1,
               teks, warna: habis ? WARNA_PILL_TERISI : WARNA_PILL_TERBUKA, id: `gap:${i}`,

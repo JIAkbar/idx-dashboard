@@ -6,7 +6,7 @@ import { TombolIkon } from '../../components/dasbor/TombolIkon'
 import { PemilihRentang } from '../../components/dasbor/PemilihRentang'
 import { useKamusEmiten } from '../../lib/dasbor/kamusEmiten'
 import { useUrut } from '../../lib/dasbor/useUrut'
-import { fp } from '../../lib/dasbor/format'
+import { fp, persen } from '../../lib/dasbor/format'
 import { keFraksi } from '../../lib/fraksiHarga'
 import {
   muatWatchlist, tambahEmiten, hapusEmiten, simpanHargaMilik,
@@ -728,11 +728,11 @@ function TabKinerja({ items }: { items: WatchlistItem[] }) {
         <section className="panel">
           <div className="panel-h"><h2>Metrik — bobot {bobot === 'setara' ? 'Setara' : 'Kap. pasar'}</h2></div>
           <div className="panel-b bs2-metrik">
-            <Metrik k="Total return" v={`${m.totalReturn >= 0 ? '+' : ''}${m.totalReturn.toFixed(2)}%`} warna={tone(m.totalReturn)} />
-            <Metrik k="vs IHSG" ket="selisih return" v={`${m.vsIhsg >= 0 ? '+' : ''}${m.vsIhsg.toFixed(2)}%`} warna={tone(m.vsIhsg)} />
-            <Metrik k="Volatilitas" ket="tersetahunkan, σ harian × √252" v={`${m.volatilitas.toFixed(1)}%`} />
-            <Metrik k="Max drawdown" ket="penurunan puncak-lembah terbesar" v={`${m.maxDrawdown.toFixed(2)}%`} warna="var(--red)" />
-            <Metrik k="Win rate harian" ket={`% hari indeks > IHSG · n=${m.nHari}`} v={`${m.winRateHarian.toFixed(1)}%`} />
+            <Metrik k="Total return" v={`${m.totalReturn >= 0 ? '+' : ''}${persen(m.totalReturn, 2)}`} warna={tone(m.totalReturn)} />
+            <Metrik k="vs IHSG" ket="selisih return" v={`${m.vsIhsg >= 0 ? '+' : ''}${persen(m.vsIhsg, 2)}`} warna={tone(m.vsIhsg)} />
+            <Metrik k="Volatilitas" ket="tersetahunkan, σ harian × √252" v={`${persen(m.volatilitas, 1)}`} />
+            <Metrik k="Max drawdown" ket="penurunan puncak-lembah terbesar" v={`${persen(m.maxDrawdown, 2)}`} warna="var(--red)" />
+            <Metrik k="Win rate harian" ket={`% hari indeks > IHSG · n=${m.nHari}`} v={`${persen(m.winRateHarian, 1)}`} />
           </div>
         </section>
       </div>

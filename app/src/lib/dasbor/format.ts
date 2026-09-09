@@ -29,7 +29,25 @@ export function fp(v: number | null | undefined, d = 2): string {
   // 381 -> 963 emiten: emiten yang riwayatnya baru sehari punya `chg` null,
   // keadaan yang mustahil selama daftarnya masih disaring ambang 250 lilin.
   if (v == null || !Number.isFinite(v)) return '—'
-  return (v >= 0 ? '+' : '') + v.toFixed(d) + '%'
+  // Koma, bukan titik (#123). Seluruh angka lain di layar sudah berkoma
+  // (`6.343,21`), jadi persen bertitik membuat satu baris memuat dua
+  // konvensi desimal sekaligus — dan di angka ribuan, titik desimal jadi
+  // tak terbedakan dari titik pemisah ribuan.
+  return (v >= 0 ? '+' : '') + v.toLocaleString('id-ID', {
+    minimumFractionDigits: d, maximumFractionDigits: d,
+  }) + '%'
+}
+
+/**
+ * Persen TANPA tanda plus — pasangan `fp()` untuk angka yang tandanya tak
+ * berarti (rasio, pangsa, akurasi, jarak ke level).
+ *
+ * Ada karena 111 tempat menulis `${x.toFixed(2)}%` sendiri-sendiri dan
+ * semuanya bertitik, sementara seluruh angka lain di layar berkoma (#123).
+ */
+export function persen(v: number | null | undefined, d = 2): string {
+  if (v == null || !Number.isFinite(v)) return '—'
+  return v.toLocaleString('id-ID', { minimumFractionDigits: d, maximumFractionDigits: d }) + '%'
 }
 
 export function cls(v: number): 'green' | 'red' {

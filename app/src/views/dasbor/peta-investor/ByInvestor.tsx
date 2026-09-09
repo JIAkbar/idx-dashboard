@@ -4,6 +4,7 @@ import { IkonMenu, IKON_GLOBE, IKON_LOKASI } from '../../../components/dasbor/Ik
 import { Dropdown } from '../../../components/dasbor/Dropdown'
 import { PilRow } from '../../../components/dasbor/PilRow'
 import { useMuatBertahap } from './useMuatBertahap'
+import { persen } from '../../../lib/dasbor/format'
 
 interface ByInvestorProps {
   investorMap: InvestorRow[]
@@ -82,7 +83,7 @@ export function ByInvestor({ investorMap, onSelect }: ByInvestorProps) {
                     <td>
                       <PilRow
                         total={inv.holdings.length}
-                        items={inv.holdings.map((h) => ({ key: h.code, nama: h.code, pct: h.pct, title: `${h.issuer} · ${h.pct.toFixed(2)}%` }))}
+                        items={inv.holdings.map((h) => ({ key: h.code, nama: h.code, pct: h.pct, title: `${h.issuer} · ${persen(h.pct, 2)}` }))}
                         onKlikItem={(h) => onSelect({ type: 'emiten', code: h.key })}
                       />
                     </td>

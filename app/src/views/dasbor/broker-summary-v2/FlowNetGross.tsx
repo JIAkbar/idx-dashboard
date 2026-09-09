@@ -1,3 +1,4 @@
+import { persen } from '../../../lib/dasbor/format'
 import { useMemo } from 'react'
 import type { ChartConfiguration } from 'chart.js/auto'
 import { useChartCanvas, bacaTokenTema } from '../../../lib/dasbor/useChartJs'
@@ -27,7 +28,7 @@ function BarisFlow({ a, sisi, ukuran, punya }: {
       <td className="r num" style={{ color: 'var(--text2)' }}>{fmt(gross)}</td>
       <td className="r num"><b>{fmt(net)}</b></td>
       <td className="r num">
-        {p.toFixed(1)}%
+        {persen(p, 1)}
         <span className="bs2-pct-bar"><i style={{ width: `${Math.min(100, p)}%`, background: warna }} /></span>
       </td>
     </tr>
@@ -86,7 +87,7 @@ export function FlowNetGross({ hari, agg, mode, ukuran }: FlowNetGrossProps) {
           tooltip: {
             callbacks: {
               label: (ctx) => ctx.dataset.label === 'Conviction %'
-                ? `Conviction: ${Number(ctx.raw).toFixed(1)}%`
+                ? `Conviction: ${persen(Number(ctx.raw), 1)}`
                 : `${ctx.dataset.label}: ${ukuran === 'nilai' ? 'Rp ' : ''}${fmt(Number(ctx.raw))}`,
             },
           },

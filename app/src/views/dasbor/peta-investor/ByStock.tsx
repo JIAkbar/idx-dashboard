@@ -3,6 +3,7 @@ import { holderType, type GraphSelection, type InvestorMapEntry } from '../../..
 import { Dropdown } from '../../../components/dasbor/Dropdown'
 import { PilRow } from '../../../components/dasbor/PilRow'
 import { useMuatBertahap } from './useMuatBertahap'
+import { persen } from '../../../lib/dasbor/format'
 
 interface ByStockProps {
   data: InvestorMapEntry[]
@@ -101,15 +102,15 @@ export function ByStock({ data, onSelect }: ByStockProps) {
                     {/* Persentase = data utama tabel — warna teks utama (var(--text)
                         dari .pi-tbl td), bukan text2/text3 yang redup di dark (#83). */}
                     <td className="num" style={{ textAlign: 'center', fontWeight: 700 }}>{em.holders.length}</td>
-                    <td className="num" style={{ textAlign: 'center' }}>{corpPct > 0 ? `${corpPct.toFixed(1)}%` : '—'}</td>
-                    <td className="num" style={{ textAlign: 'center' }}>{indPct > 0 ? `${indPct.toFixed(1)}%` : '—'}</td>
-                    <td className="num" style={{ textAlign: 'center' }}>{othPct > 0 ? `${othPct.toFixed(1)}%` : '—'}</td>
+                    <td className="num" style={{ textAlign: 'center' }}>{corpPct > 0 ? `${persen(corpPct, 1)}` : '—'}</td>
+                    <td className="num" style={{ textAlign: 'center' }}>{indPct > 0 ? `${persen(indPct, 1)}` : '—'}</td>
+                    <td className="num" style={{ textAlign: 'center' }}>{othPct > 0 ? `${persen(othPct, 1)}` : '—'}</td>
                     {/* #77b: jumlah chip adaptif lebar kolom (PilRow ukur nyata),
                         bukan angka tetap — "+N lagi" hanya saat benar tak muat. */}
                     <td>
                       <PilRow
                         total={em.holders.length}
-                        items={em.holders.map((h) => ({ key: h.name, nama: h.name, pct: h.pct, title: `${h.name} · ${holderType(h.cls)} · ${h.pct.toFixed(2)}%` }))}
+                        items={em.holders.map((h) => ({ key: h.name, nama: h.name, pct: h.pct, title: `${h.name} · ${holderType(h.cls)} · ${persen(h.pct, 2)}` }))}
                         onKlikItem={(h) => {
                           const holder = em.holders.find((x) => x.name === h.key)
                           if (holder) onSelect({ type: 'investor', name: holder.name, cls: holder.cls, lf: holder.lf })

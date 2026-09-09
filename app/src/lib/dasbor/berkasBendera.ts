@@ -1,3 +1,4 @@
+import { persen } from './format'
 /**
  * Blok G — bendera risiko: hal yang membuat semua angka di blok lain patut
  * diragukan.
@@ -81,7 +82,9 @@ export const AMBANG_NEGO = 0.3
  *  sekarang — satu pekan bursa. */
 export const AMBANG_BEKU = 5
 
-const persen = (v: number) => `${(v * 100).toFixed(0)}%`
+/** Rasio 0-1 jadi persen bulat. Angkanya lewat `persen()` bersama supaya
+ *  desimalnya berkoma seperti seluruh angka lain di layar (#123). */
+const pct = (v: number) => persen(v * 100, 0)
 
 /**
  * Susun bendera dari bahan yang sudah dihitung.
@@ -158,7 +161,7 @@ export function susunBendera(b: BahanBendera): Bendera[] {
     out.push({
       kode: 'konsentrasi',
       judul: 'Pembelian terpusat di sedikit pihak',
-      isi: `Tiga broker terbesar menguasai ${persen(b.konsentrasi3)} net pembelian pada periode yang ditampilkan. Arah harga di sini lebih tepat dibaca sebagai keputusan beberapa pihak, bukan kesimpulan banyak pelaku.`,
+      isi: `Tiga broker terbesar menguasai ${pct(b.konsentrasi3)} net pembelian pada periode yang ditampilkan. Arah harga di sini lebih tepat dibaca sebagai keputusan beberapa pihak, bukan kesimpulan banyak pelaku.`,
       bobot: 'sedang',
     })
   }
@@ -167,7 +170,7 @@ export function susunBendera(b: BahanBendera): Bendera[] {
     out.push({
       kode: 'nego',
       judul: 'Porsi negosiasi tinggi',
-      isi: `${persen(b.porsiNego)} lot berpindah lewat pasar negosiasi, bukan pasar reguler. Harga negosiasi disepakati dua pihak dan bisa jauh dari harga layar, jadi volume dan harga di sini bercerita hal yang berbeda.`,
+      isi: `${pct(b.porsiNego)} lot berpindah lewat pasar negosiasi, bukan pasar reguler. Harga negosiasi disepakati dua pihak dan bisa jauh dari harga layar, jadi volume dan harga di sini bercerita hal yang berbeda.`,
       bobot: 'sedang',
     })
   }

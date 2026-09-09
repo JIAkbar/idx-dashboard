@@ -17,6 +17,7 @@ import type {
 import type { Pivot } from '../skor/types'
 import type { HasilCpr } from './chartAnalitik'
 import { garisPenunjuk, kolomLabel } from './tataLabelLevel'
+import { persen } from './format'
 
 export interface DataCpr {
   pivot: Pivot
@@ -118,7 +119,7 @@ export class PitaCpr implements IPanePrimitive<Time> {
               // justru informatif saat sempit.
               labelAntri.push({
                 y: atas,
-                teks: `TC ${f(d.cpr.tc)} · P ${f(d.pivot.P)} · BC ${f(d.cpr.bc)} (${d.cpr.lebarPct.toFixed(2)}%)`,
+                teks: `TC ${f(d.cpr.tc)} · P ${f(d.pivot.P)} · BC ${f(d.cpr.bc)} (${persen(d.cpr.lebarPct, 2)})`,
                 warna: GARIS_PITA,
               })
             } else {

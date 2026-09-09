@@ -1,5 +1,6 @@
 import type { Emiten, OhlcMap } from '../../lib/skor/types'
 import { fmt } from '../format'
+import { persen } from '../../lib/dasbor/format'
 
 /** Port 1:1 dari statistik_hari() di build.py — termasuk kuirk .replace(".",",")
  *  pada baris EMA50 (mengubah SEMUA titik jadi koma, termasuk pemisah ribuan). */
@@ -11,7 +12,7 @@ export function StatsRow({ em, ohlc }: { em: Emiten; ohlc: OhlcMap }) {
   const vol20 = ohlc[em.ticker].slice(-21, -1).map((b) => b.v)
   const vsVol = vol20.length ? (o.vol_juta * 1e6) / (vol20.reduce((s, v) => s + v, 0) / vol20.length) : 0
 
-  const emaHtml = `${fmt(em.ema50)} <small>(${vsEma >= 0 ? '+' : ''}${vsEma.toFixed(1)}%)</small>`.replaceAll(
+  const emaHtml = `${fmt(em.ema50)} <small>(${vsEma >= 0 ? '+' : ''}${persen(vsEma, 1)})</small>`.replaceAll(
     '.',
     ','
   )

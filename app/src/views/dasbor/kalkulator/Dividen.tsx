@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { fN } from '../../../lib/dasbor/format'
+import { fN, persen } from '../../../lib/dasbor/format'
 import { PosisiBar } from './PosisiBar'
 import { IkonMenu, IKON_UANG_KERTAS, IKON_GRAFIK_BATANG } from '../../../components/dasbor/IkonMenu'
 import { batasArb } from '../../../lib/fraksiHarga'
@@ -143,8 +143,8 @@ export function Dividen({ feeBeli, setFeeBeli, feeJual, setFeeJual }: DividenPro
                   </div>
                   <div className="bm">
                     <span className="lbl">Yield Net</span>
-                    <span className="num">{result.yieldNet.toFixed(2)}%</span>
-                    <div className="v-note">Gross: {result.yieldGross.toFixed(2)}%</div>
+                    <span className="num">{persen(result.yieldNet, 2)}</span>
+                    <div className="v-note">Gross: {persen(result.yieldGross, 2)}</div>
                   </div>
                   <div className="bm">
                     <span className="lbl">Total Investasi</span>
@@ -172,7 +172,7 @@ export function Dividen({ feeBeli, setFeeBeli, feeJual, setFeeJual }: DividenPro
                           <br />
                           <span style={{ fontSize: 10 }}>
                             ({sc.netGL >= 0 ? '+' : ''}
-                            {sc.netPct.toFixed(2)}%)
+                            {persen(sc.netPct, 2)})
                           </span>
                         </div>
                       </div>

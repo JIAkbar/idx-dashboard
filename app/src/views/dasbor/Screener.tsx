@@ -10,7 +10,7 @@ import { LABEL_RENTANG } from '../../lib/dasbor/periode'
 import { TINGKAT_LIKUIDITAS, kodePeringkatTeratas, ujiLikuiditas } from '../../lib/dasbor/likuiditas'
 import { useUrut } from '../../lib/dasbor/useUrut'
 import { useLayarSempit } from '../../lib/dasbor/useLayarSempit'
-import { fp } from '../../lib/dasbor/format'
+import { fp, persen } from '../../lib/dasbor/format'
 import { fRingkas } from '../../lib/dasbor/stockDetailFormat'
 import { keFraksi } from '../../lib/fraksiHarga'
 import { MOMENTUM_HARI } from '../../lib/dasbor/skorTeknikal'
@@ -659,7 +659,7 @@ function PanelRiwayatWinRate({ presetId, setPresetId, jendela, setJendela, defin
       <td className="r num dn">{r.kalah}</td>
       <td className="r num muted">—</td>
       <td className="r num muted">{r.takTerukur}</td>
-      <td className="r num">{r.winRate == null ? <span className="muted">—</span> : `${r.winRate.toFixed(1)}%`}</td>
+      <td className="r num">{r.winRate == null ? <span className="muted">—</span> : `${persen(r.winRate, 1)}`}</td>
       <td className="r num muted">—</td>
     </>
   )
@@ -670,8 +670,8 @@ function PanelRiwayatWinRate({ presetId, setPresetId, jendela, setJendela, defin
       <td className="r num dn">{r.kalah}</td>
       <td className="r num muted">{r.tak_masuk}</td>
       <td className="r num muted">{r.gantung}</td>
-      <td className="r num">{r.menangDariTuntas == null ? <span className="muted">—</span> : `${r.menangDariTuntas.toFixed(1)}%`}</td>
-      <td className="r num">{r.menangDariSemua == null ? <span className="muted">—</span> : `${r.menangDariSemua.toFixed(1)}%`}</td>
+      <td className="r num">{r.menangDariTuntas == null ? <span className="muted">—</span> : `${persen(r.menangDariTuntas, 1)}`}</td>
+      <td className="r num">{r.menangDariSemua == null ? <span className="muted">—</span> : `${persen(r.menangDariSemua, 1)}`}</td>
     </>
   )
 
@@ -814,7 +814,7 @@ function PanelRiwayatWinRate({ presetId, setPresetId, jendela, setJendela, defin
             const rata = rataPersenTertimbang(live.map((h) => h.def.tutupTutup))
             return rata != null && (
               <p className="muted" style={{ margin: '6px 0 0', fontSize: 12 }}>
-                Rata-rata perubahan Tutup-ke-Tutup H+1 (yang terukur): <b className={rata >= 0 ? 'up' : 'dn'}>{rata >= 0 ? '+' : ''}{rata.toFixed(2)}%</b>
+                Rata-rata perubahan Tutup-ke-Tutup H+1 (yang terukur): <b className={rata >= 0 ? 'up' : 'dn'}>{rata >= 0 ? '+' : ''}{persen(rata, 2)}</b>
               </p>
             )
           })()}
@@ -968,7 +968,7 @@ function DaftarSaham({ judul, baris, definisi }: { judul: string; baris: BarisJe
                 <td className="r num">{b.skor == null ? '—' : b.skor.toFixed(2)}</td>
                 {definisi === 'tutupTutup' && (
                   <td className={`r num ${b.persen == null ? '' : b.persen >= 0 ? 'up' : 'dn'}`}>
-                    {b.persen == null ? '—' : `${b.persen >= 0 ? '+' : ''}${b.persen.toFixed(2)}%`}
+                    {b.persen == null ? '—' : `${b.persen >= 0 ? '+' : ''}${persen(b.persen, 2)}`}
                   </td>
                 )}
                 {definisi === 'tpSl' && <td className="r num">{b.tp1 == null ? '—' : b.tp1.toLocaleString('id-ID')}</td>}

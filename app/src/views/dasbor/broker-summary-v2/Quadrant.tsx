@@ -8,6 +8,7 @@ import { titikKuadran, labelKuadran, type TitikKuadran, type LabelKuadran } from
 import type { AgregatBroker } from '../../../lib/dasbor/brokerEmiten'
 import { warnaBrokerCanvas, namaBroker } from '../../../lib/dasbor/kelompokBroker'
 import { EmptyState } from './Overview'
+import { persen } from '../../../lib/dasbor/format'
 
 interface QuadrantProps {
   agg: AgregatBroker[]
@@ -127,7 +128,7 @@ export function Quadrant({ agg, vwap, ukuran }: QuadrantProps) {
                 return [
                   `${p.broker} — ${namaBroker(p.broker)}`,
                   `Kuadran: ${p.kuadran}`,
-                  `Harga vs VWAP: ${p.x >= 0 ? '+' : ''}${p.x.toFixed(2)}%`,
+                  `Harga vs VWAP: ${p.x >= 0 ? '+' : ''}${persen(p.x, 2)}`,
                   `Net: ${ukuran === 'nilai' ? `Rp ${fmtB(p.netNilai)}` : fmtLot(p.netLot)}`,
                 ]
               },

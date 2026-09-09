@@ -1,3 +1,4 @@
+import { persen } from '../../lib/dasbor/format'
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
@@ -97,7 +98,7 @@ export function TesisTab() {
                   <td className="r num dn">{r.kalah}</td>
                   <td className="r num muted">{r.takMasuk}</td>
                   <td className="r num muted">{r.berjalan}</td>
-                  <td className="r num">{r.akurasi == null ? <span className="muted">—</span> : `${r.akurasi.toFixed(1)}%`}</td>
+                  <td className="r num">{r.akurasi == null ? <span className="muted">—</span> : `${persen(r.akurasi, 1)}`}</td>
                 </tr>
               </tbody>
             </table>

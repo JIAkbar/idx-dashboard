@@ -1,3 +1,4 @@
+import { persen } from '../../lib/dasbor/format'
 import { useEffect, useState } from 'react'
 import {
   muatRencana, metaRencana, bacaJejak,
@@ -48,7 +49,7 @@ const pct = (v: number | null | undefined, d = 1) =>
   v == null ? '—' : `${v > 0 ? '+' : v < 0 ? '−' : ''}${Math.abs(v).toFixed(d).replace('.', ',')}%`
 
 const pct0 = (v: number | null | undefined) =>
-  v == null ? '—' : `${v.toFixed(0)}%`
+  v == null ? '—' : `${persen(v, 0)}`
 
 const miliar = (v: number | null | undefined) =>
   v == null ? '—' : `${(v / 1e9).toLocaleString('id-ID', { maximumFractionDigits: 1 })} M`

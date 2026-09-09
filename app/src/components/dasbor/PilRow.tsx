@@ -1,3 +1,4 @@
+import { persen } from '../../lib/dasbor/format'
 import { useLayoutEffect, useRef, useState, type KeyboardEvent, type MouseEvent } from 'react'
 
 export interface PilItem {
@@ -86,7 +87,7 @@ export function PilRow({ items, total, onKlikItem }: {
         : {})}
     >
       <span className="pil-nm">{h.nama}</span>
-      <span className="pil-pct">{h.pct.toFixed(1)}%</span>
+      <span className="pil-pct">{persen(h.pct, 1)}</span>
     </span>
   )
   const sisa = total - muat

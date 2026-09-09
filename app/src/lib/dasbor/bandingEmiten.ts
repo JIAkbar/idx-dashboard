@@ -1,3 +1,5 @@
+import { fp } from './format'
+import { persen } from './format'
 import type { AsingHarian, StockFundamental } from './stockDetailData'
 import {
   LABEL_VONIS,
@@ -140,12 +142,13 @@ function sel(teks: string | null, arah: Arah = 0): SelBanding {
   return teks == null || teks === '' || teks === '—' ? KOSONG : { teks, arah }
 }
 
-function persen(v: number | null | undefined, d = 1): string | null {
-  return ada(v) ? `${v.toFixed(d)}%` : null
+/** Persen tanpa tanda; `null` (bukan '—') supaya sel kosong tetap kosong. */
+function persenSel(v: number | null | undefined, d = 1): string | null {
+  return ada(v) ? persen(v, d) : null
 }
 
 function persenTanda(v: number | null | undefined, d = 1): string | null {
-  return ada(v) ? `${v >= 0 ? '+' : ''}${v.toFixed(d)}%` : null
+  return ada(v) ? fp(v, d) : null
 }
 
 function arahDari(v: number | null | undefined, titikBalik = 0): Arah {
@@ -285,9 +288,9 @@ const DEF: DefGrup[] = [
     baris: [
       { label: 'ROE', ambil: (h) => sel(persen(keP(h.fd?.roe), 2)) },
       { label: 'Marjin bersih', ambil: (h) => sel(persen(marjin(h.fd?.npm), 2)) },
-      { label: 'DER', ambil: (h) => sel(persen(h.fd ? kualitasLaba(h.fd).der : null, 1)) },
-      { label: 'Kas operasi ÷ laba', ambil: (h) => sel(persen(h.fd ? kualitasLaba(h.fd).akrual : null, 0)) },
-      { label: 'Imbal hasil dividen', ambil: (h) => sel(persen(h.fd?.dividend_yield, 2)) },
+      { label: 'DER', ambil: (h) => sel(persenSel(h.fd ? kualitasLaba(h.fd).der : null, 1)) },
+      { label: 'Kas operasi ÷ laba', ambil: (h) => sel(persenSel(h.fd ? kualitasLaba(h.fd).akrual : null, 0)) },
+      { label: 'Imbal hasil dividen', ambil: (h) => sel(persenSel(h.fd?.dividend_yield, 2)) },
     ],
   },
   {

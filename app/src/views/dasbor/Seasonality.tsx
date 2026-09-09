@@ -10,6 +10,7 @@ import { useAksesHalaman } from '../../context/AksesHalamanContext'
 import { useJarakJenjang } from '../../lib/jarakJenjang'
 import { PenunjukJarak } from '../../components/dasbor/PenunjukJarak'
 import { PemilihRentang } from '../../components/dasbor/PemilihRentang'
+import { persen } from '../../lib/dasbor/format'
 
 const MAKS = 5
 /** Tahun awal perbandingan musiman — empat pilihan, jadi menu sendiri di
@@ -377,17 +378,17 @@ function LaciBulan({ kode, nama, b, onTutup }: {
         <div className="sea-laci-angka">
           <div>
             <span className="lbl">Peluang naik</span>
-            <span className="besar">{b.n === 0 ? '—' : `${b.tersusut.toFixed(0)}%`}</span>
+            <span className="besar">{b.n === 0 ? '—' : `${persen(b.tersusut, 0)}`}</span>
             <span className="v-note">
-              {b.n === 0 ? 'belum ada data' : `mentah ${b.naik}/${b.n} · selang ${b.bawah.toFixed(0)}–${b.atas.toFixed(0)}%`}
+              {b.n === 0 ? 'belum ada data' : `mentah ${b.naik}/${b.n} · selang ${b.bawah.toFixed(0)}–${persen(b.atas, 0)}`}
             </span>
           </div>
           <div>
             <span className="lbl">Imbal tengah</span>
             <span className={'besar ' + (b.median >= 0 ? 'up' : 'dn')}>
-              {b.n === 0 ? '—' : `${b.median > 0 ? '+' : ''}${b.median.toFixed(2)}%`}
+              {b.n === 0 ? '—' : `${b.median > 0 ? '+' : ''}${persen(b.median, 2)}`}
             </span>
-            <span className="v-note">rata-rata {b.rata2.toFixed(2)}%</span>
+            <span className="v-note">rata-rata {persen(b.rata2, 2)}</span>
           </div>
           <div>
             <span className="lbl">Mengalahkan IHSG</span>
@@ -411,7 +412,7 @@ function LaciBulan({ kode, nama, b, onTutup }: {
                   style={{ width: `${(Math.abs(v.persen) / maks) * 100}%` }} />
               </span>
               <span className={'ag ' + (v.persen >= 0 ? 'up' : 'dn')}>
-                {v.persen > 0 ? '+' : ''}{v.persen.toFixed(2)}%
+                {v.persen > 0 ? '+' : ''}{persen(v.persen, 2)}
               </span>
             </div>
           ))}

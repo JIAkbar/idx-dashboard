@@ -1,3 +1,4 @@
+import { fp, persen } from '../../lib/dasbor/format'
 import { langkahMoneyFlow, sambunganFlow } from '../../lib/dasbor/bedahEmiten'
 import type { StockFundamental } from '../../lib/dasbor/stockDetailData'
 import { fEps, fMC } from '../../lib/dasbor/stockDetailFormat'
@@ -15,11 +16,11 @@ import { fEps, fMC } from '../../lib/dasbor/stockDetailFormat'
  */
 
 function pct(v: number | null | undefined, d = 1): string {
-  return v != null && Number.isFinite(v) ? `${v >= 0 ? '+' : ''}${v.toFixed(d)}%` : '—'
+  return fp(v, d)
 }
 
 function pctPolos(v: number | null | undefined, d = 1): string {
-  return v != null && Number.isFinite(v) ? `${v.toFixed(d)}%` : '—'
+  return persen(v, d)
 }
 
 function kelasArah(v: number | null | undefined): string {

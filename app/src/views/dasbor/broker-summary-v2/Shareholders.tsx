@@ -1,3 +1,4 @@
+import { persen } from '../../../lib/dasbor/format'
 import { useMemo } from 'react'
 import type { ChartConfiguration } from 'chart.js/auto'
 import { useChartCanvas } from '../../../lib/dasbor/useChartJs'
@@ -103,15 +104,15 @@ export function Shareholders({ kode }: ShareholdersProps) {
                     {ksei.baris.map((r) => (
                       <tr key={r.jenis}>
                         <td>{r.label} <span style={{ color: 'var(--text3)' }}>{r.jenis}</span></td>
-                        <td className="r num">{r.lokalPct.toFixed(1)}%</td>
-                        <td className="r num">{r.asingPct.toFixed(1)}%</td>
-                        <td className="r num"><b>{r.totalPct.toFixed(1)}%</b></td>
+                        <td className="r num">{persen(r.lokalPct, 1)}</td>
+                        <td className="r num">{persen(r.asingPct, 1)}</td>
+                        <td className="r num"><b>{persen(r.totalPct, 1)}</b></td>
                         <td className="r num" style={{ color: r.deltaSetahunPp >= 0 ? 'var(--green)' : 'var(--red)' }}>{r.deltaSetahunPp >= 0 ? '+' : ''}{r.deltaSetahunPp.toFixed(1)}pp</td>
                       </tr>
                     ))}
                     <tr>
                       <td><b>Asing total</b></td><td /><td />
-                      <td className="r num"><b>{ksei.asingTotalPct.toFixed(1)}%</b></td>
+                      <td className="r num"><b>{persen(ksei.asingTotalPct, 1)}</b></td>
                       <td className="r num" style={{ color: ksei.asingDeltaSetahunPp >= 0 ? 'var(--green)' : 'var(--red)' }}>{ksei.asingDeltaSetahunPp >= 0 ? '+' : ''}{ksei.asingDeltaSetahunPp.toFixed(1)}pp</td>
                     </tr>
                   </tbody>

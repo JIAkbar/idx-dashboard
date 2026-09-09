@@ -11,7 +11,7 @@ import { useDataHarian, type DataHarian, type TanggalIndex } from '../../lib/das
 import { ringkasDariIndex } from '../../lib/dasbor/rentangPasar'
 import type { RentangTanggal } from '../../lib/dasbor/periode'
 import { hitungYtdPct } from '../../lib/dasbor/ytd'
-import { fN, fp, fmtNF } from '../../lib/dasbor/format'
+import { fN, fp, fmtNF, persen } from '../../lib/dasbor/format'
 import { useChartCanvas } from '../../lib/dasbor/useChartJs'
 import { useIhsgBuka, useIhsgOhlc, type BarisOhlc } from '../../lib/dasbor/ihsgOhlc'
 import { useHargaLive } from '../../lib/dasbor/hargaLive'
@@ -623,7 +623,7 @@ function PanelRentangPasar({ r }: { r: NonNullable<ReturnType<typeof ringkasDari
       <div className="panel-b">
         <div className="be-tangga-baris">
           <span className="be-pil">IHSG<b className={naik ? 'up' : 'dn'}>
-            {r.ihsg_pct == null ? '—' : `${naik ? '+' : ''}${r.ihsg_pct.toFixed(2)}%`}</b></span>
+            {r.ihsg_pct == null ? '—' : `${naik ? '+' : ''}${persen(r.ihsg_pct, 2)}`}</b></span>
           <span className="be-pil">awal<b>{r.ihsg_awal == null ? '—' : fN(r.ihsg_awal, 2)}</b></span>
           <span className="be-pil">akhir<b>{r.ihsg_akhir == null ? '—' : fN(r.ihsg_akhir, 2)}</b></span>
           <span className="be-pil">tertinggi<b>{r.ihsg_tertinggi == null ? '—' : fN(r.ihsg_tertinggi, 2)}</b></span>

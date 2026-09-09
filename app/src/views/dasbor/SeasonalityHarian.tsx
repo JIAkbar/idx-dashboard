@@ -1,3 +1,4 @@
+import { persen } from '../../lib/dasbor/format'
 import { LABEL_RENTANG } from '../../lib/dasbor/periode'
 import { useEffect, useMemo, useState, type PointerEvent as ReactPointerEvent } from 'react'
 import { HARI, ringkasHarian, hariBursaDiRentang, vonisUji, rentangSumbuBalapan, type RingkasHarian } from '../../lib/seasonality'
@@ -373,14 +374,14 @@ export function SeasonalityHarian() {
                 <tr key={h.hari}>
                   <td><b style={{ color: WARNA[h.hari] }}>{HARI[h.hari]}</b></td>
                   <td className={'num ' + (h.kumulatif >= 0 ? 'up' : 'dn')}>
-                    {h.kumulatif >= 0 ? '+' : ''}{h.kumulatif.toFixed(1)}%
+                    {h.kumulatif >= 0 ? '+' : ''}{persen(h.kumulatif, 1)}
                   </td>
                   <td className={'num ' + (h.rata2 >= 0 ? 'up' : 'dn')}>
-                    {h.rata2 >= 0 ? '+' : ''}{h.rata2.toFixed(4)}%
+                    {h.rata2 >= 0 ? '+' : ''}{persen(h.rata2, 4)}
                   </td>
-                  <td className="num">{h.median >= 0 ? '+' : ''}{h.median.toFixed(3)}%</td>
-                  <td className="num"><b>{h.tersusut.toFixed(1)}%</b></td>
-                  <td className="num muted">{h.bawah.toFixed(0)}&ndash;{h.atas.toFixed(0)}%</td>
+                  <td className="num">{h.median >= 0 ? '+' : ''}{persen(h.median, 3)}</td>
+                  <td className="num"><b>{persen(h.tersusut, 1)}</b></td>
+                  <td className="num muted">{h.bawah.toFixed(0)}&ndash;{persen(h.atas, 0)}</td>
                   <td className="num muted">{h.n.toLocaleString('id-ID')}</td>
                 </tr>
               ))}

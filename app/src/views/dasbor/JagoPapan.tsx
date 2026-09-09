@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { bandingkanBaris } from '../../lib/dasbor/useUrut'
-import { fp } from '../../lib/dasbor/format'
+import { fp, persen } from '../../lib/dasbor/format'
 import { fRingkas } from '../../lib/dasbor/stockDetailFormat'
 import { keFraksi } from '../../lib/fraksiHarga'
 import {
@@ -39,7 +39,7 @@ const fmtRp = (v: number | null) => (v == null ? '—' : `Rp${fRingkas(v)}`)
 // PanelAliranAsing.tsx.
 const fmtRpS = (v: number | null) => (v == null ? '—' : (v >= 0 ? '+' : '-') + 'Rp' + fRingkas(Math.abs(v)))
 const fmtLbr = (v: number | null) => (v == null ? '—' : fRingkas(v))
-const fmtPct = (v: number | null) => (v == null ? '—' : `${(v * 100).toFixed(0)}%`)
+const fmtPct = (v: number | null) => (v == null ? '—' : `${persen(v * 100, 0)}`)
 
 /**
  * Jago Papan (`/jago-papan`, docs/spek-dev-papan/spek_jago_papan.md) — empat

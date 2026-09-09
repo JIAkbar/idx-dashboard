@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { ChartConfiguration } from 'chart.js/auto'
 import { useChartCanvas, bacaTokenTema } from '../../../lib/dasbor/useChartJs'
-import { fN } from '../../../lib/dasbor/format'
+import { fN, persen } from '../../../lib/dasbor/format'
 import { hitungBunga } from '../../../lib/dasbor/kalkulatorLanjut'
 import { IkonMenu, IKON_GRAFIK_NAIK, IKON_PERINGATAN } from '../../../components/dasbor/IkonMenu'
 
@@ -125,7 +125,7 @@ export function Bunga() {
           </div>
 
           <div className="v-note" style={{ display: 'block', lineHeight: 1.6 }}>
-            Imbal riil tahunan = <b>(1+r)/(1+i) − 1</b>{hasil ? ` = ${(hasil.imbalRiilTahunan * 100).toFixed(2)}%` : ''}.
+            Imbal riil tahunan = <b>(1+r)/(1+i) − 1</b>{hasil ? ` = ${persen(hasil.imbalRiilTahunan * 100, 2)}` : ''}.
             Setoran bulanan majemuk pada rate bulanan yang balik ke imbal tahunan persis setelah 12 bulan.
           </div>
 

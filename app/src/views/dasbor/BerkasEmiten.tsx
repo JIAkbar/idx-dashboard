@@ -1,3 +1,4 @@
+import { persen } from '../../lib/dasbor/format'
 /**
  * Berkas Emiten — satu kode, semua yang PAPAN tahu tentang emiten itu.
  *
@@ -845,14 +846,14 @@ export default function BerkasEmiten() {
                   <span key={nama} className="be-pil">
                     {nama}
                     <b className={nama === 'S1' ? 'dn' : 'up'}>
-                      {p == null ? '—' : `${(p * 100).toFixed(0)}%`}
+                      {p == null ? '—' : `${persen(p * 100, 0)}`}
                     </b>
                     {/* Jaraknya WAJIB ikut. "80% capai R1" tak bisa dibaca tanpa
                         tahu R1 cuma +0,9% dari harga sekarang — angka tinggi di
                         level dekat bukan kabar baik, itu aritmetika. */}
                     {jarak != null && (
                       <span className="be-prob-jarak">
-                        {nama === 'S1' ? '−' : '+'}{(Math.abs(jarak) * 100).toFixed(1)}%
+                        {nama === 'S1' ? '−' : '+'}{persen(Math.abs(jarak) * 100, 1)}
                       </span>
                     )}
                   </span>
@@ -863,13 +864,13 @@ export default function BerkasEmiten() {
                 <span className="be-lbl">Peluang naik dalam 5 hari</span>
                 <div className="be-tangga-baris">
                   <span className="be-pil">
-                    emiten ini<b>{prob.p5 == null ? '—' : `${(prob.p5 * 100).toFixed(1)}%`}</b>
+                    emiten ini<b>{prob.p5 == null ? '—' : `${persen(prob.p5 * 100, 1)}`}</b>
                   </span>
                   {/* Angka dasar berdiri SEJAJAR, bukan di catatan kaki: itu
                       satu-satunya cara pembaca melihat bahwa selisihnya nyaris
                       nol tanpa harus menghitung sendiri. */}
                   <span className="be-pil">
-                    rata-rata pasar<b>{prob.base5 == null ? '—' : `${(prob.base5 * 100).toFixed(1)}%`}</b>
+                    rata-rata pasar<b>{prob.base5 == null ? '—' : `${persen(prob.base5 * 100, 1)}`}</b>
                   </span>
                   <span className="be-pil">
                     selisih
@@ -945,13 +946,13 @@ export default function BerkasEmiten() {
                     <span className="be-pil">
                       median
                       <b className={(r.median ?? 0) >= 0 ? 'up' : 'dn'}>
-                        {r.median == null ? '—' : `${(r.median * 100).toFixed(1)}%`}
+                        {r.median == null ? '—' : `${persen(r.median * 100, 1)}`}
                       </b>
                     </span>
                     <span className="be-pil">
                       terbaik
                       <b className="up">
-                        {r.terbaik == null ? '—' : `${(r.terbaik * 100).toFixed(1)}%`}
+                        {r.terbaik == null ? '—' : `${persen(r.terbaik * 100, 1)}`}
                       </b>
                     </span>
                     {/* Terburuk SELALU dipajang sebesar terbaik. Rekam jejak yang
@@ -959,7 +960,7 @@ export default function BerkasEmiten() {
                     <span className="be-pil">
                       terburuk
                       <b className="dn">
-                        {r.terburuk == null ? '—' : `${(r.terburuk * 100).toFixed(1)}%`}
+                        {r.terburuk == null ? '—' : `${persen(r.terburuk * 100, 1)}`}
                       </b>
                     </span>
                   </div>

@@ -1,3 +1,4 @@
+import { persen } from '../../lib/dasbor/format'
 import { useEffect, useMemo, useState } from 'react'
 import { TAHUN_AWAL } from '../../lib/dasbor/brokerEmitenV2'
 import { StockAutocomplete } from '../../components/dasbor/StockAutocomplete'
@@ -295,14 +296,14 @@ export default function TraderPapan() {
                     <td className={`tp-n ${b.pnlPct == null ? '' : b.pnlPct >= 0 ? 'tp-plus' : 'tp-minus'}`}>
                       {b.pnlPct == null
                         ? '—'
-                        : `${b.pnlPct >= 0 ? '+' : '−'}${Math.abs(b.pnlPct).toFixed(1)}%`}
+                        : `${b.pnlPct >= 0 ? '+' : '−'}${persen(Math.abs(b.pnlPct), 1)}`}
                     </td>
                     <td className="tp-n">
                       {b.hariNetBeli}/{b.hariAktif}
                     </td>
                     <td className="tp-n">
                       {hasil.totalNilaiPasar > 0
-                        ? `${((b.nilaiTotal / hasil.totalNilaiPasar) * 100).toFixed(1)}%`
+                        ? `${persen((b.nilaiTotal / hasil.totalNilaiPasar) * 100, 1)}`
                         : '—'}
                       {porsiTerbesar.beli === b.kode && (
                         <span className="badge" title="Nilai transaksi (beli+jual) terbesar di antara broker net-beli pada rentang ini — bukan bukti menggerakkan harga">

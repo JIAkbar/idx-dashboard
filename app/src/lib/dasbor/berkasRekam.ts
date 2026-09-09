@@ -1,3 +1,4 @@
+import { persen } from './format'
 /**
  * Blok E — rekam jejak strategi PAPAN pada satu emiten.
  *
@@ -85,7 +86,7 @@ export function ringkasRekam(strategi: string, trades: Trade[], kode: string): R
   const label = n === 0
     ? 'Belum pernah muncul di uji strategi ini.'
     : layakPersen
-      ? `${menang} menang · ${kalah} kalah dari ${n} kali (${((menang / n) * 100).toFixed(0)}%)`
+      ? `${menang} menang · ${kalah} kalah dari ${n} kali (${persen((menang / n) * 100, 0)})`
       // Sengaja TANPA persen: lihat catatan modul.
       : `${menang} menang · ${kalah} kalah dari ${n} kali — terlalu sedikit untuk dipersenkan`
 

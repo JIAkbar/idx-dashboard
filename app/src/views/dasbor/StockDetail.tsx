@@ -1,3 +1,4 @@
+import { persen } from '../../lib/dasbor/format'
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { StockAutocomplete } from '../../components/dasbor/StockAutocomplete'
@@ -55,10 +56,6 @@ function RasioCell({ lbl, v, cls, sub }: { lbl: string; v: ReactNode; cls?: stri
       <span className="sub">{sub ?? ' '}</span>
     </div>
   )
-}
-
-function persen(v: number | null): string {
-  return v != null ? Number(v).toFixed(2) + '%' : '—'
 }
 
 /** Baris label + nilai rata-kanan — sama pola dengan TR() di KolomValuasi.tsx. */
@@ -437,7 +434,7 @@ export function StockDetail() {
               <div><span className="lbl">Mkt Cap</span><span className="v">{fMC(fd.market_cap)}</span></div>
               <div><span className="lbl">EV</span><span className="v">{fMC(fd.enterprise_value)}</span></div>
               <div><span className="lbl">Vol Avg</span><span className="v">{fd.avg_volume ? (fd.avg_volume / 1e6).toLocaleString('id-ID', { maximumFractionDigits: 1 }) + ' Jt' : '—'}</span></div>
-              <div><span className="lbl">Free Float</span><span className="v">{fd.float_pct ? fd.float_pct.toFixed(2) + '%' : '—'}</span></div>
+              <div><span className="lbl">Free Float</span><span className="v">{fd.float_pct ? persen(fd.float_pct, 2) : '—'}</span></div>
               <div><span className="lbl">Saham Beredar</span><span className="v">{fd.shares ? (fd.shares / 1e9).toFixed(2) + ' M' : '—'}</span></div>
               <div><span className="lbl">Beta</span><span className="v">{fd.beta ?? '—'}</span></div>
             </div>
@@ -456,7 +453,7 @@ export function StockDetail() {
             <RasioCell lbl="P/S (TTM)" v={fvx(fd.ps)} sub={fd.rev_ps != null ? `Rev/shr Rp ${fv(fd.rev_ps)}` : null} />
             <RasioCell
               lbl="Earnings Yield"
-              v={<>{earningsYield != null ? (earningsYield >= 0 ? '+' : '') + earningsYield.toFixed(2) + '%' : '—'}<LencanaTurunan fd={fd} ruas="eps" /></>}
+              v={<>{earningsYield != null ? (earningsYield >= 0 ? '+' : '') + persen(earningsYield, 2) : '—'}<LencanaTurunan fd={fd} ruas="eps" /></>}
               cls={earningsYield != null ? (earningsYield >= 0 ? 'up' : 'dn') : undefined}
               sub={fd.eps != null ? `EPS Rp ${fv(fd.eps)}` : null}
             />
@@ -467,11 +464,11 @@ export function StockDetail() {
                 lama={fd.dividend_yield}
                 rasio={tambahan?.rasio ?? null}
                 lencanaLama={<LencanaTurunan fd={fd} ruas="dividend_yield" />}
-                render={(v) => (v != null ? '+' + v.toFixed(2) + '%' : '—')}
+                render={(v) => (v != null ? '+' + persen(v, 2) : '—')}
               />}
               cls={fd.dividend_yield != null ? 'up' : undefined}
               sub={fd.dividend != null
-                ? `Rp ${fv(fd.dividend)}${fd.payout_ratio != null ? ` · payout ${(fd.payout_ratio * 100).toFixed(0)}%` : ''}`
+                ? `Rp ${fv(fd.dividend)}${fd.payout_ratio != null ? ` · payout ${persen(fd.payout_ratio * 100, 0)}` : ''}`
                 : null}
             />
             <RasioCell lbl="FCF/Share" v={fd.fcf_ps != null ? `Rp ${fv(fd.fcf_ps)}` : '—'} sub={fd.cash_ps != null ? `Cash/shr Rp ${fv(fd.cash_ps)}` : null} />

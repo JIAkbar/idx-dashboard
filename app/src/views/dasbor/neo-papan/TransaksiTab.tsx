@@ -10,6 +10,7 @@ import { fmtB, Kosong, Kv, KvGrid, Sumber, potongRentang, type RentangNp } from 
 import { captionRentang } from '../../../lib/dasbor/rentang'
 import { PERINGATAN_PRA_BROKER, praBroker } from '../../../lib/dasbor/brokerEmitenV2'
 import { InfoIndikator, type ItemInfoIndikator } from '../../../components/dasbor/InfoIndikator'
+import { persen } from '../../../lib/dasbor/format'
 
 /** Modal "i" — penjelasan tiap panel chart & ringkasan broker (sweep Johan
  *  27 Agu, lihat pola sama di WhalesPapan.tsx). */
@@ -96,7 +97,7 @@ export function TransaksiTab({ kode, rentang }: { kode: string; rentang: Rentang
     // pane 3: Participation dua rasio per sisi, 0–100% masing-masing
     s.partBeli = chart.addSeries(LineSeries, {
       color: '#30a46c', lineWidth: 2, priceLineVisible: false, title: 'Beli asing %',
-      priceFormat: { type: 'custom', formatter: (v: number) => `${v.toFixed(0)}%`, minMove: 0.1 },
+      priceFormat: { type: 'custom', formatter: (v: number) => `${persen(v, 0)}`, minMove: 0.1 },
     }, 3)
     s.partJual = chart.addSeries(LineSeries, {
       color: '#e5484d', lineWidth: 2, priceLineVisible: false, title: 'Jual asing %',

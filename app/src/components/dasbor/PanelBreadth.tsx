@@ -1,3 +1,4 @@
+import { persen } from '../../lib/dasbor/format'
 import { useMemo, useRef, useState } from 'react'
 import type { ChartConfiguration } from 'chart.js/auto'
 import { useDataHarian, useDataRentang } from '../../lib/dasbor/dataHarian'
@@ -210,17 +211,17 @@ export function PanelBreadth() {
               <div>
                 <span className="lbl">Naik</span>
                 <div className="v num up">{b.naik}</div>
-                <span className="sub">{((b.naik / b.total) * 100).toFixed(0)}% saham</span>
+                <span className="sub">{persen((b.naik / b.total) * 100, 0)} saham</span>
               </div>
               <div>
                 <span className="lbl">Tak Berubah</span>
                 <div className="v num">{b.tetap}</div>
-                <span className="sub">{((b.tetap / b.total) * 100).toFixed(0)}% saham</span>
+                <span className="sub">{persen((b.tetap / b.total) * 100, 0)} saham</span>
               </div>
               <div>
                 <span className="lbl">Turun</span>
                 <div className="v num dn">{b.turun}</div>
-                <span className="sub">{((b.turun / b.total) * 100).toFixed(0)}% saham</span>
+                <span className="sub">{persen((b.turun / b.total) * 100, 0)} saham</span>
               </div>
               <div>
                 <span className="lbl">Selisih</span>

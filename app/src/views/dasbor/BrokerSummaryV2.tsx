@@ -1,3 +1,4 @@
+import { persen } from '../../lib/dasbor/format'
 import { useEffect, useMemo, useState } from 'react'
 import { PemilihRentang } from '../../components/dasbor/PemilihRentang'
 import { DatePicker } from '../../components/dasbor/DatePicker'
@@ -178,7 +179,7 @@ export function BrokerSummaryV2() {
           <h2 style={{ margin: 0, fontSize: 26 }}>{kode} <small className="lbl" style={{ marginLeft: 8, textTransform: 'none', letterSpacing: 0 }}>{namaEmiten}</small></h2>
           <div className="num" style={{ display: 'flex', gap: 16, alignItems: 'baseline', flexWrap: 'wrap', marginTop: 4 }}>
             <span style={{ fontSize: 22, fontWeight: 500 }}>{hargaKini !== null ? `Rp ${keFraksi(hargaKini).toLocaleString('id-ID')}` : '—'}</span>
-            {gerak !== null && <span className="lbl" style={{ color: gerak >= 0 ? 'var(--green)' : 'var(--red)' }}>{gerak >= 0 ? '+' : ''}{gerak.toFixed(2)}% dalam rentang</span>}
+            {gerak !== null && <span className="lbl" style={{ color: gerak >= 0 ? 'var(--green)' : 'var(--red)' }}>{gerak >= 0 ? '+' : ''}{persen(gerak, 2)} dalam rentang</span>}
             <span className="lbl">{dari && akhir ? `${dari} – ${akhir} · ${hariAktif.length} hari bursa` : 'memuat rentang…'}</span>
           </div>
         </div>

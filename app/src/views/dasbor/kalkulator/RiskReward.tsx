@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { fN } from '../../../lib/dasbor/format'
+import { fN, persen } from '../../../lib/dasbor/format'
 import { PosisiBar } from './PosisiBar'
 import { IkonMenu, IKON_TIMBANGAN, IKON_CENTANG, IKON_PERINGATAN, IKON_SILANG } from '../../../components/dasbor/IkonMenu'
 
@@ -140,14 +140,14 @@ export function RiskReward() {
                     <span className="lbl">Total Risiko</span>
                     <span className="num dn">Rp {fN(result.riskIdr, 0)}</span>
                     <div className="v-note">
-                      {lotsN > 0 ? `${lotsN} lot · ${result.riskPctPerSaham.toFixed(2)}% per saham` : `${result.riskPctPerSaham.toFixed(2)}% per saham`}
+                      {lotsN > 0 ? `${lotsN} lot · ${persen(result.riskPctPerSaham, 2)} per saham` : `${persen(result.riskPctPerSaham, 2)} per saham`}
                     </div>
                   </div>
                   <div className="bm">
                     <span className="lbl">Potensi Profit</span>
                     <span className="num up">Rp {fN(result.profitIdr, 0)}</span>
                     <div className="v-note">
-                      {lotsN > 0 ? `${lotsN} lot · ${result.rewardPctPerSaham.toFixed(2)}% per saham` : `${result.rewardPctPerSaham.toFixed(2)}% per saham`}
+                      {lotsN > 0 ? `${lotsN} lot · ${persen(result.rewardPctPerSaham, 2)} per saham` : `${persen(result.rewardPctPerSaham, 2)} per saham`}
                     </div>
                   </div>
                 </div>

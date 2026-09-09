@@ -1,3 +1,4 @@
+import { persen } from '../../lib/dasbor/format'
 import './BadgeRapor.css'
 import {
   bolehLihatRapor,
@@ -48,11 +49,11 @@ export function BadgeRapor({
   const rentang = `${run.parameter_ringkas.mulai ?? '?'}–${run.akhir_data ?? 'kini'}`
   const isi = (
     <>
-      <b className={`br-win br-${warna}`}>{(run.win_rate * 100).toFixed(1)}%</b>
+      <b className={`br-win br-${warna}`}>{persen(run.win_rate * 100, 1)}</b>
       {live && (
         <span className="br-live">
           {' '}
-          · live {(live.winRate * 100).toFixed(1)}% ({live.n} hari){basi ? ' ⚠' : ''}
+          · live {persen(live.winRate * 100, 1)} ({live.n} hari){basi ? ' ⚠' : ''}
         </span>
       )}
       <span className="br-meta">

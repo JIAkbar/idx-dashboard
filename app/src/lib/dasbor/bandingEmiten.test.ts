@@ -142,11 +142,11 @@ describe('susunBanding', () => {
     // 4.320 jatuh tepat di tick Rp 10 — harga yang tak bisa dipesan di bursa
     // tak boleh pernah tercetak, jadi tampilannya lewat `keFraksi()`.
     expect(ambilBaris(t, 'Harga').sel[0].teks).toBe(`Rp ${(4320).toLocaleString('id-ID')}`)
-    expect(ambilBaris(t, 'Perubahan 52 minggu').sel[0]).toEqual({ teks: '-12.5%', arah: -1 })
+    expect(ambilBaris(t, 'Perubahan 52 minggu').sel[0]).toEqual({ teks: '-12,5%', arah: -1 })
     // roe RASIO → persen; der SUDAH persen (skalanya beda 100× di berkas yang sama)
-    expect(ambilBaris(t, 'ROE').sel[0].teks).toBe('21.82%')
-    expect(ambilBaris(t, 'DER').sel[0].teks).toBe('0.8%')
-    expect(ambilBaris(t, 'Imbal hasil dividen').sel[0].teks).toBe('5.61%')
+    expect(ambilBaris(t, 'ROE').sel[0].teks).toBe('21,82%')
+    expect(ambilBaris(t, 'DER').sel[0].teks).toBe('0,8%')
+    expect(ambilBaris(t, 'Imbal hasil dividen').sel[0].teks).toBe('5,61%')
     expect(ambilBaris(t, 'Net asing 20 hari (lembar)').sel[0].arah).toBe(1)
   })
 
@@ -264,10 +264,10 @@ describe('gambarBanding', () => {
 
   it('naik hijau, turun merah, sisanya netral — memakai palet yang diberikan', () => {
     const { teks } = gambar('dark')
-    expect(teks.find((t) => t.teks === '+12.5%')!.warna).toBe(PALET.dark.naik)
-    expect(teks.find((t) => t.teks === '-4.0%')!.warna).toBe(PALET.dark.turun)
+    expect(teks.find((t) => t.teks === '+12,5%')!.warna).toBe(PALET.dark.naik)
+    expect(teks.find((t) => t.teks === '-4,0%')!.warna).toBe(PALET.dark.turun)
     const terang = gambar('light')
-    expect(terang.teks.find((t) => t.teks === '+12.5%')!.warna).toBe(PALET.light.naik)
+    expect(terang.teks.find((t) => t.teks === '+12,5%')!.warna).toBe(PALET.light.naik)
     // latar ikut tema — kotak pertama selalu latar penuh
     expect(terang.kotak[0].warna).toBe(PALET.light.latar)
   })

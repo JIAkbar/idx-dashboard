@@ -1,3 +1,4 @@
+import { fp } from './format'
 /**
  * Format helper khusus Stock Detail — port 1:1 dari helper lokal di dalam
  * fdRender()/fdValuationHtml() index_live.html baris 4034-4042 & 4248-4250.
@@ -16,7 +17,8 @@ export function fvx(v: number | null | undefined, d = 2): string {
 
 /** Angka + tanda +/-, TANPA kelas warna (dipakai untuk teks growth polos). */
 export function fp2(v: number | null | undefined, d = 1): string {
-  return v != null ? (v >= 0 ? '+' : '') + Number(v).toFixed(d) + '%' : '—'
+  // Lewat `fp()` bersama supaya desimalnya berkoma seperti angka lain (#123).
+  return v != null ? fp(Number(v), d) : '—'
 }
 
 export function fB(v: number | null | undefined): string {

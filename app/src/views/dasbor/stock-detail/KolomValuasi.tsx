@@ -1,3 +1,4 @@
+import { persen } from '../../../lib/dasbor/format'
 import type { ReactNode } from 'react'
 import type { StockFundamental } from '../../../lib/dasbor/stockDetailData'
 import { fB, fMC, fv, fvx } from '../../../lib/dasbor/stockDetailFormat'
@@ -164,7 +165,7 @@ export function PanelSkor({ fd }: { fd: StockFundamental }) {
             {TR('Market Cap', fMC(fd.market_cap))}
             {TR('Enterprise Value', fMC(fd.enterprise_value))}
             {TR('Shares Outstanding', shares != null ? (shares / 1e9).toLocaleString('id-ID', { maximumFractionDigits: 2 }) + ' M' : '—')}
-            {TR('Free Float', ff != null ? Number(ff).toFixed(2) + '%' : '—')}
+            {TR('Free Float', ff != null ? persen(Number(ff), 2) : '—')}
           </tbody>
         </table>
       </div>

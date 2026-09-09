@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import type { ChartConfiguration } from 'chart.js/auto'
-import { fN, fp } from '../../lib/dasbor/format'
+import { fN, fp, persen } from '../../lib/dasbor/format'
 import { PemilihRentang } from './PemilihRentang'
 import { LABEL_RENTANG } from '../../lib/dasbor/periode'
 import { ambilScreener } from '../../lib/dasbor/screener'
@@ -298,7 +298,7 @@ export function GrupKonglomerat() {
                       to={`/grafik?kode=${a.kode}`}
                       className={'gk-ubin-it ' + arah}
                       title={[
-                        a.lewat ? `${a.lewat} — ${a.pct?.toFixed(2)}%` : (a.alasan ?? a.kode),
+                        a.lewat ? `${a.lewat} — ${persen(a.pct, 2)}` : (a.alasan ?? a.kode),
                         a.harga ? `harga ${fN(a.harga, 0)}` : null,
                         a.vol ? `volume ${fN(a.vol, 0)}` : null,
                         a.net_asing ? `net asing ${a.net_asing > 0 ? '+' : ''}${fN(a.net_asing / 1e9, 1)} miliar` : null,
@@ -340,7 +340,7 @@ export function GrupKonglomerat() {
                     className={'gk-chip ' + (nilai == null ? 'nol' : nilai > 0 ? 'naik' : nilai < 0 ? 'turun' : 'nol')}
                     title={
                       a.lewat
-                        ? `${a.lewat} — ${a.pct?.toFixed(2)}%${a.harga ? ` · harga ${fN(a.harga, 0)}` : ''}`
+                        ? `${a.lewat} — ${persen(a.pct, 2)}${a.harga ? ` · harga ${fN(a.harga, 0)}` : ''}`
                         : (a.alasan ?? a.kode)
                     }
                   >

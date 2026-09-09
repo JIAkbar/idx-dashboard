@@ -3,6 +3,7 @@ import { useStockAsing, type StockFundamental } from '../../lib/dasbor/stockDeta
 import { ringkasTransaksi } from '../../lib/dasbor/bedahEmiten'
 import { fRingkas, fMC, fv } from '../../lib/dasbor/stockDetailFormat'
 import { tanggalPendek } from '../../lib/dasbor/statistikBerkala'
+import { persen } from '../../lib/dasbor/format'
 
 /**
  * Panel "Aktivitas Transaksi" — dipindah dari halaman Bedah Emiten (pensiun
@@ -60,7 +61,7 @@ export function PanelAktivitasTransaksi({ ticker, fd }: { ticker: string; fd: St
               </div>
               <div>
                 <span className="lbl">Turnover</span>
-                <div className="v num">{r.turnover != null ? `${r.turnover.toFixed(3)}%` : '—'}</div>
+                <div className="v num">{r.turnover != null ? `${persen(r.turnover, 3)}` : '—'}</div>
                 <span className="sub">saham beredar berpindah</span>
               </div>
               <div>

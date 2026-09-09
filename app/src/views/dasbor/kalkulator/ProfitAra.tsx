@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { fN } from '../../../lib/dasbor/format'
+import { fN, persen } from '../../../lib/dasbor/format'
 import { PosisiBar } from './PosisiBar'
 import { IkonMenu, IKON_UANG, IKON_GRAFIK_NAIK } from '../../../components/dasbor/IkonMenu'
 import { batasAra, batasArb, keFraksi } from '../../../lib/fraksiHarga'
@@ -200,7 +200,7 @@ export function ProfitAra({ feeBeli, feeJual, setFeeBeli, setFeeJual }: ProfitAr
                     Rp {fN(profit.netProfit, 0)}
                   </div>
                   <div className="v-note">
-                    Return {(profit.ret >= 0 ? '+' : '') + profit.ret.toFixed(2)}% setelah fee
+                    Return {(profit.ret >= 0 ? '+' : '') + persen(profit.ret, 2)} setelah fee
                   </div>
                 </div>
                 <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap' }}>

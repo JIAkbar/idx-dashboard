@@ -6,7 +6,7 @@ import { fmtTanggalPendek } from '../../components/dasbor/Kalender'
 import { KonteksData } from '../../components/dasbor/KonteksData'
 import { useDataHarian, useDataPembanding } from '../../lib/dasbor/dataHarian'
 import { hitungPeriodePct, LABEL_RENTANG, type RentangTanggal } from '../../lib/dasbor/periode'
-import { fN, fp } from '../../lib/dasbor/format'
+import { fN, fp, persen } from '../../lib/dasbor/format'
 import type { DataHarian, SectorRow } from '../../lib/dasbor/dataHarian'
 import { useStockIndex } from '../../lib/dasbor/stockDetailData'
 import { IkonMenu, IKON_JAM, IKON_PERINGATAN, IKON_GRAFIK_BATANG, IKON_GRAFIK_NAIK, IKON_BULAN_SABIT, IKON_KOTAK_ARSIP } from '../../components/dasbor/IkonMenu'
@@ -346,7 +346,7 @@ export function SektorIndeks() {
               aria-pressed={sektorTerpilih === nama}
               title={`Lihat saham sektor ${nama}`}
               onClick={() => setSektorTerpilih(sektorTerpilih === nama ? null : nama)}
-              style={{ background: v === null ? undefined : `color-mix(in srgb, var(${naik ? '--green' : '--red'}) ${(alpha * 100).toFixed(0)}%, transparent)` }}
+              style={{ background: v === null ? undefined : `color-mix(in srgb, var(${naik ? '--green' : '--red'}) ${persen(alpha * 100, 0)}, transparent)` }}
             >
               <span className="t-code">{kode}</span>
               <span className="t-name">{nama}</span>

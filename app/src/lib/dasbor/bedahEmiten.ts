@@ -1,4 +1,5 @@
 import type { StockFundamental, YearMap, QuarterMap } from './stockDetailData'
+import { persen } from './format'
 
 /**
  * Hitungan halaman **Bedah Emiten** (backlog A2 / #153) — semuanya fungsi
@@ -374,10 +375,10 @@ export function skorPilar(fd: StockFundamental, sejarah: Sumbu | null, sektor: S
           tangga(cagrNi, [[15, 100], [8, 80], [3, 60], [0, 40]]),
         ]),
         [
-          ada(fd.rev_yoy) ? `Pendapatan YoY ${fd.rev_yoy.toFixed(1)}%` : null,
-          ada(fd.ni_yoy) ? `Laba bersih YoY ${fd.ni_yoy.toFixed(1)}%` : null,
-          cagrRev != null ? `CAGR pendapatan ${rev.length} th ${cagrRev.toFixed(1)}%/th` : null,
-          cagrNi != null ? `CAGR laba ${ni.length} th ${cagrNi.toFixed(1)}%/th` : null,
+          ada(fd.rev_yoy) ? `Pendapatan YoY ${persen(fd.rev_yoy, 1)}` : null,
+          ada(fd.ni_yoy) ? `Laba bersih YoY ${persen(fd.ni_yoy, 1)}` : null,
+          cagrRev != null ? `CAGR pendapatan ${rev.length} th ${persen(cagrRev, 1)}/th` : null,
+          cagrNi != null ? `CAGR laba ${ni.length} th ${persen(cagrNi, 1)}/th` : null,
         ],
         'Pertumbuhan YoY dan riwayat tahunan belum tersedia.',
       ),
@@ -391,10 +392,10 @@ export function skorPilar(fd: StockFundamental, sejarah: Sumbu | null, sektor: S
           tangga(marjin(fd.opm), [[20, 100], [12, 80], [5, 60], [0, 40]]),
         ]),
         [
-          q.roe != null ? `ROE ${q.roe.toFixed(1)}%` : null,
-          q.marjinBersih != null ? `Marjin bersih ${q.marjinBersih.toFixed(1)}%` : null,
-          ada(fd.roa) ? `ROA ${keP(fd.roa)!.toFixed(1)}%` : null,
-          marjin(fd.opm) != null ? `Marjin operasi ${marjin(fd.opm)!.toFixed(1)}%` : null,
+          q.roe != null ? `ROE ${persen(q.roe, 1)}` : null,
+          q.marjinBersih != null ? `Marjin bersih ${persen(q.marjinBersih, 1)}` : null,
+          ada(fd.roa) ? `ROA ${persen(keP(fd.roa)!, 1)}` : null,
+          marjin(fd.opm) != null ? `Marjin operasi ${persen(marjin(fd.opm)!, 1)}` : null,
         ],
         'ROE, marjin, dan ROA belum tersedia.',
       ),
@@ -409,8 +410,8 @@ export function skorPilar(fd: StockFundamental, sejarah: Sumbu | null, sektor: S
           tangga(ada(fd.current_ratio) ? fd.current_ratio : null, [[2, 100], [1.5, 85], [1, 65], [0.7, 40]]),
         ]),
         [
-          q.der != null ? `DER ${q.der.toFixed(1)}%` : null,
-          q.akrual != null ? `Kas operasi ${q.akrual.toFixed(0)}% dari laba` : null,
+          q.der != null ? `DER ${persen(q.der, 1)}` : null,
+          q.akrual != null ? `Kas operasi ${persen(q.akrual, 0)} dari laba` : null,
           ada(fd.interest_coverage) ? `Bunga tertutup ${fd.interest_coverage.toFixed(1)}x laba operasi` : null,
           ada(fd.current_ratio) ? `Rasio lancar ${fd.current_ratio.toFixed(2)}x` : null,
         ],
@@ -436,8 +437,8 @@ export function skorPilar(fd: StockFundamental, sejarah: Sumbu | null, sektor: S
           tangga(ada(fd.div_years) ? fd.div_years : null, [[8, 100], [5, 80], [3, 60], [1, 40]]),
         ]),
         [
-          q.divYield != null ? `Imbal hasil dividen ${q.divYield.toFixed(2)}%` : null,
-          ada(fd.payout_ratio) ? `Payout ${keP(fd.payout_ratio)!.toFixed(0)}% dari laba` : null,
+          q.divYield != null ? `Imbal hasil dividen ${persen(q.divYield, 2)}` : null,
+          ada(fd.payout_ratio) ? `Payout ${persen(keP(fd.payout_ratio)!, 0)} dari laba` : null,
           ada(fd.div_years) ? `${fd.div_years} tahun tercatat membagi dividen` : null,
         ],
         'Riwayat dividen belum tersedia.',
@@ -574,12 +575,12 @@ export function panelKhas(fd: StockFundamental): BarisKhas[] {
     },
     {
       label: 'ROIC',
-      nilai: roic != null ? `${roic.toFixed(2)}%` : 'Belum tersedia',
+      nilai: roic != null ? `${persen(roic, 2)}` : 'Belum tersedia',
       baca: roic != null ? 'Imbal hasil atas seluruh modal yang diinvestasikan — utang maupun ekuitas.' : null,
     },
     {
       label: 'ROCE',
-      nilai: roce != null ? `${roce.toFixed(2)}%` : 'Belum tersedia',
+      nilai: roce != null ? `${persen(roce, 2)}` : 'Belum tersedia',
       baca: roce != null ? 'Laba operasi terhadap modal yang dipakai; tak terpengaruh struktur pajak.' : null,
     },
     {

@@ -5,6 +5,7 @@ import { FdPercent } from '../../../components/dasbor/FdPercent'
 import { IkonMenu, IKON_PENGGARIS, IKON_KALKULATOR, IKON_LAMPU, IKON_GRAFIK_BATANG, IKON_UANG, IKON_PERINGATAN, IKON_GRAFIK_NAIK } from '../../../components/dasbor/IkonMenu'
 import { pilihRasio } from '../../../lib/dasbor/rasioUtamaKeystats'
 import type { PetaRasio } from '../../../components/dasbor/NilaiRotasi'
+import { persen } from '../../../lib/dasbor/format'
 
 /** "Rp "+angka bulat — port fv() lokal fdValuationCalc() baris 4397. */
 function rp(v: number | null): string {
@@ -22,14 +23,15 @@ function MosBadge({ val, price }: { val: number | null; price: number }) {
   const label = mos > AMBANG_MOS ? `Undervalued (>${AMBANG_MOS}%)` : mos < -AMBANG_MOS ? `Overvalued (<-${AMBANG_MOS}%)` : `Wajar (±${AMBANG_MOS}%)`
   return (
     <>
-      <span style={{ color, fontWeight: 700 }}>{mos >= 0 ? '+' : ''}{mos.toFixed(1)}%</span>{' '}
+      <span style={{ color, fontWeight: 700 }}>{mos >= 0 ? '+' : ''}{persen(mos, 1)}</span>{' '}
       <span style={{ fontSize: 9, color }}>{label}</span>
     </>
   )
 }
 
 function pctPlain(v: number | null, d = 1): string {
-  return v != null ? v.toFixed(d) + '%' : '—'
+  // Lewat `persen()` bersama — tandanya memang tak dipakai di sini.
+  return persen(v, d)
 }
 
 /** Ambang ±5% memisahkan Murah/Mahal/Wajar vs median sektor — sama dengan sumber. */
@@ -181,7 +183,7 @@ export function PanelValuasiInteraktif({ fd, rasio = null }: { fd: StockFundamen
           </div>
           <div style={{ fontSize: 9, color: 'var(--text3)', marginTop: 8 }}>
             <IkonMenu d={IKON_LAMPU} size={11} /> Ubah angka di atas untuk simulasi skenario berbeda. g default dari CAGR EPS historis
-            {fd.eps_cagr_3y != null ? ` (3Y: ${fd.eps_cagr_3y.toFixed(1)}%)` : fd.eps_cagr_2y != null ? ` (2Y: ${fd.eps_cagr_2y.toFixed(1)}%)` : ''}.
+            {fd.eps_cagr_3y != null ? ` (3Y: ${persen(fd.eps_cagr_3y, 1)})` : fd.eps_cagr_2y != null ? ` (2Y: ${persen(fd.eps_cagr_2y, 1)})` : ''}.
             {' '}Y = yield SBN 10 tahun Indonesia (default 6.75%).
           </div>
         </div>
@@ -197,7 +199,7 @@ export function PanelValuasiInteraktif({ fd, rasio = null }: { fd: StockFundamen
                 <tr><td>EPS (Rp)</td>{hYrs.map((y) => <td key={y} className="r">{hEps[y] != null ? Number(hEps[y]).toLocaleString('id-ID', { maximumFractionDigits: 0 }) : '—'}</td>)}</tr>
                 <tr><td>BV/Saham</td>{hYrs.map((y) => <td key={y} className="r">{hBv[y] != null ? Number(hBv[y]).toLocaleString('id-ID', { maximumFractionDigits: 0 }) : '—'}</td>)}</tr>
                 <tr><td>FCF (B IDR)</td>{hYrs.map((y) => <td key={y} className="r">{hFcf[y] != null ? (hFcf[y] / 1e9).toFixed(0) : '—'}</td>)}</tr>
-                <tr><td>ROE (%)</td>{hYrs.map((y) => <td key={y} className="r">{hRoe[y] != null ? Number(hRoe[y]).toFixed(1) + '%' : '—'}</td>)}</tr>
+                <tr><td>ROE (%)</td>{hYrs.map((y) => <td key={y} className="r">{hRoe[y] != null ? persen(Number(hRoe[y]), 1) : '—'}</td>)}</tr>
               </tbody>
             </table>
           </div>

@@ -1,3 +1,4 @@
+import { persen } from '../../../lib/dasbor/format'
 import { useEffect, useMemo, useState } from 'react'
 import type { ChartConfiguration } from 'chart.js/auto'
 import { useChartCanvas, bacaTokenTema } from '../../../lib/dasbor/useChartJs'
@@ -148,7 +149,7 @@ export function ActivityTab() {
                 const total = nilai.reduce((a, x) => a + x.v, 0)
                 if (!total) return ''
                 return 'top-3: ' + nilai.slice(0, 3)
-                  .map((x) => `${x.k} ${((x.v / total) * 100).toFixed(0)}%`)
+                  .map((x) => `${x.k} ${persen((x.v / total) * 100, 0)}`)
                   .join(' · ')
               },
             },

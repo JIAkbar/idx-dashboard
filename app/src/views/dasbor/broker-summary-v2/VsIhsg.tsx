@@ -8,6 +8,7 @@ import { regresiVsIhsg } from '../../../lib/dasbor/brokerEmitenV2'
 import { LABEL_RENTANG } from '../../../lib/dasbor/periode'
 import { labelTanggal } from '../../../lib/dasbor/brokerHarian'
 import { EmptyState } from './Overview'
+import { persen } from '../../../lib/dasbor/format'
 
 type RentangVs = 'b3' | 'b6' | 'ytd'
 const OPSI_RENTANG: { id: RentangVs; label: string }[] = [
@@ -129,24 +130,24 @@ export function VsIhsg({ kode, saham, ihsg }: VsIhsgProps) {
                 <Metrik k="Beta" ket={r.beta < 0.8 ? 'defensif (volatilitas rendah)' : r.beta < 1.2 ? 'sejalan pasar' : 'agresif (volatilitas tinggi)'} v={r.beta.toFixed(2)} />
                 <Metrik k="Korelasi (r)" ket={`${Math.abs(r.korelasi) < 0.3 ? 'lemah' : Math.abs(r.korelasi) < 0.6 ? 'sedang' : 'kuat'} (${r.korelasi >= 0 ? 'positif' : 'negatif'})`} v={r.korelasi.toFixed(2)} />
                 <Metrik k="R-Squared (R²)" ket="proporsi varians terjelaskan IHSG" v={r.rSquared.toFixed(2)} />
-                <Metrik k="Alpha (abnormal return)" ket="return saham − beta × return IHSG" v={`${r.alpha >= 0 ? '+' : ''}${r.alpha.toFixed(2)}%`} warna={tone(r.alpha)} />
+                <Metrik k="Alpha (abnormal return)" ket="return saham − beta × return IHSG" v={`${r.alpha >= 0 ? '+' : ''}${persen(r.alpha, 2)}`} warna={tone(r.alpha)} />
                 <Metrik k="Hari perdagangan" ket="sampel data aktif" v={String(r.n)} />
               </div>
             </section>
             <section className="panel">
               <div className="panel-h"><h2>Returns summary</h2></div>
               <div className="panel-b bs2-metrik">
-                <Metrik k={`Return ${kode}`} v={`${r.returnSaham >= 0 ? '+' : ''}${r.returnSaham.toFixed(2)}%`} warna={tone(r.returnSaham)} />
-                <Metrik k="Return IHSG" v={`${r.returnIhsg >= 0 ? '+' : ''}${r.returnIhsg.toFixed(2)}%`} warna={tone(r.returnIhsg)} />
-                <Metrik k="Relative strength" ket="return saham − return IHSG" v={`${(r.returnSaham - r.returnIhsg) >= 0 ? '+' : ''}${(r.returnSaham - r.returnIhsg).toFixed(2)}%`} warna={tone(r.returnSaham - r.returnIhsg)} />
+                <Metrik k={`Return ${kode}`} v={`${r.returnSaham >= 0 ? '+' : ''}${persen(r.returnSaham, 2)}`} warna={tone(r.returnSaham)} />
+                <Metrik k="Return IHSG" v={`${r.returnIhsg >= 0 ? '+' : ''}${persen(r.returnIhsg, 2)}`} warna={tone(r.returnIhsg)} />
+                <Metrik k="Relative strength" ket="return saham − return IHSG" v={`${(r.returnSaham - r.returnIhsg) >= 0 ? '+' : ''}${persen(r.returnSaham - r.returnIhsg, 2)}`} warna={tone(r.returnSaham - r.returnIhsg)} />
               </div>
             </section>
             <section className="panel">
               <div className="panel-h"><h2>Risk &amp; consistency</h2></div>
               <div className="panel-b bs2-metrik">
-                <Metrik k={`Volatilitas ${kode}`} ket="annualized (σ harian × √252)" v={`${r.volatilitasSaham.toFixed(1)}%`} />
-                <Metrik k="Volatilitas IHSG" ket="annualized" v={`${r.volatilitasIhsg.toFixed(1)}%`} />
-                <Metrik k="Win rate harian" ket="% hari saham > IHSG" v={`${r.winRateHarian.toFixed(1)}%`} />
+                <Metrik k={`Volatilitas ${kode}`} ket="annualized (σ harian × √252)" v={`${persen(r.volatilitasSaham, 1)}`} />
+                <Metrik k="Volatilitas IHSG" ket="annualized" v={`${persen(r.volatilitasIhsg, 1)}`} />
+                <Metrik k="Win rate harian" ket="% hari saham > IHSG" v={`${persen(r.winRateHarian, 1)}`} />
               </div>
             </section>
           </div>
