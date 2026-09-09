@@ -6,6 +6,7 @@ import {
 } from 'lightweight-charts'
 import { gabungBarBerjalan, muatCandle, type DataCandle } from '../../lib/dasbor/candleStockbit'
 import { useHargaLive, type HargaLive } from '../../lib/dasbor/hargaLive'
+import { tambahTape, vwapTaksiran, nilaiPerTransaksi, type BarisTape, type TitikLive } from '../../lib/dasbor/tapeLive'
 import { jamPasarJakarta } from '../../lib/tanggalBursa'
 import { StockAutocomplete } from '../../components/dasbor/StockAutocomplete'
 import { ModalKecil } from '../../components/dasbor/ModalKecil'
@@ -126,6 +127,9 @@ export default function WhalesPapan() {
   const [ketik, setKetik] = useState('BBCA')
   const [kode, setKode] = useState('BBCA')
   const { hari, tahunAda, muat, galat } = useBrokerTahunan(kode)
+  /** Tanggal arsip broker TERAKHIR — dipakai bilah supaya lapisan broker tak
+   *  terbaca sesegar bar LIVE di sebelahnya (#152 C). */
+  const hariTerakhirBroker = hari.length ? hari[hari.length - 1].tanggal : null
 
   const ringkasKartu = useRingkasKartu()
   const barisKartu = useMemo(
@@ -164,6 +168,26 @@ export default function WhalesPapan() {
     return () => clearInterval(t)
   }, [liveTampil])
   const umurLiveDetik = liveTampil ? Math.max(0, Math.round((kini - liveTampil.diambilPada) / 1000)) : 0
+
+  /** Tape transaksi hari berjalan (#152 A) — selisih antar tarikan.
+   *
+   *  Hidup di MEMORI HALAMAN saja: tak ditulis ke arsip, tak dikirim ke
+   *  mana pun, hilang saat halaman ditutup. Yang disimpan cuma selisih dari
+   *  angka yang memang sudah tiba tiap 45 detik — nol permintaan tambahan. */
+  const [tape, setTape] = useState<BarisTape[]>([])
+  const titikSebelum = useRef<TitikLive | null>(null)
+  useEffect(() => { setTape([]); titikSebelum.current = null }, [kode])
+  useEffect(() => {
+    if (!live || live.kode !== kode) return
+    const kiniTitik: TitikLive = {
+      pada: live.diambilPada, volume: live.volume, value: live.value, frequency: live.frequency,
+    }
+    setTape((t) => tambahTape(t, titikSebelum.current, kiniTitik))
+    titikSebelum.current = kiniTitik
+  }, [live, kode])
+
+  const vwapHariIni = vwapTaksiran(liveTampil?.value, liveTampil?.volume)
+  const perTransaksi = nilaiPerTransaksi(liveTampil?.value, liveTampil?.frequency)
 
   const [sel, setSel] = useState<SeleksiArea | null>(null)
   const [selIntra, setSelIntra] = useState<SelIntra | null>(null)
@@ -815,7 +839,14 @@ export default function WhalesPapan() {
           )}
           {tahunAda.length > 0 && (
             <span className="muted" style={{ fontSize: 12 }}>
+              {/* Tanggal terakhir arsip broker disebut, bukan cuma rentang tahun
+                  dan jumlah hari (#152 C). Tanpa itu, bilah ini terbaca seolah
+                  lapisan broker ikut sesegar bar LIVE di sebelahnya — padahal
+                  rinciannya baru terbit sesudah bursa tutup. Kotak Metodologi di
+                  halaman ini sudah menyebutnya; bilahnya belum. */}
               broker {tahunAda[0]}–{tahunAda[tahunAda.length - 1]} · {hari.length.toLocaleString('id-ID')} hari
+              {hariTerakhirBroker && ` · terakhir ${hariTerakhirBroker}`}
+              {' · rincian broker hari ini terbit ±17:50, sesudah bursa tutup'}
             </span>
           )}
           {muat && <span className="muted" style={{ fontSize: 12 }}>memuat…</span>}
@@ -991,9 +1022,78 @@ export default function WhalesPapan() {
           rincian broker di dalamnya.
         </div>
       ) : (
-        /* Panel kanan KONTEKSTUAL (sistem tata C+A): tanpa seleksi ia kolaps
+        <>
+        {/* Transaksi hari berjalan — angka yang sudah tiba tiap 45 detik,
+            diangkat dari ekor baris LIVE jadi kartu yang bisa dibaca (Johan
+            9 Sep 2026: "di whales sudah live tapi perlu muncul transaksi juga
+            bisa gak ?").
+
+            Judulnya menyebut CAKUPANNYA. "Transaksi" polos di halaman ini akan
+            terbaca sebagai rincian per broker — justru satu-satunya hal yang
+            belum ada sebelum sore. */}
+        {liveTampil && (liveTampil.value != null || liveTampil.volume != null) && (
+          <div className="panel wp-tx">
+            <div className="panel-h">
+              <span className="lbl">Transaksi hari ini — seluruh pasar, belum dipecah per broker</span>
+              <span className="muted wp-tx-umur">
+                {pasar.status !== 'buka'
+                  ? 'PENUTUPAN SEMENTARA · menunggu arsip'
+                  : umurLiveDetik < 150
+                    ? 'tertunda ≤ 2 menit'
+                    : `basi ${Math.round(umurLiveDetik / 60)} menit, tarikan gagal`}
+              </span>
+            </div>
+            <div className="panel-b">
+              <div className="grid3">
+                <div className="vcard">
+                  <span className="lbl">Nilai</span>
+                  <span className="v-num num">Rp {liveTampil.value != null ? rupiahRingkas(liveTampil.value) : '—'}</span>
+                  <span className="v-note">sejak pembukaan hari ini</span>
+                </div>
+                <div className="vcard">
+                  <span className="lbl">Frekuensi</span>
+                  <span className="v-num num">{liveTampil.frequency != null ? liveTampil.frequency.toLocaleString('id-ID') : '—'} kali</span>
+                  <span className="v-note">
+                    {perTransaksi != null ? `rata-rata Rp ${rupiahRingkas(perTransaksi)} per transaksi` : 'rata-rata per transaksi belum bisa dihitung'}
+                  </span>
+                </div>
+                <div className="vcard">
+                  <span className="lbl">Volume</span>
+                  <span className="v-num num">{liveTampil.volume != null ? lotRingkas(liveTampil.volume / 100) : '—'} lot</span>
+                  <span className="v-note">
+                    {/* "Taksiran" bukan kerendahan hati: ini nilai dibagi lembar
+                        untuk seluruh papan yang ikut dilaporkan, jadi ia tak pernah
+                        persis harga transaksi mana pun. */}
+                    {vwapHariIni != null ? `harga rata-rata taksiran ${Math.round(vwapHariIni).toLocaleString('id-ID')}` : 'harga rata-rata belum bisa dihitung'}
+                  </span>
+                </div>
+              </div>
+              {tape.length > 0 && (
+                <>
+                  <p className="lbl lbl-rentang">
+                    Pertambahan tiap tarikan — ringkasan tiap ±45 detik, bukan catatan tiap transaksi
+                  </p>
+                  <div className="wp-tx-tape">
+                    {tape.map((b) => (
+                      <div key={b.pada} className="wp-tx-baris">
+                        <span className="num muted">{jamPasarJakarta(new Date(b.pada)).jam}</span>
+                        <span className="num">+{lotRingkas(b.volume / 100)} lot</span>
+                        <span className="num">Rp {rupiahRingkas(b.value)}</span>
+                        <span className="num muted">{b.frequency.toLocaleString('id-ID')} kali</span>
+                        {/* Jendela yang tergabung TIDAK dipecah jadi dua baris palsu:
+                            yang hilang tarikannya, bukan transaksinya. */}
+                        {b.jendela > 1 && <span className="muted">gabungan {b.jendela} jendela</span>}
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        )}
+        {/* Panel kanan KONTEKSTUAL (sistem tata C+A): tanpa seleksi ia kolaps
            jadi strip tipis yang bisa ditekan (chart memakai seluruh lebar);
-           ada seleksi/pesan → kolom penuh. */
+           ada seleksi/pesan → kolom penuh. */}
         <div className={`wp-panggung tata-2${panelBerisi ? '' : ' ctx-kosong'}`}>
           <div
             className="wp-kanvas-bungkus wp-chart"
@@ -1389,6 +1489,7 @@ export default function WhalesPapan() {
           </div>
           )}
         </div>
+        </>
       )}
     </div>
   )

@@ -301,3 +301,22 @@
 }
 .wp-live .num.up { color: var(--naik, #38B77E); }
 .wp-live .num.down { color: var(--turun, #E6635A); }
+
+/* Kartu transaksi hari berjalan (#152 A). Bentuknya memakai `.panel`,
+   `.grid3`, dan `.vcard` yang sudah ada — yang khas di sini cuma deret
+   tape-nya, yang perlu kolom rata supaya angkanya bisa dibaca menurun
+   alih-alih menari mengikuti panjang teks. */
+.lantai .wp-tx-umur { font-size: 11px; }
+.lantai .wp-tx-tape { display: grid; gap: 2px; max-height: 220px; overflow-y: auto; margin-top: 6px; }
+.lantai .wp-tx-baris {
+  display: grid;
+  grid-template-columns: 52px minmax(88px, auto) minmax(88px, auto) minmax(64px, auto) auto;
+  gap: 10px; align-items: baseline;
+  font-size: 11.5px; padding: 2px 0; border-bottom: 1px solid var(--line);
+}
+.lantai .wp-tx-baris:last-child { border-bottom: 0; }
+@media (max-width: 560px) {
+  /* Di ponsel kolom "kali" dan penanda jendela turun ke baris kedua alih-alih
+     memepet angka rupiah sampai terpotong. */
+  .lantai .wp-tx-baris { grid-template-columns: 46px 1fr 1fr; }
+}
