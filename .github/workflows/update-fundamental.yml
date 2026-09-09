@@ -1,11 +1,22 @@
 name: Update Data Fundamental Saham
 
 on:
-  # Otomatis: tanggal 1 setiap bulan, pukul 06:00 WIB (= 23:00 UTC hari sebelumnya)
+  # Otomatis: tiap Jumat 06:00 WIB (= Jumat 23:00 UTC).
+  #
+  # Dulu bulanan (`0 23 28-31 * *`), dan iramanya itulah yang membuat blok
+  # fundamental terbaca "membeku": terukur 9 Sep 2026, 958 dari 966 berkas
+  # berstempel 1 September — bukan karena panennya gagal (run 31 Agu sukses
+  # 958/967), tapi karena jendela berikutnya memang 28 hari lagi. Selama
+  # jendela itu, tiap halaman yang memajang rasio menyebut tanggal yang
+  # makin tua tanpa ada yang salah.
+  #
+  # Mingguan, bukan harian: isinya laporan keuangan yang berubah per
+  # kuartal, dan menariknya tiap hari membakar kuota yang dibutuhkan panen
+  # harga. Ruas berbasis HARGA sudah disegarkan tiap hari oleh
+  # `segarkan_harga_fundamental.py` di pipa panen sore — jadi yang menua
+  # di sini hanya angka yang memang bergerak lambat.
   schedule:
-    - cron: '0 23 28-31 * *'   # last weekend workaround — lihat catatan di bawah
-  # ↑ Gunakan ini untuk tanggal 1:
-  # - cron: '0 23 1 * *'      # 1 setiap bulan, 06:00 WIB
+    - cron: '0 23 * * 5'      # tiap Jumat, 06:00 WIB Sabtu
 
   # Manual: bisa dijalankan kapan saja dari tab Actions di GitHub
   workflow_dispatch:
