@@ -1776,6 +1776,20 @@ export function GrafikEmiten() {
    *  kanvas, bukan dari ada-tidaknya balasan live: begitu arsip memuat
    *  tanggal yang sama, `tempelBarBerjalan` memenangkan arsip dan lencana
    *  harus diam. */
+  /** Kerangka intraday TIDAK punya bar berjalan, dan itu perlu dinyatakan.
+   *
+   *  Terukur 9 Sep 2026 pukul 09:12 WIB saat bursa berjalan: kerangka 1 jam
+   *  memajang bar terakhir 8 Sep 15:00 — sesi kemarin — tanpa satu pun
+   *  penanda, sementara kerangka Harian di sebelahnya menunjukkan LIVE
+   *  6.600. Dua kerangka di satu halaman menjawab pertanyaan yang sama
+   *  dengan dua kebenaran yang berbeda, dan yang satu diam.
+   *
+   *  Bar berjalan intraday butuh data 1 menit hari berjalan (#108 B) —
+   *  menempelkan bar HARIAN ke kerangka 1 jam akan memberi O/H/L sesi
+   *  penuh pada slot satu jam, angka yang salah dan terlihat wajar.
+   *  Sampai itu diputuskan, yang bisa dijujurkan adalah keadaannya. */
+  const intradayTertinggal = intraday(kerangka) && pasar.status === 'buka'
+
   const barBerjalanTampil = !intraday(kerangka) && liveTampil != null
     && penuh.lilin.length > 0 && String(penuh.lilin[penuh.lilin.length - 1].time) === liveTampil.tanggal
     && (berkas?.d.length ?? 0) > 0
@@ -3929,6 +3943,12 @@ export function GrafikEmiten() {
               hari itu (sesudah panen sore), `gabungBarBerjalan` memenangkan
               arsip dan lencana ini diam — persis yang diinginkan, karena
               angkanya lalu bukan lagi "berjalan". */}
+          {intradayTertinggal && (
+            <span className="grf-live" title="Kerangka intraday dibangun dari arsip 1 menit yang dipanen tiap malam, jadi sesi hari ini belum termuat. Kerangka Harian sudah memuat bar berjalan.">
+              <b className="grf-live-tanda">ARSIP SEMALAM</b>
+              <span className="muted">sesi hari ini belum termuat — pindah ke Harian untuk bar berjalan</span>
+            </span>
+          )}
           {barBerjalanTampil && liveTampil && (
             <span className="grf-live" title={pasar.status === 'buka'
               ? 'Bar hari berjalan lewat server PAPAN: singgahan server 30 detik + tarikan tiap 45 detik, jadi umur terburuknya sekitar dua menit. Indikator dan pola ikut menghitung bar ini.'
