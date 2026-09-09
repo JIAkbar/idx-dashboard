@@ -333,6 +333,10 @@
 /* Panel mini "Detak hari ini" (#157 A) — pengganti daftar teks tape. Duduk di
    bawah kanvas di SEMUA ukuran: apa pun yang naik ke atas kanvas mendorong
    lilin melewati lipatan 810 px di ponsel. */
+/* min-width:0 wajib: pembungkus ini item grid, dan kolom grid bawaannya
+   tak boleh menyusut di bawah lebar KONTEN — kanvas lebar lalu mendorong
+   seluruh baris melewati layar (aturan minmax(0,1fr) di CLAUDE.md). */
+.lantai .wp-kolom-kanvas { min-width: 0; }
 .lantai .wp-detak-panel { margin-top: 10px; }
 .lantai .wp-detak-bungkus { position: relative; }
 .lantai .wp-detak { width: 100%; }

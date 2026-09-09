@@ -1156,6 +1156,13 @@ export default function WhalesPapan() {
             apa pun yang duduk di atas kanvas mendorong lilin melewati lipatan
             810 px, dan itu persis keluhan yang melahirkan pemindahan kartu. */}
         <div className={`wp-panggung tata-2${panelBerisi ? '' : ' ctx-kosong'}`}>
+          {/* Kanvas dan panel Detak dibungkus SATU kolom. Tanpa pembungkus ini
+              `.tata-2` menempatkan Detak sebagai item kedua — yaitu KOLOM
+              KANAN, terjepit 90 px dengan labelnya mengalir vertikal. Cacat itu
+              lolos dari pemeriksaan DOM pertamaku karena aku membandingkan
+              posisi ATAS saja, dan kolom kanan memang lebih bawah; yang
+              menangkapnya tangkapan layar. */}
+          <div className="wp-kolom-kanvas">
           <div
             className="wp-kanvas-bungkus wp-chart"
             ref={bungkusRef}
@@ -1363,6 +1370,8 @@ export default function WhalesPapan() {
               <DetakHariIni tape={tape} tema={theme} rupiah={rupiahRingkas} />
             </div>
           )}
+
+          </div>
 
           {/* Rincian broker dari klik pill AVG — modal kanonis, bukan kartu
               menyisip (Johan: "di jadikan modal ... biar rapi"). Hanya mode
