@@ -163,13 +163,19 @@ REM    bekerja (terjadi 2 Sep 18:39 dan 3 Sep 08:01). Rebase yang gagal
 REM    sekarang dibatalkan dan panennya berhenti dengan pesan, bukan
 REM    meninggalkan pohon kerja setengah jalan.
 set DATA_PATH=data-idx/json/ arus-pasar/keluaran/
-git add %DATA_PATH%
+REM SATU daftar jalur untuk add DAN commit (#148). Commit ber-pathspec
+REM hanya mengambil jalur yang disebut, jadi dua daftar yang berbeda
+REM berarti berkas yang sudah di-add tak pernah terdorong dan tertahan
+REM di index tanpa satu pun galat - terjadi pada profil_stockbit, dan
+REM sebelumnya pada gudang broker tahunan.
+set "DATA_JALUR=%DATA_PATH%"
+git add %DATA_JALUR% 2>nul
 git diff --staged --quiet -- %DATA_PATH%
 if not errorlevel 1 (
   echo Tidak ada data baru hari ini.
   goto akhir
 )
-git commit -m "data: update IDX %date%" -- %DATA_PATH%
+git commit -m "data: update IDX %date%" -- %DATA_JALUR%
 git pull --rebase origin main
 if errorlevel 1 (
   echo   Rebase gagal - dibatalkan, data TETAP ter-commit tapi belum ter-push.

@@ -212,13 +212,31 @@ jobs:
 
           HARGA=$(python3 -c "import json;d=json.load(open('data-idx/json/ohlc/BBCA.json'));print(d['d'][-1][0])")
           TERTINGGAL=""
+          # Selisih PALING BESAR di antara ketiganya, bukan selisih BBCA saja:
+          # versi pertama mengumpulkan tiga emiten lalu menghitung umurnya dari
+          # satu berkas, jadi BBCA yang segar menutupi BBRI yang tertinggal
+          # empat hari — daftar terisi, tapi ambang tak pernah terlewati dan
+          # issue tak pernah dibuat. Persis keadaan yang penjaga ini dibuat
+          # untuk menangkap.
+          BEDA=0
           for K in BBCA BBRI TLKM; do
             F="data-idx/json/broker_tahunan/$K/2026.json"
-            [ -f "$F" ] || { TERTINGGAL="$TERTINGGAL $K(berkas tak ada)"; continue; }
+            if [ ! -f "$F" ]; then
+              TERTINGGAL="$TERTINGGAL $K(berkas tak ada)"
+              BEDA=99          # berkas hilang = sekeras mungkin, bukan diam
+              continue
+            fi
             T=$(python3 -c "import json;d=json.load(open('$F'));h=d.get('hari') or {};print(max(h) if h else '')")
             echo "broker $K : ${T:-kosong}"
-            if [ -z "$T" ] || [ "$T" \< "$HARGA" ]; then
-              TERTINGGAL="$TERTINGGAL $K(${T:-kosong})"
+            if [ -z "$T" ]; then
+              TERTINGGAL="$TERTINGGAL $K(kosong)"
+              BEDA=99
+            elif [ "$T" \< "$HARGA" ]; then
+              TERTINGGAL="$TERTINGGAL $K($T)"
+              D=$(python3 -c "
+          from datetime import date
+          print(abs((date.fromisoformat('$HARGA') - date.fromisoformat('$T')).days))")
+              [ "$D" -gt "$BEDA" ] && BEDA=$D
             fi
           done
           echo "harga BBCA : $HARGA"
@@ -230,12 +248,6 @@ jobs:
 
           # Satu hari bursa masih wajar — gudang dibangun SESUDAH panen harga
           # di pipa yang sama, jadi jeda beberapa jam bukan kegagalan.
-          BEDA=$(python3 -c "
-          from datetime import date
-          import json
-          h = json.load(open('data-idx/json/broker_tahunan/BBCA/2026.json')).get('hari') or {}
-          t = max(h) if h else '1990-01-01'
-          print(abs((date.fromisoformat('$HARGA') - date.fromisoformat(t)).days))")
           if [ "$BEDA" -lt 2 ]; then
             echo "::warning::Gudang broker tertinggal $BEDA hari ($TERTINGGAL). Masih dalam ambang panen sore."
             exit 0
