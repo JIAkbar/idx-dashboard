@@ -72,11 +72,18 @@ const PANEL_AWAL = 8
 /** Bar terakhir yang dipandang saat halaman dibuka — ±1 tahun bursa. */
 const JENDELA_AWAL = 250
 
+/** Desimalnya BERKOMA seperti seluruh angka lain di layar (#123).
+ *  Sebelum 9 Sep 2026 fungsi ini memakai `toFixed`, jadi kartu transaksi
+ *  memajang "Rp 488.69 M" tepat di sebelah "14.365 kali" — titik yang sama
+ *  berarti desimal di satu angka dan pemisah ribuan di angka sebelahnya. */
+function ringkas(n: number, d: number): string {
+  return n.toLocaleString('id-ID', { minimumFractionDigits: d, maximumFractionDigits: d })
+}
 function rupiahRingkas(n: number): string {
   const a = Math.abs(n)
-  if (a >= 1e12) return `${(n / 1e12).toFixed(2)} T`
-  if (a >= 1e9) return `${(n / 1e9).toFixed(2)} M`
-  if (a >= 1e6) return `${(n / 1e6).toFixed(1)} jt`
+  if (a >= 1e12) return `${ringkas(n / 1e12, 2)} T`
+  if (a >= 1e9) return `${ringkas(n / 1e9, 2)} M`
+  if (a >= 1e6) return `${ringkas(n / 1e6, 1)} jt`
   return n.toLocaleString('id-ID')
 }
 const BULAN_PENDEK = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des']
@@ -88,8 +95,8 @@ function tglPendek(iso: string): string {
 
 function lotRingkas(n: number): string {
   const a = Math.abs(n)
-  if (a >= 1e6) return `${(n / 1e6).toFixed(2)} jt`
-  if (a >= 1e3) return `${(n / 1e3).toFixed(1)}rb`
+  if (a >= 1e6) return `${ringkas(n / 1e6, 2)} jt`
+  if (a >= 1e3) return `${ringkas(n / 1e3, 1)} rb`
   return String(Math.round(n))
 }
 
