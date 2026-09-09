@@ -329,3 +329,10 @@
 @media (max-width: 760px) {
   .lantai .wp-tx { order: 1; }
 }
+
+/* Panel mini "Detak hari ini" (#157 A) — pengganti daftar teks tape. Duduk di
+   bawah kanvas di SEMUA ukuran: apa pun yang naik ke atas kanvas mendorong
+   lilin melewati lipatan 810 px di ponsel. */
+.lantai .wp-detak-panel { margin-top: 10px; }
+.lantai .wp-detak-bungkus { position: relative; }
+.lantai .wp-detak { width: 100%; }

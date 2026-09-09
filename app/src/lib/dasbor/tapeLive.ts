@@ -29,6 +29,9 @@ export interface TitikLive {
   volume: number | null | undefined
   value: number | null | undefined
   frequency: number | null | undefined
+  /** Harga terakhir saat tarikan ini — dipakai menentukan ARAH satu jendela
+   *  (#157 A). Opsional: tape tetap benar tanpanya, arahnya saja yang kosong. */
+  close?: number | null
 }
 
 export interface BarisTape {
@@ -40,6 +43,13 @@ export interface BarisTape {
   frequency: number
   /** Berapa jendela tarikan yang tergabung di baris ini; >1 = ada yang gagal. */
   jendela: number
+  /** Arah harga sepanjang jendela ini: 1 naik, -1 turun, 0 tetap.
+   *
+   *  `null` kalau salah satu ujungnya tak punya harga — dan itu HARUS bisa
+   *  dibedakan dari 0. Nol berarti "harga tak bergerak walau ada transaksi";
+   *  null berarti "tak tahu". Memetakan keduanya ke warna yang sama akan
+   *  mengaku tahu sesuatu yang tidak diketahui. */
+  arah: 1 | 0 | -1 | null
 }
 
 /** Jarak tarikan normal (detik). Dipakai untuk menaksir berapa jendela yang
@@ -68,11 +78,14 @@ export function barisTape(lama: TitikLive, baru: TitikLive): BarisTape | null {
   const dv = vB - vL, dn = nB - nL, df = fB - fL
   if (dv === 0 && dn === 0 && df === 0) return null   // tak ada transaksi baru
   const jarak = Math.max(0, (baru.pada - lama.pada) / 1000)
+  const cL = angka(lama.close), cB = angka(baru.close)
+  const arah: 1 | 0 | -1 | null = cL == null || cB == null ? null : cB > cL ? 1 : cB < cL ? -1 : 0
   return {
     pada: baru.pada,
     volume: dv,
     value: dn,
     frequency: df,
+    arah,
     // Dibulatkan lalu dijepit minimal 1: jendela 11 detik masih satu tarikan,
     // 21 detik berarti satu tarikan hilang di tengah.
     jendela: Math.max(1, Math.round(jarak / JEDA_TARIKAN_DETIK)),

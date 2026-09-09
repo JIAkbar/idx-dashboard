@@ -1,14 +1,14 @@
 import { describe, it, expect } from 'vitest'
 import { barisTape, tambahTape, langkahTape, vwapTaksiran, nilaiPerTransaksi, type TitikLive } from './tapeLive'
 
-const t = (pada: number, volume: number | null, value: number | null, frequency: number | null): TitikLive =>
-  ({ pada, volume, value, frequency })
+const t = (pada: number, volume: number | null, value: number | null, frequency: number | null, close?: number | null): TitikLive =>
+  ({ pada, volume, value, frequency, close })
 
 describe('barisTape', () => {
   it('dua tarikan berurutan jadi satu baris selisih', () => {
     // Jarak 10 detik = satu jendela, sesuai jeda tarikan sejak #156 A.
     const b = barisTape(t(0, 1_000_000, 5_000_000_000, 500), t(10_000, 1_012_400, 6_200_000_000, 587))
-    expect(b).toEqual({ pada: 10_000, volume: 12_400, value: 1_200_000_000, frequency: 87, jendela: 1 })
+    expect(b).toEqual({ pada: 10_000, volume: 12_400, value: 1_200_000_000, frequency: 87, jendela: 1, arah: null })
   })
 
   it('satu tarikan gagal → baris berikutnya bertanda gabungan dua jendela', () => {
@@ -94,5 +94,22 @@ describe('turunan hari berjalan', () => {
   it('rata-rata nilai per transaksi = nilai ÷ frekuensi', () => {
     expect(nilaiPerTransaksi(1_000_000_000, 500)).toBe(2_000_000)
     expect(nilaiPerTransaksi(1_000_000_000, 0)).toBeNull()
+  })
+})
+
+describe('arah jendela (#157 A)', () => {
+  it('harga naik, turun, dan tetap dibedakan', () => {
+    expect(barisTape(t(0, 1_000, 2e6, 3, 100), t(10_000, 1_100, 2.2e6, 4, 105))?.arah).toBe(1)
+    expect(barisTape(t(0, 1_000, 2e6, 3, 100), t(10_000, 1_100, 2.2e6, 4, 95))?.arah).toBe(-1)
+    expect(barisTape(t(0, 1_000, 2e6, 3, 100), t(10_000, 1_100, 2.2e6, 4, 100))?.arah).toBe(0)
+  })
+
+  it('tanpa harga di salah satu ujung, arahnya null — BUKAN nol', () => {
+    // Nol berarti "harga tak bergerak walau ada transaksi"; null berarti "tak
+    // tahu". Panel Detak mewarnai keduanya berbeda, dan menyamakannya berarti
+    // mengaku tahu sesuatu yang tidak diketahui.
+    expect(barisTape(t(0, 1_000, 2e6, 3), t(10_000, 1_100, 2.2e6, 4, 105))?.arah).toBeNull()
+    expect(barisTape(t(0, 1_000, 2e6, 3, 100), t(10_000, 1_100, 2.2e6, 4))?.arah).toBeNull()
+    expect(barisTape(t(0, 1_000, 2e6, 3), t(10_000, 1_100, 2.2e6, 4))?.arah).toBeNull()
   })
 })

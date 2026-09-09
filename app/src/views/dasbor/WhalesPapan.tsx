@@ -8,6 +8,7 @@ import {
 import { gabungBarBerjalan, isoDariTime, muatCandle, type DataCandle } from '../../lib/dasbor/candleStockbit'
 import { useHargaLive, type HargaLive } from '../../lib/dasbor/hargaLive'
 import { UmurLive } from '../../components/dasbor/UmurLive'
+import { DetakHariIni } from '../../components/dasbor/DetakHariIni'
 import { langkahTape, vwapTaksiran, nilaiPerTransaksi, type BarisTape, type TitikLive } from '../../lib/dasbor/tapeLive'
 import { jamPasarJakarta, jamDetikJakarta } from '../../lib/tanggalBursa'
 import { StockAutocomplete } from '../../components/dasbor/StockAutocomplete'
@@ -183,6 +184,9 @@ export default function WhalesPapan() {
     if (!live || live.kode !== kode) return
     const kiniTitik: TitikLive = {
       pada: live.diambilPada, volume: live.volume, value: live.value, frequency: live.frequency,
+      // Harga ikut supaya tiap jendela punya ARAH (#157 A) — tanpa ini seluruh
+      // batang panel Detak berwarna netral dan tak menjawab apa pun.
+      close: live.close,
     }
     // Urutannya (ambil pembanding → geser penanda → hitung) hidup di
     // `langkahTape`, bukan di sini: di situlah bug yang tak tertangkap uji
@@ -1136,35 +1140,21 @@ export default function WhalesPapan() {
                   </span>
                 </div>
               </div>
-              {tape.length > 0 && (
-                <>
-                  <p className="lbl lbl-rentang">
-                    Pertambahan tiap tarikan — ringkasan tiap ±10 detik, bukan catatan tiap transaksi
-                  </p>
-                  <div className="wp-tx-tape">
-                    {tape.map((b) => (
-                      <div key={b.pada} className="wp-tx-baris">
-                        {/* Berdetik sejak jeda tarikan jadi 10 detik (#156 A): tanpa
-                            detik, enam baris berturut-turut tercetak "13:30" dan tape
-                            terbaca seperti daftar yang macet. */}
-                        <span className="num muted">{jamDetikJakarta(new Date(b.pada))}</span>
-                        <span className="num">+{lotRingkas(b.volume / 100)} lot</span>
-                        <span className="num">Rp {rupiahRingkas(b.value)}</span>
-                        <span className="num muted">{b.frequency.toLocaleString('id-ID')} kali</span>
-                        {/* Jendela yang tergabung TIDAK dipecah jadi dua baris palsu:
-                            yang hilang tarikannya, bukan transaksinya. */}
-                        {b.jendela > 1 && <span className="muted">gabungan {b.jendela} jendela</span>}
-                      </div>
-                    ))}
-                  </div>
-                </>
-              )}
+              {/* Daftar teks tape DIBUANG (#157 A, Johan 9 Sep 2026: "kurang
+                  efektif ini lebih baik di munculkan di candle nya langsung").
+                  Sembilan baris angka memaksa membaca untuk menjawab
+                  pertanyaan yang bentuknya visual — kapan ramai, kapan sepi.
+                  Penggantinya panel Detak di bawah kanvas; lima baris terakhir
+                  tetap ada di tooltip lilin hari ini. */}
             </div>
           </div>
         )}
         {/* Panel kanan KONTEKSTUAL (sistem tata C+A): tanpa seleksi ia kolaps
            jadi strip tipis yang bisa ditekan (chart memakai seluruh lebar);
            ada seleksi/pesan → kolom penuh. */}
+        {/* Detak hari ini (#157 A) — DI BAWAH kanvas, bukan di atasnya: di 412 px
+            apa pun yang duduk di atas kanvas mendorong lilin melewati lipatan
+            810 px, dan itu persis keluhan yang melahirkan pemindahan kartu. */}
         <div className={`wp-panggung tata-2${panelBerisi ? '' : ' ctx-kosong'}`}>
           <div
             className="wp-kanvas-bungkus wp-chart"
@@ -1359,6 +1349,20 @@ export default function WhalesPapan() {
               </>
             )}
           </div>
+
+          {/* Detak hari ini (#157 A) — satu batang per tarikan, tepat di bawah
+              kanvas. Hidup HANYA selagi bursa buka: sesudah tutup arsip yang
+              menang, dan deret yang berhenti di 16:15 akan terbaca seperti
+              pasar yang mati, bukan pasar yang sudah tutup. Kosong sampai
+              tarikan kedua tiba — itu keadaan yang benar, bukan kegagalan. */}
+          {pasar.status === 'buka' && tape.length > 0 && (
+            <div className="wp-detak-panel">
+              <p className="lbl lbl-rentang">
+                Detak hari ini — pertambahan tiap tarikan (±10 detik), warna = arah harga jendela itu
+              </p>
+              <DetakHariIni tape={tape} tema={theme} rupiah={rupiahRingkas} />
+            </div>
+          )}
 
           {/* Rincian broker dari klik pill AVG — modal kanonis, bukan kartu
               menyisip (Johan: "di jadikan modal ... biar rapi"). Hanya mode
