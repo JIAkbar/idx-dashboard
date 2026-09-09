@@ -5,7 +5,7 @@ import {
   type IChartApi, type ISeriesApi, type ISeriesMarkersPluginApi, type ITextWatermarkPluginApi,
   type SeriesType, type Time,
 } from 'lightweight-charts'
-import { gabungBarBerjalan, muatCandle, type DataCandle } from '../../lib/dasbor/candleStockbit'
+import { gabungBarBerjalan, isoDariTime, muatCandle, type DataCandle } from '../../lib/dasbor/candleStockbit'
 import { useHargaLive, type HargaLive } from '../../lib/dasbor/hargaLive'
 import { UmurLive } from '../../components/dasbor/UmurLive'
 import { langkahTape, vwapTaksiran, nilaiPerTransaksi, type BarisTape, type TitikLive } from '../../lib/dasbor/tapeLive'
@@ -439,7 +439,7 @@ export default function WhalesPapan() {
       // penanda seri tak menyetor `hoveredObjectId`, jadi menunggu id di sini
       // berarti tooltipnya tak pernah muncul sama sekali.
       const waktuLive = barLiveRef.current
-      if (waktuLive && p.point && String(p.time ?? '') === waktuLive) setTxHover({ x: p.point.x, y: p.point.y })
+      if (waktuLive && p.point && isoDariTime(p.time) === waktuLive) setTxHover({ x: p.point.x, y: p.point.y })
       else setTxHover((cur) => (cur ? null : cur))
       const m = bacaFp(id)
       if (m && p.point) setFpHover({ ...m, x: p.point.x, y: p.point.y })
@@ -590,7 +590,7 @@ export default function WhalesPapan() {
     if (barLive && volLive) {
       lilin.update(barLive)
       vol.update(volLive)
-      barLiveTerpasang.current = String(barLive.time)
+      barLiveTerpasang.current = isoDariTime(barLive.time)
       return
     }
     if (barLiveTerpasang.current !== null) {
@@ -674,7 +674,11 @@ export default function WhalesPapan() {
   // dua angka: nilai dan frekuensi. Empat angka di atas lilin akan menutupi
   // lilin tetangganya di zoom rapat — sisanya ada di tooltip saat disorot.
   useEffect(() => {
-    barLiveRef.current = barLive ? String(barLive.time) : null
+    // `isoDariTime`, bukan `String()`: pustaka kanvas sudah menimpa `time` bar
+    // ini jadi objek saat `update()` dipanggil di efek chart, dan `String()`
+    // atasnya menghasilkan "[object Object]" — perbandingan di `saatGeser`
+    // lalu tak pernah benar dan tooltipnya tak pernah muncul (ralat #158).
+    barLiveRef.current = barLive ? isoDariTime(barLive.time) : null
     const prim = penandaRef.current
     if (!prim) return
     if (!barLive || pasar.status !== 'buka' || !liveTampil) { prim.setMarkers([]); return }
@@ -713,7 +717,9 @@ export default function WhalesPapan() {
       prim.setData([])
       return
     }
-    const petaCandle = new Map(candle.lilin.map((c) => [c.time as string, c]))
+    // Kunci lewat `isoDariTime`: larik ini SUDAH diserahkan ke chart lewat
+    // `setData`, jadi `time`-nya bisa sudah berbentuk objek (lihat #158).
+    const petaCandle = new Map(candle.lilin.map((c) => [isoDariTime(c.time), c]))
     const data: KolomFootprint[] = []
     for (const h of hari) {
       const c = petaCandle.get(h.tanggal)
@@ -750,7 +756,7 @@ export default function WhalesPapan() {
     const chart = chartRef.current
     const lilin = lilinRef.current
     const deret: Array<string | number> = tf === 'harian'
-      ? candleTampil.lilin.map((b) => b.time as string)
+      ? candleTampil.lilin.map((b) => isoDariTime(b.time))
       : barIntra.map((b) => b.epoch + GESER_WIB)
     if (!chart || !lilin || deret.length === 0) return null
     const harga = lilin.coordinateToPrice(y)

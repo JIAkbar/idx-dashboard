@@ -38,6 +38,40 @@ export async function muatCandle(kode: string): Promise<DataCandle> {
 }
 
 /**
+ * Kunci tanggal `YYYY-MM-DD` dari sebuah `time` chart, bentuk apa pun.
+ *
+ * Ada karena pustaka kanvas MENIMPA ruas `time` di objek yang kita berikan,
+ * bukan menyalinnya dulu. Terbukti di sumbernya:
+ *
+ *     function convertStringToBusinessDay(value) {
+ *       if (isString(value.time)) value.time = stringToBusinessDay(value.time)
+ *     }
+ *
+ * Larik yang sama itu juga yang kita pegang di state React, jadi begitu
+ * `setData`/`update` dipanggil, `time` yang tadinya string `"2026-09-09"`
+ * berubah jadi objek `{day, month, year}` — dan `String(bar.time)` menghasilkan
+ * `"[object Object]"`. Nol galat: yang rusak cuma perbandingan yang sejak itu
+ * tak pernah benar lagi, dan gejalanya sesuatu yang "tidak muncul".
+ *
+ * Terjadi persis begitu pada tooltip lilin hari berjalan (#155 B → ralat #158):
+ * crosshair mengirim `p.time` string, penanda kita sudah berupa objek, jadi
+ * keduanya tak pernah sama.
+ *
+ * Karena itu kunci tanggal SELALU lewat sini — bukan lewat `String()`.
+ */
+export function isoDariTime(t: unknown): string {
+  if (typeof t === 'string') return t
+  if (typeof t === 'number') return new Date(t * 1000).toISOString().slice(0, 10)
+  if (t && typeof t === 'object') {
+    const b = t as { year?: unknown; month?: unknown; day?: unknown }
+    if (typeof b.year === 'number' && typeof b.month === 'number' && typeof b.day === 'number') {
+      return `${b.year}-${String(b.month).padStart(2, '0')}-${String(b.day).padStart(2, '0')}`
+    }
+  }
+  return ''
+}
+
+/**
  * Tempelkan bar HARI BERJALAN dari proxy live ke deret candle arsip (#97 A,
  * keputusan Johan 8 Sep 2026: "di whales juga bisa dong itu datanya realtime
  * pakai OHLCV nya"). Aturan:

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { gabungBarBerjalan, WARNA_VOL_NAIK, WARNA_VOL_TURUN, type DataCandle } from './candleStockbit'
+import { gabungBarBerjalan, isoDariTime, WARNA_VOL_NAIK, WARNA_VOL_TURUN, type DataCandle } from './candleStockbit'
 import type { HargaLive } from './hargaLive'
 
 const arsip: DataCandle = {
@@ -56,5 +56,46 @@ describe('gabungBarBerjalan', () => {
   it('arsip kosong: bar berjalan tetap boleh berdiri sendiri', () => {
     const hasil = gabungBarBerjalan({ lilin: [], volume: [] }, live({}))
     expect(hasil.lilin).toHaveLength(1)
+  })
+})
+
+describe('isoDariTime — kunci tanggal yang tahan bentuk (#158)', () => {
+  it('string dan BusinessDay memberi kunci yang SAMA', () => {
+    // Inti ralat #158: pustaka kanvas menimpa `time` di objek yang kita
+    // berikan, jadi bar yang sama bisa terbaca string sebelum digambar dan
+    // objek sesudahnya. Dua bentuk, satu bar, satu kunci.
+    expect(isoDariTime('2026-09-09')).toBe('2026-09-09')
+    expect(isoDariTime({ day: 9, month: 9, year: 2026 })).toBe('2026-09-09')
+    expect(isoDariTime({ day: 9, month: 9, year: 2026 })).toBe(isoDariTime('2026-09-09'))
+  })
+
+  it('bulan dan hari satu digit tetap dua digit', () => {
+    expect(isoDariTime({ day: 1, month: 3, year: 2026 })).toBe('2026-03-01')
+  })
+
+  it('detik epoch jadi tanggal UTC', () => {
+    expect(isoDariTime(1757376000)).toBe('2025-09-09')
+  })
+
+  it('bar yang SUDAH digambar tetap cocok dengan waktu crosshair', () => {
+    // Meniru persis apa yang pustaka kanvas lakukan pada larik kita:
+    //   if (isString(value.time)) value.time = stringToBusinessDay(value.time)
+    // Objeknya sama, jadi bar di state React ikut berubah bentuk. Inilah
+    // langkah yang membuat tooltip #155 B tak pernah muncul.
+    const bar: { time: unknown } = { time: '2026-09-09' }
+    const waktuCrosshair = '2026-09-09'
+    bar.time = { day: 9, month: 9, year: 2026 }          // <- pustaka menimpa
+
+    expect(String(bar.time)).toBe('[object Object]')      // cara lama, dan sebabnya
+    expect(isoDariTime(bar.time)).toBe(isoDariTime(waktuCrosshair))
+  })
+
+  it('bentuk yang tak dikenali jadi string kosong, bukan "[object Object]"', () => {
+    // Kunci "[object Object]" itulah yang membuat SELURUH bar terbaca sama —
+    // string kosong tak pernah cocok dengan tanggal mana pun, jadi ia gagal
+    // dengan cara yang benar.
+    expect(isoDariTime({ apa: 1 })).toBe('')
+    expect(isoDariTime(null)).toBe('')
+    expect(isoDariTime(undefined)).toBe('')
   })
 })
