@@ -94,6 +94,34 @@ export function tambahTape(
   return [b, ...tape].slice(0, maks)
 }
 
+/**
+ * Satu langkah tape: ambil pembanding, geser penanda, kembalikan updater.
+ *
+ * Ada sebagai fungsi TERSENDIRI karena di sinilah bug yang tak tertangkap uji
+ * murni pernah hidup. Versi pertama di komponen menulis:
+ *
+ *     setTape((t) => tambahTape(t, ref.current, kini))
+ *     ref.current = kini
+ *
+ * React menjalankan updater fungsional belakangan — saat itu `ref.current`
+ * sudah tertimpa baris di bawahnya, jadi pembandingnya adalah titik itu
+ * sendiri: selisih nol, tape kosong selamanya. `tambahTape` tetap benar dan
+ * ujinya tetap hijau; yang salah URUTAN pemasangannya.
+ *
+ * Dengan urutan itu tinggal di sini, ia ikut diuji: pemanggil cuma
+ * `setTape(langkahTape(ref, kini))`, dan updater-nya boleh dijalankan kapan
+ * pun tanpa mengubah hasil.
+ */
+export function langkahTape(
+  ref: { current: TitikLive | null },
+  kini: TitikLive,
+  maks = 30,
+): (tape: BarisTape[]) => BarisTape[] {
+  const sebelum = ref.current
+  ref.current = kini
+  return (tape) => tambahTape(tape, sebelum, kini, maks)
+}
+
 /** Harga rata-rata hari berjalan = nilai ÷ lembar. TAKSIRAN — sebutkan begitu
  *  di layar: pembilang dan penyebutnya dilaporkan bursa untuk seluruh papan
  *  yang ikut, dan pembulatannya tak pernah persis harga transaksi mana pun. */

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { barisTape, tambahTape, vwapTaksiran, nilaiPerTransaksi, type TitikLive } from './tapeLive'
+import { barisTape, tambahTape, langkahTape, vwapTaksiran, nilaiPerTransaksi, type TitikLive } from './tapeLive'
 
 const t = (pada: number, volume: number | null, value: number | null, frequency: number | null): TitikLive =>
   ({ pada, volume, value, frequency })
@@ -54,6 +54,32 @@ describe('tambahTape', () => {
       tape = tambahTape(tape, t((i - 1) * 45_000, i * 100, i * 1_000, i), t(i * 45_000, (i + 1) * 100, (i + 1) * 1_000, i + 1), 30)
     }
     expect(tape).toHaveLength(30)
+  })
+})
+
+describe('langkahTape — urutan pemasangan di komponen', () => {
+  // Uji ini menjaga URUTANNYA, bukan hitungannya: `tambahTape` sudah benar dan
+  // ujinya hijau sepanjang bug produksi 9 Sep 2026 hidup. Yang salah dulu
+  // membaca ref DI DALAM updater, yang React jalankan sesudah ref tertimpa.
+  it('dua nilai live berurutan → tape satu baris', () => {
+    const ref: { current: TitikLive | null } = { current: null }
+    let tape = langkahTape(ref, t(0, 1_000_000, 5e9, 500))([])
+    expect(tape).toEqual([])                       // tarikan pertama: belum ada pembanding
+    tape = langkahTape(ref, t(45_000, 1_012_400, 6.2e9, 587))(tape)
+    expect(tape).toHaveLength(1)
+    expect(tape[0]).toMatchObject({ volume: 12_400, frequency: 87 })
+  })
+
+  it('updater yang dijalankan BELAKANGAN memberi hasil sama — ini bug yang dulu lolos', () => {
+    // Dijalankan persis seperti React: updater disimpan, ref sudah bergerak ke
+    // titik ketiga, baru updater-nya dipanggil. Versi lama menghasilkan [] di sini.
+    const ref: { current: TitikLive | null } = { current: null }
+    langkahTape(ref, t(0, 1_000_000, 5e9, 500))([])
+    const tertunda = langkahTape(ref, t(45_000, 1_012_400, 6.2e9, 587))
+    langkahTape(ref, t(90_000, 1_020_000, 7e9, 640))   // ref bergeser lebih dulu
+    const tape = tertunda([])
+    expect(tape).toHaveLength(1)
+    expect(tape[0].volume).toBe(12_400)
   })
 })
 

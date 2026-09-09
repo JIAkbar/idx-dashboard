@@ -6,7 +6,7 @@ import {
 } from 'lightweight-charts'
 import { gabungBarBerjalan, muatCandle, type DataCandle } from '../../lib/dasbor/candleStockbit'
 import { useHargaLive, type HargaLive } from '../../lib/dasbor/hargaLive'
-import { tambahTape, vwapTaksiran, nilaiPerTransaksi, type BarisTape, type TitikLive } from '../../lib/dasbor/tapeLive'
+import { langkahTape, vwapTaksiran, nilaiPerTransaksi, type BarisTape, type TitikLive } from '../../lib/dasbor/tapeLive'
 import { jamPasarJakarta } from '../../lib/tanggalBursa'
 import { StockAutocomplete } from '../../components/dasbor/StockAutocomplete'
 import { ModalKecil } from '../../components/dasbor/ModalKecil'
@@ -189,16 +189,10 @@ export default function WhalesPapan() {
     const kiniTitik: TitikLive = {
       pada: live.diambilPada, volume: live.volume, value: live.value, frequency: live.frequency,
     }
-    // Titik pembanding DISALIN dulu, lalu ref-nya diperbarui, baru tape
-    // dihitung. Versi pertama membaca `titikSebelum.current` DI DALAM updater
-    // `setTape` — dan updater fungsional dijalankan React belakangan, saat
-    // ref-nya sudah tertimpa oleh baris di bawahnya. Selisihnya jadi titik
-    // dikurangi dirinya sendiri: selalu nol, jadi tape tak pernah terisi
-    // walau angkanya jelas bergerak (terukur di produksi: lima tarikan, nol
-    // baris). Nol galat, dan dari layar tak bisa dibedakan dari 'pasar sepi'.
-    const sebelum = titikSebelum.current
-    titikSebelum.current = kiniTitik
-    setTape((t) => tambahTape(t, sebelum, kiniTitik))
+    // Urutannya (ambil pembanding → geser penanda → hitung) hidup di
+    // `langkahTape`, bukan di sini: di situlah bug yang tak tertangkap uji
+    // murni pernah hidup, dan di situ ia ikut diuji.
+    setTape(langkahTape(titikSebelum, kiniTitik))
   }, [live, kode])
 
   const vwapHariIni = vwapTaksiran(liveTampil?.value, liveTampil?.volume)
