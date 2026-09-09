@@ -338,6 +338,13 @@ echo      (jatuh tempo bulanan - keystats + profil dipanen)
 if errorlevel 1 echo   (keystats gagal - lanjut)
 "%PYEXE%" scripts\panen_info_stockbit.py --semua --jeda 0.4
 if errorlevel 1 echo   (info stockbit gagal - lanjut)
+REM Profil (pemegang saham, anak usaha, pengurus) - dibaca IPO Papan dan
+REM Arus Broker tab Shareholders. Blok ini sudah menamai dirinya "keystats
+REM + profil" sejak 1 Sep 2026, tapi yang dipanggil cuma keystats dan info;
+REM profilnya sendiri tak pernah ikut, dan membeku 23 Agu tanpa ada yang
+REM menyebutnya (#101 B).
+"%PYEXE%" scripts\panen_profil_stockbit.py --semua --jeda 0.4
+if errorlevel 1 echo   (profil stockbit gagal - lanjut)
 echo. > .stempel_bulanan
 goto sesudah_bulanan
 :lewati_bulanan
@@ -369,7 +376,7 @@ REM nilai_jejak, penilaian/, selisih_terkunci, rencana_saham) tak ada di
 REM daftar bat mana pun dan cuma ikut kalau JALANKAN_OTOMATIS kebetulan jalan.
 REM `penilaian/` yang paling mahal kalau tertinggal: isinya catatan SEKALI
 REM TULIS, dan catatan yang tak pernah didorong sama saja dengan tak ada.
-git add data-idx/json/ohlc data-idx/json/ohlcv_stockbit data-idx/json/asing data-idx/json/intraday_1h data-idx/json/kartu data-idx/json/ihsg_ohlc_ringkas.json data-idx/json/info_stockbit data-idx/json/keystats_stockbit data-idx/json/prob data-idx/json/winrate data-idx/json/screener.json data-idx/json/bandarmologi.json data-idx/json/daftar_emiten.json data-idx/json/broker_harian data-idx/json/broker_tahunan data-idx/json/broker_pivot data-idx/json/broker_rentang data-idx/json/bt data-idx/json/rbs_kandidat.json data-idx/json/harian_papan data-idx/json/jago_papan data-idx/json/ipo.json data-idx/json/pola_screener.json data-idx/json/kategori_broker.json data-idx/json/rekomendasi data-idx/json/rezim_pasar.json data-idx/json/nilai_jejak.json data-idx/json/penilaian data-idx/json/tinjauan_deepdive.json data-idx/json/selisih_terkunci.json data-idx/json/rencana_saham.json data-idx/json/aliran_investor.json data-idx/json/bidoffer.json data-idx/json/harga_terakhir.json data-idx/json/grup_konglomerat.json data-idx/json/tesis_vonis.json data-idx/json/penilaian_tesis data-idx/json/seasonality 2>nul
+git add data-idx/json/ohlc data-idx/json/ohlcv_stockbit data-idx/json/asing data-idx/json/intraday_1h data-idx/json/kartu data-idx/json/ihsg_ohlc_ringkas.json data-idx/json/info_stockbit data-idx/json/keystats_stockbit data-idx/json/profil_stockbit data-idx/json/prob data-idx/json/winrate data-idx/json/screener.json data-idx/json/bandarmologi.json data-idx/json/daftar_emiten.json data-idx/json/broker_harian data-idx/json/broker_tahunan data-idx/json/broker_pivot data-idx/json/broker_rentang data-idx/json/bt data-idx/json/rbs_kandidat.json data-idx/json/harian_papan data-idx/json/jago_papan data-idx/json/ipo.json data-idx/json/pola_screener.json data-idx/json/kategori_broker.json data-idx/json/rekomendasi data-idx/json/rezim_pasar.json data-idx/json/nilai_jejak.json data-idx/json/penilaian data-idx/json/tinjauan_deepdive.json data-idx/json/selisih_terkunci.json data-idx/json/rencana_saham.json data-idx/json/aliran_investor.json data-idx/json/bidoffer.json data-idx/json/harga_terakhir.json data-idx/json/grup_konglomerat.json data-idx/json/tesis_vonis.json data-idx/json/penilaian_tesis data-idx/json/seasonality 2>nul
 git commit -m "data: panen buka-laptop otomatis (%date%)" -- data-idx/json/ohlc data-idx/json/ohlcv_stockbit data-idx/json/asing data-idx/json/intraday_1h data-idx/json/kartu data-idx/json/ihsg_ohlc_ringkas.json data-idx/json/info_stockbit data-idx/json/keystats_stockbit data-idx/json/prob data-idx/json/winrate data-idx/json/screener.json data-idx/json/bandarmologi.json data-idx/json/daftar_emiten.json data-idx/json/broker_harian data-idx/json/broker_tahunan data-idx/json/broker_pivot data-idx/json/broker_rentang data-idx/json/bt data-idx/json/rbs_kandidat.json data-idx/json/harian_papan data-idx/json/jago_papan data-idx/json/ipo.json data-idx/json/pola_screener.json data-idx/json/kategori_broker.json data-idx/json/rekomendasi data-idx/json/rezim_pasar.json data-idx/json/nilai_jejak.json data-idx/json/penilaian data-idx/json/tinjauan_deepdive.json data-idx/json/selisih_terkunci.json data-idx/json/rencana_saham.json data-idx/json/aliran_investor.json data-idx/json/bidoffer.json data-idx/json/harga_terakhir.json data-idx/json/grup_konglomerat.json data-idx/json/tesis_vonis.json data-idx/json/penilaian_tesis data-idx/json/seasonality
 set COMMIT_RC=%errorlevel%
 REM Ditangkap SEGERA sesudah commit. Baris echo di bawah menyetel ulang

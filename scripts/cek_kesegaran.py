@@ -345,6 +345,27 @@ MANIFEST: list[Turunan] = [
             dari_ruas_direktori("dipanen_pada"),
             "Berkas Emiten blok F · Stock Detail · Kuli Papan", toleransi=30,
             pembangun="panen_keystats_stockbit.py"),
+    # Tiga gudang yang iramanya BUKAN harian dan karena itu selama ini tak
+    # pernah diperiksa sama sekali (#101 A). Toleransinya dari irama
+    # sumbernya, bukan dari seberapa basi ia kebetulan hari ini:
+    Turunan("Profil emiten Stockbit", "profil_stockbit",
+            dari_ruas_direktori("dipanen_pada"),
+            "IPO Papan · Arus Broker tab Shareholders", toleransi=30,
+            pembangun="panen_profil_stockbit.py (blok bulanan Buka Laptop)"),
+    # Pengendali berpangkal pada LAPORAN KUARTALAN, bukan pada hari bursa:
+    # 100 hari = satu kuartal plus jeda terbit. Angka yang lebih ketat akan
+    # menyala terus-menerus tanpa ada yang salah, dan alarm yang menyala
+    # terus adalah alarm yang diabaikan.
+    Turunan("Pemegang saham pengendali", "pengendali.json", dari_ruas("diperbarui"),
+            "Stock Detail (hero)", toleransi=100,
+            pembangun="panen_pengendali.py (manual, nol jaringan)"),
+    # Arsip IPOT sengaja diparkir (endpoint mengabaikan parameter halaman,
+    # jadi menariknya lagi tak menambah apa-apa). Ia tetap didaftarkan
+    # supaya "sengaja diam" terlihat sebagai keputusan, bukan sebagai
+    # dataset yang terlupakan.
+    Turunan("Arsip kabar IPOT", "ipot_arsip.json", dari_ruas("diperbarui"),
+            "Kabar Pasar (kedalaman arsip)", toleransi=120,
+            pembangun="panen_ipot_arsip.py (diparkir - lihat status-panen.md)"),
     Turunan("Info emiten Stockbit (snapshot)", "info_stockbit",
             dari_ruas_direktori("dipanen_pada"),
             # 30, bukan 7: ketetapan Johan 1 Sep 2026 "keystat dan profile

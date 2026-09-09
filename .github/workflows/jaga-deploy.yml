@@ -135,6 +135,9 @@ jobs:
           sparse-checkout: |
             data-idx/json/index.json
             data-idx/json/ohlc/BBCA.json
+            data-idx/json/broker_tahunan/BBCA/2026.json
+            data-idx/json/broker_tahunan/BBRI/2026.json
+            data-idx/json/broker_tahunan/TLKM/2026.json
           sparse-checkout-cone-mode: false
 
       - name: Bandingkan tanggal statistik IDX dengan tanggal harga
@@ -185,6 +188,75 @@ jobs:
             "- selisih: $BEDA hari, yang tertinggal: $BASI" \
             "" \
             "Yang biasanya jadi sebabnya: panen sore tak berjalan (Task Scheduler menolak, token mati sebelum langkah IDX), atau PDF IDX belum terbit dan tak pernah disusul." \
+            "" \
+            "Issue ini dibuat otomatis dan tidak akan digandakan selama masih terbuka.")"
+          echo "::error::$JUDUL"
+
+      # #98 A — gudang broker tahunan vs harga.
+      #
+      # Johan 8 Sep 2026: "tadi saya cek di page whales data broker disana
+      # tidak update". Yang basi bukan harga dan bukan penyaluran: gudang
+      # tahunan tak ikut daftar commit bat panen, jadi selama belasan jam
+      # Whales memajang broker 4 September di atas harga 7 September —
+      # dua angka dari dua hari, di satu layar, tanpa satu pun galat.
+      #
+      # Tiga emiten, bukan satu: gudang dibangun per emiten, jadi satu
+      # berkas yang kebetulan segar tak boleh mewakili 963 lainnya. Ketiganya
+      # dipilih karena diperdagangkan tiap hari bursa — emiten sepi akan
+      # tertinggal tanpa ada yang salah.
+      - name: Bandingkan tanggal gudang broker dengan tanggal harga
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+
+          HARGA=$(python3 -c "import json;d=json.load(open('data-idx/json/ohlc/BBCA.json'));print(d['d'][-1][0])")
+          TERTINGGAL=""
+          for K in BBCA BBRI TLKM; do
+            F="data-idx/json/broker_tahunan/$K/2026.json"
+            [ -f "$F" ] || { TERTINGGAL="$TERTINGGAL $K(berkas tak ada)"; continue; }
+            T=$(python3 -c "import json;d=json.load(open('$F'));h=d.get('hari') or {};print(max(h) if h else '')")
+            echo "broker $K : ${T:-kosong}"
+            if [ -z "$T" ] || [ "$T" \< "$HARGA" ]; then
+              TERTINGGAL="$TERTINGGAL $K(${T:-kosong})"
+            fi
+          done
+          echo "harga BBCA : $HARGA"
+
+          if [ -z "$TERTINGGAL" ]; then
+            echo "Gudang broker sejalan dengan harga."
+            exit 0
+          fi
+
+          # Satu hari bursa masih wajar — gudang dibangun SESUDAH panen harga
+          # di pipa yang sama, jadi jeda beberapa jam bukan kegagalan.
+          BEDA=$(python3 -c "
+          from datetime import date
+          import json
+          h = json.load(open('data-idx/json/broker_tahunan/BBCA/2026.json')).get('hari') or {}
+          t = max(h) if h else '1990-01-01'
+          print(abs((date.fromisoformat('$HARGA') - date.fromisoformat(t)).days))")
+          if [ "$BEDA" -lt 2 ]; then
+            echo "::warning::Gudang broker tertinggal $BEDA hari ($TERTINGGAL). Masih dalam ambang panen sore."
+            exit 0
+          fi
+
+          JUDUL="Gudang broker tertinggal $BEDA hari dari harga ($HARGA)"
+          ADA=$(gh issue list --state open --search "Gudang broker in:title" --json title --jq '[.[] | select(.title | startswith("Gudang broker"))] | length')
+          if [ "$ADA" != "0" ]; then
+            echo "::warning::$JUDUL — issue serupa sudah terbuka, tak dibuat lagi."
+            exit 0
+          fi
+
+          gh issue create --title "$JUDUL" --body "$(printf '%s\n' \
+            "Penjaga #98 A menemukan gudang broker tahunan tertinggal dari harga." \
+            "" \
+            "- harga (ohlc/BBCA.json): $HARGA" \
+            "- gudang broker tertinggal:$TERTINGGAL" \
+            "" \
+            "Halaman yang membacanya (Whales Papan, Kuli Papan, Neo Papan, Berkas Emiten, Watchlist) akan memajang broker dari hari yang lebih tua daripada harganya, tanpa satu pun galat." \
+            "" \
+            "Yang biasanya jadi sebabnya: gudang tahunan tak ikut daftar commit bat panen, atau bangun_broker_tahunan.py gagal sesudah panen broker harian." \
             "" \
             "Issue ini dibuat otomatis dan tidak akan digandakan selama masih terbuka.")"
           echo "::error::$JUDUL"

@@ -261,6 +261,13 @@ if errorlevel 1 echo   (info stockbit gagal - lanjut)
 "%PYEXE%" scripts\cek_radar_basi.py
 
 echo.
+REM Gerbang kesegaran (#101 A): seluruh turunan diperiksa terhadap hari
+REM bursa terakhir SEBELUM di-commit. Tidak menghentikan commit - data yang
+REM sudah benar tetap layak didorong - tapi angkanya masuk log panen, jadi
+REM turunan yang diam-diam tertinggal punya baris yang bisa dibaca besok.
+"%PYEXE%" scripts\cek_kesegaran.py
+if errorlevel 1 echo   PERINGATAN: ada turunan basi/kosong - lihat keluaran di atas
+
 echo [F] Commit data hasil panen
 git add data-idx/json/ohlc data-idx/json/ohlcv_stockbit data-idx/json/asing data-idx/json/intraday_1h data-idx/json/kartu data-idx/json/nilai_jejak.json data-idx/json/penilaian data-idx/json/selisih_terkunci.json data-idx/json/rencana_saham.json data-idx/json/winrate data-idx/json/prob data-idx/json/screener.json data-idx/json/pola_screener.json data-idx/json/daftar_emiten.json data-idx/json/broker_harian data-idx/json/broker_tahunan data-idx/json/broker_pivot data-idx/json/broker_rentang data-idx/json/bt data-idx/json/rbs_kandidat.json data-idx/json/harian_papan data-idx/json/jago_papan data-idx/json/ipo.json data-idx/json/pola_screener.json data-idx/json/kategori_broker.json data-idx/json/ihsg_ohlc_ringkas.json data-idx/json/aliran_investor.json data-idx/json/bidoffer.json data-idx/json/harga_terakhir.json data-idx/json/grup_konglomerat.json data-idx/json/keystats_stockbit data-idx/json/info_stockbit data-idx/json/rekomendasi data-idx/json/seasonality data-idx/json/tinjauan_deepdive.json data-idx/json/rezim_pasar.json data-idx/json/bandarmologi.json 2>nul
 git commit -m "data: panen sore otomatis (%date%)" -- data-idx/json/ohlc data-idx/json/ohlcv_stockbit data-idx/json/asing data-idx/json/intraday_1h data-idx/json/kartu data-idx/json/nilai_jejak.json data-idx/json/penilaian data-idx/json/selisih_terkunci.json data-idx/json/rencana_saham.json data-idx/json/winrate data-idx/json/prob data-idx/json/screener.json data-idx/json/pola_screener.json data-idx/json/daftar_emiten.json data-idx/json/broker_harian data-idx/json/broker_tahunan data-idx/json/broker_pivot data-idx/json/broker_rentang data-idx/json/bt data-idx/json/rbs_kandidat.json data-idx/json/harian_papan data-idx/json/jago_papan data-idx/json/ipo.json data-idx/json/pola_screener.json data-idx/json/kategori_broker.json data-idx/json/ihsg_ohlc_ringkas.json data-idx/json/aliran_investor.json data-idx/json/bidoffer.json data-idx/json/harga_terakhir.json data-idx/json/grup_konglomerat.json data-idx/json/keystats_stockbit data-idx/json/info_stockbit data-idx/json/rekomendasi data-idx/json/seasonality data-idx/json/tinjauan_deepdive.json data-idx/json/rezim_pasar.json data-idx/json/bandarmologi.json
