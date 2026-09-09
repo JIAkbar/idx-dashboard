@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { BilahTanggal } from '../../components/dasbor/BilahTanggal'
 import { KonteksData } from '../../components/dasbor/KonteksData'
 import { useDataHarian } from '../../lib/dasbor/dataHarian'
@@ -10,7 +10,10 @@ import { PemilihRentang } from '../../components/dasbor/PemilihRentang'
 import { LABEL_RENTANG, pilRentang } from '../../lib/dasbor/periode'
 import { useBrokerRentang, type PresetBroker } from '../../lib/dasbor/brokerRentang'
 import { useTopBrokerHari } from '../../lib/dasbor/brokerHarian'
-import { useState } from 'react'
+import { Dropdown } from '../../components/dasbor/Dropdown'
+import { useBrokerBerhalaman } from '../../components/dasbor/TautanBroker'
+import { namaBroker } from '../../lib/dasbor/kelompokBroker'
+import { useMemo, useState } from 'react'
 
 /**
  * Reset tombol judul kolom ke tampilan teks polos — padanan `button{font:
@@ -45,6 +48,12 @@ function thSort<T extends object>(s: UrutState<T>, k: keyof T, label: string, ka
  */
 export function TopBroker() {
   const { tanggalTersedia, hari, tanggalAktif, pilihTanggal, loading, error } = useDataHarian()
+  const nav = useNavigate()
+  const daftarBroker = useBrokerBerhalaman()
+  const opsiBroker = useMemo(
+    () => [...daftarBroker].sort().map((k) => ({ nilai: k, label: `${k} · ${namaBroker(k)}` })),
+    [daftarBroker],
+  )
 
   /**
    * `null` = mode HARI (perilaku lama, tak berubah sedikit pun).
@@ -176,6 +185,21 @@ export function TopBroker() {
               { id: 'b3', kunci: 'b3' },
               { id: 'ytd', kunci: 'sejakJan' },
             ])}
+          />
+        </div>
+        {/* Pintu ke Rincian Broker. Halaman itu lahir sebagai drill-down dan
+            satu-satunya jalan masuknya mengklik kode di tabel — yang berarti
+            broker di luar sepuluh besar hari itu praktis tak terjangkau
+            (Johan 8 Sep 2026: "di cari menu broker gak ketemu"). Menu baru
+            ditolak (batas sepuluh menu), jadi pintunya di sini. */}
+        <div className="grup-k grup-kanan">
+          <Dropdown
+            opsi={opsiBroker}
+            nilai=""
+            onGanti={(k) => nav(`/broker/${k}`)}
+            ariaLabel="Buka rincian satu broker"
+            placeholder="Rincian broker…"
+            rata="kanan"
           />
         </div>
       </div>

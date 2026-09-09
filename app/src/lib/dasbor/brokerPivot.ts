@@ -21,8 +21,10 @@
 import { useEffect, useState } from 'react'
 import { urlData } from './baseData'
 
-/** Kunci preset — sama persis dengan yang ditulis skrip pembangunnya. */
-export type PresetPivot = 'h5' | 'b1' | 'b3'
+/** Kunci preset — sama persis dengan yang ditulis skrip pembangunnya.
+ *  Sembilan sejak #119 3A; tiga yang lama bukan batas data melainkan daftar
+ *  yang dikunci tangan di tiga tempat sekaligus. */
+export type PresetPivot = 'hariini' | 'h5' | 'w1' | 'b1' | 'b3' | 'b6' | 'mtd' | 'ytd' | 'y1'
 
 export interface BarisPivot {
   kode: string
@@ -30,6 +32,11 @@ export interface BarisPivot {
   net_lot: number
   beli_nilai: number
   jual_nilai: number
+  /** Lot PER SISI. Harga rata-rata sisi beli = beli_nilai ÷ (beli_lot×100);
+   *  menghitungnya dari `net_lot` akan mencampur harga beli dengan harga
+   *  jual. Berkas lama (sebelum 9 Sep 2026) tak memuatnya. */
+  beli_lot?: number
+  jual_lot?: number
   /** Berapa hari bursa broker ini muncul di daftar emiten tersebut. */
   hari: number
   /** |net| ÷ nilai transaksi emiten pada periode yang sama. null = penyebutnya

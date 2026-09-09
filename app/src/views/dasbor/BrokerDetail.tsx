@@ -1,10 +1,13 @@
 import { useMemo, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import { KonteksData } from '../../components/dasbor/KonteksData'
 import { PemilihRentang } from '../../components/dasbor/PemilihRentang'
+import { Dropdown } from '../../components/dasbor/Dropdown'
+import { useBrokerBerhalaman } from '../../components/dasbor/TautanBroker'
 import { IkonMenu, IKON_PERINGATAN } from '../../components/dasbor/IkonMenu'
 import { pilRentang } from '../../lib/dasbor/periode'
 import { fN, tanggalRingkas } from '../../lib/dasbor/format'
+import { hargaRata } from '../../lib/dasbor/brokerEmiten'
 import { kelasBroker, namaBroker } from '../../lib/dasbor/kelompokBroker'
 import { sisiBroker } from '../../lib/dasbor/pilihGarisBroker'
 import { useBrokerPivot, type BarisPivot, type PresetPivot } from '../../lib/dasbor/brokerPivot'
@@ -52,9 +55,15 @@ function miliar(v: number): string {
 /** Kata dan urutannya dari kamus rentang (#70) - halaman cuma menyebut
  *  kunci mana yang punya rollup. */
 const PRESET = pilRentang<PresetPivot>([
+  { id: 'hariini', kunci: 'hariIni' },
   { id: 'h5', kunci: 'h5' },
+  { id: 'w1', kunci: 'w1' },
   { id: 'b1', kunci: 'b1' },
   { id: 'b3', kunci: 'b3' },
+  { id: 'b6', kunci: 'b6' },
+  { id: 'mtd', kunci: 'mtd' },
+  { id: 'ytd', kunci: 'sejakJan' },
+  { id: 'y1', kunci: 'y1' },
 ])
 
 function Tabel({ baris, sisi }: { baris: BarisPivot[]; sisi: 'beli' | 'jual' }) {
@@ -69,6 +78,10 @@ function Tabel({ baris, sisi }: { baris: BarisPivot[]; sisi: 'beli' | 'jual' }) 
             <th>Emiten</th>
             <th className="r">Net (miliar)</th>
             <th className="r">Net (lot)</th>
+            {/* Harga rata-rata SISI ini sepanjang periode, tertimbang
+                volume — Σnilai ÷ Σlot. Bukan rata-rata harga harian:
+                hari dengan satu lot tak boleh setara hari dengan sejuta. */}
+            <th className="r">Rata-rata</th>
             <th className="r">Hari</th>
             <th className="r">Pangsa</th>
           </tr>
@@ -81,6 +94,14 @@ function Tabel({ baris, sisi }: { baris: BarisPivot[]; sisi: 'beli' | 'jual' }) 
                 {miliar(b.net_nilai)}
               </td>
               <td className="r num muted">{fN(Math.abs(b.net_lot), 0)}</td>
+              {/* Berkas pivot lama tak memuat lot per sisi — "—", bukan
+                  angka yang dikarang dari net. */}
+              <td className="r num muted">{(() => {
+                const avg = sisi === 'beli'
+                  ? hargaRata(b.beli_nilai, b.beli_lot ?? 0)
+                  : hargaRata(b.jual_nilai, b.jual_lot ?? 0)
+                return avg == null ? '—' : fN(avg, 0)
+              })()}</td>
               <td className="r num muted">{b.hari}</td>
               {/* "—" bukan "0%": penyebut yang tak ada berarti tak diketahui,
                   dan menuliskannya nol adalah pernyataan yang bisa salah. */}
@@ -95,7 +116,19 @@ function Tabel({ baris, sisi }: { baris: BarisPivot[]; sisi: 'beli' | 'jual' }) 
 
 export function BrokerDetail() {
   const { kode = '' } = useParams()
+  const nav = useNavigate()
   const broker = kode.toUpperCase()
+  // Halaman ini lahir sebagai drill-down dan karena itu tak punya pintu
+  // sendiri: satu-satunya jalan masuk adalah mengklik kode broker di tabel
+  // lain (Johan 8 Sep 2026: "sepertinya page ini agak rahasia ya ? di cari
+  // menu broker gak ketemu"). Menu baru ditolak — batas sepuluh menu — jadi
+  // pintunya dipasang di halaman itu sendiri: begitu sampai di sini, ganti
+  // broker tanpa kembali dulu ke tabel asalnya.
+  const daftarBroker = useBrokerBerhalaman()
+  const opsiBroker = useMemo(
+    () => [...daftarBroker].sort().map((k) => ({ nilai: k, label: `${k} · ${namaBroker(k)}` })),
+    [daftarBroker],
+  )
   const [preset, setPreset] = useState<PresetPivot>('b1')
   const { data, memuat } = useBrokerPivot(broker || null)
 
@@ -143,6 +176,17 @@ export function BrokerDetail() {
 
       <div className="bilah-kendali">
         <div className="grup-k">
+          {/* Pintu masuk yang selama ini tak ada — kendalinya menyebut
+              dirinya sendiri (kode + nama broker), jadi tanpa label. */}
+          <Dropdown
+            opsi={opsiBroker}
+            nilai={broker}
+            onGanti={(k) => nav(`/broker/${k}`)}
+            ariaLabel="Pilih broker"
+            placeholder={broker}
+          />
+        </div>
+        <div className="grup-k">
           <PemilihRentang
             ariaLabel="Periode rincian broker"
             nilai={preset}
@@ -162,6 +206,8 @@ export function BrokerDetail() {
             {' '}broker ini tercatat di <b>{isi.n_emiten} emiten</b> pada periode itu; tabel memuat
             {' '}20 teratas tiap sisi. <b>Pangsa</b> dihitung terhadap nilai transaksi emiten
             {' '}tersebut pada periode yang sama, bukan terhadap kegiatan broker ini.
+            {' '}<b>Rata-rata</b> adalah harga rata-rata sisi tersebut sepanjang periode,
+            {' '}ditimbang volume — bukan rata-rata harga harian.
             {data?.terpotong ? (
               <>
                 {' '}Rekap harian per emiten memuat <b>{data.terpotong} broker teratas tiap sisi</b>,

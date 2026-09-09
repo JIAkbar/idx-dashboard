@@ -51,17 +51,35 @@ AKAR = Path(__file__).resolve().parents[1]
 SUMBER = AKAR / 'data-idx' / 'json' / 'broker_tahunan'
 KELUAR = AKAR / 'data-idx' / 'json' / 'broker_pivot'
 
-# Kunci preset dan panjangnya PERSIS sama dengan `bangun_broker_rentang.py`
-# (#29) supaya dua halaman yang berdampingan tak diam-diam memakai definisi
-# "1 Bulan" yang berbeda.
+# Panjang tiap preset dalam HARI KALENDER, kecuali yang disebut di dua
+# himpunan di bawah. Kunci dan panjangnya sama dengan pemilih rentang di
+# aplikasi (`lib/dasbor/periode.ts`) supaya dua halaman berdampingan tak
+# diam-diam memakai definisi "1 Bulan" yang berbeda.
+#
+# Sembilan, bukan tiga (#119 3A). Tiga yang lama bukan batas data — arsip
+# broker mulai 2016-01-04 — melainkan daftar yang dikunci tangan di tiga
+# tempat sekaligus (skrip ini, tipe TS, halaman) dengan komentar yang
+# mengklaim menyamai berkas lain yang ternyata punya daftar berbeda.
 PRESET: dict[str, int] = {
-    'h5': 5,    # hari BURSA
-    'b1': 30,   # hari kalender
+    'hariini': 1,   # ditangani PRESET_HARI_BURSA di bawah
+    'h5': 5,        # hari BURSA
+    'w1': 7,        # hari kalender
+    'b1': 30,
     'b3': 91,
+    'b6': 182,
+    'mtd': 0,       # ditangani PRESET_TANGGAL — panjangnya tak tetap
+    'ytd': 0,
+    'y1': 365,
 }
-# h5 dihitung dari hari bursa, sisanya dari kalender — dibedakan di sini, bukan
-# di dalam gelung, supaya aturannya terbaca sekali.
-PRESET_HARI_BURSA = {'h5'}
+# `hariini` dan `h5` dihitung dari hari BURSA (satu dan lima hari berdata
+# terakhir), bukan dari kalender: lima hari kalender yang melintasi akhir
+# pekan cuma memuat tiga hari perdagangan.
+PRESET_HARI_BURSA = {'hariini', 'h5'}
+# `mtd` dan `ytd` berpangkal pada TANGGAL (tanggal 1 bulan / tahun berjalan),
+# jadi panjangnya berubah tiap hari dan tak bisa ditulis sebagai jumlah hari.
+# Memberi mereka angka tetap berarti mengarang panjang yang salah tiap
+# tanggal — aturan yang sama dipakai pemilih rentang di aplikasi.
+PRESET_TANGGAL = {'mtd', 'ytd'}
 
 TOP_N = 20
 
@@ -90,6 +108,10 @@ def batas(preset: str, akhir: date, kalender: list[str]) -> str:
     if preset in PRESET_HARI_BURSA:
         n = PRESET[preset]
         return kalender[-n] if len(kalender) >= n else kalender[0]
+    if preset == 'mtd':
+        return akhir.replace(day=1).isoformat()
+    if preset == 'ytd':
+        return akhir.replace(month=1, day=1).isoformat()
     return (akhir - timedelta(days=PRESET[preset])).isoformat()
 
 
@@ -166,6 +188,12 @@ def susun(agg, total, preset: str, broker: str) -> dict:
             'net_lot': round(net_lot),
             'beli_nilai': round(a[1]),
             'jual_nilai': round(a[3]),
+            # Lot PER SISI, bukan cuma netnya: harga rata-rata sisi beli
+            # adalah Σnilai_beli ÷ Σlot_beli, dan menghitungnya dari net
+            # akan mencampur harga beli dengan harga jual — dua angka yang
+            # kebetulan bisa dibagi tapi tak berarti apa-apa bersama.
+            'beli_lot': round(a[0]),
+            'jual_lot': round(a[2]),
             'hari': int(a[4]),
             # Pangsa terhadap NILAI TRANSAKSI emiten di periode yang sama.
             # None (bukan 0) kalau penyebutnya tak ada: "tak diketahui" dan
@@ -196,6 +224,17 @@ def swauji() -> int:
     # Kalender lebih pendek daripada jendela: ambil yang paling awal,
     # jangan melampaui ujung larik dan diam-diam memotong dari belakang.
     assert batas('h5', akhir, kal[:3]) == kal[0]
+    # Preset yang ditambahkan #119 3A. `hariini` = SATU hari bursa terakhir
+    # (rentang satu hari, bukan nol); `mtd`/`ytd` berpangkal tanggal, jadi
+    # panjangnya berubah tiap hari dan tak boleh dihitung mundur berhari.
+    assert batas('hariini', akhir, kal) == '2026-09-04'
+    assert batas('mtd', akhir, kal) == '2026-09-01'
+    assert batas('ytd', akhir, kal) == '2026-01-01'
+    assert batas('w1', akhir, kal) == '2026-08-28'
+    assert batas('b6', akhir, kal) == '2026-03-06'
+    assert batas('y1', akhir, kal) == '2025-09-04'
+    # MTD di tanggal 1 = satu hari, bukan mundur ke bulan lalu.
+    assert batas('mtd', date(2026, 9, 1), kal) == '2026-09-01'
 
     agg = {
         'b1': {'XL': {
@@ -212,6 +251,15 @@ def swauji() -> int:
     assert abs(d['beli'][0]['pangsa'] - 0.2) < 1e-12
     # Penyebut nol -> None, bukan 0: "tak diketahui" bukan "tak berpangsa".
     assert d['jual'][0]['pangsa'] == 0.3
+    # Lot per SISI ikut ditulis (#119 2A) — tanpa ini halaman tak bisa
+    # menghitung harga rata-rata sisi tanpa mencampur beli dengan jual.
+    agg2 = {'b1': {'XL': {'AAA': [200.0, 300.0, 50.0, 100.0, 5]}}}
+    d2 = susun(agg2, {'b1': {'AAA': 1000.0}}, 'b1', 'XL')
+    assert d2['beli'][0]['beli_lot'] == 200, d2['beli'][0]
+    assert d2['beli'][0]['jual_lot'] == 50, d2['beli'][0]
+    # Harga rata-rata sisi beli = nilai/lot/100 = 300/200/100 = 0,015.
+    # Dihitung di layar, tapi bahannya wajib ada di sini.
+    assert d2['beli'][0]['beli_nilai'] == 300
     print('swauji lolos')
     return 0
 
@@ -229,7 +277,11 @@ def main() -> int:
     mulai = {k: batas(k, akhir, kalender) for k in PRESET}
     tahun = set()
     for k in PRESET:
-        tahun |= tahun_perlu(akhir, PRESET[k] if k not in PRESET_HARI_BURSA else 14)
+        # Preset ber-pangkal-tanggal butuh tahun berjalan saja untuk `mtd`,
+        # dan tahun berjalan untuk `ytd` — keduanya tak pernah melintasi
+        # tahun ke belakang, jadi 0 hari mundur sudah benar di sini.
+        mundur = 14 if k in PRESET_HARI_BURSA else PRESET[k]
+        tahun |= tahun_perlu(akhir, mundur)
 
     emiten = daftar_emiten(a.emiten)
     print(f'akhir {akhir} · tahun {sorted(tahun)} · {len(emiten)} emiten')
