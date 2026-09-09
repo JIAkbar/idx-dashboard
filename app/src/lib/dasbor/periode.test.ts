@@ -65,6 +65,17 @@ describe('rentangPreset (#75)', () => {
     expect(rentangPreset(tanggal, '2026-04-09', 'ytd')).toEqual({ mulai: '2026-01-07', akhir: '2026-04-09' })
   })
 
+  it('MTD = hari berdata pertama di BULAN yang sama, bukan 30 hari mundur (#120 4A)', () => {
+    // 12 Feb: MTD berpangkal di 1 Februari, jadi hari berdata pertama sejak itu.
+    // Fikstur ini cuma punya satu hari Februari, jadi rentangnya nol hari dan
+    // rentangPreset menolaknya — persis seperti preset lain yang tak cukup data.
+    expect(rentangPreset(tanggal, '2026-02-12', 'mtd')).toBeNull()
+    // 9 Januari: tiga hari berdata sejak 1 Jan, jadi rentangnya 7 Jan - 9 Jan.
+    // Bandingkan dengan b1 pada tanggal yang sama, yang mundur 30 hari kalender
+    // dan karena itu juga berhenti di 7 Jan — dua jalan, satu jawaban di sini.
+    expect(rentangPreset(tanggal, '2026-01-09', 'mtd')).toEqual({ mulai: '2026-01-07', akhir: '2026-01-09' })
+  })
+
   it('null kalau rentang tidak valid (akhir = tanggal berdata pertama)', () => {
     expect(rentangPreset(tanggal, '2026-01-07', 'w1')).toBeNull()
     expect(rentangPreset([], '2026-01-07', 'ytd')).toBeNull()

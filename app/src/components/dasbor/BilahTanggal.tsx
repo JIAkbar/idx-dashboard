@@ -1,4 +1,5 @@
 import { DatePicker } from './DatePicker'
+import { useState } from 'react'
 import { PemilihRentang } from './PemilihRentang'
 import type { TanggalIndex } from '../../lib/dasbor/dataHarian'
 import { PRESET_RENTANG, rentangPreset, type PresetRentang, type RentangTanggal } from '../../lib/dasbor/periode'
@@ -62,11 +63,21 @@ export function BilahTanggal({ tanggalTersedia, tanggalAktif, onPilih, onRentang
   // atau tombol "Hari ini" — yang oleh DatePicker memang selalu dirender
   // selagi rentang aktif, persis supaya jalan keluar itu tak pernah hilang.
   type Pil = PresetRentang | 'kustom' | 'tak-ada'
+  const sama = (id: PresetRentang) => {
+    if (!rentangAktif) return false
+    const r = rentangPreset(tanggalTersedia, rentangAktif.akhir, id)
+    return r?.mulai === rentangAktif.mulai && r?.akhir === rentangAktif.akhir
+  }
+  // Dua preset bisa menghasilkan rentang yang SAMA PERSIS — pada 8 September,
+  // "1 Minggu" (7 hari mundur) dan "MTD" (sejak tanggal 1) sama-sama
+  // 1–8 Sep. Tanpa mengingat mana yang barusan ditekan, pencocokan selalu
+  // memilih yang pertama di daftar, jadi mengklik MTD menyalakan 1 Minggu
+  // dan kliknya terbaca seperti ditolak. Ingatan ini BUKAN sumber kebenaran
+  // kedua: rentangnya tetap yang menentukan, dan ingatan dibuang begitu ia
+  // tak lagi cocok dengan rentang yang sedang berlaku.
+  const [pilihanTerakhir, setPilihanTerakhir] = useState<PresetRentang | null>(null)
   const cocok = rentangAktif
-    ? PRESET_RENTANG.find((p) => {
-        const r = rentangPreset(tanggalTersedia, rentangAktif.akhir, p.id)
-        return r?.mulai === rentangAktif.mulai && r?.akhir === rentangAktif.akhir
-      })?.id
+    ? (pilihanTerakhir && sama(pilihanTerakhir) ? pilihanTerakhir : PRESET_RENTANG.find((p) => sama(p.id))?.id)
     : undefined
   // 'tak-ada' sengaja BUKAN salah satu opsi: tanpa rentang, tak ada pil yang
   // menyala sama sekali — itu yang benar, karena yang berlaku saat itu tanggal
@@ -80,6 +91,7 @@ export function BilahTanggal({ tanggalTersedia, tanggalAktif, onPilih, onRentang
   function gantiPil(id: Pil) {
     if (!onRentang) return
     if (id === 'kustom' || id === 'tak-ada') return
+    setPilihanTerakhir(id)
     onRentang(rentangPreset(tanggalTersedia, jangkar, id))
   }
 

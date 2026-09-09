@@ -131,9 +131,13 @@ describe('rentang baru & kalender (#95)', () => {
       { dari: '2026-01-10', sampai: '2026-01-20' })).toBeNull()
   })
 
-  it('daftar pil: tujuh, urut pendek ke panjang, sejakJan dieja YTD', () => {
+  it('daftar pil: delapan, urut pendek ke panjang, sejakJan dieja YTD', () => {
+    // MTD masuk 9 Sep 2026 (#120 4A, Johan: "rentang waktu nya itu harusnya
+    // sudah ada standar … ytd, mtd"). Letaknya ditentukan `URUTAN_PIL` di
+    // kamus rentang — sesudah 6 Bulan, sekelompok dengan tahun-berjalan yang
+    // sama-sama berpangkal pada tanggal kalender, bukan pada jumlah hari.
     expect(RENTANG_DOMINAN.map((o) => o.id)).toEqual(
-      ['hariIni', 'w1', 'b1', 'b3', 'b6', 'sejakJan', 'y1'])
+      ['hariIni', 'w1', 'b1', 'b3', 'b6', 'mtd', 'sejakJan', 'y1'])
     // Dibalik 9 Sep 2026 (#114 A): pil ini dieja "YTD". Kunci `sejakJan`
     // sengaja TIDAK ikut berganti — yang berubah cuma katanya di layar.
     expect(RENTANG_DOMINAN.map((o) => o.label)).toContain('YTD')

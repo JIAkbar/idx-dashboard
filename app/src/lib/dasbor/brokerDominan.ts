@@ -44,7 +44,7 @@ export interface HariRingkas {
 }
 
 export type RentangDominan =
-  | 'hariIni' | 'w1' | 'b1' | 'b3' | 'b6' | 'sejakJan' | 'y1'
+  | 'hariIni' | 'w1' | 'b1' | 'b3' | 'b6' | 'mtd' | 'sejakJan' | 'y1'
 
 /**
  * Kata dan urutannya dari kamus rentang (#70).
@@ -55,7 +55,7 @@ export type RentangDominan =
  * berbeda dengan satu nama di satu layar sudah pernah salah dibaca.
  */
 export const RENTANG_DOMINAN = pilRentang<RentangDominan>(
-  (['hariIni', 'w1', 'b1', 'b3', 'b6', 'sejakJan', 'y1'] as const)
+  (['hariIni', 'w1', 'b1', 'b3', 'b6', 'mtd', 'sejakJan', 'y1'] as const)
     .map((id) => ({ id, kunci: id })),
 )
 
@@ -90,9 +90,10 @@ export interface HasilDominan {
 
 /** Tanggal ISO paling awal yang masih ikut rentang, snap ke hari BERDATA.
  *
- * Dua preset tak punya jumlah hari dan karena itu ditangani sendiri:
+ * Tiga preset tak punya jumlah hari dan karena itu ditangani sendiri:
  * `hariIni` = hari berdata terakhir (rentang satu hari, bukan nol hari),
- * dan `sejakJan` = hari berdata pertama di tahun yang sama dengan akhir.
+ * `sejakJan` = hari berdata pertama di tahun yang sama dengan akhir, dan
+ * `mtd` = hari berdata pertama di BULAN yang sama.
  * Menaruh keduanya di `HARI_PRESET` berarti mengarang jumlah hari yang
  * berubah-ubah tiap tanggal — persis yang tak boleh ditebak. */
 export function mulaiRentang(hari: HariRingkas[], preset: RentangDominan): string {
@@ -102,6 +103,10 @@ export function mulaiRentang(hari: HariRingkas[], preset: RentangDominan): strin
   if (preset === 'sejakJan') {
     const jan = `${akhir.slice(0, 4)}-01-01`
     return hari.find((h) => h.tanggal >= jan)?.tanggal ?? hari[0].tanggal
+  }
+  if (preset === 'mtd') {
+    const awalBulan = `${akhir.slice(0, 7)}-01`
+    return hari.find((h) => h.tanggal >= awalBulan)?.tanggal ?? hari[0].tanggal
   }
   const d = new Date(`${akhir}T00:00:00Z`)
   d.setUTCDate(d.getUTCDate() - HARI_PRESET[preset])

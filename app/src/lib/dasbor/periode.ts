@@ -210,15 +210,19 @@ export const LABEL_RENTANG_RINGKAS: Partial<Record<KunciRentang, string>> = {
  * memakainya (Sektor, Top Stocks, Kalender) dan membuangnya berarti mencabut
  * pintasan yang bekerja untuk permintaan yang isinya menambah, bukan mengurangi.
  */
-export type PresetRentang = 'w1' | 'b1' | 'b3' | 'b6' | 'ytd' | 'y1'
+export type PresetRentang = 'w1' | 'b1' | 'b3' | 'b6' | 'mtd' | 'ytd' | 'y1'
 
 /** Id-nya tetap `ytd` — yang berganti kata layarnya, bukan hitungannya, jadi
  *  tak ada state tersimpan atau tes yang perlu ikut berpindah. */
 const KATA_PRESET: Record<PresetRentang, KunciRentang> =
-  { w1: 'w1', b1: 'b1', b3: 'b3', b6: 'b6', ytd: 'sejakJan', y1: 'y1' }
+  { w1: 'w1', b1: 'b1', b3: 'b3', b6: 'b6', mtd: 'mtd', ytd: 'sejakJan', y1: 'y1' }
 
+// Urutannya dari `URUTAN_PIL` di atas, bukan dipilih di sini: `mtd` duduk
+// sesudah `b6` dan sebelum tahun-berjalan, sekelompok dengan rentang
+// ber-pangkal-tanggal lainnya. Menaruhnya di tempat lain berarti dua urutan
+// kanonis yang berbeda — persis yang kamus ini dibuat untuk mencegah.
 export const PRESET_RENTANG: { id: PresetRentang; label: string }[] =
-  (['w1', 'b1', 'b3', 'b6', 'ytd', 'y1'] as const)
+  (['w1', 'b1', 'b3', 'b6', 'mtd', 'ytd', 'y1'] as const)
     .map((id) => ({ id, label: LABEL_RENTANG[KATA_PRESET[id]] }))
 
 
@@ -226,7 +230,11 @@ export const PRESET_RENTANG: { id: PresetRentang; label: string }[] =
 // 182 dan 365, bukan 180 dan 360: yang dihitung kalender, dan pembulatan
 // "kira-kira setengah tahun" akan menggeser batas rentang sampai tiga hari
 // bursa - cukup untuk membuat jumlah nilai transaksi berbeda tanpa sebab.
-export const HARI_PRESET: Record<Exclude<PresetRentang, 'ytd'>, number> =
+// `ytd` dan `mtd` TIDAK ada di sini dan itu disengaja: keduanya berpangkal
+// pada tanggal kalender (1 Januari / tanggal 1 bulan berjalan), bukan pada
+// jumlah hari mundur. Memberi mereka angka tetap berarti mengarang panjang
+// yang berubah-ubah tiap tanggal.
+export const HARI_PRESET: Record<Exclude<PresetRentang, 'ytd' | 'mtd'>, number> =
   { w1: 7, b1: 30, b3: 91, b6: 182, y1: 365 }
 
 /**
@@ -244,6 +252,10 @@ export function rentangPreset(
   let mulai: string | undefined
   if (preset === 'ytd') {
     mulai = tanggal.find((t) => t.date_iso >= `${akhir.slice(0, 4)}-01-01`)?.date_iso
+  } else if (preset === 'mtd') {
+    // Hari berdata pertama di BULAN yang sama dengan `akhir` — bukan 30 hari
+    // mundur. Tanggal 3 memberi rentang tiga hari, dan itu memang jawabannya.
+    mulai = tanggal.find((t) => t.date_iso >= `${akhir.slice(0, 7)}-01`)?.date_iso
   } else {
     mulai = cariTanggalPembanding(tanggal, akhir, HARI_PRESET[preset])?.date_iso
       ?? tanggal[0]?.date_iso
