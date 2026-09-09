@@ -16,6 +16,26 @@ REM dilacak git dan berhenti jadi milik satu mesin. Yang tak menyetelnya
 REM tetap dapat jalur bawaan yang sama seperti sebelumnya.
 if not defined PYEXE set PYEXE=C:\Python314\python.exe
 if not exist "%PYEXE%" set PYEXE=python
+set "LOG_NAMA=panen_sore"
+
+REM --- Log ke berkas (#102 A) -------------------------------------------
+REM  Sampai 8 Sep 2026 kedua bat ini hanya menulis ke layar. Waktu panen
+REM  melewatkan 99 emiten tanpa satu pun jejak, sebab kegagalannya sudah
+REM  hilang bersama jendela konsol yang tertutup - yang tersisa cuma
+REM  berkas yang stempelnya tertinggal, tanpa cara tahu kenapa.
+REM
+REM  Polanya: bat memanggil ULANG dirinya sendiri sekali, dan panggilan
+REM  kedua dialirkan lewat Tee-Object supaya keluarannya tetap tampil di
+REM  layar DAN tersimpan. `2>&1` disatukan sebelum pipa, jadi galat ikut
+REM  masuk - itu justru baris yang paling dicari nanti.
+if not defined PAPAN_LOG (
+  set PAPAN_LOG=1
+  if not exist logs md logs
+  for /f %%d in ('call "%PYEXE%" -c "import datetime;print(datetime.date.today().isoformat())"') do set TGL_LOG=%%d
+  call :TEE %*
+  exit /b %errorlevel%
+)
+
 
 REM ---- Batas akhir 22:00 (Johan, 8 Sep 2026) ----------------------------
 REM Pemicunya 18:00, tapi `StartWhenAvailable` membuat jalan yang terlewat
@@ -41,9 +61,15 @@ if %JAM% GEQ 22 (
 
 if exist "%~dp0.panen.lock" (
   echo Pipeline lain sedang jalan - .panen.lock ada - keluar.
-  goto akhir
+  REM Keluar TANPA melepas kunci: kuncinya milik proses lain. Sampai
+  REM 9 Sep 2026 baris ini melompat ke :akhir yang menghapusnya, jadi
+  REM pipa yang mengalah justru membuka pintu untuk pipa ketiga - dan
+  REM dua panen yang jalan bersamaan persis yang memutus rantai token.
+  goto keluar_tanpa_kunci
 )
 mkdir "%~dp0.panen.lock" 2>nul
+REM Sejak titik ini kunci MILIK proses ini, jadi :akhir boleh melepasnya.
+set PAPAN_KUNCI_MILIK=1
 
 echo ============================================================
 echo  PAPAN - Panen Sore (%date% %time%)
@@ -72,6 +98,13 @@ if errorlevel 1 echo   (OHLCV gagal - lanjut)
 "%PYEXE%" scripts\panen_ohlcv_stockbit.py IHSG --paksa
 "%PYEXE%" scripts\gabung_ohlc_stockbit.py
 "%PYEXE%" scripts\jahit_ihsg.py
+REM Gerbang #102 A: emiten yang arsip gabungannya sudah sampai hari bursa
+REM terakhir tapi berkas sumbernya belum. Panen 8 Sep 2026 melewatkan 99
+REM emiten sambil melaporkan sukses; ini yang membuatnya terlihat pada menit
+REM yang sama. Tidak menghentikan pipa - turunan tetap dibangun dari yang ada,
+REM dan daftarnya tertulis di logs\panen_tertinggal.txt.
+"%PYEXE%" scripts\cek_panen_ohlcv.py
+if errorlevel 1 echo   [B] PERINGATAN: ada emiten tertinggal - lihat logs\panen_tertinggal.txt
 
 echo.
 echo [B2] Broker hari-tuntas - 6 varian bentuk PERSIS CI, 8 utas
@@ -234,5 +267,16 @@ git commit -m "data: panen sore otomatis (%date%)" -- data-idx/json/ohlc data-id
 git push origin main
 
 :akhir
-rmdir "%~dp0.panen.lock" 2>nul
+if defined PAPAN_KUNCI_MILIK rmdir "%~dp0.panen.lock" 2>nul
+:keluar_tanpa_kunci
 if not "%1"=="auto" pause
+
+REM Batas alur: tanpa exit di sini, bat jatuh ke :TEE sesudah pause dan
+REM menjalankan dirinya sekali lagi.
+exit /b %errorlevel%
+
+:TEE
+REM Dipanggil sekali dari blok log di atas; `PAPAN_LOG` sudah terpasang di
+REM lingkungan ini, jadi panggilan kedua langsung menjalankan isi bat.
+call "%~f0" %* 2>&1 | powershell -NoProfile -Command "$input | Tee-Object -FilePath 'logs\%LOG_NAMA%_%TGL_LOG%.log' -Append"
+exit /b %errorlevel%

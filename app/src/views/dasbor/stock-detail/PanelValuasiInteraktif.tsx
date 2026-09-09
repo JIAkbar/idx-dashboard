@@ -184,7 +184,7 @@ export function PanelValuasiInteraktif({ fd, rasio = null }: { fd: StockFundamen
           <div style={{ fontSize: 9, color: 'var(--text3)', marginTop: 8 }}>
             <IkonMenu d={IKON_LAMPU} size={11} /> Ubah angka di atas untuk simulasi skenario berbeda. g default dari CAGR EPS historis
             {fd.eps_cagr_3y != null ? ` (3Y: ${persen(fd.eps_cagr_3y, 1)})` : fd.eps_cagr_2y != null ? ` (2Y: ${persen(fd.eps_cagr_2y, 1)})` : ''}.
-            {' '}Y = yield SBN 10 tahun Indonesia (default 6.75%).
+            {' '}Y = yield SBN 10 tahun Indonesia (default 6,75%).
           </div>
         </div>
       </div>

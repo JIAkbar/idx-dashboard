@@ -22,6 +22,26 @@ REM dilacak git dan berhenti jadi milik satu mesin. Yang tak menyetelnya
 REM tetap dapat jalur bawaan yang sama seperti sebelumnya.
 if not defined PYEXE set PYEXE=C:\Python314\python.exe
 if not exist "%PYEXE%" set PYEXE=python
+set "LOG_NAMA=panen_otomatis"
+
+REM --- Log ke berkas (#102 A) -------------------------------------------
+REM  Sampai 8 Sep 2026 kedua bat ini hanya menulis ke layar. Waktu panen
+REM  melewatkan 99 emiten tanpa satu pun jejak, sebab kegagalannya sudah
+REM  hilang bersama jendela konsol yang tertutup - yang tersisa cuma
+REM  berkas yang stempelnya tertinggal, tanpa cara tahu kenapa.
+REM
+REM  Polanya: bat memanggil ULANG dirinya sendiri sekali, dan panggilan
+REM  kedua dialirkan lewat Tee-Object supaya keluarannya tetap tampil di
+REM  layar DAN tersimpan. `2>&1` disatukan sebelum pipa, jadi galat ikut
+REM  masuk - itu justru baris yang paling dicari nanti.
+if not defined PAPAN_LOG (
+  set PAPAN_LOG=1
+  if not exist logs md logs
+  for /f %%d in ('call "%PYEXE%" -c "import datetime;print(datetime.date.today().isoformat())"') do set TGL_LOG=%%d
+  call :TEE %*
+  exit /b %errorlevel%
+)
+
 
 echo ============================================================
 echo  IDX Dashboard - Update Otomatis (%date% %time%)
@@ -163,3 +183,13 @@ echo Data ter-push ke GitHub.
 echo.
 echo Selesai %time%.
 if not "%1"=="auto" pause
+
+REM Batas alur: tanpa exit di sini, bat jatuh ke :TEE sesudah pause dan
+REM menjalankan dirinya sekali lagi.
+exit /b %errorlevel%
+
+:TEE
+REM Dipanggil sekali dari blok log di atas; `PAPAN_LOG` sudah terpasang di
+REM lingkungan ini, jadi panggilan kedua langsung menjalankan isi bat.
+call "%~f0" %* 2>&1 | powershell -NoProfile -Command "$input | Tee-Object -FilePath 'logs\%LOG_NAMA%_%TGL_LOG%.log' -Append"
+exit /b %errorlevel%

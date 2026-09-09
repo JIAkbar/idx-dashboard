@@ -131,7 +131,7 @@ export function ProfitAra({ feeBeli, feeJual, setFeeBeli, setFeeJual }: ProfitAr
               </div>
             </div>
             <div className="v-note" style={{ display: 'block', marginTop: 6, lineHeight: 1.5 }}>
-              Default: Beli 0.15% / Jual 0.25% (standar IDX/Stockbit).
+              Default: Beli 0,15% / Jual 0,25% (standar IDX/Stockbit).
             </div>
           </div>
         </div>
