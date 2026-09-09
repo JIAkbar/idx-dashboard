@@ -1,6 +1,5 @@
 {
   "buildCommand": "cd app && npm install && npm run build",
-  "_ignoreCommand": "Keluar 0 = LEWATI pembangunan. Dorongan yang isinya HANYA kabar.json/snips.json tak perlu deploy: kedua berkas itu dibaca dari GitHub Pages (lib/dasbor/baseData.ts), jadi membangun ulang 2,9 GB untuk berkas yang tak ikut terpakai cuma membakar kuota — dan panen kabar sekarang tiap dua jam.",
   "ignoreCommand": "git diff --quiet HEAD^ HEAD -- . ':(exclude)data-idx/json/kabar.json' ':(exclude)data-idx/json/snips.json' ':(exclude)data-idx/json/kabar-sumber-awan.json' && exit 0 || exit 1",
   "outputDirectory": "app/dist",
   "crons": [

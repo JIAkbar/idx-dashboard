@@ -110,6 +110,12 @@ const LUAR = new Set(['broker_tahunan'])
 // dist, halaman yang kelak dikembalikan ke jalur lokal akan membaca berkas
 // dari bangunan terakhir - basi berjam-jam, tanpa satu pun galat. Dengan
 // tak disalin, kesalahan itu langsung terlihat sebagai 404.
+// Pasangannya di `vercel.json`: `ignoreCommand` membuat dorongan yang isinya
+// HANYA kedua berkas ini (plus catatan sumber) tidak memicu pembangunan sama
+// sekali — keluar 0 berarti LEWATI. Penjelasan itu ditulis DI SINI, bukan di
+// vercel.json: berkas itu divalidasi dengan skema ketat, dan kunci tambahan
+// sebagai 'komentar' membuat seluruh deploy gagal seketika di tahap baca
+// konfigurasi. Terjadi 9 Sep 2026 — dua deploy tumbang sebelum ketahuan.
 const LUAR_BERKAS = new Set(['kabar.json', 'snips.json'])
 
 const targets = [
