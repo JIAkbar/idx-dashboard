@@ -1776,19 +1776,26 @@ export function GrafikEmiten() {
    *  kanvas, bukan dari ada-tidaknya balasan live: begitu arsip memuat
    *  tanggal yang sama, `tempelBarBerjalan` memenangkan arsip dan lencana
    *  harus diam. */
-  /** Kerangka intraday TIDAK punya bar berjalan, dan itu perlu dinyatakan.
+  /** Umur data intraday, dinyatakan dari DATA yang benar-benar digambar.
    *
-   *  Terukur 9 Sep 2026 pukul 09:12 WIB saat bursa berjalan: kerangka 1 jam
-   *  memajang bar terakhir 8 Sep 15:00 — sesi kemarin — tanpa satu pun
-   *  penanda, sementara kerangka Harian di sebelahnya menunjukkan LIVE
-   *  6.600. Dua kerangka di satu halaman menjawab pertanyaan yang sama
-   *  dengan dua kebenaran yang berbeda, dan yang satu diam.
+   *  Versi pertama penanda ini (9 Sep 2026) berbunyi "ARSIP SEMALAM" dan
+   *  premisnya SALAH: aku mengukur `intraday_1h/<KODE>.json` — arsip panen
+   *  malam — padahal kerangka intraday halaman ini mengambil dari proxy
+   *  Yahoo. Diukur ulang pukul 09:26 WIB: proxy menjawab bar 9 Sep 09:00
+   *  DAN bar berjalan 09:16, jadi sesi hari ini memang termuat, cuma
+   *  tertunda belasan menit. Salah berkas, salah kalimat.
    *
-   *  Bar berjalan intraday butuh data 1 menit hari berjalan (#108 B) —
-   *  menempelkan bar HARIAN ke kerangka 1 jam akan memberi O/H/L sesi
-   *  penuh pada slot satu jam, angka yang salah dan terlihat wajar.
-   *  Sampai itu diputuskan, yang bisa dijujurkan adalah keadaannya. */
+   *  Karena itu kondisinya sekarang dibaca dari lilin yang dipakai chart:
+   *  bar terakhir bertanggal hari ini = tertunda (bukan hilang); bar
+   *  terakhir lebih tua = sesi hari ini memang belum termuat. */
+  const isoHariIni = new Date().toISOString().slice(0, 10)
+  const tglBarIntraday = intraday(kerangka) && penuh.lilin.length
+    ? String(penuh.lilin[penuh.lilin.length - 1].time).slice(0, 10)
+    : null
+  const intradayTertunda = intraday(kerangka) && pasar.status === 'buka'
+    && tglBarIntraday === isoHariIni
   const intradayTertinggal = intraday(kerangka) && pasar.status === 'buka'
+    && tglBarIntraday != null && tglBarIntraday < isoHariIni
 
   const barBerjalanTampil = !intraday(kerangka) && liveTampil != null
     && penuh.lilin.length > 0 && String(penuh.lilin[penuh.lilin.length - 1].time) === liveTampil.tanggal
@@ -3943,10 +3950,16 @@ export function GrafikEmiten() {
               hari itu (sesudah panen sore), `gabungBarBerjalan` memenangkan
               arsip dan lencana ini diam — persis yang diinginkan, karena
               angkanya lalu bukan lagi "berjalan". */}
+          {intradayTertunda && (
+            <span className="grf-live" title="Candle intraday berasal dari Yahoo lewat proxy PAPAN; bar terakhir hari ini biasanya tertunda sepuluh sampai lima belas menit dan masih parsial (belum tutup slotnya). Kerangka Harian memakai jalur lain yang lebih cepat.">
+              <b className="grf-live-tanda">TERTUNDA ±15 MNT</b>
+              <span className="muted">bar terakhir hari ini masih berjalan — belum tutup slot</span>
+            </span>
+          )}
           {intradayTertinggal && (
-            <span className="grf-live" title="Kerangka intraday dibangun dari arsip 1 menit yang dipanen tiap malam, jadi sesi hari ini belum termuat. Kerangka Harian sudah memuat bar berjalan.">
-              <b className="grf-live-tanda">ARSIP SEMALAM</b>
-              <span className="muted">sesi hari ini belum termuat — pindah ke Harian untuk bar berjalan</span>
+            <span className="grf-live" title="Sumber candle intraday belum memuat sesi hari ini. Kerangka Harian memakai jalur lain dan sudah memuat bar berjalan.">
+              <b className="grf-live-tanda">SESI HARI INI BELUM TERMUAT</b>
+              <span className="muted">bar terakhir {tglBarIntraday} — pindah ke Harian untuk bar berjalan</span>
             </span>
           )}
           {barBerjalanTampil && liveTampil && (
