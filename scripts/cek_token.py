@@ -102,15 +102,56 @@ def cek() -> int:
     print(f"  token baru sejak cek sebelumnya: {'YA' if baru else 'TIDAK'}"
           + (f" (sebelumnya terbit {wib(jejak.get('iat_access'))})" if jejak.get("iat_access") else " (cek pertama)"))
 
-    if not s.get("access"):
+    # Yang diuji token yang BENAR-BENAR dipakai panen, bukan salinan berkas
+    # ini (#168, ralat 10 Sep 2026). Sejak rantai tunggal (#105 A, 8 Sep)
+    # sumber sah adalah tabel `live_token`; berkas cuma cadangan yang
+    # disegarkan sebagai efek samping pembacaan tabel, jadi ia menua sendiri
+    # tiap kali cron memutar tabel tanpa ada yang membaca dari mesin ini.
+    #
+    # Versi lama menguji berkas dan mencetak "TOKEN MATI — semai pasangan
+    # baru". Terukur 10 Sep 2026 09:1x: berkas habis 07:02 sementara tabel
+    # membawa access yang sah sampai 11 Sep 07:02, dan seluruh pemanen yang
+    # memakai `token_segar()` jalan normal. Menuruti laporan itu berarti
+    # menyemai ulang — dan semai MENGGANTI pasangan sekali-pakai, jadi ia
+    # akan memutus rantai yang sedang sehat. Laporan yang memicu semai palsu
+    # lebih berbahaya daripada tak ada laporan sama sekali.
+    #
+    # `token_segar()` sendiri TIDAK memutar apa pun; ia membaca tabel dan
+    # jatuh ke berkas hanya bila tabel tak terjangkau.
+    dipakai, asal = None, "?"
+    try:
+        from stockbit_token import access_dari_tabel, token_segar
+        try:
+            tabel = access_dari_tabel()
+        except Exception:  # noqa: BLE001 — tabel tak terjangkau bukan kegagalan cek
+            tabel = None
+        dipakai = token_segar()
+        asal = "TABEL live_token" if (tabel and dipakai == tabel) else "berkas cadangan"
+    except Exception as e:  # noqa: BLE001
+        print(f"  [rantai] tak bisa membaca token yang dipakai panen: {e}")
+
+    if not dipakai:
+        dipakai, asal = s.get("access"), "berkas cadangan"
+    if not dipakai:
         return 1
-    kode, ket = uji_hidup(s["access"])
+
+    lokal_usang = bool(s.get("access") and dipakai != s.get("access"))
+    print(f"  diuji: {asal}" + ("  (salinan lokal BEDA — sudah tertinggal)" if lokal_usang else ""))
+    kode, ket = uji_hidup(dipakai)
     print(f"  uji hidup: {ket}")
-    JEJAK.write_text(json.dumps({"iat_access": iat, "dicek": kini.isoformat(), "hasil": kode}), encoding="utf-8")
-    if kode == 200:
-        print("  ==> TOKEN HIDUP" + (" DAN BARU" if baru else ""))
+    JEJAK.write_text(json.dumps({"iat_access": iat, "dicek": kini.isoformat(),
+                                 "hasil": kode, "asal": asal}), encoding="utf-8")
+    # Tiga vonis, bukan dua. Yang di tengah persis keadaan yang membuat
+    # laporan lama menyesatkan: rantainya sehat, salinannya yang tertinggal.
+    if kode == 200 and lokal_usang:
+        print("  ==> RANTAI HIDUP (diuji lewat tabel); SALINAN LOKAL USANG")
+        print("      JANGAN semai — semai mengganti pasangan dan akan memutus rantai yang sehat.")
+        print("      Salinan lokal ikut segar sendiri begitu ada pemanen memanggil token_segar().")
         return 0
-    print("  ==> TOKEN MATI — login ulang di peramban, semai pasangan baru (stockbit_token.py), lalu jalankan ulang runner")
+    if kode == 200:
+        print("  ==> RANTAI HIDUP" + (" DAN BARU" if baru else ""))
+        return 0
+    print("  ==> RANTAI MATI — login ulang di peramban, semai pasangan baru (stockbit_token.py), lalu jalankan ulang runner")
     return 1
 
 
