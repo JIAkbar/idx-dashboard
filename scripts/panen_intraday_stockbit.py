@@ -99,10 +99,28 @@ def sesi(maks: int = 128):
 
 
 def token_tanpa_refresh() -> str:
-    """Access apa adanya dari simpanan. SENGAJA tidak lewat token_segar():
-    runner ini dilarang memutar refresh (lihat docstring modul)."""
-    from stockbit_token import baca_simpanan
-    t = (baca_simpanan() or {}).get("access")
+    """Access hidup TANPA memutar apa pun — lewat `token_segar()`.
+
+    Larangannya tetap sama dan tidak dilonggarkan: runner ini tak boleh
+    MEMUTAR refresh. Yang berubah, `token_segar()` sejak rantai tunggal
+    (#105 A, keputusan Johan 8 Sep 2026) tak pernah memutar apa pun — ia
+    MEMBACA tabel `live_token` yang diputar cron, dan hanya jatuh ke berkas
+    lokal kalau tabelnya tak terjangkau. Jadi memakainya di sini menghormati
+    larangan itu, sementara membaca berkas TIDAK lagi menghormati maksudnya.
+
+    Kenapa diganti, terukur 10 Sep 2026 09:13: berkas lokal habis pukul 07:02
+    sementara tabel sudah membawa access baru, dan pemanen ini menembak 962
+    emiten dengan token kedaluwarsa — `401` di **962 dari 962**, `ok=0`, lalu
+    berhenti sambil meminta semai ulang. Semai atas laporan itu justru akan
+    MEMUTUS rantai yang sedang sehat, karena semai mengganti pasangan. Yang
+    mati cuma salinan berkasnya; rantainya hidup, dan seluruh pemanen lain
+    yang memakai `token_segar()` jalan normal di jam yang sama.
+
+    Efek sampingnya berguna: `token_segar()` menyamakan cadangan lokal dengan
+    tabel, jadi jalur (2) tetap bernilai saat jaringan tabel putus.
+    """
+    from stockbit_token import token_segar
+    t = token_segar()
     if not t:
         raise SystemExit("Tidak ada access token — semai dulu (stockbit_token.py).")
     return t
