@@ -1319,3 +1319,39 @@ sampai auditnya tiba. Jejak lengkap: `docs/jejak-permintaan.md` #339–#364.
 
 ## Sesi 28 Agu 2026 (Fable, worktree artifact-react-migration) — ringkas
 IHSG 27 dipulihkan 6.521,75 (aku salah vonis, Yahoo yang basi; pagar jahit dibalik: cadangan tak boleh jadi wasit). Workflow panen dirombak: 4+5 pembangun yatim masuk kedua bat, racun arsip kosong ditambal, sapuan Yahoo dilewati dari Buka Laptop, GOTOM dilewati permanen. Sistem tata C+A jadi standar (21 halaman: bilah kendali berkelompok + header satu baris; Whales percontohan penuh dengan panel kontekstual, chart full-viewport, profil gradient per-bar POC emas, tooltip bubble, garis AVG warna distinct, Auto=1 tahun). Footer global dihapus (atribusi LWC pindah Metodologi — WAJIB lisensi, jangan hapus). Modal ⓘ indikator di 12 halaman/tab. Beranda Arah A "Meja Kerja" (artifact 88bd3522). Backlog B44-B47 tuntas; B45 winrate live (rekomendasi/ sekali-tulis + tab Riwayat). Kolom Form dibuka semua pengguna. TERSISA di Johan: semai token Stockbit (mati server-side 28 Agu siang — keystats/info & PanenSore 18:00 menunggu), SQL RPC B16, keputusan "Smart Money" legenda Overview.
+
+## Menunggu jawaban Johan — ditunda ke 9 Sep 2026 (ditulis pengawas 8 Sep 23:4x)
+
+Johan 8 Sep 23:3x: *"yang nunggu jawaban saya besok di tunda dan di list dalam bentuk tabel yaa"* — lalu 23:4x: *"94 masih tahap di artifact saja kan ? gpp yang penting matang dlu sistem nya di artifact"* dan *"task 98 - terakhir saya ikut rekomendasimu saja, kerjakan sampai tuntas dan live"*. **DIPUTUSKAN 8 Sep 23:4x**: semua baris mengikuti kolom Rekomendasi; #94 dikerjakan pengawas di artifact; #98–#123 dikirim ke sesi Papan (sidik PGW-0908-2347-SSA). Tabel dibiarkan sebagai catatan keputusan.
+
+| # | Soal yang menunggu | Pilihan | Rekomendasi pengawas |
+|---|---|---|---|
+| 94 | Winrate PAPAN tahap 2 (batch backtest per emiten memakai mesin `bt_papan`/`bt_indikator`, artifact v7 jadi halaman) | A tahap 2a sekarang · B tunggu #53 tuntas | A |
+| 98 | Penjaga kesegaran `broker_tahunan` di `jaga-deploy.yml` (bandingkan tanggal terakhir 3 emiten di Pages vs harvest) | A pasang penjaga · B cukup #101 | A |
+| 101 | Kanon kesegaran: daftar 64 berkas × penulis × jadwal (harian/mingguan/bulanan) + writer tanpa jadwal (ihsg_harian, bandarmologi, tesis_vonis, investor_map, ipot_arsip, pengendali) | A kanon + jadwal di bat/CI · B biarkan manual | A |
+| 102 | Panen bisa melewatkan emiten tanpa jejak — log per blok bat + hitungan berkas ditulis vs diharapkan | A dua tambalan kecil · B nanti | A |
+| 104 | Satu halaman dua nama: menu "Sinyal" vs judul "Screener" | A samakan ke "Screener" · B samakan ke "Sinyal" | A |
+| 106 | "token pertama banyak yang gagal" saat panen sore — ukur dulu lewat log #102, baru perbaiki | A ukur dulu (butuh #102) · B perbaiki langsung tanpa angka | A |
+| 111 | Pagar proxy live-harga: lapis asal tidak berlaku saat CDN HIT (tanpa header CORS, fetch lintas situs tetap buta) | A terima + satu kalimat komentar · B coba `Vary: Origin` | A |
+| 119 3B | Rincian Broker rentang kustom tanggal→tanggal — butuh data turunan baru (pivot harian per broker ±89×880×240/tahun) | A bangun data turunan · B cukup 9 preset (#119 3A) | B dulu |
+| 120 4C | Sapuan 22 lokasi pemilih rentang ke satu kanon + satukan modul hari-bursa vs kalender (mengubah angka "1 Minggu" di beberapa halaman) | A kerjakan sesudah enumerasi tiga angka · B cukup 4A (MTD) | A, sesudah angkanya dilaporkan Papan |
+| 121 A | Kepala Kabar Pasar `.vhead > h1` seperti 31 halaman lain — membalik keputusan #24 (7 Sep) | A balik #24 · B tetap #24 | B (tetap) |
+| 123 | Persen "+4.35%" bertitik di seluruh proyek vs angka lain berkoma id-ID — sapuan `fp()` + 3 salinan lokal | koma · titik | koma |
+
+## Menunggu jawaban Johan — batch 9 Sep 2026 pagi (dijawab ±10:50 WIB)
+
+**DIJAWAB 9 Sep 12:3x** — Johan: *"saya ikuti rekomendasimu dan kerjakan sampai tuntas"*. Semua baris ikut kolom Rekomendasi pengawas: #140 A, #142 B A, #143 A, #144 A, #146 A, #149 A, #150 B A, #134 D A, #155 A+B, #156 A+C dikirim ke sesi Papan (sidik PGW-0909-1245-GLB); #108 B ditutup (A cukup); #138 laptop NANTI (amati cron awan sampai 16 Sep); #94 enam keputusan ikut rekomendasi, dikerjakan pengawas di artifact; #139 B tetap tangan Johan. Status per baris di `docs/antrean-permintaan.md`. **Lanjutan 14:0x** — Johan: *"kerjakan sampai selesai ya"* → #157 A (tape jadi panel Detak hari ini), #138 laptop (Task Scheduler 2 jam), #153 (2)(3) dikirim ke Papan (sidik PGW-0909-1405-SEL); seluruh gelombang pertama sudah tayang 13:48.
+
+Johan 9 Sep 07:5x: *"saya jawab 3 jam lagi yaa nnt kmu sebutkan dalam bentuk tabel"*. Tujuh soal, semua baris ada di `docs/antrean-permintaan.md`; pengawas tidak menyentuh kode sampai ada jawaban. Tabel ini yang akan disajikan ulang saat Johan kembali.
+
+| # | Soal yang menunggu | Pilihan | Rekomendasi pengawas | Ukuran |
+|---|---|---|---|---|
+| 140 | Arus Broker mengabaikan `?kode=` di alamat — `/broker-summary-v2?kode=BUMI` selalu membuka BBCA, tautan tak bisa dibagikan | A baca `?kode=` + tulis balik ke URL saat ganti emiten (pola Stock Detail) · B biarkan | A | kecil |
+| 142 B | Buang duplikat tautan di skrip panen kabar supaya /kabar, Beranda, Tanya PAPAN ikut bersih (38 tautan dobel; panel Stock Detail sudah ditambal di #142 A) | A dedup di pemanen (pengumuman resmi dikecualikan) · B cukup #142 A | A | kecil |
+| 143 | P/B satu emiten beda antar halaman: Stock Detail 1,61× (keystats Stockbit) vs Kartu Analisa & Tanya PAPAN 1,52× (`pbv` Yahoo) | A Kartu & Tanya ikut `pilihRasio('pb')` keystats, `pbv` cadangan · B biarkan dua angka tapi beri label sumber | A | sedang |
+| 144 | IHSG rentang beda basis: /indeks awal = penutupan hari sebelum rentang (6 Bulan −8,87%, YTD −25,15%) vs /stocks close-ke-close (−10,14%, −25,25%); plus 3 hari bursa bervolume 0 (23 Jul, 27 Jul, 26 Agu) yang /stocks hitung sebagai hari berdata | A Top Stocks pakai `ringkasDariIndex` (basis /indeks), parse ulang 3 PDF, 0 → null · B samakan ke close-ke-close | A | kecil |
+| 134 D | `ihsg_harian.json` punya dua penulis: `panen_ihsg.py` (CI, Yahoo) menimpa bar Stockbit, `jahit_ihsg.py` (lokal) memulihkan — 4 bar 2–7 Sep sempat tertimpa lalu dipulihkan | A satu penulis: Stockbit utama, Yahoo hanya pra-1997 (aturan 3c) · B tetap dua penulis, urutan pipa dijaga | A | sedang |
+| 139 B | Radar Masuk berhenti edisi 26 Agu, Terbitan arus-pasar 20 Agu, KSEI Balancepos 31 Jul / investor_map 2 Jun — semua sumber manual/editorial | tangan Johan: transkripsi Radar, terbitkan edisi, panen KSEI Agustus | — | tangan Johan |
+| 94 | Artifact Winrate v8 (963 emiten, 150.199 sel): 6 keputusan | rezim kelas A = IHSG vs MA20 (sekarang) · rezim besar multi-tahun ／ ambang 30/10/3 sahkan · ganti ／ fee 0 (#93) · mulai dipotong ／ 7,46 MB dengan contoh · 5,78 MB tanpa ／ 82% sel D tampil jujur · sembunyikan serba-D ／ seksi v7+v8 berdampingan · digabung | sekarang · sahkan · tetap 0 · dengan contoh · tampil jujur · gabung | — |
+| 108 B | Kerangka intraday /grafik: A (kerangka Harian LIVE) terbukti 9 Sep 09:10. Bar intraday ternyata dari proksi Yahoo 60m yang SUDAH memuat bar jam berjalan (09:20: bar 09:00 O 6.700 C 6.600), hanya tertunda ±15 menit — jadi proksi 1 menit tidak dibutuhkan untuk 1 jam; lencana "ARSIP SEMALAM" salah premis (ralat #150 A dikirim ke Papan) | A cukup: lencana jujur "Yahoo tertunda ±15 mnt" (ralat #150 A) · B bangun proksi 1 menit untuk kerangka 5m/15m yang butuh detik | A — B hanya kalau kerangka menit dipakai serius | kecil |
+| 138 laptop | Panen kabar bagian LAPTOP: `panen_kabar.ps1` + Task Scheduler tiap 2 jam di jam bursa sebagai cadangan cron awan (yang best-effort). Menambah tugas terjadwal di mesin Johan | A pasang Task Scheduler 2 jam · B cukup cron awan (sudah tayang, tiap 2 jam) | B dulu; A kalau cron awan masih bolong sesudah seminggu diamati | kecil |
