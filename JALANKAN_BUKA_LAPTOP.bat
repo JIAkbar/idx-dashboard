@@ -102,6 +102,14 @@ REM   SAMA menjawab 401. Satu-satunya cara tahu ia hidup adalah MENCOBANYA.
 REM   `cek_token.py` melakukan itu: satu GET ringan, tanpa memanggil refresh
 REM   (memanggil refresh dari sini justru bisa memutus proses lain).
 REM
+REM   Sejak 10 Sep 2026 (#168) yang DIUJI token yang benar-benar dipakai panen
+REM   - diambil dari tabel `live_token` lewat token_segar(), bukan dari berkas
+REM   ~/.papan. Bedanya menentukan di gerbang ini: berkas itu menua sendiri
+REM   tiap cron memutar tabel tanpa ada yang membaca di mesin ini, jadi versi
+REM   lama akan MENGHENTIKAN panen dan menuntun Johan menyemai padahal rantai
+REM   sehat - dan semai mengganti pasangan sekali-pakai, jadi menurutinya
+REM   justru memutusnya. Vonis "SALINAN LOKAL USANG" tidak menghentikan panen.
+REM
 REM Kenapa panen dihentikan, bukan dilanjutkan dengan peringatan:
 REM   23 Agu 2026 token mati di tengah jalan dan 963 emiten gagal berturut
 REM   dalam 72 menit; 708 tercatat bermasalah dan hari gagal melompat

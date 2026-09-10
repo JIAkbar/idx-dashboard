@@ -1,16 +1,33 @@
 # -*- coding: utf-8 -*-
-"""Cek token Stockbit di %USERPROFILE%\\.papan\\stockbit-token.json — baru atau belum, hidup atau mati.
+"""Cek RANTAI token Stockbit — hidup atau mati, dan salinan lokalnya tertinggal atau tidak.
 
 Johan 23 Agu 2026: *"script untuk cek token baru"* — dibuat sesudah runner broker
 berhenti 21:01 karena `Refresh ditolak HTTP 401 UNAUTHORIZED`.
 
+**Yang DIUJI bukan berkas, melainkan token yang benar-benar dipakai panen**
+(ralat 10 Sep 2026, antrean #168). Sejak rantai tunggal (#105 A, 8 Sep 2026)
+sumbernya tabel `live_token`; berkas `%USERPROFILE%\\.papan\\stockbit-token.json`
+tinggal cadangan yang menua sendiri tiap cron memutar tabel tanpa ada yang
+membaca dari mesin ini. Judul lama berkas ini menyebut berkas itu sebagai
+subjeknya, dan vonis yang lahir dari situ berbunyi "TOKEN MATI — semai
+pasangan baru" atas rantai yang sedang sehat. Semai MENGGANTI pasangan
+sekali-pakai, jadi menurutinya justru memutus rantainya.
+
 Yang dilakukan (tanpa refresh, tanpa mencetak isi token):
-  1. Baca pasangan access/refresh, tampilkan iat/exp masing-masing (dari klaim JWT).
+  1. Baca pasangan access/refresh DI BERKAS, tampilkan iat/exp masing-masing
+     (dari klaim JWT) — berguna untuk melihat apakah cadangannya tertinggal.
   2. Bandingkan dengan jejak pemeriksaan sebelumnya (`.papan/cek-token-terakhir.json`):
      iat access lebih baru dari jejak = TOKEN BARU.
-  3. Uji hidup: satu GET ringan ke `marketdetectors/BBCA` (1 hari) dengan access token
-     apa adanya. 200 = hidup, 401 = mati. TIDAK memanggil /login/refresh (itu memutar
-     pasangan dan bisa melempar pemakai lain keluar — lihat stockbit_token.py).
+  3. Ambil token yang DIPAKAI lewat `token_segar()` (tabel bila terjangkau,
+     berkas hanya bila tidak) dan cetak asalnya.
+  4. Uji hidup: satu GET ringan ke `marketdetectors/BBCA` (1 hari) dengan token
+     itu apa adanya. TIDAK memanggil /login/refresh (itu memutar pasangan dan
+     bisa melempar pemakai lain keluar — lihat stockbit_token.py).
+
+Vonisnya TIGA, bukan dua — yang di tengah persis keadaan yang dulu salah baca:
+  * rantai hidup
+  * rantai hidup tapi SALINAN LOKAL USANG  (jangan semai)
+  * rantai mati                            (baru di sini semai berlaku)
 
 Pakai:
     python scripts/cek_token.py              # sekali

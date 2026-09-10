@@ -5,10 +5,35 @@ Asal: proxy `/api/live-harga` menjawab 503 untuk SEMUA kode karena tabel
 `live_token` berisi 0 baris (temuan 8 Sep 2026, antrean #92/#97). Angka hari
 berjalan di Diary Pasar, Indeks, dan Whales baru hidup sesudah baris id=1 ada.
 
-## Dua rantai, jangan pernah bersentuhan
+## Dua rantai — dan sejak 8 Sep 2026 pembacaannya SUDAH MENYATU
+
+Blok di bawah ini menggambarkan rancangan ASLI skrip ini, dan ia masih benar
+soal kenapa kunci envnya dipisah. Yang berubah, dan wajib dibaca lebih dulu
+supaya tak salah tafsir (#105 A, keputusan Johan 8 Sep 2026, dicatat ulang
+10 Sep sesudah dokumentasi basi nyaris memicu semai palsu):
+
+* **Pembacaan sudah SATU jalur.** Seluruh pemanen memakai `token_segar()`
+  yang membaca tabel `live_token`; berkas `~/.papan` cuma cadangan saat
+  tabel tak terjangkau. Terukur 10 Sep 2026: 8 dari 9 berkas yang menyentuh
+  token lewat `token_segar()`, dan satu-satunya yang tidak adalah skrip INI
+  — yang memang penyemai, bukan pemakai.
+* **Pemutar tinggal satu**: cron `/api/live-refresh`. Tak ada skrip di mesin
+  Johan yang memutar refresh lagi.
+* **Penyemaian masih dua jalur**, dan itu yang belum diputuskan (antrean
+  #169): lewat `STOCKBIT_LIVE_*` di bawah ini, atau `--dari-berkas` yang
+  mengambil dari berkas cadangan dan menandai barisnya "rantai tunggal".
+  Terukur 10 Sep lewat `--periksa`: pasangan `STOCKBIT_LIVE_*` di
+  `.env.local` sudah kedaluwarsa sejak 8 Sep 19:40 sementara baris
+  `live_token` hidup dan diputar cron — jadi yang menghidupi tabel adalah
+  rotasi cron, dan jalur env itu tinggal peninggalan. Jangan dihapus atas
+  tebakan; itu keputusan Johan.
+
+Rancangan aslinya, apa adanya:
 
 * **Akun utama** — khusus panen. Berkas `~/.papan/stockbit-token.json`,
-  disemai `cek_token.py --semai`, diputar skrip panen.
+  disemai `cek_token.py --semai`. (Dulu diputar skrip panen; sejak 8 Sep
+  tidak lagi — pemanen MEMBACA tabel, dan berkas ini jadi cadangan yang
+  disamakan dengan tabel sebagai efek samping pembacaan.)
 * **Akun kedua** — khusus tayangan live. Baris `live_token` id=1 di Supabase,
   disemai skrip INI, diputar HANYA cron `/api/live-refresh`.
 

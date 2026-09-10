@@ -1,5 +1,57 @@
 # -*- coding: utf-8 -*-
-"""Pengelola token Stockbit — access token 24 jam, refresh token 7 hari, diputar.
+"""Pengelola token Stockbit — access 24 jam, refresh 7 hari.
+
+## BACA INI DULU: siapa memutar, dan di mana tokennya tinggal (per 10 Sep 2026)
+
+Sejak **rantai tunggal (#105 A, keputusan Johan 8 Sep 2026)**:
+
+* **Sumber kebenaran = tabel Supabase `live_token`**, bukan berkas.
+* **Pemutar satu-satunya = cron `api/live-refresh.js`.** Modul ini TIDAK
+  memutar apa pun dari mesin Johan; `token_segar()` hanya MEMBACA.
+* **Berkas `%USERPROFILE%\\.papan\\stockbit-token.json` tinggal CADANGAN**,
+  dipakai kalau tabel tak terjangkau, dan disamakan dengan tabel sebagai
+  efek samping tiap kali `token_segar()` berhasil membaca tabel.
+
+Ikutan yang penting dan sudah berbiaya: **berkas itu MENUA SENDIRI** tiap
+kali cron memutar tabel tanpa ada yang membaca dari mesin ini. Berkas
+kedaluwarsa karena itu **BUKAN** bukti rantai mati. Terjadi 10 Sep 2026 —
+`panen_intraday_stockbit.py` (satu-satunya pemanen yang saat itu masih
+membaca berkas langsung) menembak 962 emiten dengan salinan kedaluwarsa,
+dijawab `401` semuanya, dan laporannya nyaris memicu semai ulang atas
+rantai yang sedang sehat. Semai MENGGANTI pasangan sekali-pakai, jadi
+menurutinya justru memutus rantainya.
+
+Cara memeriksa yang benar: `python scripts/cek_token.py` — ia mengambil
+token lewat `token_segar()`, mencetak asalnya ("diuji: TABEL live_token" /
+"berkas cadangan"), dan bervonis TIGA: rantai hidup · rantai hidup tapi
+salinan lokal usang · rantai mati. `--status` di modul ini membaca umur
+dari ISI token, bukan dari jawaban server — ia tak pernah cukup sendirian.
+
+## Menyemai: MEMBACA satu jalur, MENYEMAI masih dua
+
+Yang sudah menyatu barulah pembacaannya. Di kode masih ada dua jalur semai
+dengan dua pasang kunci berbeda, dan itu bukan kelalaian melainkan sisa
+peralihan yang belum diputuskan (antrean #169):
+
+* `semai_live_token.py` — menyemai TABEL. Dua sumber: `STOCKBIT_LIVE_TOKEN`
+  /`STOCKBIT_LIVE_REFRESH_TOKEN` dari `app/.env.local` (jalur era dua akun),
+  atau `--dari-berkas` yang mengambil dari berkas cadangan dan memberi label
+  "rantai tunggal" pada barisnya.
+* `cek_token.py --semai` — menyemai BERKAS saja, dari `STOCKBIT_TOKEN`/
+  `STOCKBIT_REFRESH_TOKEN`.
+
+Terukur 10 Sep 2026 lewat `semai_live_token.py --periksa`: pasangan
+`STOCKBIT_LIVE_*` di `.env.local` **sudah kedaluwarsa sejak 8 Sep 19:40**,
+sementara baris `live_token` hidup dan diputar cron (terakhir 10 Sep
+00:02 UTC). Jadi yang menghidupi tabel adalah rotasi cron, bukan jalur env
+itu — ia tinggal peninggalan. Apakah jalur lama itu dibuang, keputusan
+Johan; jangan dihapus atas tebakan.
+
+---
+
+Catatan mekanis di bawah ini tetap berlaku (bagaimana refresh bekerja dan
+kenapa satu tempat penyimpanan lebih baik daripada dua), tapi bacalah
+dengan ingatan bahwa PEMUTARNYA kini cron, bukan skrip di mesin ini.
 
 Johan 22 Agu 2026: *"gimana caranya supaya panen setiap hari autonomus"*.
 
