@@ -349,8 +349,19 @@ MANIFEST: list[Turunan] = [
     # melapor hijau atas mereka karena mereka TIDAK ADA di manifest sama
     # sekali. "basi 0" atas daftar yang tak memuat berkasnya bukan kabar baik;
     # ia cuma diam. Persis bentuk kegagalan yang melahirkan gerbang ini.
+    # Halaman pemakainya ditulis apa adanya, termasuk bahwa jawabannya
+    # "belum" — itu satu-satunya kolom yang membuat data-yang-menganggur
+    # terlihat, dan mengisinya dengan nama halaman yang tak benar-benar
+    # membacanya menghapus justru sinyal yang paling berguna. Diperiksa
+    # 10 Sep 2026: `WhalesPapan.tsx:208` menahan `const [tf] = useState('harian')`
+    # TANPA setter — pemilih TF-nya dicabut atas keputusan Johan 27 Agu
+    # ("di hapus saja ini ... cukup pakai harian dlu"), jadi efek pemuatnya
+    # (`if (tf === 'harian') return`) tak pernah jalan dan berkas ini tak
+    # pernah ditarik peramban siapa pun. Panennya diteruskan supaya riwayat
+    # ±90 harinya tak berlubang saat tombolnya dikembalikan.
     Turunan("Intraday 1 jam", "intraday_1h", dari_bar_epoch(i_volume=5),
-            "Whales (panel intraday)", pembangun="panen_intraday_stockbit.py + bangun_intraday_1h.py"),
+            "BELUM DIPAKAI — pemilih TF Whales dicabut, tf selalu 'harian'",
+            pembangun="panen_intraday_stockbit.py + bangun_intraday_1h.py"),
     Turunan("Tinjauan Deep Dive H+5", "tinjauan_deepdive.json", dari_ruas("diperbarui"),
             "Deep Dive (tinjauan H+5)", pembangun="riset/tinjau_deepdive.py",
             hitung=lambda d: len(json.loads(d.read_text(encoding="utf-8")).get("terbitan") or [])),
