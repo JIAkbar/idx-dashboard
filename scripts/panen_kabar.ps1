@@ -87,6 +87,28 @@ foreach ($percobaan in 1..2) {
     exit 1
   }
   if ($tertinggal -gt 0) {
+    # Maju-cepat ditolak git kalau ada berkas KOTOR yang juga berubah di remote.
+    # Di pohon kerja ini itu nyata: `docs/antrean-permintaan.md` disunting
+    # bergantian oleh sesi pengawas (belum di-commit) dan sesi Papan.
+    #
+    # Yang TIDAK dilakukan di sini, dan alasannya dibayar lewat uji: menstash
+    # berkas itu lalu `stash pop` sesudah maju-cepat. Pop itu MERGE, dan
+    # merge-nya gagal persis pada berkas yang basisnya bergerak — hasilnya
+    # penanda `<<<<<<<` tertulis KE DALAM dokumen orang, berkas tertinggal
+    # dalam keadaan `UU`, dan stash menumpuk. Terukur di repo uji.
+    #
+    # Mesin tak boleh menggabung prosa manusia. Slot kabar yang terlewat harganya
+    # dua jam kebasian; dokumen antrean yang tercoret penanda konflik harganya
+    # catatan keputusan. Jadi: berhenti, katakan berkasnya apa, jangan sentuh.
+    $kotor  = @((git diff --name-only) + (git diff --cached --name-only) | Sort-Object -Unique)
+    $datang = @(git diff --name-only HEAD..origin/main)
+    $bentrok = @($kotor | Where-Object { $datang -contains $_ })
+    if ($bentrok.Count -gt 0) {
+      Catat ("berkas kotor yang juga berubah di remote: " + ($bentrok -join ', '))
+      Catat "dilewati slot ini - pohon kerja manusia tidak disentuh"
+      PulihkanBerkas
+      exit 0
+    }
     git merge --ff-only origin/main 2>&1 | ForEach-Object { Catat $_ }
     if ($LASTEXITCODE -ne 0) { Catat "maju-cepat gagal - berhenti"; PulihkanBerkas; exit 1 }
   }
