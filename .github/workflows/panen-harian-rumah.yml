@@ -194,12 +194,22 @@ jobs:
           if ($LASTEXITCODE -ne 0) { Write-Host "::warning::fetch_broker_summary gagal" }
 
       # Broker summary PER EMITEN (Stockbit) — lapis yang tak ada di satu pun
-      # endpoint IDX. Tokennya hidup di %USERPROFILE%\.papan\stockbit-token.json
-      # (di LUAR checkout; runner dan sesi Claude memakai berkas yang SAMA supaya
-      # refresh token tak diputar dua pihak lalu saling membatalkan). Access 24
-      # jam, refresh 7 hari; `stockbit_token.py` memutarnya sendiri. Jalan
-      # SESUDAH langkah 2 karena tanggal bawaannya = bar OHLC terakhir, dan cek
-      # silangnya memakai Volume dari berkas yang sama.
+      # endpoint IDX. Tokennya dibaca `token_segar()` dari tabel `live_token`
+      # — rantai tunggal (#105 A, keputusan Johan 8 Sep 2026), diputar HANYA
+      # cron `/api/live-refresh`, tak pernah oleh langkah ini. Berkas
+      # %USERPROFILE%\.papan\stockbit-token.json (di LUAR checkout) tinggal
+      # CADANGAN untuk saat tabel tak terjangkau.
+      #
+      # Keterangan di sini dulu menyebut berkas itu sebagai sumbernya dan
+      # `stockbit_token.py` sebagai pemutarnya — dua-duanya sudah tidak benar
+      # sejak 8 Sep, dan keterangan basi soal token berbiaya nyata: 10 Sep
+      # 2026 satu pemanen yang memang masih membaca berkas menembak 962
+      # emiten dengan salinan kedaluwarsa, dan laporannya nyaris memicu semai
+      # ulang atas rantai yang sedang sehat (semai mengganti pasangan
+      # sekali-pakai, jadi menurutinya justru memutusnya).
+      #
+      # Jalan SESUDAH langkah 2 karena tanggal bawaannya = bar OHLC terakhir,
+      # dan cek silangnya memakai Volume dari berkas yang sama.
       #
       # ENAM varian GROSS, bukan dua belas — Johan 5 Sep 2026: *"ralat dulu
       # setiap hari itu harusnya panen 6 varian karena gross, sedangkan yang

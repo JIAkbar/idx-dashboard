@@ -532,9 +532,17 @@ def main() -> int:
     env = baca_env()
     sumber = a.sumber or "stockbit"
     if sumber == "stockbit":
-        # Token dari berkas bersama %USERPROFILE%\.papan\stockbit-token.json,
-        # diperbarui otomatis lewat refresh token (lihat stockbit_token.py).
-        # .env.local hanya dipakai untuk menyemainya pertama kali.
+        # Token dibaca dari tabel `live_token` lewat `token_segar()` — rantai
+        # tunggal (#105 A, keputusan Johan 8 Sep 2026), diputar HANYA cron
+        # `/api/live-refresh`. Berkas %USERPROFILE%\.papan\stockbit-token.json
+        # tinggal CADANGAN yang dipakai kalau tabel tak terjangkau.
+        #
+        # Komentar lama di sini menyebut berkas itu sebagai sumbernya, dan
+        # keterangan yang basi seperti itu berbiaya nyata: 10 Sep 2026 satu
+        # pemanen yang benar-benar membaca berkas (bukan tabel) menembak 962
+        # emiten dengan salinan kedaluwarsa, dan laporannya nyaris memicu
+        # semai ulang atas rantai yang sedang sehat — semai mengganti pasangan
+        # sekali-pakai, jadi menurutinya justru memutusnya.
         sys.path.insert(0, str(AKAR / "scripts"))
         from stockbit_token import token_segar
         try:
