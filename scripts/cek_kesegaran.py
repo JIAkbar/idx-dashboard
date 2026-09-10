@@ -28,9 +28,13 @@ paling perlu diperiksa.
 
 ## Aturan versi ini
 
-1. **Acuannya hari bursa terakhir menurut statistik harian**, bukan menurut
-   arsip harga. Statistik itu tak memakai kredensial apa pun, jadi ia tetap
-   terbit saat sumber lain mati — persis keadaan yang perlu dideteksi.
+1. **Acuannya hari bursa terbaru yang dibuktikan SALAH SATU dari dua sumber**:
+   statistik harian (tak memakai kredensial, jadi tetap terbit saat sumber lain
+   mati) ATAU bar berisi terakhir di arsip harga. Yang mana pun lebih dulu
+   bergerak, gerbangnya ikut bergerak. Versi sebelumnya memakai statistik
+   saja, dan karena PDF resminya terbit belakangan ia melapor LOLOS pada jalan
+   CI 9 Sep 2026 sementara dua belas turunan berhenti di 8 Sep — lihat
+   `hari_bursa_terakhir()`.
 2. **Tanggal dibaca dari bar BERISI**, bukan dari ruas `akhir` atau dari
    nama berkas. Yang kosong tak boleh mengaku segar (§WF-207).
 3. **Semua turunan diperiksa, semua dilaporkan.** Berhenti di kegagalan
@@ -419,9 +423,38 @@ def penanda_sumber_hilang() -> list[str]:
 
 
 def hari_bursa_terakhir() -> str | None:
-    """Acuan dari statistik harian — sumber yang tak memakai kredensial, jadi
-    ia tetap terbit saat sumber lain mati. Itu justru gunanya di sini."""
-    return dari_maks_anak("dates", "date_iso")(JSON / "index.json")
+    """Acuan = hari terbaru yang DIBUKTIKAN salah satu dari dua sumber.
+
+    Statistik harian dipakai karena ia tak memakai kredensial apa pun, jadi ia
+    tetap terbit saat sumber lain mati. Tapi ia juga TERLAMBAT: PDF resminya
+    baru muncul malam hari, kadang keesokan harinya.
+
+    Sendirian, keterlambatan itu membuat gerbang ini melapor hijau di hari yang
+    justru paling perlu diperiksa. Terukur pada jalan CI 9 Sep 2026 16:14 UTC:
+
+        hari bursa terakhir (statistik harian): 2026-09-08
+        segar 29 · basi 0 · kosong 0 · tak terperiksa 0
+        kesegaran turunan: LOLOS
+
+    Padahal harga 2026-09-09 sudah ada di cakram malam itu, dan dua belas
+    turunan masih berhenti di 8 Sep. Gerbangnya benar menurut acuannya sendiri;
+    acuannya yang terlalu pelan. Esok paginya, sesudah statistik 9 Sep terbit,
+    skrip yang SAMA atas berkas yang SAMA melapor `basi 11` — jadi yang berubah
+    cuma jam pemeriksaannya, bukan datanya.
+
+    Karena itu acuannya yang TERBARU di antara dua bukti: statistik harian dan
+    hari bursa terakhir yang benar-benar punya harga. Yang mana pun lebih dulu
+    bergerak, gerbangnya ikut bergerak — ia tak boleh lebih tenang daripada
+    bukti tersegar yang ada di cakram.
+
+    Harga dibaca lewat `dari_bar_berisi`, bukan dari ruas `akhir`: bar hantu
+    bervolume nol ditulis sebelum datanya terbit, dan memakainya sebagai acuan
+    akan membuat SELURUH turunan merah semu sehari penuh (§WF-207).
+    """
+    stat = dari_maks_anak("dates", "date_iso")(JSON / "index.json")
+    harga = dari_bar_berisi(i_volume=6)(JSON / "ohlcv_stockbit")
+    ada = [t for t in (stat, harga) if isinstance(t, str) and len(t) == 10]
+    return max(ada) if ada else None
 
 
 def selisih_hari(a: str, b: str) -> int:
@@ -454,12 +487,18 @@ def hari_sementara_tertinggal(acuan: str) -> list[str]:
 
 
 def periksa(cetak_semua: bool = False) -> int:
+    stat = dari_maks_anak("dates", "date_iso")(JSON / "index.json")
+    harga = dari_bar_berisi(i_volume=6)(JSON / "ohlcv_stockbit")
     acuan = hari_bursa_terakhir()
     if not acuan:
-        print("::error::hari bursa terakhir tak terbaca dari statistik harian — "
-              "acuan kesegaran tak ada, pemeriksaan dibatalkan")
+        print("::error::hari bursa terakhir tak terbaca — statistik harian "
+              "maupun arsip harga tak memberi tanggal; pemeriksaan dibatalkan")
         return 1
-    print(f"hari bursa terakhir (statistik harian): {acuan}\n")
+    # Kedua angka dicetak, bukan cuma yang menang: kalau nanti gerbang ini
+    # melapor aneh, yang pertama perlu diketahui adalah sumber mana yang
+    # tertinggal — dan itu tak bisa dijawab dari satu tanggal saja.
+    print(f"hari bursa terakhir: {acuan}  "
+          f"(statistik harian: {stat or '-'} · harga berisi: {harga or '-'})\n")
 
     tertinggal = hari_sementara_tertinggal(acuan)
     if tertinggal:
@@ -590,6 +629,30 @@ def _uji() -> None:
     assert max(x["date_iso"] for x in dates) == "2026-08-28"
     c3 = collections.Counter(x["date_iso"] for x in dates)
     assert c3.most_common(1)[0][0] == "2026-08-26", "modus di daftar unik = elemen pertama"
+
+    # Acuan mengikuti bukti TERSEGAR di antara dua sumber (#164 C). Yang
+    # diuji perilakunya, bukan pembacanya: kedua pembaca dipalsukan supaya
+    # kasusnya bisa disusun, termasuk kejadian nyata 9 Sep 2026 malam
+    # (statistik masih 08, harga sudah 09) yang membuat versi lama melapor
+    # LOLOS atas dua belas turunan yang berhenti sehari sebelumnya.
+    def _acuan(stat, harga):
+        global dari_maks_anak, dari_bar_berisi
+        a, b = dari_maks_anak, dari_bar_berisi
+        dari_maks_anak = lambda *x, **y: (lambda p: stat)      # noqa: E731
+        dari_bar_berisi = lambda *x, **y: (lambda p: harga)    # noqa: E731
+        try:
+            return hari_bursa_terakhir()
+        finally:
+            dari_maks_anak, dari_bar_berisi = a, b
+
+    assert _acuan("2026-09-08", "2026-09-09") == "2026-09-09", "harga lebih dulu bergerak"
+    assert _acuan("2026-09-09", "2026-09-08") == "2026-09-09", "statistik lebih dulu bergerak"
+    assert _acuan("2026-09-09", "2026-09-09") == "2026-09-09", "keduanya sepakat"
+    assert _acuan(None, "2026-09-09") == "2026-09-09", "statistik tak terbaca"
+    assert _acuan("2026-09-09", None) == "2026-09-09", "arsip harga tak terbaca"
+    assert _acuan(None, None) is None, "dua-duanya buta = berhenti, bukan menebak"
+    assert _acuan("2026-09-08", "2026-09-09") != "2026-09-08", \
+        "kalau sama dengan aturan lama, perubahannya tak mengubah apa pun"
 
     # Umur negatif SAH untuk turunan yang tak terikat kalender bursa: kabar
     # dan snips dipanen hari ini juga, jadi mereka bisa lebih baru daripada
