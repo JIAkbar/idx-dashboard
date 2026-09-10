@@ -54,8 +54,17 @@ def main() -> int:
             tgl_terakhir = str(bar[0])
     if len(harga) < 500:
         raise SystemExit(f"cuma {len(harga)} emiten terbaca — ohlc/ bermasalah, tidak menulis")
+    # `tanggal` ditambahkan 10 Sep 2026 (#164). Berkas ini dibangun TIAP HARI,
+    # tapi satu-satunya stempelnya `bulan` — sehingga gerbang kesegaran tak
+    # bisa menimbangnya di tingkat hari dan berkas ini tak pernah masuk
+    # manifest sama sekali. Akibatnya terukur: ia ikut membeku di 8 Sep
+    # bersama sebelas turunan lain, dan laporan "basi 0" tetap hijau karena
+    # gerbangnya memang tak pernah melihatnya. Tanggalnya sudah dihitung di
+    # atas; yang hilang cuma menuliskannya. `bulan` dipertahankan apa adanya —
+    # pembacanya sudah ada dan ini penambahan, bukan penggantian.
     KELUAR.write_text(json.dumps({
         "bulan": tgl_terakhir[:7] or date.today().strftime("%Y-%m"),
+        "tanggal": tgl_terakhir or date.today().isoformat(),
         "catatan": "Penutupan terakhir arsip harga — cadangan saat harga langsung tak bisa diambil.",
         "harga": harga,
     }, ensure_ascii=False), encoding="utf-8")

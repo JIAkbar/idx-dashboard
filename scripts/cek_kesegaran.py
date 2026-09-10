@@ -56,7 +56,7 @@ import collections
 import json
 import sys
 from dataclasses import dataclass
-from datetime import date
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 
 AKAR = Path(__file__).resolve().parent.parent
@@ -142,6 +142,36 @@ def dari_bar_berisi(i_volume: int = 5, n_sampel: int = 60):
             t = bar[i][0] if isinstance(bar[i], list) and bar[i] else None
             if isinstance(t, str):
                 c[t[:10]] += 1
+        return c.most_common(1)[0][0] if c else None
+    return baca_dir
+
+
+def dari_bar_epoch(i_volume: int = 5, n_sampel: int = 60):
+    """Sama seperti `dari_bar_berisi`, tapi kolom waktunya EPOCH, bukan teks.
+
+    Dipakai gudang intraday: barnya berstempel detik-epoch, jadi pembaca yang
+    mengharapkan "2026-09-09" membaca 1788854400 dan mengembalikan potongan
+    "17888543" — tanggal yang tak pernah cocok dengan apa pun dan karena itu
+    tak pernah dilaporkan basi. Konversinya ke WIB, bukan UTC: bar 16:00 WIB
+    jatuh di 09:00 UTC hari yang sama, tapi bar 07:00 WIB jatuh di hari
+    SEBELUMNYA menurut UTC — dan itu menggeser seluruh tanggal mundur sehari
+    pada berkas yang sebenarnya segar.
+    """
+    WIB = timezone(timedelta(hours=7))
+
+    def baca_dir(d: Path) -> str | None:
+        c: collections.Counter = collections.Counter()
+        for p in sorted(d.glob("*.json"))[:n_sampel]:
+            j = _muat(p)
+            bar = j.get("bar") if isinstance(j, dict) else j
+            if not isinstance(bar, list) or not bar:
+                continue
+            i = len(bar) - 1
+            while i > 0 and not (bar[i][i_volume] if len(bar[i]) > i_volume else 0):
+                i -= 1
+            t = bar[i][0] if isinstance(bar[i], list) and bar[i] else None
+            if isinstance(t, (int, float)) and t > 0:
+                c[datetime.fromtimestamp(t, WIB).strftime("%Y-%m-%d")] += 1
         return c.most_common(1)[0][0] if c else None
     return baca_dir
 
@@ -314,6 +344,23 @@ MANIFEST: list[Turunan] = [
     Turunan("IHSG harian", "ihsg_harian.json", dari_ruas("akhir"),
             "Indeks Dunia (chart IHSG) · Seasonality Harian", pembangun="panen_ihsg.py",
             hitung=lambda d: int(json.loads(d.read_text(encoding="utf-8")).get("n") or 0)),
+    # Ditambahkan 10 Sep 2026 (#164). Ketiganya dibaca halaman, ketiganya ikut
+    # membeku di 8 Sep bersama sembilan turunan lain — dan gerbang ini tetap
+    # melapor hijau atas mereka karena mereka TIDAK ADA di manifest sama
+    # sekali. "basi 0" atas daftar yang tak memuat berkasnya bukan kabar baik;
+    # ia cuma diam. Persis bentuk kegagalan yang melahirkan gerbang ini.
+    Turunan("Intraday 1 jam", "intraday_1h", dari_bar_epoch(i_volume=5),
+            "Whales (panel intraday)", pembangun="panen_intraday_stockbit.py + bangun_intraday_1h.py"),
+    Turunan("Tinjauan Deep Dive H+5", "tinjauan_deepdive.json", dari_ruas("diperbarui"),
+            "Deep Dive (tinjauan H+5)", pembangun="riset/tinjau_deepdive.py",
+            hitung=lambda d: len(json.loads(d.read_text(encoding="utf-8")).get("terbitan") or [])),
+    # `tanggal` baru ada sejak 10 Sep 2026; sebelumnya berkas ini cuma
+    # menyimpan `bulan`, dan stempel sebulan tak bisa menjawab pertanyaan
+    # harian. Pembangunnya sudah menghitung tanggalnya, cuma tak menuliskan.
+    Turunan("Harga terakhir (cadangan)", "harga_terakhir.json", dari_ruas("tanggal"),
+            "Deret Konglomerat · cadangan harga langsung",
+            pembangun="bangun_harga_terakhir.py",
+            hitung=lambda d: len(json.loads(d.read_text(encoding="utf-8")).get("harga") or {})),
     Turunan("Arsip broker harian", "broker_harian", dari_kunci_peta("hari"),
             "Whales Papan · Kuli Papan · Neo Papan · Berkas Emiten · Watchlist",
             pembangun="backfill_broker_massal.py (6 varian)"),
