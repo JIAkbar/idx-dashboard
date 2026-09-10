@@ -67,7 +67,18 @@ from pathlib import Path
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
 AKAR = Path(__file__).resolve().parent.parent
-ENV_LOCAL = AKAR / "app" / ".env.local"
+# Jalur boleh ditimpa lewat lingkungan (#160 B). Runner CI memakai ruang
+# kerja hasil checkout BERSIH, dan `app/.env.local` diabaikan git — jadi di
+# sana berkas ini tak pernah ada, tabel tak terjangkau, dan panen Stockbit
+# berhenti dengan benar tapi sia-sia (terukur 9 Sep 2026: seluruh langkah
+# broker gagal karena itu). Tuas ini menunjuknya ke salinan kerja yang punya.
+#
+# Kembarannya `PAPAN_STOCKBIT_TOKEN_FILE` sudah ada sejak awal dan menunjuk
+# BERKAS token. Bedanya penting: berkas itu hanya disegarkan sebagai efek
+# samping pembacaan tabel, jadi kalau panen kelak hanya berjalan di CI ia
+# menua dan mati dalam 24 jam. Menunjuk `.env.local` memberi runner TABEL —
+# sumber yang memang diputar cron — bukan salinannya.
+ENV_LOCAL = Path(os.environ.get("PAPAN_ENV_LOCAL") or (AKAR / "app" / ".env.local"))
 BERKAS_TOKEN = Path(os.environ.get("PAPAN_STOCKBIT_TOKEN_FILE")
                     or Path.home() / ".papan" / "stockbit-token.json")
 URL_REFRESH = "https://exodus.stockbit.com/login/refresh"

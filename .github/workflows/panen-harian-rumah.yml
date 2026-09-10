@@ -55,6 +55,17 @@ on:
 # variabel di sini menutup seluruh langkah Python sekaligus.
 env:
   PYTHONIOENCODING: utf-8
+  # Rantai token Stockbit untuk runner (#160 B, konfirmasi Johan 9 Sep 2026:
+  # "panen pakai token stockbit"). Layanan runner berjalan sebagai SYSTEM dan
+  # ruang kerjanya hasil checkout bersih, jadi ia tak punya `app/.env.local`
+  # maupun `~/.papan` milik Johan — dua jalur buntu sekaligus, dan itulah
+  # sebab seluruh langkah broker gagal 9 Sep.
+  #
+  # Yang ditunjuk di sini JALUR, bukan nilai: kuncinya tetap hanya di cakram
+  # Johan, tak pernah masuk repo, tak pernah dicetak ke log. Nol rahasia baru
+  # — sengaja BUKAN GitHub Secrets, yang akan menaruh kunci tabel di tempat
+  # ketiga (itu keputusan terpisah dan belum diambil Johan).
+  PAPAN_ENV_LOCAL: 'C:\1-Johan\10. Pengembangan\IDX Statistik\app\.env.local' 
 
 permissions:
   contents: write
@@ -116,6 +127,30 @@ jobs:
         run: |
           & "${{ steps.py.outputs.exe }}" scripts/panen_ohlc.py
           if ($LASTEXITCODE -ne 0) { Write-Host "::warning::panen_ohlc gagal" }
+
+      # Sumber harga UTAMA (#160 B). Sampai 9 Sep 2026 langkah ini cuma ada di
+      # bat lokal 18:00, jadi malam ketika laptop mati berarti `ohlcv_stockbit`
+      # dan seluruh turunan broker bolong tanpa satu pun alarm — gerbang
+      # kesegaran pun lolos, karena acuannya hari bursa terakhir menurut PDF
+      # IDX yang untuk hari itu belum terbit.
+      #
+      # `gabung` dijalankan DI SINI, bukan nanti: ia yang menaikkan penanda
+      # bar ke `sb`, dan langkah 4 (Kartu) sudah membaca `ohlc/` hasilnya.
+      - name: 2b · OHLCV Stockbit + gabung ke arsip harga
+        continue-on-error: true
+        run: |
+          & "${{ steps.py.outputs.exe }}" scripts/panen_ohlcv_stockbit.py --semua --paksa
+          if ($LASTEXITCODE -ne 0) { Write-Host "::warning::panen_ohlcv_stockbit gagal" }
+          & "${{ steps.py.outputs.exe }}" scripts/panen_ohlcv_stockbit.py IHSG --paksa
+          if ($LASTEXITCODE -ne 0) { Write-Host "::warning::panen_ohlcv_stockbit IHSG gagal" }
+          & "${{ steps.py.outputs.exe }}" scripts/gabung_ohlc_stockbit.py
+          if ($LASTEXITCODE -ne 0) { Write-Host "::warning::gabung_ohlc_stockbit gagal" }
+          & "${{ steps.py.outputs.exe }}" scripts/jahit_ihsg.py
+          if ($LASTEXITCODE -ne 0) { Write-Host "::warning::jahit_ihsg gagal" }
+          # Gerbang emiten tertinggal (#146) — dua-duanya: arsip gabungan DAN
+          # arsip mentah Stockbit. Tidak menghentikan pipa; ia menandai.
+          & "${{ steps.py.outputs.exe }}" scripts/cek_panen_ohlcv.py
+          if ($LASTEXITCODE -ne 0) { Write-Host "::warning::ada emiten tertinggal - lihat logs/panen_tertinggal.txt" }
 
       - name: 3 · Aliran asing
         continue-on-error: true
@@ -196,6 +231,16 @@ jobs:
           & "${{ steps.py.outputs.exe }}" scripts/panen_broker_harian.py --jeda 0.4 --paralel 48 `
             --varian reguler,asing,nego,nego-asing,tunai,tunai-asing
           if ($LASTEXITCODE -ne 0) { Write-Host "::warning::panen_broker_harian gagal" }
+
+      # Gudang broker tahunan (#160 B) — dibaca Whales, Arus Broker, dan
+      # Bandarmologi. Sumbernya arsip broker per emiten yang baru saja
+      # dipanen langkah 3d, jadi urutannya tak boleh dibalik.
+      - name: 3e · Gudang broker tahunan
+        continue-on-error: true
+        run: |
+          $tahun = (Get-Date).Year
+          & "${{ steps.py.outputs.exe }}" scripts/bangun_broker_tahunan.py --tahun $tahun --paralel 16
+          if ($LASTEXITCODE -ne 0) { Write-Host "::warning::bangun_broker_tahunan gagal" }
 
       - name: 4 · Kartu Analisa
         continue-on-error: true
