@@ -242,6 +242,60 @@ jobs:
           & "${{ steps.py.outputs.exe }}" scripts/bangun_broker_tahunan.py --tahun $tahun --paralel 16
           if ($LASTEXITCODE -ne 0) { Write-Host "::warning::bangun_broker_tahunan gagal" }
 
+      # Intraday 1 jam (Whales). Stockbit, jadi ia butuh rantai token yang
+      # sama dengan langkah 3d — dan sejak `PAPAN_ENV_LOCAL` dipasang di env
+      # alur kerja ini (#160 B), runner sudah bisa membacanya. Pemanen dulu,
+      # pembangun sesudahnya: yang kedua memadatkan hasil yang pertama.
+      - name: 3f · Intraday 1 jam (Stockbit)
+        continue-on-error: true
+        run: |
+          & "${{ steps.py.outputs.exe }}" scripts/panen_intraday_stockbit.py
+          if ($LASTEXITCODE -ne 0) { Write-Host "::warning::panen_intraday_stockbit gagal" }
+          & "${{ steps.py.outputs.exe }}" scripts/bangun_intraday_1h.py
+          if ($LASTEXITCODE -ne 0) { Write-Host "::warning::bangun_intraday_1h gagal" }
+
+      # ── LAPIS TURUNAN (#164 B) ────────────────────────────────────────────
+      # #160 B menutup lapis HARGA dan BROKER di sini; lapis TURUNAN tetap
+      # hanya ada di `JALANKAN_PANEN_SORE.bat` (18:00, laptop Johan). Saat
+      # laptop mati 9 Sep 2026, dua belas berkas turunan berhenti di 8 Sep
+      # sementara harga sudah 9 Sep — dan halaman yang membacanya memajang
+      # angka dua hari basi tanpa satu pun alarm.
+      #
+      # Enumerasi yang mendasari blok ini: 22 skrip ada di bat sore dan TIDAK
+      # di alur kerja ini. Yang dipindahkan hanya yang inputnya sudah ada di
+      # ruang kerja CI; sisanya disebut namanya di komentar masing-masing
+      # supaya yang tertinggal tetap terbaca, bukan hilang diam-diam.
+      #
+      # Semua `continue-on-error` + ::warning: satu pembangun mati tak boleh
+      # menghentikan yang lain, dan vonis merah/hijau tetap milik langkah
+      # "Periksa kesegaran" di bawah — yang memeriksa ISI, bukan status.
+      #
+      # YANG SENGAJA TIDAK DIPINDAHKAN, dengan alasannya:
+      #
+      # * `panen_keystats_stockbit.py` + `panen_info_stockbit.py` — di bat
+      #   keduanya dijaga penanda umur `.stempel_bulanan` supaya cuma jalan
+      #   sebulan sekali. Penanda itu berkas tak-terlacak, dan ruang kerja CI
+      #   ini TIDAK menyimpan berkas tak-terlacak antar jalan: diperiksa
+      #   10 Sep 2026, `.stempel_bulanan` tak ada, `logs/` tak ada, dan
+      #   `_arsip-mentah/` cuma menyisakan `statistik/` yang seluruh 51
+      #   berkasnya bertanggal satu rentang 21 detik. Tanpa penanda yang
+      #   bertahan, gerbang bulanannya selalu terbuka — dan yang tadinya
+      #   sebulan sekali jadi 963 emiten × 2 endpoint TIAP MALAM. Itu
+      #   perubahan beban yang tak diminta siapa pun, jadi keduanya tetap di
+      #   bat sampai penandanya punya rumah yang bertahan.
+      #
+      # * `tgl_broker_aman.py` — di bat ia menghitung tanggal untuk panen
+      #   broker; alur kerja ini sudah menghitung tanggalnya sendiri di
+      #   langkah 3d, jadi memindahkannya berarti dua sumber tanggal untuk
+      #   satu keputusan.
+      - name: 3g · Kategori broker & rezim pasar
+        continue-on-error: true
+        run: |
+          & "${{ steps.py.outputs.exe }}" scripts/bangun_kategori_broker.py
+          if ($LASTEXITCODE -ne 0) { Write-Host "::warning::bangun_kategori_broker gagal" }
+          & "${{ steps.py.outputs.exe }}" scripts/bangun_rezim_pasar.py
+          if ($LASTEXITCODE -ne 0) { Write-Host "::warning::bangun_rezim_pasar gagal" }
+
       - name: 4 · Kartu Analisa
         continue-on-error: true
         run: |
@@ -293,6 +347,68 @@ jobs:
         run: |
           & "${{ steps.py.outputs.exe }}" scripts/bangun_broker_pivot.py --tulis
           if ($LASTEXITCODE -ne 0) { Write-Host "::warning::bangun_broker_pivot gagal" }
+
+      # Backtest kelas Pivot/CPR + setup R:R (#63) — angka di balik badge rapor
+      # panel analitik chart. Node, alasan sama seperti gap-statistik di 4c:
+      # skripnya MENGIMPOR mesin klasifikasi yang dipakai layar, jadi angka
+      # layar dan angka rapor tak mungkin berbeda diam-diam.
+      - name: 4g · Backtest Pivot/CPR
+        continue-on-error: true
+        run: |
+          node app/scripts/bt-pivot-cpr.ts --tulis
+          if ($LASTEXITCODE -ne 0) { Write-Host "::warning::bt-pivot-cpr gagal" }
+
+      # Screener lalu kolom polanya — urutannya mengikat: pola-screener membaca
+      # screener.json yang baru ditulis di baris sebelumnya.
+      #
+      # `npx vite-node`, bukan `node`, untuk yang kedua: ia mengimpor modul
+      # aplikasi lewat resolusi vite. Yang pertama .mjs biasa, jadi node cukup.
+      - name: 4h · Screener + kolom pola
+        continue-on-error: true
+        run: |
+          node app/scripts/bangun-screener.mjs
+          if ($LASTEXITCODE -ne 0) { Write-Host "::warning::bangun-screener gagal" }
+          Push-Location app
+          npx vite-node scripts/pola-screener.ts
+          if ($LASTEXITCODE -ne 0) { Write-Host "::warning::pola-screener gagal" }
+          Pop-Location
+
+      # Blok [E2] bat — turunan halaman yang audit 28 Agu 2026 temukan yatim.
+      # Bandarmologi membaca asing/ (langkah 3), broker_harian/ (3d), dan
+      # ohlc/ (2) — ketiganya sudah turun di atas, jadi urutannya tak boleh
+      # naik ke atas langkah-langkah itu.
+      #
+      # CATATAN TERUKUR 10 Sep 2026 untuk dua yang pertama: keduanya membaca
+      # `_arsip-mentah/asing/<tahun>/<YYYYMMDD>.json.gz`, dan ruang kerja CI
+      # ini TIDAK punya folder itu sama sekali — hanya `statistik/` yang ada,
+      # dan seluruh 51 berkasnya bertanggal satu rentang 21 detik. Di laptop
+      # Johan arsipnya lengkap dan pemanen yang sama menulisnya dengan benar.
+      # Jadi keduanya bisa saja tetap diam di sini sampai sebab arsip-hilang
+      # itu terjawab; keduanya `continue-on-error`, dan pemanen yang tak
+      # menemukan arsip berisi berhenti tanpa menimpa berkas lama.
+      - name: 4i · Turunan halaman (aliran, bid/offer, bandarmologi, grup)
+        continue-on-error: true
+        run: |
+          & "${{ steps.py.outputs.exe }}" scripts/bangun_aliran_investor.py
+          if ($LASTEXITCODE -ne 0) { Write-Host "::warning::bangun_aliran_investor gagal" }
+          & "${{ steps.py.outputs.exe }}" scripts/bangun_bidoffer.py
+          if ($LASTEXITCODE -ne 0) { Write-Host "::warning::bangun_bidoffer gagal" }
+          & "${{ steps.py.outputs.exe }}" scripts/bangun_bandarmologi.py
+          if ($LASTEXITCODE -ne 0) { Write-Host "::warning::bangun_bandarmologi gagal" }
+          & "${{ steps.py.outputs.exe }}" scripts/bangun_harga_terakhir.py
+          if ($LASTEXITCODE -ne 0) { Write-Host "::warning::bangun_harga_terakhir gagal" }
+          & "${{ steps.py.outputs.exe }}" scripts/petakan_grup.py
+          if ($LASTEXITCODE -ne 0) { Write-Host "::warning::petakan_grup gagal" }
+
+      - name: 4j · Halaman terbitan (Harian Papan, Jago Papan, IPO)
+        continue-on-error: true
+        run: |
+          node app/scripts/bangun-harian-papan.mjs
+          if ($LASTEXITCODE -ne 0) { Write-Host "::warning::bangun-harian-papan gagal" }
+          node app/scripts/bangun-jago-papan.mjs
+          if ($LASTEXITCODE -ne 0) { Write-Host "::warning::bangun-jago-papan gagal" }
+          node app/scripts/bangun-ipo.mjs
+          if ($LASTEXITCODE -ne 0) { Write-Host "::warning::bangun-ipo gagal" }
 
       - name: 5 · Valuasi historis
         continue-on-error: true
@@ -347,17 +463,48 @@ jobs:
       # bentuk masalah yang sudah dibayar di `ohlc/`. Kalau kelak rantai itu
       # perlu jalan tanpa laptop, pindahkan seluruhnya ke sini — bukan
       # dijalankan di dua tempat.
+      # Urutannya MENGIKAT, dan tiap ikatannya sudah pernah dibayar:
+      #   rekap_preset  -> nilai_jejak, selisih_terkunci  (keduanya membaca
+      #                    jejak yang ia tulis; tanpa ia, baris TERKUNCI hari
+      #                    berikutnya tak pernah lahir — celah 1 Sep 2026)
+      #   rencana_saham -> winrate_emiten                 (winrate membaca
+      #                    rencana_saham.json yang baru ditulis)
+      #
+      # `rekap_preset` sebelumnya hanya ada di bat sore (#164 B), jadi tiga
+      # langkah di bawahnya berjalan di CI atas jejak kemarin tanpa satu pun
+      # galat. Pengecekan ::warning yang menyebut selisih_terkunci dulu
+      # terpasang SESUDAH rencana_saham — jadi ia melaporkan exit code milik
+      # skrip yang salah; tiap baris sekarang diperiksa tepat di bawahnya.
       - name: 7 · Hakim jejak (win rate) & kohort terkunci
         continue-on-error: true
         run: |
+          & "${{ steps.py.outputs.exe }}" scripts/riset/rekap_preset.py
+          if ($LASTEXITCODE -ne 0) { Write-Host "::warning::rekap_preset gagal" }
           & "${{ steps.py.outputs.exe }}" scripts/riset/nilai_jejak.py
           if ($LASTEXITCODE -ne 0) { Write-Host "::warning::nilai_jejak gagal" }
           & "${{ steps.py.outputs.exe }}" scripts/riset/selisih_terkunci.py
+          if ($LASTEXITCODE -ne 0) { Write-Host "::warning::selisih_terkunci gagal" }
           # Rencana dagang Kartu Analisa. Di sini, bukan cuma di bat, karena
           # akar #89 justru pemicu tunggal: alur kerja ini jalan tanpa perlu
           # ada yang membuka laptop.
           & "${{ steps.py.outputs.exe }}" scripts/riset/rencana_saham.py
-          if ($LASTEXITCODE -ne 0) { Write-Host "::warning::selisih_terkunci gagal" }
+          if ($LASTEXITCODE -ne 0) { Write-Host "::warning::rencana_saham gagal" }
+          & "${{ steps.py.outputs.exe }}" scripts/riset/winrate_emiten.py
+          if ($LASTEXITCODE -ne 0) { Write-Host "::warning::winrate_emiten gagal" }
+          # Tinjauan H+5 tiap Deep Dive — penutup lingkaran Analisa PAPAN v1
+          # bagian 5. Dulu yatim: keluarannya efek samping tanpa jadwal, jadi
+          # kelima barisnya berhenti di 3/5 dan 4/5 hari sejak 22 Agu 2026.
+          & "${{ steps.py.outputs.exe }}" scripts/riset/tinjau_deepdive.py
+          if ($LASTEXITCODE -ne 0) { Write-Host "::warning::tinjau_deepdive gagal" }
+
+      # Penjaga radar: menandai kartu radar yang sudah lewat umur. Ia menilai
+      # turunan yang baru ditulis langkah-langkah di atas, jadi tempatnya
+      # sesudah semuanya dan sebelum gerbang kesegaran.
+      - name: 7b · Penjaga radar basi
+        continue-on-error: true
+        run: |
+          & "${{ steps.py.outputs.exe }}" scripts/cek_radar_basi.py
+          if ($LASTEXITCODE -ne 0) { Write-Host "::warning::cek_radar_basi gagal" }
 
       # Vonis merah/hijau diputuskan DI SINI, satu tempat — bukan tersebar di
       # exit code tiap langkah. Tiap langkah di atas `continue-on-error` supaya
