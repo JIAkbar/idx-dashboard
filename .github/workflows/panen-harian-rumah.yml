@@ -66,6 +66,24 @@ env:
   # — sengaja BUKAN GitHub Secrets, yang akan menaruh kunci tabel di tempat
   # ketiga (itu keputusan terpisah dan belum diambil Johan).
   PAPAN_ENV_LOCAL: 'C:\1-Johan\10. Pengembangan\IDX Statistik\app\.env.local' 
+  # Akar arsip mentah, DI LUAR ruang kerja runner (#165 B2, 10 Sep 2026).
+  #
+  # Tiga alur self-hosted berbagi SATU ruang kerja, dan tiap
+  # `actions/checkout@v4` menjalankan `git clean -ffdx` yang ikut menghapus
+  # berkas ter-gitignore. Log jalan 34368692222 baris 56 menuliskannya
+  # harfiah: `Removing _arsip-mentah/`. Akibatnya arsip yang ditulis langkah
+  # panen pukul 22:38 disapu alur berikutnya pukul 23:48 — dan yang mahal
+  # justru MENGAMBILNYA (IDX menolak kalau digedor, IPOT cuma dari IP
+  # rumahan). Arsip mentah bukan keadaan ruang kerja; ia singgahan cakram.
+  #
+  # Yang ditunjuk JALUR, bukan data. Bawaan `arsip_mentah.py` TIDAK berubah:
+  # tanpa variabel ini akarnya tetap `<akar repo>/_arsip-mentah`, jadi laptop
+  # Johan dan skrip yang dijalankan tangan nol perubahan perilaku.
+  #
+  # Folder ini MULAI KOSONG dan terisi sendiri — nol arsip lama dipindahkan
+  # atau dihapus. Jalan pertama sesudah ini menarik ulang sekali, lalu
+  # seterusnya membaca dari cakram.
+  PAPAN_ARSIP_AKAR: 'C:\papan-arsip'
 
 permissions:
   contents: write

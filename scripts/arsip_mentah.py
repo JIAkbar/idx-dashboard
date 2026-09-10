@@ -24,10 +24,28 @@ kloning, tapi TETAP ADA di cakram.
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 from typing import Callable
 
-AKAR_ARSIP = Path(__file__).resolve().parent.parent / "_arsip-mentah"
+# Bawaannya `<akar repo>/_arsip-mentah` dan itu TIDAK berubah: belasan skrip
+# memakai modul ini, dan di laptop Johan arsipnya sudah lama di sana.
+# Penimpa lingkungan hanya untuk pemakai yang ruang kerjanya BUKAN rumah
+# permanen — pola yang sama dengan `PAPAN_ENV_LOCAL` dan
+# `PAPAN_STOCKBIT_TOKEN_FILE`.
+#
+# Kenapa perlu (#165, terukur 10 Sep 2026): TIGA alur kerja self-hosted
+# berbagi SATU ruang kerja runner, dan tiap `actions/checkout@v4` menjalankan
+# `git clean -ffdx` yang ikut menghapus berkas ter-gitignore. Log jalan
+# 34368692222 baris 56 menuliskannya harfiah:
+#
+#     Run actions/checkout@v4 ... Removing _arsip-mentah/
+#
+# Jadi arsip yang ditulis langkah 3 pukul 22:38 disapu alur berikutnya pukul
+# 23:48 — dan yang mahal justru MENGAMBILNYA, bukan menyimpannya. Arsip
+# mentah memang bukan keadaan ruang kerja; ia singgahan cakram.
+AKAR_ARSIP = Path(os.environ.get("PAPAN_ARSIP_AKAR")
+                  or (Path(__file__).resolve().parent.parent / "_arsip-mentah"))
 
 
 def jalur(sumber: str, *bagian: str) -> Path:
@@ -58,7 +76,19 @@ def simpan(sumber: str, *bagian: str, data: bytes | str | dict | list) -> None:
         p.parent.mkdir(parents=True, exist_ok=True)
         p.write_bytes(mentah)
     except OSError as e:
-        print(f"  [arsip gagal: {sumber}/{'/'.join(bagian)}: {e}]")
+        # BERBUNYI, bukan cuma tercatat. Versi lama mencetak satu baris biasa
+        # yang tenggelam di antara ribuan baris log panen — dan karena itu
+        # arsip yang tak pernah tertulis butuh forensik untuk ketahuan (#165).
+        # `::warning::` membuatnya muncul di ringkasan jalan GitHub Actions,
+        # tanpa menggagalkan panen: panen yang batal karena arsipnya gagal
+        # ditulis itu rugi dua kali (jaringan sudah dibayar, hasilnya hilang).
+        # ASCII saja di baris ini, dan itu bukan selera: dua alur kerja
+        # self-hosted (panen-kabar-rumah, update-rumah) TIDAK menyetel
+        # PYTHONIOENCODING, dan di konsol Windows ber-encoding lama satu tanda
+        # pisah Unicode MEMBUNUH skripnya - persis yang terjadi pada
+        # panen_asing.py 5 Sep 2026. Jalur kegagalan tak boleh ikut gagal.
+        print(f"::warning::arsip gagal ditulis: {sumber}/{'/'.join(bagian)} "
+              f"di bawah {AKAR_ARSIP} -- {e}")
 
 
 def baca(sumber: str, *bagian: str) -> bytes | None:
