@@ -38,13 +38,20 @@ def kunci(teks: str) -> set | None:
             for i in (d.get("item") or [])}
 
 
-def beda(berkas=BERKAS) -> int:
+def beda(berkas=BERKAS, basis: str = "HEAD") -> int:
+    """Selisih item terhadap `basis` (bawaan HEAD).
+
+    Pendorong rumahan memakai `origin/main` (#163): ia membangun ulang berkasnya
+    DI ATAS isi remote, jadi yang perlu dijawab "apa bedanya dengan remote",
+    bukan "apa bedanya dengan commit lokal" — dan kalau lokal tertinggal, dua
+    pertanyaan itu memberi jawaban berbeda.
+    """
     total = 0
     for f in berkas:
         p = AKAR / f
         if not p.exists():
             continue
-        lama_teks = subprocess.run(["git", "show", f"HEAD:{f}"], cwd=AKAR,
+        lama_teks = subprocess.run(["git", "show", f"{basis}:{f}"], cwd=AKAR,
                                    capture_output=True, text=True, encoding="utf-8").stdout
         baru_teks = io.open(p, encoding="utf-8").read()
         a, b = kunci(lama_teks), kunci(baru_teks)
@@ -70,6 +77,10 @@ def swauji() -> int:
 
 
 if __name__ == "__main__":
-    if "--swauji" in sys.argv[1:]:
+    arg = sys.argv[1:]
+    if "--swauji" in arg:
         raise SystemExit(swauji())
-    print(beda())
+    basis = "HEAD"
+    if "--basis" in arg:
+        basis = arg[arg.index("--basis") + 1]
+    print(beda(basis=basis))
