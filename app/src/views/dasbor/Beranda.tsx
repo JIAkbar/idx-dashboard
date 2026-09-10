@@ -195,6 +195,20 @@ function JalurKabar() {
 function KartuKabar() {
   const { daftar } = useBulletinList()
   const edisi = (daftar ?? []).slice(0, KABAR_TAMPIL)
+  /** Jeda sejak edisi terakhir, dalam hari. `null` selama daftar belum termuat
+   *  atau memang kosong.
+   *
+   *  Kartu ini dulu diam soal jeda: ia memajang tiga edisi teratas apa pun
+   *  umurnya, jadi terbitan yang berhenti sebulan terbaca persis seperti
+   *  terbitan yang rajin. Menyembunyikan kartunya lebih buruk lagi — pembaca
+   *  kehilangan arsip yang memang ada. Yang benar: tetap tampil, tapi
+   *  menyebutkan jedanya (#139 B, pola `KonteksData`). */
+  const jedaHari = (() => {
+    const t = daftar?.[0]?.tanggal
+    if (!t) return null
+    const hari = Math.floor((Date.now() - new Date(`${t}T00:00:00+07:00`).getTime()) / 86_400_000)
+    return Number.isFinite(hari) ? hari : null
+  })()
 
   return (
     <section className="brd-kabar">
@@ -202,6 +216,13 @@ function KartuKabar() {
         <span className="lbl">Terbit terakhir</span>
         <Link className="brd-semua" to="/bulletin">Semua edisi →</Link>
       </div>
+      {/* Ambang seminggu: edisi harian dulu terbit hampir tiap hari bursa,
+          jadi jeda di atas itu bukan irama biasa melainkan kabar tersendiri. */}
+      {jedaHari !== null && jedaHari > 7 && (
+        <p className="muted brd-jeda">
+          Belum ada edisi baru sejak {daftar![0].tanggal_id} — {jedaHari} hari.
+        </p>
+      )}
       {daftar === null && <p className="muted" style={{ fontSize: 11.5 }}>Memuat…</p>}
       {daftar !== null && edisi.length === 0 && (
         <p className="muted" style={{ fontSize: 11.5 }}>Belum ada edisi terbit.</p>
