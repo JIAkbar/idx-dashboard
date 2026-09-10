@@ -23,11 +23,12 @@ import { readFileSync, readdirSync, writeFileSync, mkdirSync } from 'node:fs'
 import { tambalDariArsipBursa, barTujuhBelasKolom } from './lib/tambalBursa.mjs'
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
+import { AKAR_ARSIP } from './_akar-arsip.mjs'
 
 const AKAR = join(dirname(fileURLToPath(import.meta.url)), '..', '..')
 const DIR_JSON = join(AKAR, 'data-idx', 'json')
 const DIR_OHLCV = join(DIR_JSON, 'ohlcv_stockbit')
-const DIR_BURSA = join(AKAR, '_arsip-mentah', 'asing')
+const DIR_BURSA = join(AKAR_ARSIP, 'asing')
 const DIR_KELUARAN = join(DIR_JSON, 'jago_papan')
 
 function bacaJson(path) {

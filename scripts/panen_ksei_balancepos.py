@@ -46,10 +46,12 @@ import zipfile
 from collections import defaultdict
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from arsip_mentah import AKAR_ARSIP  # noqa: E402 - satu akar, lihat #165 B2
 
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 AKAR = Path(__file__).resolve().parent.parent
-ARSIP = AKAR / "_arsip-mentah" / "ksei-balancepos"
+ARSIP = AKAR_ARSIP / "ksei-balancepos"
 KELUARAN = AKAR / "data-idx" / "json" / "kepemilikan"
 WIB = timezone(timedelta(hours=7))
 DASAR = "https://web.ksei.co.id"

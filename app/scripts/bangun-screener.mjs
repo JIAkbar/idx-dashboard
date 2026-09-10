@@ -22,6 +22,7 @@ import {
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
 import { rakitPeriode, sma, emaAkhir, skorTigaKerangka, momentumPersen } from './lib/skor.mjs'
+import { AKAR_ARSIP } from './_akar-arsip.mjs'
 
 const AKAR = join(dirname(fileURLToPath(import.meta.url)), '..', '..')
 const DIR_JSON = join(AKAR, 'data-idx', 'json')
@@ -30,7 +31,7 @@ const DIR_ASING = join(DIR_JSON, 'asing')
 const DIR_FUND = join(DIR_JSON, 'fundamental')
 const DIR_KARTU = join(DIR_JSON, 'kartu')
 const KELUARAN = join(DIR_JSON, 'screener.json')
-const DIR_BURSA = join(AKAR, '_arsip-mentah', 'asing')
+const DIR_BURSA = join(AKAR_ARSIP, 'asing')
 
 // Berapa hari bursa untuk rata-rata volume pembagi rvol10, dan berapa hari
 // untuk jumlah net asing — dipisah dari MOMENTUM_HARI (skor.mjs) karena

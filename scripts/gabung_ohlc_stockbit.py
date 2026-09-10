@@ -36,11 +36,13 @@ import argparse
 import json
 import sys
 from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from arsip_mentah import AKAR_ARSIP  # noqa: E402 - satu akar, lihat #165 B2
 
 AKAR = Path(__file__).resolve().parent.parent
 DIR_OHLC = AKAR / "data-idx" / "json" / "ohlc"
 DIR_SB = AKAR / "data-idx" / "json" / "ohlcv_stockbit"
-DIR_YAHOO = AKAR / "_arsip-mentah" / "ohlc-yahoo-sebelum-ganti-volume"
+DIR_YAHOO = AKAR_ARSIP / "ohlc-yahoo-sebelum-ganti-volume"
 
 # Diurus jahit_ihsg.py — satuan volumenya beda (Yahoo lot, Stockbit lembar).
 LEWATI = {"IHSG"}

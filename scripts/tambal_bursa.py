@@ -24,9 +24,12 @@ import gzip
 import json
 import re
 from pathlib import Path
+import sys  # noqa: E402
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from arsip_mentah import AKAR_ARSIP  # noqa: E402 - satu akar, lihat #165 B2
 
 AKAR = Path(__file__).resolve().parent.parent
-DIR_BURSA = AKAR / "_arsip-mentah" / "asing"
+DIR_BURSA = AKAR_ARSIP / "asing"
 
 #: Lebih dari ini = panen ulang sumbernya, bukan dijahit.
 MAKS_HARI = 5

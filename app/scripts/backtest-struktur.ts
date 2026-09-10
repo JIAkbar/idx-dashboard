@@ -39,6 +39,7 @@ import { N_SWING_BAWAAN, cariPatahan, cariSwing } from '../src/lib/dasbor/strukt
 import { dariYahoo, kunci4Jam, rakitBar } from '../src/lib/dasbor/kerangkaWaktu.ts'
 import type { YahooIntradayJson } from '../src/lib/dasbor/kerangkaWaktu.ts'
 import type { LilinData, VolumeData } from '../src/lib/dasbor/grafikEmiten.ts'
+import { AKAR_ARSIP } from './_akar-arsip.mjs'
 
 const AKAR = join(dirname(fileURLToPath(import.meta.url)), '..', '..')
 const HORIZON = [5, 10, 20]
@@ -66,7 +67,7 @@ function harian(kode: string): LilinData[] {
  * diambil lagi besok.
  */
 async function empatJam(kode: string): Promise<LilinData[]> {
-  const arsip = join(AKAR, '_arsip-mentah', 'yahoo-60m')
+  const arsip = join(AKAR_ARSIP, 'yahoo-60m')
   mkdirSync(arsip, { recursive: true })
   const berkas = join(arsip, `${kode}.json`)
   let mentah: YahooIntradayJson

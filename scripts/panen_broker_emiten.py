@@ -72,13 +72,15 @@ import os
 import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from arsip_mentah import AKAR_ARSIP  # noqa: E402 - satu akar, lihat #165 B2
 
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
 AKAR = Path(__file__).resolve().parent.parent
 ENV_LOCAL = AKAR / "app" / ".env.local"
 KELUARAN = AKAR / "data-idx" / "json" / "broker_emiten"
-ARSIP = AKAR / "_arsip-mentah" / "broker-emiten"
+ARSIP = AKAR_ARSIP / "broker-emiten"
 
 WIB = timezone(timedelta(hours=7))
 

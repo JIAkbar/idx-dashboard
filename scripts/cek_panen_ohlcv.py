@@ -29,12 +29,14 @@ import io
 import json
 import sys
 from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from arsip_mentah import AKAR_ARSIP  # noqa: E402 - satu akar, lihat #165 B2
 
 AKAR = Path(__file__).resolve().parents[1]
 JSON = AKAR / "data-idx" / "json"
 GABUNG = JSON / "ohlc"
 SUMBER = JSON / "ohlcv_stockbit"
-ARSIP = AKAR / "_arsip-mentah" / "ohlcv-stockbit"
+ARSIP = AKAR_ARSIP / "ohlcv-stockbit"
 LAPORAN = AKAR / "logs" / "panen_tertinggal.txt"
 
 

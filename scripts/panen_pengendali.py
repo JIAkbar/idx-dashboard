@@ -42,11 +42,13 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import openpyxl
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from arsip_mentah import AKAR_ARSIP  # noqa: E402 - satu akar, lihat #165 B2
 
 warnings.filterwarnings("ignore", module="openpyxl")
 
 AKAR = Path(__file__).resolve().parent.parent
-ARSIP = AKAR / "_arsip-mentah" / "keuangan_idx"
+ARSIP = AKAR_ARSIP / "keuangan_idx"
 KELUARAN = AKAR / "data-idx" / "json" / "pengendali.json"
 WIB = timezone(timedelta(hours=7))
 

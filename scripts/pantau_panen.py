@@ -26,9 +26,11 @@ import json
 import os
 import sys
 from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from arsip_mentah import AKAR_ARSIP  # noqa: E402 - satu akar, lihat #165 B2
 
 AKAR = Path(__file__).resolve().parent.parent
-ARSIP = AKAR / "_arsip-mentah" / "broker-harian"
+ARSIP = AKAR_ARSIP / "broker-harian"
 OHLC = AKAR / "data-idx" / "json" / "ohlc"
 DAFTAR = AKAR / "data-idx" / "json" / "daftar_emiten.json"
 

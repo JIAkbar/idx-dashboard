@@ -50,12 +50,13 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+from arsip_mentah import AKAR_ARSIP  # noqa: E402 - satu akar, lihat #165 B2
 from gabung_ohlc_stockbit import rentang_sumber  # noqa: E402
 
 AKAR = Path(__file__).resolve().parent.parent
 P_OHLC = AKAR / "data-idx" / "json" / "ohlc" / "IHSG.json"
 P_SB = AKAR / "data-idx" / "json" / "ohlcv_stockbit" / "IHSG.json"
-DIR_CADANGAN = AKAR / "_arsip-mentah" / "ihsg-sebelum-jahit"
+DIR_CADANGAN = AKAR_ARSIP / "ihsg-sebelum-jahit"
 
 
 def baca(p: Path) -> dict | None:

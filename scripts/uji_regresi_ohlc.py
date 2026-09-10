@@ -25,12 +25,14 @@ import json
 import statistics
 import sys
 from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from arsip_mentah import AKAR_ARSIP  # noqa: E402 - satu akar, lihat #165 B2
 
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
 AKAR = Path(__file__).parent.parent
 DIR_SESUDAH = AKAR / "data-idx" / "json" / "ohlc"
-DIR_SEBELUM = AKAR / "_arsip-mentah" / "ohlc-yahoo-sebelum-ganti-volume"
+DIR_SEBELUM = AKAR_ARSIP / "ohlc-yahoo-sebelum-ganti-volume"
 LAPORAN = AKAR / "docs" / "riset" / "regresi-ganti-volume-ohlc.md"
 
 

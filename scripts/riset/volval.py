@@ -52,9 +52,11 @@ import statistics as st
 import sys
 from collections import defaultdict
 from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from arsip_mentah import AKAR_ARSIP  # noqa: E402 - satu akar, lihat #165 B2
 
 AKAR = Path(__file__).resolve().parents[2]
-INTRA = AKAR / "_arsip-mentah" / "intraday"
+INTRA = AKAR_ARSIP / "intraday"
 OHLC = AKAR / "data-idx" / "json" / "ohlc"
 KELUARAN = AKAR / "data-idx" / "json" / "volval.json"
 DASAR = AKAR / "data-idx" / "json" / "volval_dasar.json"

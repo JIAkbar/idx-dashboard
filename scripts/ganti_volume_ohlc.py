@@ -28,13 +28,15 @@ import statistics
 import sys
 import time
 from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from arsip_mentah import AKAR_ARSIP  # noqa: E402 - satu akar, lihat #165 B2
 
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
 AKAR = Path(__file__).parent.parent
 DIR_OHLC = AKAR / "data-idx" / "json" / "ohlc"
 DIR_STOCKBIT = AKAR / "data-idx" / "json" / "ohlcv_stockbit"
-DIR_BACKUP = AKAR / "_arsip-mentah" / "ohlc-yahoo-sebelum-ganti-volume"
+DIR_BACKUP = AKAR_ARSIP / "ohlc-yahoo-sebelum-ganti-volume"
 
 
 def tulis_ulet(p: Path, teks: str, coba: int = 5) -> None:

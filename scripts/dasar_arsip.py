@@ -31,9 +31,12 @@ import json
 import pathlib
 import sys
 from concurrent.futures import ProcessPoolExecutor
+from pathlib import Path  # noqa: E402
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from arsip_mentah import AKAR_ARSIP  # noqa: E402 - satu akar, lihat #165 B2
 
 AKAR = pathlib.Path(__file__).resolve().parent.parent
-ARSIP = AKAR / "_arsip-mentah" / "keuangan_idx"
+ARSIP = AKAR_ARSIP / "keuangan_idx"
 SINGGAH = ARSIP / "_dasar.json"
 
 PERIODE_AKHIR = {"tw1": "03-31", "tw2": "06-30", "tw3": "09-30", "audit": "12-31"}

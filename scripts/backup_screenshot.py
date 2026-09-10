@@ -56,12 +56,14 @@ import time
 from pathlib import Path
 
 import requests
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from arsip_mentah import AKAR_ARSIP  # noqa: E402 - satu akar, lihat #165 B2
 
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
 AKAR = Path(__file__).parent.parent
-MANIFEST = AKAR / "_arsip-mentah" / "screenshots" / "manifest.json"
-TUJUAN = AKAR / "_arsip-mentah" / "screenshots" / "berkas"
+MANIFEST = AKAR_ARSIP / "screenshots" / "manifest.json"
+TUJUAN = AKAR_ARSIP / "screenshots" / "berkas"
 ENV_LOCAL = AKAR / "app" / ".env.local"
 
 

@@ -58,12 +58,13 @@ from pathlib import Path
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 AKAR = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(AKAR / "scripts"))
+from arsip_mentah import AKAR_ARSIP  # noqa: E402 - satu akar, lihat #165 B2
 
 DIR_JSON = AKAR / "data-idx" / "json"
 DIR_OHLC = DIR_JSON / "ohlc"
 DAFTAR = DIR_JSON / "daftar_emiten.json"
 KELUARAN = DIR_JSON / "broker_harian"
-ARSIP = AKAR / "_arsip-mentah" / "broker-harian"
+ARSIP = AKAR_ARSIP / "broker-harian"
 WIB = timezone(timedelta(hours=7))
 
 URL = "https://exodus.stockbit.com/marketdetectors/{kode}"

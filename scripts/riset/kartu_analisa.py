@@ -49,6 +49,7 @@ from pathlib import Path
 # Modulnya di scripts/, kartu di scripts/riset/, jadi akarnya ditambahkan ke
 # jalur pencarian — pola yang sama dipakai skrip riset lain di sini.
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from arsip_mentah import AKAR_ARSIP  # noqa: E402 - satu akar, lihat #165 B2
 import tambal_bursa  # noqa: E402
 
 AKAR = Path(__file__).resolve().parents[2]
@@ -246,7 +247,7 @@ def stockbit_terakhir(kode: str, sampai: str | None = None) -> dict | None:
     return _baca_stockbit(p, sampai) if p.exists() else None
 
 
-ARSIP_BROKER = AKAR / "_arsip-mentah" / "broker-harian"
+ARSIP_BROKER = AKAR_ARSIP / "broker-harian"
 
 
 def _f(x) -> float | None:

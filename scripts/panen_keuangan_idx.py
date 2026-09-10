@@ -145,6 +145,7 @@ from openpyxl import load_workbook
 IMPERSONATE = "chrome124"
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+from arsip_mentah import AKAR_ARSIP  # noqa: E402 - satu akar, lihat #165 B2
 from fetch_fundamental import DEFAULT_TICKERS  # reuse -- lihat CLAUDE.md rung 2
 
 AKAR = Path(__file__).resolve().parent.parent
@@ -486,7 +487,7 @@ def cari_xlsx(entri: dict) -> dict | None:
 #
 # Aturan yang berlaku sejak sekarang: yang mahal itu MENGAMBILNYA, bukan
 # menyimpannya. Simpan mentahnya, parse-nya boleh diulang kapan saja.
-ARSIP_MENTAH = AKAR / "_arsip-mentah" / "keuangan_idx"
+ARSIP_MENTAH = AKAR_ARSIP / "keuangan_idx"
 
 
 def jalur_arsip(kode: str, tahun: int, periode: str) -> Path:

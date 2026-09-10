@@ -53,11 +53,15 @@ import argparse
 import json
 import pathlib
 from collections import Counter
+import sys  # noqa: E402
+from pathlib import Path  # noqa: E402
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from arsip_mentah import AKAR_ARSIP  # noqa: E402 - satu akar, lihat #165 B2
 
 AKAR = pathlib.Path(__file__).resolve().parent.parent
 IDX = AKAR / "data-idx" / "json" / "keuangan_idx"
 DISKRET = AKAR / "data-idx" / "json" / "keuangan_idx_diskret"
-DASAR = AKAR / "_arsip-mentah" / "keuangan_idx" / "_dasar.json"
+DASAR = AKAR_ARSIP / "keuangan_idx" / "_dasar.json"
 
 AMBANG = 50.0
 RUAS_NERACA = ("total_assets", "equity")

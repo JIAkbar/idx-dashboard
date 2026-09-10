@@ -16,12 +16,13 @@ import {
 } from './lib/tambalBursa.mjs'
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
+import { AKAR_ARSIP } from './_akar-arsip.mjs'
 
 const AKAR = join(dirname(fileURLToPath(import.meta.url)), '..', '..')
 const DIR_JSON = join(AKAR, 'data-idx', 'json')
 const DIR_PROFIL = join(DIR_JSON, 'profil_stockbit')
 const DIR_OHLC = join(DIR_JSON, 'ohlc')
-const DIR_BURSA = join(AKAR, '_arsip-mentah', 'asing')
+const DIR_BURSA = join(AKAR_ARSIP, 'asing')
 
 // Hari yang arsip harga belum punya diambil dari arsip bursa. Pembangun ini
 // tak menyapu seluruh arsip lebih dulu (ia cuma membaca emiten yang pernah

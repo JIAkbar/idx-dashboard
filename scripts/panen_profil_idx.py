@@ -38,13 +38,15 @@ import sys
 import time
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from arsip_mentah import AKAR_ARSIP  # noqa: E402 - satu akar, lihat #165 B2
 
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 AKAR = Path(__file__).resolve().parent.parent
 DIR_JSON = AKAR / "data-idx" / "json"
 DAFTAR = DIR_JSON / "daftar_emiten.json"
 KELUARAN = DIR_JSON / "profil"
-ARSIP = AKAR / "_arsip-mentah" / "profil-idx"
+ARSIP = AKAR_ARSIP / "profil-idx"
 WIB = timezone(timedelta(hours=7))
 URL = "https://www.idx.co.id/primary/ListedCompany/GetCompanyProfilesDetail"
 UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "

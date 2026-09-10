@@ -22,6 +22,7 @@ import type { NamaPolaKlasik } from '../src/lib/dasbor/polaKlasik.ts'
 import { dariYahoo, kunci4Jam, kunciPekan, rakitBar } from '../src/lib/dasbor/kerangkaWaktu.ts'
 import type { YahooIntradayJson } from '../src/lib/dasbor/kerangkaWaktu.ts'
 import type { LilinData, VolumeData } from '../src/lib/dasbor/grafikEmiten.ts'
+import { AKAR_ARSIP } from './_akar-arsip.mjs'
 
 const AKAR = join(dirname(fileURLToPath(import.meta.url)), '..', '..')
 const HORIZON = [5, 10, 20]
@@ -42,7 +43,7 @@ function pekanan(kode: string): LilinData[] {
 
 /** 4 jam dari arsip 60m Yahoo — arsip yang sama dengan backtest struktur. */
 async function empatJam(kode: string): Promise<LilinData[]> {
-  const arsip = join(AKAR, '_arsip-mentah', 'yahoo-60m')
+  const arsip = join(AKAR_ARSIP, 'yahoo-60m')
   mkdirSync(arsip, { recursive: true })
   const berkas = join(arsip, `${kode}.json`)
   let mentah: YahooIntradayJson

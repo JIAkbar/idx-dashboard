@@ -34,6 +34,7 @@ import { skorPapanTigaKerangka } from './lib/skorPapan.mjs'
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
 import { sma, emaAkhir, macd, rakitPeriode } from './lib/skor.mjs'
+import { AKAR_ARSIP } from './_akar-arsip.mjs'
 
 const AKAR = join(dirname(fileURLToPath(import.meta.url)), '..', '..')
 const DIR_JSON = join(AKAR, 'data-idx', 'json')
@@ -44,7 +45,7 @@ const DIR_KELUARAN = join(DIR_JSON, 'harian_papan')
 // lengkap dengan tutup/tinggi/rendah, volume, nilai, frekuensi, aliran asing,
 // dan jumlah saham. Tidak memakai kredensial apa pun, jadi ia tetap terisi
 // saat sumber harga utama berhenti.
-const DIR_BURSA = join(AKAR, '_arsip-mentah', 'asing')
+const DIR_BURSA = join(AKAR_ARSIP, 'asing')
 
 const argHari = process.argv.indexOf('--hari')
 const N_HARI = argHari >= 0 ? Number(process.argv[argHari + 1]) : 30
