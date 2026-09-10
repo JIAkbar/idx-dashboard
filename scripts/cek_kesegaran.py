@@ -635,12 +635,24 @@ def periksa(cetak_semua: bool = False) -> int:
         print(f"::error::{len(basi)} turunan basi: {nama}")
         return 1
     if tak_terperiksa:
-        # Tak terperiksa BUKAN lolos. Ia dilaporkan kuning, bukan hijau —
-        # "tak bisa memeriksa" dan "sudah diperiksa dan aman" adalah dua
-        # keadaan berbeda, dan menyamakannya persis cara kegagalan senyap
-        # bertahan lama.
-        nama = ", ".join(t.nama for t, _ in tak_terperiksa)
-        print(f"::warning::{len(tak_terperiksa)} turunan tak bisa diperiksa: {nama}")
+        # Tak terperiksa BUKAN lolos. Komentar itu sudah tertulis di sini
+        # sejak awal — tapi kodenya mencetak ::warning:: lalu jatuh ke
+        # "LOLOS" dan `return 0`, jadi ia mengatakan satu hal dan melakukan
+        # kebalikannya. Terukur 10 Sep 2026 dengan kriteria uji pengawas
+        # (#166 B): gudang `intraday_1h` dihapus seluruhnya di salinan uji
+        # -> pembacanya mengembalikan None -> baris masuk `tak_terperiksa`
+        # -> gerbang mencetak "kesegaran turunan: LOLOS" dan keluar 0. Satu
+        # gudang lenyap dan CI tetap hijau; persis kegagalan senyap yang
+        # melahirkan gerbang ini.
+        #
+        # Aman dijadikan merah karena SELURUH 32 entri manifest terlacak
+        # git (diperiksa dengan `git ls-files` atas tiap jalur): checkout
+        # bersih selalu punya berkasnya, jadi "tak terperiksa" tak pernah
+        # berarti "belum sempat dibangun" — ia berarti ada yang rusak,
+        # terhapus, atau tak terbaca.
+        nama = ", ".join(f"{t.nama} ({sebab})" for t, sebab in tak_terperiksa)
+        print(f"::error::{len(tak_terperiksa)} turunan TAK BISA DIPERIKSA: {nama}")
+        return 1
     print("kesegaran turunan: LOLOS")
     return 0
 
