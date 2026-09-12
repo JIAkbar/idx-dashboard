@@ -14,6 +14,25 @@ cd /d "%~dp0"
 REM PYEXE bisa ditimpa dari lingkungan — 6 Sep 2026, saat bat ini mulai
 REM dilacak git dan berhenti jadi milik satu mesin. Yang tak menyetelnya
 REM tetap dapat jalur bawaan yang sama seperti sebelumnya.
+REM --- Encoding keluaran (ralat 12 Sep 2026) ----------------------------
+REM  Baris ini HILANG di sini sementara saudaranya JALANKAN_BUKA_LAPTOP.bat
+REM  sudah menyetelnya sejak 5 Sep 2026 - dan komentar di sana menceritakan
+REM  insiden yang persis sama: "panen_asing.py mati di baris cetak pembukanya
+REM  selama berhari-hari, jadi asing/ berhenti di 3 Sep dan dua turunan ikut
+REM  basi". Perbaikannya dipasang di satu bat saja, jadi bat sore tetap
+REM  membunuh skrip yang sama.
+REM
+REM  Terukur 12 Sep 2026: log panen sore memuat traceback yang SAMA dua kali
+REM  (jalan pagi dan jalan petang), keduanya di langkah [C] Aliran asing -
+REM  UnicodeEncodeError pada U+2212 di baris cetak pembuka panen_asing.py.
+REM  Skripnya mati sebelum memanen apa pun, dan tiga turunan yang membaca
+REM  arsip asing berhenti dua hari di belakang tanpa satu pun alarm.
+REM
+REM  Sapuan 34 skrip yang dipanggil bat ini: 26 mencetak karakter non-ASCII.
+REM  Menambal 26 baris cetak satu per satu salah arah - satu variabel di sini
+REM  menutup semuanya sekaligus, termasuk skrip yang ditambahkan besok.
+set PYTHONIOENCODING=utf-8
+
 if not defined PYEXE set PYEXE=C:\Python314\python.exe
 if not exist "%PYEXE%" set PYEXE=python
 set "LOG_NAMA=panen_sore"
