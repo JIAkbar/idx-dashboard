@@ -45,6 +45,20 @@ jobs:
             !/_arsip-mentah
           sparse-checkout-cone-mode: false
 
+      # Alur kerja diperiksa SEBELUM apa pun dipasang: kalau satu alur
+      # berhenti TERURAI, tak ada uji unit yang bisa memberitahunya.
+      # 12 Sep 2026 dua blok `env:` di satu berkas membunuh dua alur panen
+      # rumahan selama 12 jam - nol langkah berjalan, delapan jalan merah,
+      # dan satu-satunya gejalanya halaman Actions memajang NAMA BERKAS
+      # alih-alih nama alurnya. Yang membuatnya lolos: `yaml.safe_load` di
+      # laptop MENELAN kunci ganda (yang terakhir menang) dan menjawab
+      # "OK" untuk berkas yang GitHub tolak mentah-mentah - dan dengan
+      # menelannya, `PAPAN_ARSIP_AKAR` ikut hilang tanpa satu pun galat.
+      # Pemeriksanya sengaja tanpa PyYAML: kunci tingkat atas ada di kolom
+      # 0, jadi stdlib cukup dan ia jalan di runner mana pun.
+      - name: Periksa alur kerja (kunci ganda)
+        run: python3 scripts/uji_alur_kerja.py
+
       - uses: actions/setup-node@v4
         with:
           node-version: 22
