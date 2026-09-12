@@ -61,7 +61,28 @@ env:
   # Folder ini MULAI KOSONG dan terisi sendiri — nol arsip lama dipindahkan
   # atau dihapus. Jalan pertama sesudah ini menarik ulang sekali, lalu
   # seterusnya membaca dari cakram.
-  PAPAN_ARSIP_AKAR: 'C:\papan-arsip'
+  #
+  # RALAT 12 Sep 2026 (#172 D): akarnya semula `C:\papan-arsip` - folder baru
+  # yang memenuhi syarat "di luar ruang kerja runner" tapi LAHIR 11 Sep dan tak
+  # punya riwayat apa pun. Akibatnya terukur di produksi: `broker_tahunan`
+  # dibangun dari arsip kosong, dan pada commit dc8c2d896 (jalan CI 11 Sep
+  # 08:34) **832 dari 881 berkas miskin** - BBCA tinggal 4.872 byte dari
+  # 845.439. Laptop memulihkannya tiap sore tanpa ada yang tahu sebabnya, jadi
+  # produksi bolak-balik antara penuh dan miskin selama ~1,5 hari.
+  #
+  # Dua akar itu tidak setara: 10 sumber lawan 26, dan `broker-harian/BBCA`
+  # 12 berkas lawan 25.057.
+  #
+  # Akar laptop memenuhi KEDUA syarat: ia di pohon kerja Johan, BUKAN di
+  # `C:\actions-runner\_work\...`, jadi `git clean -ffdx` runner tak pernah
+  # menyentuhnya - yang #165 B2 perbaiki tetap terjaga - DAN ia memuat riwayat
+  # penuh. Nol berkas dipindahkan; cuma nilai variabel ini yang berubah.
+  #
+  # Karena akarnya kini dipakai bersama bat sore (18:00, berjam-jam) sementara
+  # alur CI mulai 18:15/18:30/19:30, `arsip_mentah.simpan()` dibuat ATOMIK
+  # (tulis sementara + os.replace) dan menolak menimpa arsip berisi dengan
+  # potret yang menyusut drastis. Lihat #172 D1 dan D2.
+  PAPAN_ARSIP_AKAR: 'C:\1-Johan\10. Pengembangan\IDX Statistik\_arsip-mentah'
 
 permissions:
   contents: write

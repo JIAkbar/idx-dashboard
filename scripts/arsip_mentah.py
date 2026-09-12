@@ -53,7 +53,8 @@ def jalur(sumber: str, *bagian: str) -> Path:
     return AKAR_ARSIP.joinpath(sumber, *bagian)
 
 
-def simpan(sumber: str, *bagian: str, data: bytes | str | dict | list) -> None:
+def simpan(sumber: str, *bagian: str, data: bytes | str | dict | list,
+           timpa_lebih_kecil: bool = False) -> None:
     """Tulis arsip. `dict`/`list` ditulis sebagai JSON, `str` di-encode UTF-8,
     `bytes` ditulis apa adanya.
 
@@ -72,9 +73,68 @@ def simpan(sumber: str, *bagian: str, data: bytes | str | dict | list) -> None:
         raise TypeError(f"arsip_mentah.simpan: tipe data tak didukung: {type(data)!r}")
 
     p = jalur(sumber, *bagian)
+
+    # ── D2: potret KOSONG tak boleh menimpa arsip yang sudah berisi ────────
+    # D1 di bawah menyelesaikan berkas ROBEK. Ia tidak menyelesaikan berkas
+    # UTUH yang isinya mundur, dan itu kelas kerusakan tersendiri:
+    #
+    #   1. panen malam menulis `asing/2026/20260910.json.gz` penuh (107 KB)
+    #   2. panen pagi berikutnya menarik tanggal yang sama SEBELUM IDX
+    #      menerbitkan, mendapat potret "belum terbit", lalu menimpanya
+    #
+    # Bukan hipotesis: berkas 64 byte untuk 20260910 memang ada di akar arsip
+    # laptop pada 12 Sep 2026, sementara akar satunya memegang 107.580 byte
+    # untuk tanggal yang sama. Selama dua akar terpisah kerusakan itu terkurung
+    # di satu sisi; begitu akarnya disatukan (#172 D) ia bisa menimpa hasil
+    # yang benar.
+    #
+    # Ambangnya SETENGAH, bukan "lebih kecil sedikit pun": ukuran gz bergerak
+    # beberapa persen tiap hari secara wajar, dan gerbang yang menolak variasi
+    # normal akan berbunyi tiap hari lalu berhenti dibaca orang. Yang dicegat
+    # penyusutan drastis - potret kosong 64 byte lawan 107 KB itu 0,06%.
+    #
+    # Arah sebaliknya SENGAJA dibiarkan: arsip mungil (<1 KB) boleh ditimpa apa
+    # pun, supaya potret kosong yang telanjur tersimpan bisa diganti data
+    # sungguhan. Itu justru perbaikan yang kita mau.
+    #
+    # Jalan sadar untuk menimpa tetap ada lewat `timpa_lebih_kecil=True` -
+    # dipakai kalau sumbernya memang mengoreksi data jadi lebih pendek.
+    if not timpa_lebih_kecil and p.exists():
+        try:
+            lama = p.stat().st_size
+        except OSError:
+            lama = 0
+        if lama >= 1024 and len(mentah) < lama * 0.5:
+            print(f"::warning::arsip TIDAK ditimpa: {sumber}/{'/'.join(bagian)} "
+                  f"- yang ada {lama} byte, yang baru cuma {len(mentah)} byte "
+                  f"(<50%). Potret kosong tak boleh menghapus data. Pakai "
+                  f"timpa_lebih_kecil=True kalau penyusutan ini memang benar.")
+            return
+
     try:
         p.parent.mkdir(parents=True, exist_ok=True)
-        p.write_bytes(mentah)
+        # ── D1: tulis ATOMIK ──────────────────────────────────────────────
+        # `write_bytes` langsung membuka berkas tujuan lalu mengisinya, jadi
+        # pembaca yang datang di tengah melihat berkas SEPARUH. Itu jadi nyata
+        # begitu satu akar arsip dipakai bersama (#172 D): bat sore mulai 18:00
+        # dan berjalan berjam-jam sementara tiga alur CI mulai 18:15, 18:30,
+        # dan 19:30 - tumpang tindihnya by design, bukan kebetulan, dan
+        # `.panen.lock` tak menolong karena ia milik bat saja.
+        #
+        # Tulis ke berkas sementara di direktori yang SAMA lalu `os.replace`:
+        # atomik di satu volume NTFS, jadi pembaca selalu melihat berkas utuh -
+        # yang lama atau yang baru, tak pernah campuran. Dua penulis yang
+        # menulis isi yang sama jadi sekadar penulis-terakhir-menang.
+        semen = p.with_name(p.name + f".tmp{os.getpid()}")
+        try:
+            semen.write_bytes(mentah)
+            os.replace(semen, p)
+        finally:
+            if semen.exists():
+                try:
+                    semen.unlink()
+                except OSError:
+                    pass
     except OSError as e:
         # BERBUNYI, bukan cuma tercatat. Versi lama mencetak satu baris biasa
         # yang tenggelam di antara ribuan baris log panen — dan karena itu
