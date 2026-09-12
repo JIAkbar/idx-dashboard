@@ -1,4 +1,8 @@
 @echo off
+REM Encoding keluaran - satu karakter non-ASCII di baris cetak membunuh
+REM skrip Python di konsol ini (ralat 12 Sep 2026, sumbu lingkungan).
+set PYTHONIOENCODING=utf-8
+
 REM ============================================================
 REM  IDX Dashboard - Pipeline Otomatis Lokal (jalur andalan)
 REM ============================================================

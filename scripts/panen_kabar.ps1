@@ -29,6 +29,15 @@
 #
 # Mendaftarkannya ke Task Scheduler: `scripts/daftar_tugas_kabar.ps1`.
 $ErrorActionPreference = "Continue"
+
+# Konsol layanan Windows ber-encoding lama: satu karakter non-ASCII di
+# baris cetak MEMBUNUH skrip Python sebelum ia bekerja. `panen_kabar.py`
+# punya lima baris begitu, dan TIGA di antaranya ada di jalur KEGAGALAN -
+# jadi pada hari satu RSS mati, baris yang seharusnya menjelaskan
+# kematiannya justru membunuh skripnya, dan yang muncul di log cuma
+# UnicodeEncodeError tanpa konteks. Jalur kegagalan tak boleh ikut gagal.
+$env:PYTHONIOENCODING = "utf-8"
+
 Set-Location (Join-Path $PSScriptRoot "..")
 
 $Berkas = @(
