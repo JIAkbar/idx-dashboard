@@ -258,7 +258,7 @@ def saham_idx(kode):
             with open(p, encoding='utf-8') as f:
                 _SAHAM_IDX = {e["kode"]: e.get("saham") for e in json.load(f)["emiten"]}
         except Exception as e:  # noqa: BLE001 — daftar hilang/tua bukan alasan gagal panen
-            print(f"   ⚠ daftar_emiten.json tak terbaca ({type(e).__name__}) — "
+            print(f"   ! daftar_emiten.json tak terbaca ({type(e).__name__}) — "
                   f"shares memakai yfinance apa adanya")
             _SAHAM_IDX = {}
     v = _SAHAM_IDX.get(kode)
@@ -1120,7 +1120,7 @@ def fetch_stock(ticker_code):
     except YFRateLimitError:
         raise   # ditangani retry+backoff di main loop — jangan telan di sini
     except Exception as exc:
-        print(f" ✗ {exc}")
+        print(f" x {exc}")
         return None
 
 # ─── Globals (set by main) ────────────────────────────────────────────────────
@@ -1147,7 +1147,7 @@ def main():
     if KURS_USD_IDR:
         print(f"   Kurs USD/IDR: {KURS_USD_IDR} (dari data-idx/json/ds_*.json terbaru)")
     else:
-        print("   ⚠ Kurs USD/IDR tidak ditemukan — emiten pelapor-USD (financialCurrency=USD) "
+        print("   ! Kurs USD/IDR tidak ditemukan — emiten pelapor-USD (financialCurrency=USD) "
               "akan punya bv/rev_ps/cash_ps/fcf_ps/pb/ps kosong (None), bukan salah.")
 
     # ── Determine tickers from sys.argv ───────────────────────────────────────
@@ -1174,7 +1174,7 @@ def main():
         tickers = [t for t in tickers if t not in LEWATI_YAHOO]
         print(f"   Dilewati (tak dikenal Yahoo, permanen): {', '.join(dilewati)}")
 
-    print(f"\n🔍 Mode  : {mode_label}")
+    print(f"\n[cari] Mode  : {mode_label}")
     print(f"   Output: {OUT_DIR}\n")
 
     # ── Fetch loop ────────────────────────────────────────────────────────────
@@ -1188,9 +1188,9 @@ def main():
                 if coba == max_coba - 1:
                     break
                 tunggu = 30 * (2 ** coba)   # 30s, 60s
-                print(f" ⏳ rate limit — tunggu {tunggu}s", flush=True)
+                print(f" [tunggu] rate limit — tunggu {tunggu}s", flush=True)
                 time.sleep(tunggu)
-        print(" ✗ rate limit menetap", end='')
+        print(" x rate limit menetap", end='')
         return None
 
     results, ok, fail = [], 0, 0
@@ -1200,7 +1200,7 @@ def main():
         data = fetch_dengan_retry(ticker)
         if data:
             ok += 1
-            print(f" ✓ {data.get('name','')[:28]}")
+            print(f" v {data.get('name','')[:28]}")
             results.append({
                 "ticker": ticker,
                 "name":   data.get("name", ""),
@@ -1213,10 +1213,10 @@ def main():
         # di mata Yahoo (mitigasi standar per isu yfinance #2125/#2422).
         time.sleep(0.5)
 
-    print(f"\n✅ Selesai: {ok} berhasil, {fail} gagal dari {total} saham")
+    print(f"\n[ok] Selesai: {ok} berhasil, {fail} gagal dari {total} saham")
 
     # ── POST-PROCESSING: Sector Median ────────────────────────────────────────
-    print("\n📊 Hitung sektor median...")
+    print("\n[data] Hitung sektor median...")
     sector_data = {}
     for fname in os.listdir(OUT_DIR):
         if not fname.endswith(".json") or fname in ("index.json", "sector_avg.json"):
@@ -1253,7 +1253,7 @@ def main():
     sa_path = os.path.join(OUT_DIR, "sector_avg.json")
     with open(sa_path, "w", encoding="utf-8") as fw:
         json.dump(sector_avg, fw, ensure_ascii=False, separators=(",", ":"))
-    print(f"  sector_avg.json → {len(sector_avg)} sektor")
+    print(f"  sector_avg.json -> {len(sector_avg)} sektor")
 
     # Update each stock JSON with sector comparison
     for fname in os.listdir(OUT_DIR):
@@ -1304,8 +1304,8 @@ def main():
             "total":   len(stocks_index),
             "stocks":  stocks_index,
         }, fw, ensure_ascii=False, separators=(",", ":"))
-    print(f"  index.json → {len(stocks_index)} saham")
-    print("\n🎉 Semua selesai!")
+    print(f"  index.json -> {len(stocks_index)} saham")
+    print("\n[selesai] Semua selesai!")
 
     # ── Gerbang kegagalan massal — jangan commit data bulanan yang bolong besar ─
     # (exit≠0 → step commit workflow tidak jalan). Hanya untuk run besar; smoke

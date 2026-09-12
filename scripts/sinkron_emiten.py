@@ -131,16 +131,16 @@ def main():
     r = subprocess.run([PYTHON, str(ROOT / "scripts" / "fetch_fundamental.py"), *baru],
                         cwd=str(ROOT), env=env)
     if r.returncode != 0:
-        print(f"  ⚠ fetch_fundamental.py keluar dgn kode {r.returncode} (lihat log di atas)")
+        print(f"  ! fetch_fundamental.py keluar dgn kode {r.returncode} (lihat log di atas)")
 
     # ── Laporan akhir: mana yang berhasil dapat JSON, mana yang tidak ──────
     print("\nHasil panen:")
     gagal = []
     for k in baru:
         if (FUND_DIR / f"{k}.json").exists():
-            print(f"  ✓ {k}")
+            print(f"  v {k}")
         else:
-            print(f"  ✗ {k} (tidak dikenal Yahoo / gagal)")
+            print(f"  x {k} (tidak dikenal Yahoo / gagal)")
             gagal.append(k)
     if gagal:
         print(f"\n{len(gagal)} ticker gagal dipanen (dicatat, bukan file kosong): {', '.join(gagal)}")
