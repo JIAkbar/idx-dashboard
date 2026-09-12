@@ -304,7 +304,7 @@ def panen(mulai: date, akhir: date, *, jeda: float, dari_arsip: bool, timpa: boo
     gagal: list[tuple[str, str]] = []
     kosong = terarsip = terunduh = 0
     tanggal = list(hari_bursa(mulai, akhir))
-    print(f"panen asing: {mulai} s/d {akhir} — {len(tanggal)} hari kerja")
+    print(f"panen asing: {mulai} s/d {akhir} - {len(tanggal)} hari kerja")
 
     for i, tgl in enumerate(tanggal, 1):
         sudah_ada = arsip_mentah.jalur(SUMBER_ARSIP, str(tgl.year), f"{tgl:%Y%m%d}.json.gz").exists()
@@ -312,7 +312,7 @@ def panen(mulai: date, akhir: date, *, jeda: float, dari_arsip: bool, timpa: boo
             rows = baris_pasar(tgl, dari_arsip=dari_arsip)
         except Exception as e:  # noqa: BLE001 — satu tanggal gagal, sisanya lanjut
             gagal.append((str(tgl), f"{type(e).__name__}: {e}"))
-            print(f"[{i}/{len(tanggal)}] {tgl} GAGAL — {e}")
+            print(f"[{i}/{len(tanggal)}] {tgl} GAGAL - {e}")
             continue
         if sudah_ada:
             terarsip += 1
@@ -328,7 +328,7 @@ def panen(mulai: date, akhir: date, *, jeda: float, dari_arsip: bool, timpa: boo
             if hasil:
                 per_emiten.setdefault(hasil[0], []).append(hasil[1])
         if i % 50 == 0 or i == len(tanggal):
-            print(f"[{i}/{len(tanggal)}] {tgl} — {len(per_emiten)} emiten terkumpul")
+            print(f"[{i}/{len(tanggal)}] {tgl} - {len(per_emiten)} emiten terkumpul")
 
     n = tulis(per_emiten, timpa=timpa)
     jml = sorted(len(v) for v in per_emiten.values())
@@ -454,7 +454,7 @@ def main() -> None:
     else:
         mulai = mulai_inkremental()
         if mulai > AWAL_SUMBER:
-            print(f"mulai inkremental dari {mulai} (data terakhir − {JEDA_AMAN_HARI} hari). "
+            print(f"mulai inkremental dari {mulai} (data terakhir - {JEDA_AMAN_HARI} hari). "
                   f"Pakai --penuh untuk membangun ulang sejak {AWAL_SUMBER}.")
     if a.timpa and mulai > AWAL_SUMBER:
         raise SystemExit(
