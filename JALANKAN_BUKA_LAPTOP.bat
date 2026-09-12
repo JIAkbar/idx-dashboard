@@ -336,10 +336,16 @@ REM -- ("keystat dan profile cukup 1 bulan sekali"). Keduanya memanen 963
 REM -- emiten dan makan puluhan menit, sementara isinya rasio & profil yang
 REM -- berubah per laporan keuangan - bukan per hari. Menjalankannya harian
 REM -- membakar kuota permintaan yang justru dibutuhkan panen harga.
-REM -- Penanda umur disimpan di .stempel_bulanan; kalau tak ada atau sudah
-REM -- lewat 28 hari, jalan. Dibaca dari BERKAS, bukan dari nomor tanggal,
-REM -- supaya laptop yang tak dibuka di awal bulan tetap kebagian.
-"%PYEXE%" -c "import os,sys,time; p='.stempel_bulanan'; sys.exit(0 if (not os.path.exists(p) or time.time()-os.path.getmtime(p) > 28*86400) else 1)"
+REM -- Umur dibaca dari ISI berkas profil_stockbit: ruas dipanen_pada,
+REM -- tanggal terbanyak di seluruh berkas (#170, 13 Sep 2026). Dulu dari
+REM -- berkas penanda tak-terlacak di akar repo, yang tak ada di ruang kerja
+REM -- lain sehingga gerbangnya selalu terbuka. Tetap berbasis umur, bukan
+REM -- nomor tanggal, supaya laptop yang tak dibuka di awal bulan kebagian.
+REM -- Jamnya PROFIL, bukan keystats: keystats dan info juga dipanen tiap
+REM -- sore oleh JALANKAN_PANEN_SORE.bat (antrean #182), jadi umur keduanya
+REM -- selalu 0-1 hari dan tak akan pernah membuka blok ini. Profil hanya
+REM -- dipanen di sini, jadi jam keystats akan membekukannya selamanya.
+"%PYEXE%" scripts\gerbang_bulanan.py profil_stockbit 28
 if errorlevel 1 goto lewati_bulanan
 echo      (jatuh tempo bulanan - keystats + profil dipanen)
 "%PYEXE%" scripts\panen_keystats_stockbit.py --semua --jeda 0.4
@@ -353,12 +359,10 @@ REM profilnya sendiri tak pernah ikut, dan membeku 23 Agu tanpa ada yang
 REM menyebutnya (#101 B).
 "%PYEXE%" scripts\panen_profil_stockbit.py --semua --jeda 0.4
 if errorlevel 1 echo   (profil stockbit gagal - lanjut)
-echo. > .stempel_bulanan
 goto sesudah_bulanan
 :lewati_bulanan
 echo      (keystats + profil dilewati - belum 28 hari sejak panen terakhir)
 :sesudah_bulanan
-if errorlevel 1 echo   (info stockbit gagal - lanjut)
 REM [E3] Backup screenshot kontributor (B16 — manifest via RPC sejak
 REM 28 Agu, 100%% tanpa sesi Claude Code; idempoten, tak pernah hapus).
 "%PYEXE%" scripts\backup_screenshot.py

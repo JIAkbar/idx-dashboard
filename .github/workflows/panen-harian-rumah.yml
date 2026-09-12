@@ -322,16 +322,19 @@ jobs:
       # YANG SENGAJA TIDAK DIPINDAHKAN, dengan alasannya:
       #
       # * `panen_keystats_stockbit.py` + `panen_info_stockbit.py` — di bat
-      #   keduanya dijaga penanda umur `.stempel_bulanan` supaya cuma jalan
-      #   sebulan sekali. Penanda itu berkas tak-terlacak, dan ruang kerja CI
-      #   ini TIDAK menyimpan berkas tak-terlacak antar jalan: diperiksa
-      #   10 Sep 2026, `.stempel_bulanan` tak ada, `logs/` tak ada, dan
+      #   keduanya dulu dijaga penanda umur berkas tak-terlacak, dan ruang
+      #   kerja CI ini TIDAK menyimpan berkas tak-terlacak antar jalan:
+      #   diperiksa 10 Sep 2026, penandanya tak ada, `logs/` tak ada, dan
       #   `_arsip-mentah/` cuma menyisakan `statistik/` yang seluruh 51
-      #   berkasnya bertanggal satu rentang 21 detik. Tanpa penanda yang
-      #   bertahan, gerbang bulanannya selalu terbuka — dan yang tadinya
-      #   sebulan sekali jadi 963 emiten × 2 endpoint TIAP MALAM. Itu
-      #   perubahan beban yang tak diminta siapa pun, jadi keduanya tetap di
-      #   bat sampai penandanya punya rumah yang bertahan.
+      #   berkasnya bertanggal satu rentang 21 detik.
+      #
+      #   Penghalang itu hilang di #170 (13 Sep 2026): gerbang bulanan kini
+      #   `scripts/gerbang_bulanan.py`, yang membaca umur dari ruas
+      #   `dipanen_pada` di berkas keluaran — berkas yang dilacak git, jadi
+      #   ikut ke ruang kerja ini. Keduanya TETAP tidak dipindahkan, dengan
+      #   alasan baru: `JALANKAN_PANEN_SORE.bat` memanen keduanya tiap sore
+      #   di laptop yang sama dengan runner ini (antrean #182). Memanennya
+      #   juga di sini berarti dua jalur menulis 1.927 berkas yang sama.
       #
       # * `tgl_broker_aman.py` — di bat ia menghitung tanggal untuk panen
       #   broker; alur kerja ini sudah menghitung tanggalnya sendiri di
