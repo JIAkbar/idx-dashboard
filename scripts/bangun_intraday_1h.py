@@ -139,7 +139,7 @@ def utama() -> int:
         if sum(r[5] for r in jam) == sum(int(b["volume"]) for b in menit):
             cek_vol_beres += 1
         else:
-            print(f"  ⚠ {kode}: Σ volume 1H != Σ volume 1m — JANGAN dipakai sebelum dicari sebabnya")
+            print(f"  ! {kode}: total volume 1H != total volume 1m — JANGAN dipakai sebelum dicari sebabnya")
         if any(r[8] or r[9] for r in jam):
             cek_asing_terisi += 1
         else:

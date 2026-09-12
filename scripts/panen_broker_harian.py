@@ -707,7 +707,7 @@ def jalankan(a) -> int:
             if ringkas["cocok_volume"] is not None and abs(ringkas["cocok_volume"] - 1) > TOLERANSI_VOLUME:
                 with kunci:
                     n["meleset"] += 1
-                print(f"  {kode}: Σlot x100 = {ringkas['total_lot']*100:,} vs IDX {vol:,} "
+                print(f"  {kode}: total lot x100 = {ringkas['total_lot']*100:,} vs IDX {vol:,} "
                       f"(rasio {ringkas['cocok_volume']})")
 
         out = KELUARAN / f"{kode}.json"

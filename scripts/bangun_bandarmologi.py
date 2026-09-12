@@ -352,7 +352,7 @@ def main() -> int:
     n_tmm = sum(1 for r in hasil if r["tmm_swing"])
     n_fase = sum(1 for r in hasil if r["fase"])
     print(f"  {tanggal}: {len(hasil)} emiten | terkalibrasi {n_kal} | fase broker {n_fase} | TMM swing {n_tmm}")
-    print(f"  → {KELUARAN.relative_to(AKAR)} ({KELUARAN.stat().st_size / 1024:.0f} KB)")
+    print(f"  -> {KELUARAN.relative_to(AKAR)} ({KELUARAN.stat().st_size / 1024:.0f} KB)")
     return 0
 
 
