@@ -179,8 +179,64 @@ jobs:
           git add $berkas
           $stempel = (Get-Date).ToUniversalTime().ToString('yyyy-MM-dd HH:mm')
           git commit -m "data: panen kabar rumahan $stempel UTC"
-          git pull --rebase --autostash origin $env:GITHUB_REF_NAME
-          git push origin "HEAD:$env:GITHUB_REF_NAME"
+
+          # TANPA tarik-lalu-rebase (#163 di CI, ralat 12 Sep 2026). Baris itu
+          # dulu di sini, dan kembarannya di `panen-kabar.yml` GAGAL dua kali
+          # (10 Sep 22:47 dan 12 Sep 00:39 UTC) dengan
+          #   CONFLICT (content): Merge conflict in data-idx/json/kabar.json
+          # sehingga commit berisi 190 item tak pernah mendarat. Alur INI belum
+          # pernah gagal, tapi itu karena jadwalnya jarang - bukan karena ia
+          # kebal; barisnya sama persis.
+          #
+          # Konflik pada berkas HASIL GENERASI tak layak digabung tangan:
+          # `kabar.json` keluaran pemanen atas apa pun yang ada di cakram. Jadi
+          # jawabannya bukan "gabungkan dua versi" melainkan "bangun ulang di
+          # atas versi remote terbaru" - pola yang sama dengan
+          # `scripts/panen_kabar.ps1`, yang sudah terbukti sejak 10 Sep.
+          $sukses = $false
+          foreach ($percobaan in 1..2) {
+            git push origin "HEAD:$env:GITHUB_REF_NAME"
+            if ($LASTEXITCODE -eq 0) { $sukses = $true; break }
+            Write-Host "push ditolak - remote maju di tengah jalan (percobaan $percobaan)"
+
+            # Commit sendiri dilepas supaya percobaan berikutnya benar-benar
+            # mulai dari remote. Dijaga ketat: hanya kalau commit teratas
+            # MEMANG milik alur ini.
+            $judul = (git log -1 --format='%s')
+            if ($judul -notlike "data: panen kabar rumahan *") {
+              Write-Host "::error::commit teratas bukan milik alur ini ($judul) - tidak dilepas"
+              exit 1
+            }
+            git reset --soft HEAD~1
+            git restore --staged $berkas 2>$null
+
+            git fetch origin $env:GITHUB_REF_NAME
+            git merge --ff-only "origin/$env:GITHUB_REF_NAME"
+            if ($LASTEXITCODE -ne 0) {
+              Write-Host "::error::maju-cepat ke remote gagal - berhenti tanpa menimpa apa pun"
+              exit 1
+            }
+            git checkout "origin/$env:GITHUB_REF_NAME" -- $berkas
+
+            & "${{ steps.py.outputs.exe }}" scripts/panen_kabar.py --batas 30 `
+              --status "$env:RUNNER_TEMP\status-kabar.jsonl"
+            if ($LASTEXITCODE -ne 0) {
+              Write-Host "::warning::panen ulang gagal - berhenti, berkas remote tak disentuh"
+              exit 1
+            }
+            git diff --quiet -- $berkas
+            if ($LASTEXITCODE -eq 0) {
+              Write-Host 'Daftar sama dengan remote sesudah dibangun ulang - tidak commit.'
+              exit 0
+            }
+            git add $berkas
+            $stempel = (Get-Date).ToUniversalTime().ToString('yyyy-MM-dd HH:mm')
+            git commit -m "data: panen kabar rumahan $stempel UTC"
+          }
+          if (-not $sukses) {
+            Write-Host "::error::dua percobaan push gagal - berhenti tanpa menimpa apa pun"
+            exit 1
+          }
 
       # Runner rumahan TIDAK memulai dari mesin bersih seperti runner GitHub:
       # sisa berkas satu jalan akan terbawa ke jalan berikutnya dan bisa

@@ -81,7 +81,23 @@ jobs:
             TODAY=$(date +'%Y-%m-%d')
             COUNT=$(git diff --staged --name-only | wc -l)
             git commit -m "📊 Update fundamental: $TODAY ($COUNT file)"
-            git pull --rebase origin main
-            git push
+            # TANPA tarik-lalu-rebase (#163 di CI, ralat 12 Sep 2026) - konflik pada
+            # berkas hasil generasi tak layak digabung tangan. Versi kita menang untuk
+            # data yang baru dibangun; konflik DI LUAR data-idx MENGHENTIKAN langkah.
+            git push origin HEAD:main || {
+              echo "push ditolak - menggabung dengan remote"
+              git fetch origin main
+              if ! git merge --no-edit origin/main; then
+                BENTROK=$(git diff --name-only --diff-filter=U)
+                LUAR=$(printf '%s\n' "$BENTROK" | grep -v '^data-idx/' | grep -v '^$' || true)
+                if [ -n "$LUAR" ]; then
+                  echo "::error::konflik DI LUAR data-idx: $LUAR - berhenti, dokumen manusia tak disentuh"
+                  git merge --abort
+                  exit 1
+                fi
+                git checkout --ours -- $BENTROK && git add $BENTROK && git commit --no-edit
+              fi
+              git push origin HEAD:main || { echo "::error::push masih ditolak sesudah gabung"; exit 1; }
+            }
             echo "✅ Push berhasil: $COUNT file diperbarui."
           fi

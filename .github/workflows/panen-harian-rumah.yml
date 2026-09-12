@@ -559,8 +559,45 @@ jobs:
           git add $berkas
           $stempel = (Get-Date).ToUniversalTime().ToString('yyyy-MM-dd HH:mm')
           git commit -m "data: panen harian penuh $stempel UTC"
-          git pull --rebase --autostash origin $env:GITHUB_REF_NAME
+          # TANPA tarik-lalu-rebase (#163 di CI, ralat 12 Sep 2026). Baris itu
+          # dulu di sini; kembarannya di `panen-kabar.yml` gagal dua kali
+          # (10 Sep 22:47, 12 Sep 00:39 UTC) dengan konflik pada berkas hasil
+          # generasi, dan commit-nya tak pernah mendarat.
+          #
+          # Alur INI tak bisa memakai pola "panen ulang di atas remote" seperti
+          # kabar: panennya berjam-jam, bukan sepuluh detik. Jadi: GABUNG, dan
+          # untuk berkas yang baru saja dibangun dari sumber, versi kita yang
+          # menang - ia memang keluaran panen atas isi cakram terbaru.
+          #
+          # Batasnya keras: konflik DI LUAR `data-idx/` MENGHENTIKAN langkah.
+          # Mesin tak pernah menggabung dokumen manusia (pelajaran #163:
+          # `stash pop` pernah menulis penanda konflik ke dalam dokumen antrean).
           git push origin "HEAD:$env:GITHUB_REF_NAME"
+          if ($LASTEXITCODE -ne 0) {
+            Write-Host "push ditolak - remote maju di tengah jalan, menggabung"
+            git fetch origin $env:GITHUB_REF_NAME
+            git merge --no-edit "origin/$env:GITHUB_REF_NAME"
+            if ($LASTEXITCODE -ne 0) {
+              $bentrok = @(git diff --name-only --diff-filter=U)
+              $luar = @($bentrok | Where-Object { $_ -notlike 'data-idx/*' })
+              if ($luar.Count -gt 0) {
+                Write-Host ("::error::konflik DI LUAR data-idx: " + ($luar -join ', ') +
+                            " - berhenti, dokumen manusia tak disentuh")
+                git merge --abort
+                exit 1
+              }
+              Write-Host ("konflik hanya di data-idx (" + $bentrok.Count +
+                          " berkas) - dimenangkan versi yang baru dibangun")
+              git checkout --ours -- $bentrok
+              git add $bentrok
+              git commit --no-edit
+            }
+            git push origin "HEAD:$env:GITHUB_REF_NAME"
+            if ($LASTEXITCODE -ne 0) {
+              Write-Host "::error::push masih ditolak sesudah gabung - berhenti"
+              exit 1
+            }
+          }
 
       # Runner rumahan tak memulai dari mesin bersih seperti runner GitHub.
       - name: Bersihkan sisa

@@ -216,9 +216,53 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add $BERKAS
           git commit -m "data: panen kabar $(date -u +'%Y-%m-%d %H:%M UTC')"
-          # Rebase dulu: jalur rumahan bisa saja mendorong commit lebih dulu.
-          git pull --rebase --autostash origin "${GITHUB_REF_NAME}"
-          git push origin "HEAD:${GITHUB_REF_NAME}"
+
+          # TANPA tarik-lalu-rebase (#163 di CI, ralat 12 Sep 2026). Baris
+          # itu dulu di sini dan ia GAGAL dua kali: 10 Sep 22:47 dan 12 Sep
+          # 00:39 UTC, keduanya berhenti di
+          #   CONFLICT (content): Merge conflict in data-idx/json/kabar.json
+          # lalu commit-nya (190 item) tak pernah mendarat. Perbaikan #163
+          # sempat dipasang HANYA di `scripts/panen_kabar.ps1` (Task
+          # Scheduler), dan alur CI tertinggal memakai cara lama.
+          #
+          # Konflik pada berkas HASIL GENERASI tak layak digabung tangan:
+          # `kabar.json` bukan tulisan siapa-siapa, ia keluaran pemanen atas
+          # apa pun yang ada di cakram. Jadi jawabannya bukan "gabungkan dua
+          # versi" melainkan "bangun ulang di atas versi remote terbaru".
+          for percobaan in 1 2; do
+            if git push origin "HEAD:${GITHUB_REF_NAME}"; then exit 0; fi
+            echo "push ditolak - remote maju di tengah jalan (percobaan $percobaan)"
+
+            # Commit sendiri dilepas supaya percobaan berikutnya benar-benar
+            # mulai dari remote, bukan menumpuk di atas commit yang tertinggal.
+            # Dijaga ketat: hanya kalau commit teratas MEMANG milik alur ini.
+            JUDUL=$(git log -1 --format='%s')
+            case "$JUDUL" in
+              "data: panen kabar "*) ;;
+              *) echo "::error::commit teratas bukan milik alur ini ($JUDUL) - tidak dilepas"; exit 1 ;;
+            esac
+            git reset --soft HEAD~1
+            git restore --staged $BERKAS || true
+
+            git fetch origin "${GITHUB_REF_NAME}"
+            if ! git merge --ff-only "origin/${GITHUB_REF_NAME}"; then
+              echo "::error::maju-cepat ke remote gagal - berhenti tanpa menimpa apa pun"
+              exit 1
+            fi
+            git checkout "origin/${GITHUB_REF_NAME}" -- $BERKAS
+
+            python scripts/panen_kabar.py --batas 30 --status "$STATUS" || {
+              echo "::warning::panen ulang gagal - berhenti, berkas remote tak disentuh"; exit 1; }
+            ITEM_BARU=$(python3 scripts/beda_kabar.py)
+            if [ "${ITEM_BARU:-0}" = "0" ]; then
+              echo "Daftar sama dengan remote sesudah dibangun ulang - tidak commit."
+              exit 0
+            fi
+            git add $BERKAS
+            git commit -m "data: panen kabar $(date -u +'%Y-%m-%d %H:%M UTC')"
+          done
+          echo "::error::dua percobaan push gagal - berhenti tanpa menimpa apa pun"
+          exit 1
 
       # Vonisnya di sini, sesudah commit, supaya job merah tidak ikut membuang
       # data yang sudah terpanen.
