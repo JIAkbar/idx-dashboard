@@ -42,13 +42,17 @@ jobs:
           sparse-checkout: data-idx/json/index.json
           sparse-checkout-cone-mode: false
 
-      - name: Bandingkan tanggal produksi dengan repo
+      - name: Bandingkan tanggal data produksi (GitHub Pages) dengan repo
         env:
           SITUS: https://papan-idx.vercel.app
+          SITUS_DATA: https://jiakbar.github.io/idx-dashboard
         run: |
           set -euo pipefail
 
-          # Tanggal terbaru menurut repo — sumber kebenarannya.
+          # Sejak A2 (#176, 13 Sep 2026) data produksi disajikan GitHub Pages,
+          # bukan Vercel. Jadi "tanggal produksi" dibaca dari Pages, dan Vercel
+          # cukup diperiksa apakah halamannya hidup.
+          #
           # `dates` berisi OBJEK, bukan teks tanggal — tanggalnya di ruas
           # `date_iso`. Versi pertama penjaga ini mengasumsikan larik teks dan
           # langsung melempar TypeError; bentuk data diperiksa dulu, bukan
@@ -56,31 +60,26 @@ jobs:
           BACA='import json,sys; d=json.load(sys.stdin); print(max(x["date_iso"] for x in d["dates"]))'
           REPO=$(python3 -c "$BACA" < data-idx/json/index.json)
 
-          # Tanggal terbaru menurut PRODUKSI. Cache-bust supaya yang diukur
-          # bukan salinan tepi yang kebetulan masih hangat.
-          #
-          # Header ikut diambil (-D) karena sejak 2 Sep 2026 Vercel memasang
-          # "Security Checkpoint": permintaan non-peramban dijawab HTTP 403
-          # berisi halaman challenge, ditandai `X-Vercel-Mitigated: challenge`.
-          # Tanpa membedakannya, penjaga ini melapor GAGAL tiap hari — dan
-          # alarm yang menyala tiap hari adalah alarm yang diabaikan, persis
-          # kekeliruan toleransi info_stockbit yang baru dibetulkan.
-          #
-          # "Tak bisa diukur" BUKAN "beku". Yang pertama peringatan, yang
-          # kedua galat. Menyamakan keduanya membuat penjaga ini berbohong ke
-          # dua arah sekaligus: menuduh beku saat cuma terhalang, dan kelak
-          # diabaikan saat benar-benar beku.
-          BADAN=$(curl -s --max-time 45 -D /tmp/h.txt \
-            "$SITUS/data-idx/json/index.json?cb=$RANDOM" || true)
-          KODE=$(awk 'NR==1{print $2}' /tmp/h.txt 2>/dev/null)
-
+          # 1) Vercel hidup. Header ikut diambil (-D) karena sejak 2 Sep 2026
+          # Vercel memasang "Security Checkpoint": permintaan non-peramban
+          # dijawab HTTP 403 berisi halaman challenge, ditandai
+          # `X-Vercel-Mitigated: challenge`. "Tak bisa diukur" BUKAN "mati":
+          # yang pertama peringatan, yang kedua galat.
+          KODE_APP=$(curl -s -o /dev/null --max-time 45 -D /tmp/h.txt -w '%{http_code}' "$SITUS/?cb=$RANDOM" || true)
           if grep -qi '^x-vercel-mitigated:[[:space:]]*challenge' /tmp/h.txt 2>/dev/null; then
-            echo "::warning::Produksi TIDAK BISA DIPERIKSA dari CI — Vercel memasang Security Checkpoint (HTTP $KODE, challenge). Ini bukan bukti situs beku dan bukan bukti situs segar; verifikasi hanya sah lewat render peramban. Matikan Attack Challenge Mode di dasbor Vercel kalau pemeriksaan otomatis ini mau dihidupkan lagi."
-            exit 0
+            echo "::warning::Halaman aplikasi TIDAK BISA DIPERIKSA dari CI — Vercel memasang Security Checkpoint (HTTP $KODE_APP, challenge). Ini bukan bukti situs mati."
+          elif [ "$KODE_APP" != "200" ]; then
+            echo "::error::Halaman aplikasi $SITUS/ menjawab HTTP ${KODE_APP:-tanpa jawaban}, bukan 200."
+            exit 1
+          else
+            echo "aplikasi : $SITUS/ HTTP 200"
           fi
 
+          # 2) Data produksi di Pages. Cache-bust supaya yang diukur bukan
+          # salinan tepi yang kebetulan masih hangat.
+          BADAN=$(curl -s --max-time 45 "$SITUS_DATA/data-idx/json/index.json?cb=$RANDOM" || true)
           PROD=$(printf '%s' "$BADAN" | python3 -c "$BACA" 2>/dev/null) || {
-            echo "::error::Tidak bisa membaca data produksi ($SITUS, HTTP $KODE). Situsnya mati, berkas datanya tak ikut ter-deploy, atau bentuk datanya berubah."
+            echo "::error::Tidak bisa membaca data produksi ($SITUS_DATA/data-idx/json/index.json). Pages mati, build Pages gagal, atau bentuk datanya berubah."
             exit 1
           }
 
@@ -104,12 +103,12 @@ jobs:
           echo "selisih  : $BEDA hari"
 
           if [ "$BEDA" -ge 3 ]; then
-            echo "::error::PRODUKSI BEKU $BEDA hari. Repo punya $REPO, yang tayang $PROD."
-            echo "::error::Deploy berhenti mendarat. Periksa dasbor Vercel: build gagal, integrasi Git terputus, atau kuota habis."
+            echo "::error::DATA PRODUKSI BEKU $BEDA hari. Repo punya $REPO, Pages menyajikan $PROD."
+            echo "::error::Build Pages berhenti mendarat. Periksa tab Actions 'pages build and deployment' dan batas situs Pages."
             exit 1
           fi
 
-          echo "::warning::Produksi tertinggal $BEDA hari ($PROD vs $REPO) — masih dalam ambang akhir pekan, belum dianggap beku."
+          echo "::warning::Data produksi tertinggal $BEDA hari ($PROD vs $REPO) — masih dalam ambang akhir pekan, belum dianggap beku."
 
   # ---------------------------------------------------------------------
   # #80 B — kesegaran SUMBER di dalam repo.

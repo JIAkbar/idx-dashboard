@@ -1,62 +1,39 @@
 /**
- * Alamat dasar untuk data yang TIDAK ikut ter-deploy ke Vercel.
+ * Alamat data statis untuk lingkungan saat ini.
  *
- * Kenapa ada: `broker_tahunan` sendirian 2.161 MB dan 8.894 berkas — 74%
- * ukuran dan 36% jumlah berkas seluruh deployment, dan ia tumbuh ~963 berkas
- * tiap tahun yang dibangun. Sejak 2 Sep 2026 ia dikecualikan dari salinan
- * build (`scripts/copy-static-data.mjs`) dan diambil dari GitHub Pages, yang
- * menyajikan repo yang sama.
+ * Sejak A2 (#176, 13 Sep 2026) SELURUH `/data-idx/` dan `/arus-pasar/` di
+ * produksi diambil dari GitHub Pages, yang menyajikan repo yang sama. Build
+ * Vercel tak lagi menyalin data (`app/scripts/copy-static-data.mjs`): sebelum
+ * A2 tiap build menyalin sekitar 800 MB data (hasil build lokal 13 Sep 2026:
+ * `app/dist` 804 MB, 800 MB di antaranya data), dan tiap commit panen memicu
+ * build itu. A1 (#175) lebih dulu membungkus tiap alamat data dengan fungsi
+ * ini, jadi pemindahan cukup mengubah aturan di bawah.
  *
- * Diperiksa 2 Sep 2026 sebelum dipakai, bukan diasumsikan:
- *   `/data-idx/json/broker_tahunan/BUMI/index.json` -> HTTP 200
- *   `/data-idx/json/index.json` di Pages bertanggal **1 September**,
- *   sementara yang di Vercel masih **27 Agustus** — jadi jalur ini bukan
- *   sekadar cadangan, ia justru lebih segar.
+ * Riwayat singkat: 2 Sep 2026 `broker_tahunan` dipindah ke Pages lebih dulu
+ * (2.161 MB, 74% ukuran deployment), 9 Sep 2026 `kabar.json` dan `snips.json`
+ * (dipanen tiap dua jam tanpa memicu build).
  *
- * Kenapa satu helper dan bukan menyunting 109 pemanggilan `/data-idx/`:
- * yang dipindah cuma SATU folder, dan pembacanya cuma tiga berkas. Menyapu
- * seluruh pemanggilan berarti mengubah jalur data yang selama ini bekerja
- * demi masalah yang tak menyentuhnya.
+ * DEV tetap memakai jalur relatif: `vite.config.ts` menyajikan data repo apa
+ * adanya, jadi localhost tak bergantung pada jaringan.
  *
- * DEV tetap memakai jalur relatif: `vite.config.ts` sudah menyajikan
- * `../data-idx/json` apa adanya, jadi di localhost tak ada yang berubah dan
- * pekerjaan lokal tak bergantung pada jaringan.
+ * ATURAN RILIS (#176 butir 6): berkas atau ruas data baru terbit di Pages
+ * dulu (commit data, tunggu build Pages selesai), baru kode yang membacanya
+ * di-push. Urutan terbalik membuat halaman meminta berkas yang belum ada.
  *
- * Membatalkannya: kosongkan konstanta ini DAN `LUAR` di copy-static-data.mjs.
- * Keduanya harus berubah bersama — kalau cuma satu, halaman meminta berkas
- * yang tak ada di mana pun.
+ * Membatalkan A2: kosongkan `BASE_DATA_LUAR` DAN kembalikan penyalinan di
+ * copy-static-data.mjs. Keduanya harus berubah bersama.
  */
 const BASE_DATA_LUAR = 'https://jiakbar.github.io/idx-dashboard'
 
-/** Folder di bawah `data-idx/json/` yang disajikan dari luar Vercel. */
-const DI_LUAR = ['broker_tahunan']
+/** Awalan jalur yang di produksi disajikan GitHub Pages. */
+const AWALAN_LUAR = ['/data-idx/', '/arus-pasar/']
 
 /**
- * BERKAS tunggal yang disajikan dari luar Vercel (#138).
- *
- * Beda dari `DI_LUAR` yang mencocokkan folder: kabar dipanen tiap dua jam,
- * dan tiap dorongannya memicu pembangunan Vercel penuh. Dengan berkasnya
- * diambil dari Pages — yang menyajikan repo yang sama dan terbukti lebih
- * segar — kabar bisa lebih sering tanpa membayar satu pun deploy.
- *
- * Diperiksa 9 Sep 2026 sebelum dipakai, bukan diasumsikan:
- *   `/data-idx/json/kabar.json` di Pages -> HTTP 200, 717.637 byte,
- *   `dipanen` 2026-09-09T06:42 (lebih baru daripada bangunan Vercel saat itu)
- *   `/data-idx/json/snips.json` -> HTTP 200, 77.144 byte
- */
-const BERKAS_DI_LUAR = ['kabar.json', 'snips.json']
-
-/**
- * Ubah jalur data jadi URL yang benar untuk lingkungan saat ini.
- *
- * Menerima jalur apa adanya (`/data-idx/json/...`) supaya pemanggil tak perlu
- * tahu folder mana yang sedang tinggal di mana — dan supaya memindahkan folder
- * berikutnya cukup menambah satu nama di `DI_LUAR`.
+ * Ubah jalur data jadi URL yang benar untuk lingkungan saat ini. Jalur di luar
+ * kedua awalan (aset aplikasi, `/api/...`) dikembalikan apa adanya.
  */
 export function urlData(jalur: string): string {
   if (!import.meta.env.PROD) return jalur
   if (!BASE_DATA_LUAR) return jalur
-  const cocok = DI_LUAR.some((f) => jalur.startsWith(`/data-idx/json/${f}/`))
-    || BERKAS_DI_LUAR.some((f) => jalur === `/data-idx/json/${f}`)
-  return cocok ? BASE_DATA_LUAR + jalur : jalur
+  return AWALAN_LUAR.some((a) => jalur.startsWith(a)) ? BASE_DATA_LUAR + jalur : jalur
 }

@@ -23,6 +23,31 @@ const mobilekah = () =>
   /Android|iPhone|iPad|Mobi/i.test(navigator.userAgent) || window.innerWidth <= 768
 
 /**
+ * Unduh PDF edisi (#176 A2). Sejak data disajikan GitHub Pages, alamat PDF berada
+ * di domain lain, dan peramban MENGABAIKAN atribut `download` untuk alamat lintas
+ * domain: tautan cuma membuka PDF, bukan menyimpannya, tanpa satu pun galat.
+ * Berkasnya diambil lewat fetch lalu disimpan dari blob. Kalau fetch gagal,
+ * PDF dibuka di tab baru supaya pembaca tetap bisa menyimpannya sendiri.
+ */
+async function unduhPdf(pdf: string) {
+  const url = urlData(`/arus-pasar/keluaran/${pdf}`)
+  try {
+    const r = await fetch(url)
+    if (!r.ok) throw new Error(`HTTP ${r.status}`)
+    const alamat = URL.createObjectURL(await r.blob())
+    const a = document.createElement('a')
+    a.href = alamat
+    a.download = pdf
+    document.body.appendChild(a)
+    a.click()
+    a.remove()
+    setTimeout(() => URL.revokeObjectURL(alamat), 10_000)
+  } catch {
+    window.open(url, '_blank', 'noopener')
+  }
+}
+
+/**
  * IHSG per tanggal ISO dari data-idx/json/index.json (#78) — index-nya saja
  * sudah memuat close (`ihsg`) + perubahan % (`ihsg_pct`) per hari bursa, jadi
  * tidak perlu fetch berkas per-tanggal. Helper lokal view: dataHarian.ts tidak
@@ -436,7 +461,7 @@ export function Bulletin() {
                             <a
                               className="blt-dl"
                               href={urlData(`/arus-pasar/keluaran/${e.pdf}`)}
-                              download
+                              onClick={(ev) => { ev.preventDefault(); void unduhPdf(e.pdf) }}
                               title={`Unduh ${e.pdf}`}
                             >
                               <IkonMenu d={IKON_UNDUH} size={13} />
@@ -584,7 +609,7 @@ export function Bulletin() {
           <div className="blt-modal" role="dialog" aria-modal="true" aria-label={`Pratinjau ${lihat.kode}`}>
             <div className="blt-modal-h">
               <span className="tick">{lihat.kode}</span>
-              <a className="blt-dl" href={urlData(`/arus-pasar/keluaran/${lihat.pdf}`)} download title={`Unduh ${lihat.pdf}`}>
+              <a className="blt-dl" href={urlData(`/arus-pasar/keluaran/${lihat.pdf}`)} onClick={(ev) => { ev.preventDefault(); void unduhPdf(lihat.pdf) }} title={`Unduh ${lihat.pdf}`}>
                 <IkonMenu d={IKON_UNDUH} size={13} />
                 Unduh
               </a>
