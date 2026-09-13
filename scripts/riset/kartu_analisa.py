@@ -944,8 +944,13 @@ def cetak(k: dict) -> None:
             pr = asg["periode"].get(h)
             if not pr:
                 continue
-            p(f"  ASING {h}h  beli {pr['beli']:,.0f} lbr ({pr['porsi_beli_pct']:.1f}% vol pasar) · "
-              f"jual {pr['jual']:,.0f} lbr ({pr['porsi_jual_pct']:.1f}%) · net {pr['net']:+,.0f} lbr (n={pr['n']})")
+            # Porsi bernilai None saat volume pasar periode itu 0 (ringkas_asing_dari),
+            # jadi dicetak tanda pisah. Memformat None dengan :.1f mematikan seluruh
+            # jalan untuk daftar kode pendek (AKKU, antrean #186).
+            pb = "—" if pr["porsi_beli_pct"] is None else f"{pr['porsi_beli_pct']:.1f}%"
+            pj = "—" if pr["porsi_jual_pct"] is None else f"{pr['porsi_jual_pct']:.1f}%"
+            p(f"  ASING {h}h  beli {pr['beli']:,.0f} lbr ({pb} vol pasar) · "
+              f"jual {pr['jual']:,.0f} lbr ({pj}) · net {pr['net']:+,.0f} lbr (n={pr['n']})")
 
 
 def uji_bar_hantu() -> None:
