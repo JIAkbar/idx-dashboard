@@ -19,6 +19,7 @@
  * angka kerangka lain.
  */
 import { useEffect, useState } from 'react'
+import { urlData } from './baseData'
 
 export interface StatRbs {
   kerangka: string
@@ -39,7 +40,7 @@ const cache = new Map<string, Promise<StatRbs | null>>()
 export function muatStatRbs(kerangka: string): Promise<StatRbs | null> {
   let p = cache.get(kerangka)
   if (!p) {
-    p = fetch(`/data-idx/json/bt/rbs-stat-${kerangka}.json`)
+    p = fetch(urlData(`/data-idx/json/bt/rbs-stat-${kerangka}.json`))
       .then((r) => (r.ok ? (r.json() as Promise<StatRbs>) : null))
       .catch(() => null)
     cache.set(kerangka, p)

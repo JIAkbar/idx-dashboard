@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { LABEL_RENTANG } from './periode'
+import { urlData } from './baseData'
 
 /**
  * Aliran investor asing vs domestik di tingkat PASAR — B36.
@@ -60,7 +61,7 @@ export function useAliranInvestor(): BerkasAliran | null {
   const [data, setData] = useState<BerkasAliran | null>(null)
   useEffect(() => {
     let batal = false
-    fetch('/data-idx/json/aliran_investor.json')
+    fetch(urlData('/data-idx/json/aliran_investor.json'))
       .then((r) => r.json())
       .then((j: BerkasAliran) => { if (!batal) setData(j) })
       .catch(() => {}) // panel tak tampil; halaman lain tak terganggu

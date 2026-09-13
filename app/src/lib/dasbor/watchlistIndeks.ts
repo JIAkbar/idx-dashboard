@@ -1,5 +1,6 @@
 import type { BarisOhlc } from './ihsgOhlc'
 import type { BarisBroker } from './brokerEmiten'
+import { urlData } from './baseData'
 
 /**
  * Watchlist sebagai indeks (spek §E) — anggota watchlist digabung jadi satu
@@ -190,7 +191,7 @@ let sahamPromise: Promise<Record<string, number>> | null = null
  *  per sesi, dipakai ulang tiap kali tab Kinerja dibuka. */
 export function fetchSahamMap(): Promise<Record<string, number>> {
   if (!sahamPromise) {
-    sahamPromise = fetch('/data-idx/json/daftar_emiten.json')
+    sahamPromise = fetch(urlData('/data-idx/json/daftar_emiten.json'))
       .then((r) => (r.ok ? (r.json() as Promise<DaftarEmitenMentah>) : Promise.resolve({ emiten: [] })))
       .then((j) => Object.fromEntries(
         (j.emiten ?? []).filter((e): e is { kode: string; saham: number } => typeof e.saham === 'number')
@@ -230,7 +231,7 @@ const cacheTopBroker = new Map<string, Promise<TopBrokerHarian | null>>()
 export function fetchTopBrokerHarian(kode: string): Promise<TopBrokerHarian | null> {
   let p = cacheTopBroker.get(kode)
   if (!p) {
-    p = fetch(`/data-idx/json/broker_harian/${kode}.json`)
+    p = fetch(urlData(`/data-idx/json/broker_harian/${kode}.json`))
       .then((r) => (r.ok ? (r.json() as Promise<BrokerHarianMentah>) : null))
       .then((j) => {
         if (!j) return null

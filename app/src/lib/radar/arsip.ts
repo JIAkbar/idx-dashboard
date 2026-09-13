@@ -4,6 +4,7 @@
  * date_iso naik supaya "edisi berikutnya" = indeks + 1 (dasar forward return).
  */
 import { useEffect, useState } from 'react'
+import { urlData } from '../dasbor/baseData'
 
 export interface MacdRadar {
   arah: 'up' | 'down' | null
@@ -67,7 +68,7 @@ export function useArsipRadar() {
   useEffect(() => {
     if (cacheArsip) return
     let batal = false
-    fetch('/data-idx/radar/index.json')
+    fetch(urlData('/data-idx/radar/index.json'))
       .then((r) => {
         if (!r.ok) throw new Error(`HTTP ${r.status}`)
         return r.json() as Promise<{ dates: string[] }>
@@ -75,7 +76,7 @@ export function useArsipRadar() {
       .then((idx) =>
         Promise.all(
           [...idx.dates].sort().map((d) =>
-            fetch(`/data-idx/radar/${namaBerkas(d)}.json`).then((r) => {
+            fetch(urlData(`/data-idx/radar/${namaBerkas(d)}.json`)).then((r) => {
               if (!r.ok) throw new Error(`HTTP ${r.status} (${d})`)
               return r.json() as Promise<EdisiRadar>
             })

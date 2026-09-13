@@ -17,6 +17,7 @@ import { useDataHarian } from '../../lib/dasbor/dataHarian'
 // pindah folder saat rombak shell tab #shell-tab), ter-scope .lantai —
 // diimpor di sini juga supaya pratinjau RBU jalan tanpa mampir halaman admin.
 import '../admin/AdminShared.css'
+import { urlData } from '../../lib/dasbor/baseData'
 
 type Tab = 'watch' | 'penny' | 'rbu' | 'mingguan' | 'bulanan' | 'cara'
 
@@ -58,7 +59,7 @@ function useIhsgClose() {
   useEffect(() => {
     if (cacheIhsg) return
     let batal = false
-    fetch('/data-idx/json/index.json')
+    fetch(urlData('/data-idx/json/index.json'))
       .then((r) => (r.ok ? (r.json() as Promise<{ dates?: { date_iso: string; ihsg: number }[] }>) : Promise.reject()))
       .then((j) => {
         if (batal) return
@@ -372,7 +373,7 @@ export function Radar() {
             ) : (
               <div className="rdr-rbu">
                 {edisi.rbu.map((tik) => {
-                  const src = `/data-idx/radar/rbu/${edisi.date_iso}/${tik}.png`
+                  const src = urlData(`/data-idx/radar/rbu/${edisi.date_iso}/${tik}.png`)
                   return (
                     <div key={tik} className="rdr-rbu-c">
                       <div className="h">
@@ -384,7 +385,7 @@ export function Radar() {
                         tik={tik}
                         onBuka={() => {
                           const items = edisi.rbu.map((t) => ({
-                            src: `/data-idx/radar/rbu/${edisi.date_iso}/${t}.png`,
+                            src: urlData(`/data-idx/radar/rbu/${edisi.date_iso}/${t}.png`),
                             keterangan: `${t} · Chart RBU · ${tanggalPanjang(edisi.date_iso)}`,
                           }))
                           setLightbox({ items, index: edisi.rbu.indexOf(tik) })

@@ -9,6 +9,7 @@
  * Itu bukan kerapian: kalau kartu memakai rumus lain, angka win rate di
  * sebelahnya tak menjelaskan apa pun tentang sinyal yang benar-benar terbit.
  */
+import { urlData } from './baseData'
 
 export interface JejakHorizon {
   menang: number
@@ -67,7 +68,7 @@ let meta: RencanaSaham | null = null
 /** Peta kode → rencana. Diunduh sekali per sesi peramban. */
 export function muatRencana(): Promise<Map<string, RencanaEmiten>> {
   if (!simpanan) {
-    simpanan = fetch('/data-idx/json/rencana_saham.json')
+    simpanan = fetch(urlData('/data-idx/json/rencana_saham.json'))
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
       .then((d: RencanaSaham) => {
         meta = d

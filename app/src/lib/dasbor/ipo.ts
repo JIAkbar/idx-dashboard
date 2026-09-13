@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { urlData } from './baseData'
 
 /**
  * IPO Papan (`/ipo`) — angkanya SUDAH dihitung di sisi Node
@@ -60,7 +61,7 @@ export interface DataIpo {
 
 export async function ambilIpo(pengambil: typeof fetch = fetch): Promise<DataIpo | null> {
   try {
-    const r = await pengambil('/data-idx/json/ipo.json')
+    const r = await pengambil(urlData('/data-idx/json/ipo.json'))
     if (!r.ok) return null
     return (await r.json()) as DataIpo
   } catch {

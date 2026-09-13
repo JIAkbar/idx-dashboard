@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { tipeEdisi, useBulletinList, LABEL_TIPE_EDISI, type TipeEdisi } from '../../lib/dasbor/bulletin'
 import { IkonMenu, IKON_KOTAK_ARSIP } from '../../components/dasbor/IkonMenu'
 import './AdminShared.css'
+import { urlData } from '../../lib/dasbor/baseData'
 
 const TIPE_TAB = ['Semua', 'Harian', 'Mingguan', 'Bulanan', 'Bedah'] as const
 const PER_HAL = 10
@@ -147,7 +148,7 @@ export function RakTerbitan() {
                     <td className="r">
                       <a
                         className="blt-dl"
-                        href={`/arus-pasar/keluaran/${r.pdf}`}
+                        href={urlData(`/arus-pasar/keluaran/${r.pdf}`)}
                         target="_blank"
                         rel="noopener"
                         title={`Buka ${r.pdf}`}

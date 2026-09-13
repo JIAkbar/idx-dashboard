@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { urlData } from './baseData'
 
 /** Satu baris `daftar_emiten.json`. */
 export interface EmitenEntry {
@@ -51,9 +52,9 @@ export function useKamusEmiten() {
     if (cache && Date.now() - cacheSejak < UMUR_CACHE_MS) return
     let batal = false
     Promise.all([
-      fetch('/data-idx/json/harga_terakhir.json').then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status))))),
-      fetch('/data-idx/json/daftar_emiten.json').then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status))))),
-      fetch('/data-idx/json/grup_konglomerat.json').then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status))))),
+      fetch(urlData('/data-idx/json/harga_terakhir.json')).then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status))))),
+      fetch(urlData('/data-idx/json/daftar_emiten.json')).then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status))))),
+      fetch(urlData('/data-idx/json/grup_konglomerat.json')).then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status))))),
     ])
       .then(([h, e, g]: [
         { bulan?: string; harga?: Record<string, number> },

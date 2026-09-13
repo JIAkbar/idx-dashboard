@@ -35,7 +35,7 @@ export interface BarHarga {
 interface BerkasOhlcv { kolom: string[]; bar: number[][] }
 
 export async function muatOhlcv(kode: string): Promise<BarHarga[] | null> {
-  const f = await ambil<BerkasOhlcv>(`/data-idx/json/ohlcv_stockbit/${kode}.json`)
+  const f = await ambil<BerkasOhlcv>(urlData(`/data-idx/json/ohlcv_stockbit/${kode}.json`))
   if (!f) return null
   const ki = Object.fromEntries(f.kolom.map((k, i) => [k, i]))
   return f.bar.map((b) => ({
@@ -69,7 +69,7 @@ interface HariRaw { ringkas: RingkasRaw | null; broker: BarisPadat[] }
 interface BerkasBrokerRaw { kode: string; jendela_hari: number; hari: Record<string, HariRaw> }
 
 export async function muatBrokerHarian(kode: string): Promise<BrokerHarianEmiten | null> {
-  const f = await ambil<BerkasBrokerRaw>(`/data-idx/json/broker_harian/${kode}.json`)
+  const f = await ambil<BerkasBrokerRaw>(urlData(`/data-idx/json/broker_harian/${kode}.json`))
   if (!f) return null
   const hari: Record<string, HariBroker> = {}
   for (const [tgl, h] of Object.entries(f.hari)) {
@@ -91,7 +91,7 @@ export async function muatBrokerHarian(kode: string): Promise<BrokerHarianEmiten
 /** Daftar kode emiten resmi (jumlah saham dari bursa) — satu-satunya sumber
  *  universe lengkap yang kita punya (dipakai juga sinkron_emiten.py). */
 export async function muatDaftarKode(): Promise<string[]> {
-  const f = await ambil<{ emiten: Array<{ kode: string }> }>('/data-idx/json/daftar_emiten.json')
+  const f = await ambil<{ emiten: Array<{ kode: string }> }>(urlData('/data-idx/json/daftar_emiten.json'))
   return (f?.emiten ?? []).map((e) => e.kode)
 }
 
@@ -119,6 +119,7 @@ export function muatBrokerSemua(): Promise<Map<string, BrokerHarianEmiten>> {
 
 import { muatRentang, type BarisBroker as BarisPadat } from './brokerEmiten'
 import type { HariStalkerV2 } from './neoPapan'
+import { urlData } from './baseData'
 
 /**
  * Muat rentang broker_tahunan untuk BANYAK emiten sekaligus — jalur Stalker
@@ -185,12 +186,12 @@ export interface Kepemilikan {
 }
 
 export async function muatKepemilikan(kode: string): Promise<Kepemilikan | null> {
-  return ambil<Kepemilikan>(`/data-idx/json/kepemilikan/${kode}.json`)
+  return ambil<Kepemilikan>(urlData(`/data-idx/json/kepemilikan/${kode}.json`))
 }
 
 // ── Keanggotaan indeks (Sector/Index Activity) ─────────────────────────────
 
 export async function muatIndeksEmiten(kode: string): Promise<string[]> {
-  const f = await ambil<{ indexes?: string[] }>(`/data-idx/json/info_stockbit/${kode}.json`)
+  const f = await ambil<{ indexes?: string[] }>(urlData(`/data-idx/json/info_stockbit/${kode}.json`))
   return f?.indexes ?? []
 }

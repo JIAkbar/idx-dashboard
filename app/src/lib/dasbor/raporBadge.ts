@@ -1,3 +1,4 @@
+import { urlData } from './baseData'
 // Rapor & Badge Win Rate — kerangka lintas-spek, docs/spek-dev-papan/adendum_rapor_badge.md.
 // Dua ukuran yang JANGAN dicampur (adendum, bagian "Dua ukuran"):
 //   1. Rapor emiten (kolom form) — hitungForm(): deret naik/turun harian saham itu sendiri.
@@ -41,7 +42,7 @@ export interface IndexBt {
  *  → `null`, BUKAN galat — pemanggil menafsirkannya sebagai "belum ada rapor". */
 export async function ambilIndexBt(pengambil: typeof fetch = fetch): Promise<IndexBt | null> {
   try {
-    const r = await pengambil('/data-idx/json/bt/index.json')
+    const r = await pengambil(urlData('/data-idx/json/bt/index.json'))
     if (!r.ok) return null
     return (await r.json()) as IndexBt
   } catch {

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { urlData } from './baseData'
 
 /**
  * Informasi pemegang saham pengendali dari laporan keuangan resmi bursa (XBRL
@@ -75,7 +76,7 @@ export function muatPengendali(): Promise<DaftarPengendali> {
   if (segar()) return Promise.resolve(cache!)
   cache = null
   if (!sedangAmbil) {
-    sedangAmbil = fetch('/data-idx/json/pengendali.json')
+    sedangAmbil = fetch(urlData('/data-idx/json/pengendali.json'))
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
       .then((d: DaftarPengendali) => {
         cache = d

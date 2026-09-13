@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { urlData } from './baseData'
 
 /**
  * Pembanding historis untuk rasio valuasi — "P/E 12x" jadi bisa dibaca
@@ -175,7 +176,7 @@ export function muatValuasi(): Promise<DaftarValuasi> {
   if (segar()) return Promise.resolve(cache!)
   cache = null
   if (!sedangAmbil) {
-    sedangAmbil = fetch('/data-idx/json/valuasi_historis.json')
+    sedangAmbil = fetch(urlData('/data-idx/json/valuasi_historis.json'))
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
       .then((d: DaftarValuasi) => {
         cache = d

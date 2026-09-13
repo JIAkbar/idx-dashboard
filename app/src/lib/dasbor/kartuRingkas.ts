@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import type { Kualitas } from './kartuAnalisa'
+import { urlData } from './baseData'
 
 /**
  * Tabel penyaring emiten (`/kartu`) — satu berkas ringkas untuk SELURUH emiten
@@ -107,7 +108,7 @@ export function saring(baris: BarisTabel[], aktif: string[], cari: string): Bari
 
 export async function ambilRingkasKartu(pengambil: typeof fetch = fetch): Promise<DataRingkas | null> {
   try {
-    const r = await pengambil('/data-idx/json/kartu/ringkas.json')
+    const r = await pengambil(urlData('/data-idx/json/kartu/ringkas.json'))
     if (!r.ok) return null
     return (await r.json()) as DataRingkas
   } catch {
@@ -154,7 +155,7 @@ export function saringKualitas<T extends { kualitas?: Kualitas | null }>(
  *  = tak diambil (pemanggil pakai `useRingkasKartu()` untuk tanggal terkini). */
 export async function ambilArsipKartu(tanggal: string, pengambil: typeof fetch = fetch): Promise<DataRingkas | null> {
   try {
-    const r = await pengambil(`/data-idx/json/kartu/arsip/${tanggal}.json`)
+    const r = await pengambil(urlData(`/data-idx/json/kartu/arsip/${tanggal}.json`))
     if (!r.ok) return null
     return (await r.json()) as DataRingkas
   } catch {

@@ -1,4 +1,5 @@
 import { persen } from './format'
+import { urlData } from './baseData'
 /**
  * Blok E — rekam jejak strategi PAPAN pada satu emiten.
  *
@@ -123,7 +124,7 @@ export interface RunBacktest {
 export async function muatRekam(kode: string): Promise<RekamStrategi[]> {
   let indeks: { run?: RunBacktest[] }
   try {
-    const r = await fetch('/data-idx/json/bt/index.json')
+    const r = await fetch(urlData('/data-idx/json/bt/index.json'))
     if (!r.ok) return []
     indeks = await r.json()
   } catch {
@@ -133,7 +134,7 @@ export async function muatRekam(kode: string): Promise<RekamStrategi[]> {
   const hasil = await Promise.all(
     run.map(async (x) => {
       try {
-        const r = await fetch(`/data-idx/json/bt/${x.berkas}`)
+        const r = await fetch(urlData(`/data-idx/json/bt/${x.berkas}`))
         if (!r.ok) return null
         const j = (await r.json()) as { trades?: Trade[] }
         return ringkasRekam(x.strategi, j?.trades ?? [], kode)
@@ -161,13 +162,13 @@ export interface RekomendasiEmiten {
 
 export async function muatRekomendasi(kode: string): Promise<RekomendasiEmiten[]> {
   try {
-    const ri = await fetch('/data-idx/json/rekomendasi/index.json')
+    const ri = await fetch(urlData('/data-idx/json/rekomendasi/index.json'))
     if (!ri.ok) return []
     const { tanggal } = (await ri.json()) as { tanggal?: string[] }
     const daftar = (tanggal ?? []).slice(-5).reverse()
     const out: RekomendasiEmiten[] = []
     for (const t of daftar) {
-      const r = await fetch(`/data-idx/json/rekomendasi/${t}.json`)
+      const r = await fetch(urlData(`/data-idx/json/rekomendasi/${t}.json`))
       if (!r.ok) continue
       const j = (await r.json()) as {
         presets?: Array<{ preset: string; saham?: Array<Record<string, unknown>> }>
@@ -247,8 +248,8 @@ export async function muatProb(
 ): Promise<{ prob: ProbEmiten | null; evaluasi: EvaluasiProb | null }> {
   try {
     const [a, b] = await Promise.all([
-      fetch(`/data-idx/json/prob/${kode.toUpperCase()}.json`),
-      fetch('/data-idx/json/prob/index.json'),
+      fetch(urlData(`/data-idx/json/prob/${kode.toUpperCase()}.json`)),
+      fetch(urlData('/data-idx/json/prob/index.json')),
     ])
     const prob = a.ok ? ((await a.json()) as ProbEmiten) : null
     const idx = b.ok ? ((await b.json()) as { evaluasi?: EvaluasiProb }) : null
@@ -269,7 +270,7 @@ export async function muatProb(
  */
 export async function muatEvaluasiProb(): Promise<EvaluasiProb | null> {
   try {
-    const r = await fetch('/data-idx/json/prob/index.json')
+    const r = await fetch(urlData('/data-idx/json/prob/index.json'))
     if (!r.ok) return null
     const idx = (await r.json()) as { evaluasi?: EvaluasiProb }
     return idx?.evaluasi ?? null

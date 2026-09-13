@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { urlData } from './baseData'
 
 /**
  * Jago Papan (`/jago-papan`, docs/spek-dev-papan/spek_jago_papan.md) — empat
@@ -301,7 +302,7 @@ export interface DataJagoPapan {
 
 export async function ambilJagoPapan(pengambil: typeof fetch = fetch): Promise<DataJagoPapan | null> {
   try {
-    const r = await pengambil('/data-idx/json/jago_papan/terbaru.json')
+    const r = await pengambil(urlData('/data-idx/json/jago_papan/terbaru.json'))
     if (!r.ok) return null
     return (await r.json()) as DataJagoPapan
   } catch {

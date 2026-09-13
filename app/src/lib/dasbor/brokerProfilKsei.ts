@@ -8,6 +8,7 @@
  *   jadi fungsi susun di sini yang menjembatani.
  */
 import { useEffect, useState } from 'react'
+import { urlData } from './baseData'
 
 // ── KSEI Balancepos ──────────────────────────────────────────────────────────
 
@@ -24,7 +25,7 @@ const cacheKepemilikan = new Map<string, Promise<BerkasKepemilikan | null>>()
 export function muatKepemilikan(kode: string): Promise<BerkasKepemilikan | null> {
   let p = cacheKepemilikan.get(kode)
   if (!p) {
-    p = fetch(`/data-idx/json/kepemilikan/${kode}.json`)
+    p = fetch(urlData(`/data-idx/json/kepemilikan/${kode}.json`))
       .then((r) => (r.ok ? (r.json() as Promise<BerkasKepemilikan>) : null))
       .catch(() => null)
     cacheKepemilikan.set(kode, p)
@@ -133,7 +134,7 @@ const cacheProfil = new Map<string, Promise<BerkasProfil | null>>()
 export function muatProfil(kode: string): Promise<BerkasProfil | null> {
   let p = cacheProfil.get(kode)
   if (!p) {
-    p = fetch(`/data-idx/json/profil_stockbit/${kode}.json`)
+    p = fetch(urlData(`/data-idx/json/profil_stockbit/${kode}.json`))
       .then((r) => (r.ok ? (r.json() as Promise<BerkasProfil>) : null))
       .catch(() => null)
     cacheProfil.set(kode, p)

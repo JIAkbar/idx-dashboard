@@ -1,4 +1,5 @@
 import type { SeriImbal } from './seasonality'
+import { urlData } from './dasbor/baseData'
 
 /** Baris indeks.json — cukup untuk kotak pencarian, tanpa satu pun angka imbal. */
 export interface BarisIndeks {
@@ -23,7 +24,7 @@ export interface BarisBelum {
   /** tanggal pencatatan di bursa, YYYY-MM-DD */ t: string | null
 }
 
-const AKAR = '/data-idx/json/seasonality'
+const AKAR = urlData('/data-idx/json/seasonality')
 
 /** Berkas huruf yang sudah diunduh — 24 berkas, tak perlu diambil dua kali. */
 const singgahHuruf = new Map<string, Promise<Record<string, SeriImbal>>>()

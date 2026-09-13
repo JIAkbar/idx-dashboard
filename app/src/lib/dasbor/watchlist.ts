@@ -1,4 +1,5 @@
 import type { BarisOhlc } from './ihsgOhlc'
+import { urlData } from './baseData'
 
 /**
  * Watchlist dinamis (backlog C8, spek Johan 19 Agu 2026: "watchlist yang
@@ -178,7 +179,7 @@ const deretCache = new Map<string, BarisOhlc[] | null>()
 export function fetchDeret(kode: string): Promise<BarisOhlc[] | null> {
   const cached = deretCache.get(kode)
   if (cached !== undefined) return Promise.resolve(cached)
-  return fetch(`/data-idx/json/ohlc/${kode}.json`)
+  return fetch(urlData(`/data-idx/json/ohlc/${kode}.json`))
     .then((r) => (r.ok ? (r.json() as Promise<{ d: BarisOhlc[] }>) : Promise.reject(new Error('not found'))))
     .then((j) => {
       const d = j.d ?? []

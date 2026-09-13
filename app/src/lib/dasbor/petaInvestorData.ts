@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { pesanGalat } from '../pesanGalat'
+import { urlData } from './baseData'
 
 /**
  * Tipe & fetch data Peta Investor. Port dari index_live.html piInit()
@@ -68,7 +69,7 @@ function load(): Promise<InvestorMapEntry[]> {
   if (segar()) return Promise.resolve(cache!)
   cache = null
   if (!inflight) {
-    inflight = fetch('/data-idx/json/investor_map.json')
+    inflight = fetch(urlData('/data-idx/json/investor_map.json'))
       .then((r) => {
         if (!r.ok) throw new Error(`HTTP ${r.status}`)
         return r.json() as Promise<InvestorMapEntry[]>

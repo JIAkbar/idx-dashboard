@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { urlData } from './baseData'
 
 /**
  * Kategori PERILAKU broker — `scripts/bangun_kategori_broker.py`, dihitung
@@ -93,7 +94,7 @@ export function muatKategoriBroker(): Promise<DaftarKategoriBroker> {
   if (segar()) return Promise.resolve(cache!)
   cache = null
   if (!sedangAmbil) {
-    sedangAmbil = fetch('/data-idx/json/kategori_broker.json')
+    sedangAmbil = fetch(urlData('/data-idx/json/kategori_broker.json'))
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
       .then((d: DaftarKategoriBroker) => {
         cache = d

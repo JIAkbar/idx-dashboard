@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { pesanGalat } from '../pesanGalat'
+import { urlData } from './baseData'
 
 /** Satu baris arus-pasar/keluaran/index.json (dibuat generate_index.py). */
 export interface EdisiBulletin {
@@ -93,7 +94,7 @@ export function useBulletinList() {
   useEffect(() => {
     let batal = false
     // no-cache = tetap pakai HTTP cache tapi wajib revalidasi (ETag) ke server
-    fetch('/arus-pasar/keluaran/index.json', { cache: 'no-cache' })
+    fetch(urlData('/arus-pasar/keluaran/index.json'), { cache: 'no-cache' })
       .then((r) => {
         if (!r.ok) throw new Error(`HTTP ${r.status}`)
         return r.json() as Promise<{ edisi: EdisiBulletin[] }>

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { pesanGalat } from '../pesanGalat'
+import { urlData } from './baseData'
 
 /**
  * Tipe & fetch data fundamental untuk Stock Detail. Port dari
@@ -287,7 +288,7 @@ let indexPromise: Promise<StockIndexData> | null = null
 function loadIndex(): Promise<StockIndexData> {
   if (indexCache) return Promise.resolve(indexCache)
   if (!indexPromise) {
-    indexPromise = fetch('/data-idx/json/fundamental/index.json')
+    indexPromise = fetch(urlData('/data-idx/json/fundamental/index.json'))
       .then((r) => {
         if (!r.ok) throw new Error(`HTTP ${r.status}`)
         return r.json() as Promise<StockIndexData>
@@ -329,7 +330,7 @@ const fundamentalCache = new Map<string, StockFundamental>()
 export function fetchFundamental(ticker: string): Promise<StockFundamental | null> {
   const cached = fundamentalCache.get(ticker)
   if (cached) return Promise.resolve(cached)
-  return fetch(`/data-idx/json/fundamental/${ticker}.json`)
+  return fetch(urlData(`/data-idx/json/fundamental/${ticker}.json`))
     .then((r) => {
       if (!r.ok) throw new Error('not found')
       return r.json() as Promise<StockFundamental>
@@ -362,7 +363,7 @@ export function useStockFundamental(ticker: string | null) {
     let cancelled = false
     setLoading(true)
     setError(null)
-    fetch(`/data-idx/json/fundamental/${ticker}.json`)
+    fetch(urlData(`/data-idx/json/fundamental/${ticker}.json`))
       .then((r) => {
         if (!r.ok) throw new Error('not found')
         return r.json() as Promise<StockFundamental>
@@ -441,10 +442,10 @@ function buatHookKeuangan(basePath: string) {
   }
 }
 
-export const useStockKeuangan = buatHookKeuangan('/data-idx/json/keuangan')
+export const useStockKeuangan = buatHookKeuangan(urlData('/data-idx/json/keuangan'))
 /** Sama seperti `useStockKeuangan`, tapi sumbernya laporan resmi bursa (XBRL)
  * — kuartalnya KUMULATIF, bukan diskret (lihat fundamentalGabungan.ts). */
-export const useStockKeuanganIdx = buatHookKeuangan('/data-idx/json/keuangan_idx')
+export const useStockKeuanganIdx = buatHookKeuangan(urlData('/data-idx/json/keuangan_idx'))
 
 /** Satu baris data-idx/json/asing/{TICKER}.json — beli/jual/volume dalam
  * LEMBAR, value dalam rupiah (nilai transaksi pasar hari itu, BUKAN nilai
@@ -489,7 +490,7 @@ const asingCache = new Map<string, AsingData | null>()
  */
 export function fetchAsing(ticker: string): Promise<AsingData | null> {
   if (asingCache.has(ticker)) return Promise.resolve(asingCache.get(ticker) ?? null)
-  return fetch(`/data-idx/json/asing/${ticker}.json`)
+  return fetch(urlData(`/data-idx/json/asing/${ticker}.json`))
     .then((r) => {
       if (!r.ok) throw new Error('not found')
       return r.json() as Promise<AsingRaw>

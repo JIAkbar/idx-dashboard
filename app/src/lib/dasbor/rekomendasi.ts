@@ -4,6 +4,7 @@ import {
   cariIndeksHari, menangOpenHigh, menangCloseToClose, menangTpSlH5,
   type BarWinRate, type HasilMenang,
 } from './winRate'
+import { urlData } from './baseData'
 
 /**
  * Jejak Rekomendasi — jembatan fetch untuk tab "Riwayat & Win Rate"
@@ -56,7 +57,7 @@ const cacheIndex = new Map<string, Promise<IndexRekomendasi | null>>()
 export function muatIndexRekomendasi(): Promise<IndexRekomendasi | null> {
   let p = cacheIndex.get('x')
   if (!p) {
-    p = fetch('/data-idx/json/rekomendasi/index.json')
+    p = fetch(urlData('/data-idx/json/rekomendasi/index.json'))
       .then((r) => (r.ok ? (r.json() as Promise<IndexRekomendasi>) : null))
       .catch(() => null)
     cacheIndex.set('x', p)
@@ -69,7 +70,7 @@ const cacheHari = new Map<string, Promise<HariRekomendasi | null>>()
 export function muatHariRekomendasi(tanggal: string): Promise<HariRekomendasi | null> {
   let p = cacheHari.get(tanggal)
   if (!p) {
-    p = fetch(`/data-idx/json/rekomendasi/${tanggal}.json`)
+    p = fetch(urlData(`/data-idx/json/rekomendasi/${tanggal}.json`))
       .then((r) => (r.ok ? (r.json() as Promise<HariRekomendasi>) : null))
       .catch(() => null)
     cacheHari.set(tanggal, p)
@@ -95,7 +96,7 @@ const cacheOhlc = new Map<string, Promise<BarWinRate[] | null>>()
 export function muatOhlcWinRate(kode: string): Promise<BarWinRate[] | null> {
   let p = cacheOhlc.get(kode)
   if (!p) {
-    p = fetch(`/data-idx/json/ohlc/${kode}.json`)
+    p = fetch(urlData(`/data-idx/json/ohlc/${kode}.json`))
       .then((r) => (r.ok ? (r.json() as Promise<{ d: BarisOhlc[] }>) : null))
       .then((j) => j?.d
         .filter((b) => b[5] > 0)

@@ -12,6 +12,7 @@
  * pernah punya edisi. Ketahuan 16 Agu 2026: tiga setoran tercatat di Sabtu
  * 15 Agu, padahal isinya penutupan Jumat 14 Agu.
  */
+import { urlData } from './dasbor/baseData'
 
 /**
  * Tanggal merah manual. Rumahnya pindah ke sini dari `Kalender.tsx` (yang
@@ -77,7 +78,7 @@ export function lupakanDaftarHariBursa(): void {
  */
 export async function muatDaftarHariBursa(): Promise<void> {
   if (daftarBursa) return
-  const r = await fetch('/data-idx/json/ihsg_harian.json')
+  const r = await fetch(urlData('/data-idx/json/ihsg_harian.json'))
   if (!r.ok) throw new Error(`ihsg_harian.json: HTTP ${r.status}`)
   const j = (await r.json()) as { tutup?: Record<string, number>; akhir?: string }
   const kunci = Object.keys(j.tutup ?? {})

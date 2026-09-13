@@ -50,7 +50,7 @@ const cacheOhlcv = new Map<string, Promise<BarisOhlcv[] | null>>()
 export function muatOhlcv(kode: string): Promise<BarisOhlcv[] | null> {
   let p = cacheOhlcv.get(kode)
   if (!p) {
-    p = fetch(`/data-idx/json/ohlcv_stockbit/${kode}.json`)
+    p = fetch(urlData(`/data-idx/json/ohlcv_stockbit/${kode}.json`))
       .then((r) => (r.ok ? (r.json() as Promise<BerkasOhlcvMentah>) : null))
       .then((j) => (j ? j.bar.map(keBaris) : null))
     cacheOhlcv.set(kode, p)

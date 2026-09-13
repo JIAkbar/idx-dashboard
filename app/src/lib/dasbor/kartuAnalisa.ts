@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { urlData } from './baseData'
 
 /**
  * Kartu Analisa Emiten — tipe & pemuat untuk `data-idx/json/kartu/<KODE>.json`,
@@ -206,7 +207,7 @@ export interface IndeksKartu {
  */
 export async function ambilKartu(kode: string, pengambil: typeof fetch = fetch): Promise<KartuEmiten | null> {
   try {
-    const r = await pengambil(`/data-idx/json/kartu/${kode}.json`)
+    const r = await pengambil(urlData(`/data-idx/json/kartu/${kode}.json`))
     if (!r.ok) return null
     return (await r.json()) as KartuEmiten
   } catch {
@@ -217,7 +218,7 @@ export async function ambilKartu(kode: string, pengambil: typeof fetch = fetch):
 /** Sama polanya, untuk daftar kode yang tersedia (`index.json`). */
 export async function ambilIndeksKartu(pengambil: typeof fetch = fetch): Promise<IndeksKartu | null> {
   try {
-    const r = await pengambil('/data-idx/json/kartu/index.json')
+    const r = await pengambil(urlData('/data-idx/json/kartu/index.json'))
     if (!r.ok) return null
     return (await r.json()) as IndeksKartu
   } catch {

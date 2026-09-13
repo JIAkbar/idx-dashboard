@@ -4,6 +4,7 @@ import {
   type LabelSkor,
 } from './skorTeknikal'
 import type { BarisOhlc } from './ihsgOhlc'
+import { urlData } from './baseData'
 
 /**
  * Harian Papan (`/harian-papan`, docs/spek-dev-papan/spek_harian_papan.md) —
@@ -453,7 +454,7 @@ export interface DataTanggalHarianPapan {
 
 export async function ambilTanggalHarianPapan(pengambil: typeof fetch = fetch): Promise<DataTanggalHarianPapan | null> {
   try {
-    const r = await pengambil('/data-idx/json/harian_papan/index.json')
+    const r = await pengambil(urlData('/data-idx/json/harian_papan/index.json'))
     if (!r.ok) return null
     return (await r.json()) as DataTanggalHarianPapan
   } catch {
@@ -463,7 +464,7 @@ export async function ambilTanggalHarianPapan(pengambil: typeof fetch = fetch): 
 
 export async function ambilHarianPapan(tanggal: string, pengambil: typeof fetch = fetch): Promise<DataHarianPapan | null> {
   try {
-    const r = await pengambil(`/data-idx/json/harian_papan/${tanggal}.json`)
+    const r = await pengambil(urlData(`/data-idx/json/harian_papan/${tanggal}.json`))
     if (!r.ok) return null
     return (await r.json()) as DataHarianPapan
   } catch {

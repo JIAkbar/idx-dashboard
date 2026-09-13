@@ -39,6 +39,7 @@ import {
   type BerkasRezim, type RezimEmiten,
 } from '../../lib/dasbor/rezimPasar'
 import './BerkasEmiten.css'
+import { urlData } from '../../lib/dasbor/baseData'
 
 const INFO: ItemInfoIndikator[] = [
   {
@@ -201,7 +202,7 @@ export default function BerkasEmiten() {
   useEffect(() => {
     let batal = false
     setInfoBursa(null)
-    fetch(`/data-idx/json/info_stockbit/${kode.toUpperCase()}.json`)
+    fetch(urlData(`/data-idx/json/info_stockbit/${kode.toUpperCase()}.json`))
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => { if (!batal) setInfoBursa(d) })
       .catch(() => {})
@@ -235,7 +236,7 @@ export default function BerkasEmiten() {
     muatRasio(kode).then((d) => { if (!batal) setRasioMentah(d) })
     // Sumber cadangan — dipakai HANYA untuk tiga ruas yang terukur setara
     // (lihat TAMBALAN di berkasRasio.ts), dan hasilnya selalu ditandai.
-    fetch(`/data-idx/json/fundamental/${kode.toUpperCase()}.json`)
+    fetch(urlData(`/data-idx/json/fundamental/${kode.toUpperCase()}.json`))
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => { if (!batal) setRasioCadangan(d) })
       .catch(() => {})

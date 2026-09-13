@@ -34,6 +34,7 @@
  * bentuk mingguan berarti memajang angka karangan.
  */
 import { useCallback, useEffect, useState } from 'react'
+import { urlData } from './baseData'
 
 export type JenisPeriode = 'minggu' | 'bulan'
 
@@ -315,8 +316,8 @@ export function isoEdisi(e: EntriIndeks): string | null {
 }
 
 const BERKAS_INDEKS: Record<JenisPeriode, string> = {
-  minggu: '/data-idx/json/index_weekly.json',
-  bulan: '/data-idx/json/index_monthly.json',
+  minggu: urlData('/data-idx/json/index_weekly.json'),
+  bulan: urlData('/data-idx/json/index_monthly.json'),
 }
 
 const BULAN_ID = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des']
@@ -479,7 +480,7 @@ export function useStatistikBerkala(jenis: JenisPeriode) {
     let batal = false
     const tersimpan = cacheEdisi.get(stem)
     if (tersimpan) { setEdisi(tersimpan); return }
-    ambilJson(`/data-idx/json/${stem}.json`).then((json) => {
+    ambilJson(urlData(`/data-idx/json/${stem}.json`)).then((json) => {
       if (batal) return
       if (!json || typeof json !== 'object') { setGalat('Edisi ini gagal dimuat.'); return }
       const isi = json as EdisiBerkala

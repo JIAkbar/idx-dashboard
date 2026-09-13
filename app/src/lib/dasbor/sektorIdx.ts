@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { urlData } from './baseData'
 
 /**
  * Klasifikasi IDX-IC resmi per emiten — dipanen `scripts/panen_sektor_idx.py`
@@ -86,7 +87,7 @@ export function muatSektor(): Promise<DaftarSektor> {
   if (segar()) return Promise.resolve(cache!)
   cache = null
   if (!sedangAmbil) {
-    sedangAmbil = fetch('/data-idx/json/emiten_sektor.json')
+    sedangAmbil = fetch(urlData('/data-idx/json/emiten_sektor.json'))
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
       .then((d: DaftarSektor) => {
         cache = d

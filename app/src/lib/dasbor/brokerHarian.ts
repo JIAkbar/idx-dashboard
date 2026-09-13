@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import type { BrokerRow } from './brokerSummaryData'
 import type { BrokerRankRow } from './dataHarian'
 import { pesanGalat } from '../pesanGalat'
+import { urlData } from './baseData'
 
 /** Baris mentah bs_YYMMDD.json (harvester harian idx.co.id). */
 interface BrokerHarianRaw {
@@ -115,7 +116,7 @@ const cache = new Map<string, BrokerRow[]>()
 export function fetchBrokerRows(iso: string): Promise<BrokerRow[]> {
   const c = cache.get(iso)
   if (c) return Promise.resolve(c)
-  return fetch(`/data-idx/json/broker/${stemDariIso(iso)}.json`)
+  return fetch(urlData(`/data-idx/json/broker/${stemDariIso(iso)}.json`))
     .then((r) => {
       if (!r.ok) throw new Error(`HTTP ${r.status}`)
       return r.json() as Promise<BrokerHarianFile>
@@ -225,7 +226,7 @@ export function useBrokerHarian() {
 
   useEffect(() => {
     let cancelled = false
-    fetch('/data-idx/json/broker/index.json')
+    fetch(urlData('/data-idx/json/broker/index.json'))
       .then((r) => {
         if (!r.ok) throw new Error(`HTTP ${r.status}`)
         return r.json() as Promise<{ dates?: string[] }>

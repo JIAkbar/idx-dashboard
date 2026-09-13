@@ -11,6 +11,7 @@ import type { BarisOhlc } from '../../lib/dasbor/ihsgOhlc'
 import { deretIndeksGrup } from '../../lib/dasbor/grupKinerja'
 import { useChartCanvas } from '../../lib/dasbor/useChartJs'
 import { useTheme } from '../../context/ThemeContext'
+import { urlData } from '../../lib/dasbor/baseData'
 
 interface Anggota {
   kode: string
@@ -202,7 +203,7 @@ export function GrupKonglomerat() {
 
   useEffect(() => {
     let batal = false
-    fetch('/data-idx/json/grup_konglomerat.json')
+    fetch(urlData('/data-idx/json/grup_konglomerat.json'))
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
       .then((j: BerkasGrup) => { if (!batal) setData(j) })
       .catch(() => { if (!batal) setGalat(true) })

@@ -10,6 +10,7 @@ import { CatatanSumberBar } from '../../components/dasbor/CatatanSumberBar'
 import type { RentangSumber } from '../../lib/dasbor/sumberBar'
 import { useLayarSempit } from '../../lib/dasbor/useLayarSempit'
 import { PemilihRentang } from '../../components/dasbor/PemilihRentang'
+import { urlData } from '../../lib/dasbor/baseData'
 
 /** Hari bursa minimum buat rentang bebas = satu putaran Senin–Jumat penuh
  *  (#170 K9, perintah Johan). Di bawah itu bukan pintu tertutup — cuma pesan
@@ -91,8 +92,8 @@ export function SeasonalityHarian() {
     setSumberBarBerkas(undefined)
     setGalat(null)
     const alamat = kode === 'IHSG'
-      ? '/data-idx/json/ihsg_harian.json'
-      : `/data-idx/json/ohlc/${kode}.json`
+      ? urlData('/data-idx/json/ihsg_harian.json')
+      : urlData(`/data-idx/json/ohlc/${kode}.json`)
     fetch(alamat)
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
       // Dua bentuk berkas: IHSG menyimpan peta {tanggal: tutup}, emiten

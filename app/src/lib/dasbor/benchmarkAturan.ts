@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { urlData } from './baseData'
 
 /**
  * Uji Aturan — hasil benchmark cara menentukan area beli, target, dan batas
@@ -82,7 +83,7 @@ const cache = new Map<string, Promise<BenchmarkAturan | null>>()
 export function muatBenchmarkAturan(): Promise<BenchmarkAturan | null> {
   let p = cache.get('x')
   if (!p) {
-    p = fetch('/data-idx/json/benchmark_aturan.json')
+    p = fetch(urlData('/data-idx/json/benchmark_aturan.json'))
       .then((r) => (r.ok ? (r.json() as Promise<BenchmarkAturan>) : null))
       .catch(() => null)
     cache.set('x', p)
@@ -169,7 +170,7 @@ export function useSelisihPasar(): SelisihPasar | null {
     let batal = false
     let p = cacheSel.get('x')
     if (!p) {
-      p = fetch('/data-idx/json/selisih_pasar.json')
+      p = fetch(urlData('/data-idx/json/selisih_pasar.json'))
         .then((r) => (r.ok ? (r.json() as Promise<SelisihPasar>) : null))
         .catch(() => null)
       cacheSel.set('x', p)

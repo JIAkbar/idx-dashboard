@@ -13,6 +13,7 @@ import { tanyaAI, rakitKonteks } from '../../lib/dasbor/tanyaAI'
 import { useAuth } from '../../context/AuthContext'
 import { IkonMenu, IKON_SILANG } from './IkonMenu'
 import './TanyaPapan.css'
+import { urlData } from '../../lib/dasbor/baseData'
 
 /** Kunci localStorage pilihan "tepikan tombol". */
 const KUNCI_TEPI = 'papan:tanya-tepi'
@@ -28,7 +29,7 @@ const ohlcCache = new Map<string, OhlcRingkas | null>()
 function fetchOhlcRingkas(kode: string): Promise<OhlcRingkas | null> {
   const cached = ohlcCache.get(kode)
   if (cached !== undefined) return Promise.resolve(cached)
-  return fetch(`/data-idx/json/ohlc/${kode}.json`)
+  return fetch(urlData(`/data-idx/json/ohlc/${kode}.json`))
     .then((r) => (r.ok ? (r.json() as Promise<OhlcRingkas>) : Promise.reject(new Error('not found'))))
     .then((d) => {
       ohlcCache.set(kode, d)

@@ -11,6 +11,7 @@
  * Parsing tiap sumber dipisah jadi fungsi murni (`ambilHargaDariYahoo`,
  * `ambilHargaDariLokal`) supaya bentuk JSON-nya bisa diuji tanpa jaringan.
  */
+import { urlData } from './dasbor/baseData'
 
 /** Bentuk minimal respons Yahoo chart yang dipakai — sisanya diabaikan. */
 export interface YahooChartJson {
@@ -67,7 +68,7 @@ export async function ambilHargaTerakhir(kode: string): Promise<HargaTerakhir> {
     /* jatuh ke cadangan di bawah */
   }
   try {
-    const r = await fetch('/data-idx/json/harga_terakhir.json')
+    const r = await fetch(urlData('/data-idx/json/harga_terakhir.json'))
     const j = (await r.json()) as HargaLokalJson
     const hasil = ambilHargaDariLokal(j, kode)
     if (hasil) return { harga: hasil.harga, sumber: 'lokal', bulan: hasil.bulan }

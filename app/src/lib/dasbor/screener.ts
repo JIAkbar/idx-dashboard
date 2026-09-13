@@ -4,6 +4,7 @@ import type { NamaPolaKlasik } from './polaKlasik'
 import { LABEL_POLA_KLASIK } from './polaKlasik'
 import type { BarisRingkas } from './kartuRingkas'
 import type { BarisPreset } from './presetScreener'
+import { urlData } from './baseData'
 
 /**
  * Screener (`/screener`, backlog B31) — tabel penyaring SELURUH emiten dalam
@@ -140,7 +141,7 @@ export function ringkasLembarBertanda(n: number | null): string {
 
 export async function ambilScreener(pengambil: typeof fetch = fetch): Promise<DataScreener | null> {
   try {
-    const r = await pengambil('/data-idx/json/screener.json')
+    const r = await pengambil(urlData('/data-idx/json/screener.json'))
     if (!r.ok) return null
     return (await r.json()) as DataScreener
   } catch {
@@ -200,7 +201,7 @@ export interface DataPolaScreener {
 
 export async function ambilPolaScreener(pengambil: typeof fetch = fetch): Promise<DataPolaScreener | null> {
   try {
-    const r = await pengambil('/data-idx/json/pola_screener.json')
+    const r = await pengambil(urlData('/data-idx/json/pola_screener.json'))
     if (!r.ok) return null
     return (await r.json()) as DataPolaScreener
   } catch {

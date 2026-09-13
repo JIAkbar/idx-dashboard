@@ -11,6 +11,7 @@
  */
 import { useEffect, useState } from 'react'
 import { fraksi } from '../fraksiHarga'
+import { urlData } from './baseData'
 
 export type Horizon = 'h5' | 'h10' | 'h20' | 'h60' | 'h120' | 'h200'
 export type Jendela = 'n120' | 'n500'
@@ -163,7 +164,7 @@ const singgahan = new Map<string, Promise<BerkasWinrate | null>>()
 export function ambilWinrate(kode: string): Promise<BerkasWinrate | null> {
   let p = singgahan.get(kode)
   if (!p) {
-    p = fetch(`/data-idx/json/winrate/${encodeURIComponent(kode)}.json`)
+    p = fetch(urlData(`/data-idx/json/winrate/${encodeURIComponent(kode)}.json`))
       .then((r) => (r.ok ? (r.json() as Promise<BerkasWinrate>) : null))
       .catch(() => null)
     singgahan.set(kode, p)
@@ -193,7 +194,7 @@ let indexPromise: Promise<IndexWinrate | null> | null = null
 
 export function ambilIndexWinrate(): Promise<IndexWinrate | null> {
   if (!indexPromise) {
-    indexPromise = fetch('/data-idx/json/winrate/index.json')
+    indexPromise = fetch(urlData('/data-idx/json/winrate/index.json'))
       .then((r) => (r.ok ? (r.json() as Promise<IndexWinrate>) : null))
       .catch(() => null)
   }

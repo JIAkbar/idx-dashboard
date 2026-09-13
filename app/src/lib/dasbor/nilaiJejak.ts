@@ -23,6 +23,7 @@
  * suatu saat ada angka yang perlu tapi tak ada di berkas, yang ditambah
  * keluaran hakimnya — bukan hitungan di sini. Itu seluruh alasan modul ini ada.
  */
+import { urlData } from './baseData'
 
 export type VonisDefinisi = 'menang' | 'kalah' | 'gantung' | 'tak_masuk' | 'tak_terukur'
 export type DefinisiId = 'openTinggi' | 'tutupTutup' | 'tpSl'
@@ -108,7 +109,7 @@ let singgahan: Promise<BerkasJejak | null> | null = null
  *  tab sekaligus. */
 export function ambilJejak(): Promise<BerkasJejak | null> {
   if (!singgahan) {
-    singgahan = fetch('/data-idx/json/nilai_jejak.json')
+    singgahan = fetch(urlData('/data-idx/json/nilai_jejak.json'))
       .then((r) => (r.ok ? (r.json() as Promise<BerkasJejak>) : null))
       .catch(() => null)
   }

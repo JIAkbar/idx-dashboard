@@ -52,6 +52,7 @@
  * Sisanya tetap DIBIARKAN kosong. Kosong yang terlihat lebih murah daripada
  * angka sumber lain yang menyamar jadi angka sumber utama.
  */
+import { urlData } from './baseData'
 
 export interface KelompokRasio {
   kunci: string
@@ -328,7 +329,7 @@ export function susunRasio(
  */
 export async function muatRasio(kode: string): Promise<Record<string, unknown> | null> {
   try {
-    const r = await fetch(`/data-idx/json/keystats_stockbit/${kode.toUpperCase()}.json`)
+    const r = await fetch(urlData(`/data-idx/json/keystats_stockbit/${kode.toUpperCase()}.json`))
     if (!r.ok) return null
     const j = (await r.json()) as { rasio?: Record<string, unknown> }
     return j?.rasio ?? null

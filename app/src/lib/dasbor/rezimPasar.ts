@@ -11,6 +11,7 @@
  * bukan janji untuk hari besok. Komponen WAJIB mencetak batas itu, bukan
  * menyembunyikannya di tooltip.
  */
+import { urlData } from './baseData'
 
 export interface RezimTahun {
   tangkap_naik: number
@@ -73,7 +74,7 @@ let singgahan: Promise<BerkasRezim | null> | null = null
 
 export function muatRezim(): Promise<BerkasRezim | null> {
   if (!singgahan) {
-    singgahan = fetch('/data-idx/json/rezim_pasar.json')
+    singgahan = fetch(urlData('/data-idx/json/rezim_pasar.json'))
       .then((r) => (r.ok ? (r.json() as Promise<BerkasRezim>) : null))
       .catch(() => null)
   }

@@ -12,6 +12,7 @@ import { PetaInvestorSearch, type PetaInvestorSearchHandle } from './peta-invest
 import { exportEmiten, exportInvestor } from '../../lib/dasbor/exportPeta'
 import { IkonMenu, IKON_JAM, IKON_PERINGATAN, IKON_ULANG, IKON_KLIK } from '../../components/dasbor/IkonMenu'
 import { KonteksData } from '../../components/dasbor/KonteksData'
+import { urlData } from '../../lib/dasbor/baseData'
 
 /** Panah unduh ke tray — sama dengan IKON_UNDUH lokal Bulletin.tsx. */
 const IKON_UNDUH = 'M12 4v10M7.5 10.5L12 15l4.5-4.5M5 19h14'
@@ -53,7 +54,7 @@ export function PetaInvestor() {
   // sudah "3 Agustus 2026") — KonteksData butuh yyyy-mm-dd buat formatnya sendiri.
   const [posisiIso, setPosisiIso] = useState<string | null>(null)
   useEffect(() => {
-    fetch('/data-idx/json/investor_map.meta.json')
+    fetch(urlData('/data-idx/json/investor_map.meta.json'))
       .then((r) => (r.ok ? (r.json() as Promise<{ publish_date?: string }>) : null))
       .then((m) => {
         if (m?.publish_date) {

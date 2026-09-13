@@ -173,7 +173,7 @@ export function useKabar(denganArsip = false) {
         .then((r) => (r.ok ? r.json() : { item: [] }))
         .catch(() => ({ item: [] })),
       denganArsip
-        ? fetch('/data-idx/json/ipot_arsip.json')
+        ? fetch(urlData('/data-idx/json/ipot_arsip.json'))
           .then((r) => (r.ok ? r.json() : { item: [] }))
           .catch(() => ({ item: [] }))
         : kosong,

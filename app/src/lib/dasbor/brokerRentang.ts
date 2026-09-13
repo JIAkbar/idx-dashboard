@@ -23,6 +23,7 @@
  */
 import { useEffect, useState } from 'react'
 import type { BrokerRankRow } from './dataHarian'
+import { urlData } from './baseData'
 
 /** Kunci preset = `PresetRentang` di `periode.ts`; berkasnya bernama sama. */
 export type PresetBroker = 'h5' | 'w1' | 'b1' | 'b3' | 'ytd'
@@ -43,7 +44,7 @@ const cache = new Map<string, Promise<BrokerRentang | null>>()
 export function muatBrokerRentang(preset: PresetBroker): Promise<BrokerRentang | null> {
   let p = cache.get(preset)
   if (!p) {
-    p = fetch(`/data-idx/json/broker_rentang/${preset}.json`)
+    p = fetch(urlData(`/data-idx/json/broker_rentang/${preset}.json`))
       .then((r) => (r.ok ? (r.json() as Promise<BrokerRentang>) : null))
       .catch(() => null)
     cache.set(preset, p)

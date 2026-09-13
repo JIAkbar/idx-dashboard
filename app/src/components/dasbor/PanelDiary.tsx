@@ -8,6 +8,7 @@ import { LangkahTanggal } from './LangkahTanggal'
 import { useHargaLive } from '../../lib/dasbor/hargaLive'
 import { UmurLive } from './UmurLive'
 import { jamPasarJakarta } from '../../lib/tanggalBursa'
+import { urlData } from '../../lib/dasbor/baseData'
 
 /**
  * Panel "Diary Pasar" — kalender IHSG berwarna, tally hari naik/turun,
@@ -95,7 +96,7 @@ export function PanelDiary() {
 
   useEffect(() => {
     let batal = false
-    fetch('/data-idx/json/ohlc/IHSG.json')
+    fetch(urlData('/data-idx/json/ohlc/IHSG.json'))
       .then((r) => r.json())
       .then((j: { d?: BarisOhlc[] }) => {
         if (!batal && j.d?.length) setPanjang(j.d)

@@ -6,6 +6,7 @@
  */
 import type { CandlestickData, HistogramData, Time } from 'lightweight-charts'
 import type { HargaLive } from './hargaLive'
+import { urlData } from './baseData'
 
 export interface DataCandle {
   lilin: CandlestickData[]
@@ -16,7 +17,7 @@ export const WARNA_VOL_NAIK = 'rgba(48, 164, 108, 0.5)'
 export const WARNA_VOL_TURUN = 'rgba(229, 72, 77, 0.5)'
 
 export async function muatCandle(kode: string): Promise<DataCandle> {
-  const r = await fetch(`/data-idx/json/ohlcv_stockbit/${kode}.json`)
+  const r = await fetch(urlData(`/data-idx/json/ohlcv_stockbit/${kode}.json`))
   if (!r.ok) return { lilin: [], volume: [] }
   try {
     const j = (await r.json()) as { bar?: (string | number)[][] }

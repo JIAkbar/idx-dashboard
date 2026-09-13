@@ -1,6 +1,7 @@
 import { ambilScreener } from '../../../lib/dasbor/screener'
 import { muatOhlcv, muatIndeksEmiten, type BarHarga } from '../../../lib/dasbor/neoPapanData'
 import { pilihKandidatSektor } from '../../../lib/dasbor/neoPapan'
+import { urlData } from '../../../lib/dasbor/baseData'
 
 /**
  * Universe sampel untuk Rotation Chart & Sector/Index Activity.
@@ -62,7 +63,7 @@ export function muatUniverseSektor(segar = false): Promise<UniverseSektor | null
       const sektorJumlah: Record<string, number> = {}
       for (const b of baris) if (b.sektor) sektorJumlah[b.sektor] = (sektorJumlah[b.sektor] ?? 0) + 1
       try {
-        const r = await fetch('/data-idx/json/emiten_sektor.json')
+        const r = await fetch(urlData('/data-idx/json/emiten_sektor.json'))
         if (r.ok) {
           const js = (await r.json()) as { emiten?: Record<string, { papan?: string; sektor?: string }> }
           const papanDari = new Map(Object.entries(js.emiten ?? {}).map(([k, v]) => [k, v?.papan ?? '']))

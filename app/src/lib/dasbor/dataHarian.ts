@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { pesanGalat } from '../pesanGalat'
+import { urlData } from './baseData'
 
 /** Satu baris data-idx/json/index.json → {dates:[...]}. Port field dari index_live.html baris 2390-2394. */
 export interface TanggalIndex {
@@ -207,7 +208,7 @@ const cache = new Map<string, DataHarian>()
  */
 let indexPromise: Promise<TanggalIndex[]> | null = null
 export function fetchIndex(): Promise<TanggalIndex[]> {
-  indexPromise ??= fetch('/data-idx/json/index.json')
+  indexPromise ??= fetch(urlData('/data-idx/json/index.json'))
     .then((r) => {
       if (!r.ok) throw new Error(`HTTP ${r.status}`)
       return r.json() as Promise<{ dates?: TanggalIndex[] }>
@@ -220,7 +221,7 @@ export function fetchIndex(): Promise<TanggalIndex[]> {
 export function fetchHari(stem: string): Promise<DataHarian> {
   const c = cache.get(stem)
   if (c) return Promise.resolve(c)
-  return fetch(`/data-idx/json/${stem}.json`)
+  return fetch(urlData(`/data-idx/json/${stem}.json`))
     .then((r) => {
       if (!r.ok) throw new Error(`HTTP ${r.status}`)
       return r.json() as Promise<DataHarian>
@@ -327,7 +328,7 @@ export function useDataHarian() {
     }
 
     setLoading(true)
-    fetch(`/data-idx/json/${stem}.json`)
+    fetch(urlData(`/data-idx/json/${stem}.json`))
       .then((r) => {
         if (!r.ok) throw new Error(`HTTP ${r.status}`)
         return r.json() as Promise<DataHarian>
@@ -396,7 +397,7 @@ export function useDataPembanding(stem: string | null) {
     // angka salah sesaat, bukan "—" (tinjauan wf_4dc0e438 #4).
     setData(null)
     setLoading(true)
-    fetch(`/data-idx/json/${stem}.json`)
+    fetch(urlData(`/data-idx/json/${stem}.json`))
       .then((r) => {
         if (!r.ok) throw new Error(`HTTP ${r.status}`)
         return r.json() as Promise<DataHarian>
@@ -433,7 +434,7 @@ export function useIndexTanggalIdx(): TanggalIndex[] {
   const [tanggal, setTanggal] = useState<TanggalIndex[]>([])
   useEffect(() => {
     let batal = false
-    fetch('/data-idx/json/index.json')
+    fetch(urlData('/data-idx/json/index.json'))
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
       .then((j: { dates?: TanggalIndex[] }) => {
         if (!batal) setTanggal(j.dates ?? [])

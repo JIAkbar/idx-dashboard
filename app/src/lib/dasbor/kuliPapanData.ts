@@ -7,6 +7,7 @@
  */
 
 import type { BarisBroker } from './brokerEmiten'
+import { urlData } from './baseData'
 
 export interface Antrean {
   bid: number
@@ -51,7 +52,7 @@ interface BerkasAntrean {
 }
 
 export async function muatAntrean(kode: string): Promise<{ tanggal: string; a: Antrean } | null> {
-  const f = await ambil<BerkasAntrean>('/data-idx/json/bidoffer.json')
+  const f = await ambil<BerkasAntrean>(urlData('/data-idx/json/bidoffer.json'))
   const r = f?.d?.[kode]
   if (!r) return null
   return {
@@ -66,7 +67,7 @@ interface BerkasBroker {
 
 /** Hari bursa TERAKHIR yang punya rincian broker; null kalau emiten belum dipanen. */
 export async function muatBrokerTerakhir(kode: string): Promise<BrokerHari | null> {
-  const f = await ambil<BerkasBroker>(`/data-idx/json/broker_harian/${kode}.json`)
+  const f = await ambil<BerkasBroker>(urlData(`/data-idx/json/broker_harian/${kode}.json`))
   const hari = f?.hari
   if (!hari) return null
   const tgl = Object.keys(hari).sort().pop()
@@ -104,8 +105,8 @@ function angka(v: unknown): number | null {
 
 export async function muatFundamental(kode: string): Promise<Fundamental> {
   const [ks, val] = await Promise.all([
-    ambil<BerkasKeystats>(`/data-idx/json/keystats_stockbit/${kode}.json`),
-    ambil<BerkasValuasi>('/data-idx/json/valuasi_historis.json'),
+    ambil<BerkasKeystats>(urlData(`/data-idx/json/keystats_stockbit/${kode}.json`)),
+    ambil<BerkasValuasi>(urlData('/data-idx/json/valuasi_historis.json')),
   ])
   const r = ks?.rasio || {}
   const pbTahunan = val?.emiten?.[kode]?.pb || {}

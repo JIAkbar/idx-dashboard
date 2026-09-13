@@ -10,6 +10,7 @@ import { muatEvaluasiProb, layakSinyal, type EvaluasiProb } from '../../lib/dasb
 import { useAksesHalaman } from '../../context/AksesHalamanContext'
 import { TombolIkon } from '../../components/dasbor/TombolIkon'
 import { IkonMenu, IKON_KUNCI, IKON_SILANG, IKON_MATA } from '../../components/dasbor/IkonMenu'
+import { urlData } from '../../lib/dasbor/baseData'
 
 /** Panah unduh ke tray — lokal view ini, belum ada padanannya di IkonMenu.tsx. */
 const IKON_UNDUH = 'M12 4v10M7.5 10.5L12 15l4.5-4.5M5 19h14'
@@ -94,7 +95,7 @@ function useIhsgMap() {
   useEffect(() => {
     if (cacheIhsg) return
     let batal = false
-    fetch('/data-idx/json/index.json')
+    fetch(urlData('/data-idx/json/index.json'))
       .then((r) => {
         if (!r.ok) throw new Error(`HTTP ${r.status}`)
         return r.json() as Promise<{ dates?: { date_iso: string; ihsg: number; ihsg_pct: number }[] }>
@@ -228,7 +229,7 @@ export function Bulletin() {
   }, [lihat])
 
   function bukaPdf(kode: string, pdf: string) {
-    if (mobilekah()) window.open(`/arus-pasar/keluaran/${pdf}`, '_blank', 'noopener')
+    if (mobilekah()) window.open(urlData(`/arus-pasar/keluaran/${pdf}`), '_blank', 'noopener')
     else setLihat({ kode, pdf })
   }
 
@@ -434,7 +435,7 @@ export function Bulletin() {
                             </button>
                             <a
                               className="blt-dl"
-                              href={`/arus-pasar/keluaran/${e.pdf}`}
+                              href={urlData(`/arus-pasar/keluaran/${e.pdf}`)}
                               download
                               title={`Unduh ${e.pdf}`}
                             >
@@ -583,13 +584,13 @@ export function Bulletin() {
           <div className="blt-modal" role="dialog" aria-modal="true" aria-label={`Pratinjau ${lihat.kode}`}>
             <div className="blt-modal-h">
               <span className="tick">{lihat.kode}</span>
-              <a className="blt-dl" href={`/arus-pasar/keluaran/${lihat.pdf}`} download title={`Unduh ${lihat.pdf}`}>
+              <a className="blt-dl" href={urlData(`/arus-pasar/keluaran/${lihat.pdf}`)} download title={`Unduh ${lihat.pdf}`}>
                 <IkonMenu d={IKON_UNDUH} size={13} />
                 Unduh
               </a>
               <TombolIkon d={IKON_SILANG} label="Tutup pratinjau" onClick={() => setLihat(null)} />
             </div>
-            <iframe className="blt-frame" src={`/arus-pasar/keluaran/${lihat.pdf}`} title={`PDF ${lihat.kode}`} />
+            <iframe className="blt-frame" src={urlData(`/arus-pasar/keluaran/${lihat.pdf}`)} title={`PDF ${lihat.kode}`} />
           </div>
         </div>,
         document.querySelector('.dasbor-shell') ?? document.body,

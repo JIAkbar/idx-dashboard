@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { urlData } from './baseData'
 
 /** Satu baris candle: [tanggal, buka, tinggi, rendah, tutup, volume]. */
 export type BarisOhlc = [string, number, number, number, number, number]
@@ -18,7 +19,7 @@ export function useIhsgBuka(tanggalIso: string | undefined): number | null {
   const [buka, setBuka] = useState<Record<string, number> | null>(null)
   useEffect(() => {
     let batal = false
-    fetch('/data-idx/json/ihsg_ohlc_ringkas.json')
+    fetch(urlData('/data-idx/json/ihsg_ohlc_ringkas.json'))
       .then((r) => r.json())
       .then((j: { d: BarisOhlc[] }) => {
         if (!batal) setBuka(Object.fromEntries(j.d.map((b) => [b[0], b[1]])))
@@ -42,7 +43,7 @@ export function useIhsgOhlc(): BarisOhlc[] | null {
   const [baris, setBaris] = useState<BarisOhlc[] | null>(null)
   useEffect(() => {
     let batal = false
-    fetch('/data-idx/json/ihsg_ohlc_ringkas.json')
+    fetch(urlData('/data-idx/json/ihsg_ohlc_ringkas.json'))
       .then((r) => r.json())
       .then((j: { d: BarisOhlc[] }) => !batal && setBaris(j.d))
       .catch(() => {})

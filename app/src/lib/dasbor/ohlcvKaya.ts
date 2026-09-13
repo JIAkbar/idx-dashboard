@@ -15,6 +15,7 @@
  * baliknya secara jujur (lihat `mulai`), bukan menunjukkan nol.
  */
 import { useEffect, useState } from 'react'
+import { urlData } from './baseData'
 
 export interface BarisKaya {
   /** Rupiah — nilai transaksi hari itu. */
@@ -111,7 +112,7 @@ function muat(kode: string): Promise<OhlcvKaya> {
   }
   let p = cache.get(kode)
   if (!p) {
-    p = fetch(`/data-idx/json/ohlcv_stockbit/${kode}.json`)
+    p = fetch(urlData(`/data-idx/json/ohlcv_stockbit/${kode}.json`))
       .then((r) => (r.ok ? (r.json() as Promise<BerkasMentah>) : null))
       .then((j) => {
         if (!j || j.bar.length === 0) return KOSONG

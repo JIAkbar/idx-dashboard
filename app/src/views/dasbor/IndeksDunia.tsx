@@ -22,6 +22,7 @@ import { useTheme } from '../../context/ThemeContext'
 import { IkonMenu, IKON_PERINGATAN, IKON_GLOBE, IKON_PENGGARIS, IKON_GRAFIK_BATANG } from '../../components/dasbor/IkonMenu'
 import { LilinHarian } from '../../components/dasbor/LilinHarian'
 import { LabelRentang } from '../../components/dasbor/LabelRentang'
+import { urlData } from '../../lib/dasbor/baseData'
 
 /**
  * Grafik mini board-side (Fix #27) — pakai tanggalTersedia (data-idx/json/index.json)
@@ -76,7 +77,7 @@ function IhsgYtdChart({ dates }: { dates: TanggalIndex[] }) {
   useEffect(() => {
     if (rentang === 'ytd' || riwayat) return
     let batal = false
-    fetch('/data-idx/json/ihsg_harian.json')
+    fetch(urlData('/data-idx/json/ihsg_harian.json'))
       .then((r) => r.json())
       .then((j: { tutup: Record<string, number>; sumber_bar?: RentangSumber[] }) => {
         if (batal) return

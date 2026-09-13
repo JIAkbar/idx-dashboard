@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { urlData } from './baseData'
 
 /**
  * Bandarmologi — teori BidOffer Bandar & spek Algo/Radar dihitung di atas data
@@ -93,7 +94,7 @@ export function useBandarmologi() {
   const [galat, setGalat] = useState<string | null>(null)
   useEffect(() => {
     let batal = false
-    fetch('/data-idx/json/bandarmologi.json')
+    fetch(urlData('/data-idx/json/bandarmologi.json'))
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
       .then((j: DataBandar) => { if (!batal) { setData(j); setMemuat(false) } })
       .catch((e: Error) => { if (!batal) { setGalat(e.message); setMemuat(false) } })

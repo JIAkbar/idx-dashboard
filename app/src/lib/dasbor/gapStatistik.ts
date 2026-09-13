@@ -13,6 +13,7 @@
  * menampilkan apa-apa.
  */
 import { useEffect, useState } from 'react'
+import { urlData } from './baseData'
 
 export interface StatGap {
   kerangka: string
@@ -29,7 +30,7 @@ const cache = new Map<string, Promise<StatGap | null>>()
 export function muatStatGap(kerangka: string): Promise<StatGap | null> {
   let p = cache.get(kerangka)
   if (!p) {
-    p = fetch(`/data-idx/json/bt/gap-stat-${kerangka}.json`)
+    p = fetch(urlData(`/data-idx/json/bt/gap-stat-${kerangka}.json`))
       .then((r) => (r.ok ? (r.json() as Promise<StatGap>) : null))
       .catch(() => null)
     cache.set(kerangka, p)

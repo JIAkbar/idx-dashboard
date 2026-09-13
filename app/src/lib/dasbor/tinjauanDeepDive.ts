@@ -13,6 +13,7 @@
  * dan membaca dari sisi tinjauan akan memajangnya di halaman publik. Baris
  * tinjauan tanpa pasangan di manifest dilewati tanpa suara.
  */
+import { urlData } from './baseData'
 
 export interface LevelTersentuh {
   tanggal: string
@@ -45,7 +46,7 @@ export interface BerkasTinjauan {
  *  tetap menampilkan daftar terbitannya, cuma tanpa kolom hasil. */
 export async function muatTinjauanDeepDive(pengambil: typeof fetch = fetch): Promise<BerkasTinjauan | null> {
   try {
-    const r = await pengambil('/data-idx/json/tinjauan_deepdive.json')
+    const r = await pengambil(urlData('/data-idx/json/tinjauan_deepdive.json'))
     if (!r.ok) return null
     return (await r.json()) as BerkasTinjauan
   } catch {

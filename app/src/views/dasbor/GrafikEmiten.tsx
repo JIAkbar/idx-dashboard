@@ -93,6 +93,7 @@ import { useTheme } from '../../context/ThemeContext'
 import { useOhlcvKaya, jumlahEmber } from '../../lib/dasbor/ohlcvKaya'
 import { fmtB, fmtRingkas } from '../../lib/dasbor/brokerSummaryFormat'
 import './GrafikEmiten.css'
+import { urlData } from '../../lib/dasbor/baseData'
 
 const DEFAULT_KODE = 'BBCA'
 
@@ -994,7 +995,7 @@ export function GrafikEmiten() {
     let batal = false
     setBerkas(null)
     setGalat(null)
-    fetch(`/data-idx/json/ohlc/${kode}.json`)
+    fetch(urlData(`/data-idx/json/ohlc/${kode}.json`))
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
       .then((d: BerkasOhlcEmiten) => { if (!batal) setBerkas(d) })
       .catch((e: unknown) => { if (!batal) setGalat(pesanGalat(e, `Gagal memuat data harga ${kode}.`)) })
@@ -1014,7 +1015,7 @@ export function GrafikEmiten() {
     let batal = false
     for (const k of banding) {
       if (dataBanding[k]) continue
-      fetch(`/data-idx/json/ohlc/${k}.json`)
+      fetch(urlData(`/data-idx/json/ohlc/${k}.json`))
         .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
         .then((d: BerkasOhlcEmiten) => {
           // Warna volume tak dipakai di sini (pembanding digambar sebagai
@@ -2389,7 +2390,7 @@ export function GrafikEmiten() {
     // emiten baru sempat dihitung dari aliran asing emiten lama — dan hasilnya
     // tetap terlihat masuk akal di layar.
     setFnetPeta(new Map())
-    fetch(`/data-idx/json/asing/${kode}.json`)
+    fetch(urlData(`/data-idx/json/asing/${kode}.json`))
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
       .then((d: { d?: Array<[string, number, number, number, number, number]> }) => {
         if (batal || !Array.isArray(d.d)) return

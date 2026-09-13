@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { urlData } from './baseData'
 
 /**
  * Kandidat Deep Dive (`data-idx/json/kandidat_deepdive.json`, dari
@@ -41,7 +42,7 @@ export interface DataKandidatDeepDive {
 
 export async function ambilKandidat(pengambil: typeof fetch = fetch): Promise<DataKandidatDeepDive | null> {
   try {
-    const r = await pengambil('/data-idx/json/kandidat_deepdive.json')
+    const r = await pengambil(urlData('/data-idx/json/kandidat_deepdive.json'))
     if (!r.ok) return null
     return (await r.json()) as DataKandidatDeepDive
   } catch {

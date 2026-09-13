@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { supabase } from './supabase'
 import { useAuth } from '../context/AuthContext'
 import { hariBursa, tanggalBursaTerakhir } from './tanggalBursa'
+import { urlData } from './dasbor/baseData'
 
 /**
  * Tesis kontributor — setoran yang dinilai MESIN, bukan dikurasi tangan.
@@ -247,7 +248,7 @@ let singgahanVonis: Promise<Map<string, VonisTesis>> | null = null
 
 export function ambilVonisTesis(): Promise<Map<string, VonisTesis>> {
   if (!singgahanVonis) {
-    singgahanVonis = fetch('/data-idx/json/tesis_vonis.json')
+    singgahanVonis = fetch(urlData('/data-idx/json/tesis_vonis.json'))
       .then((r) => (r.ok ? r.json() : { tesis: [] }))
       .then((j: { tesis?: Array<VonisTesis & { id: string }> }) =>
         new Map((j.tesis ?? []).map((v) => [v.id, v])))

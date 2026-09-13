@@ -18,6 +18,7 @@
  *    ringkasan pencatatan awal) — fundamental lama cuma punya `summary`
  *    Inggris dari penyedia lama, bukan alamat/kontak resmi.
  */
+import { urlData } from './baseData'
 
 export interface RasioBank {
   nplGross: number | null
@@ -140,8 +141,8 @@ export function muatTambahanKeystats(kode: string): Promise<TambahanKeystats | n
   if (!p) {
     p = (async () => {
       const [ks, pr] = await Promise.all([
-        ambilJson<BerkasKeystatsRasio>(`/data-idx/json/keystats_stockbit/${kode}.json`),
-        ambilJson<BerkasProfil>(`/data-idx/json/profil_stockbit/${kode}.json`),
+        ambilJson<BerkasKeystatsRasio>(urlData(`/data-idx/json/keystats_stockbit/${kode}.json`)),
+        ambilJson<BerkasProfil>(urlData(`/data-idx/json/profil_stockbit/${kode}.json`)),
       ])
       if (!ks && !pr) return null
       const r = ks?.rasio ?? {}

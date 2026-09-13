@@ -10,6 +10,7 @@ import { fN, fp, persen } from '../../lib/dasbor/format'
 import type { DataHarian, SectorRow } from '../../lib/dasbor/dataHarian'
 import { useStockIndex } from '../../lib/dasbor/stockDetailData'
 import { IkonMenu, IKON_JAM, IKON_PERINGATAN, IKON_GRAFIK_BATANG, IKON_GRAFIK_NAIK, IKON_BULAN_SABIT, IKON_KOTAK_ARSIP } from '../../components/dasbor/IkonMenu'
+import { urlData } from '../../lib/dasbor/baseData'
 
 type PeriodeId = 'd' | 'rentang'
 
@@ -137,7 +138,7 @@ export function SektorIndeks() {
   const [petaSektorKode, setPetaSektorKode] = useState<Map<string, string> | null>(null)
   useEffect(() => {
     let batal = false
-    fetch('/data-idx/json/emiten_sektor.json')
+    fetch(urlData('/data-idx/json/emiten_sektor.json'))
       .then((r) => (r.ok ? r.json() : null))
       .then((js: { emiten?: Record<string, { sektor?: string; sektor_en?: string }> } | null) => {
         if (batal || !js?.emiten) return

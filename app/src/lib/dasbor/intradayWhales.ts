@@ -13,6 +13,7 @@
  * bar 1 menit TERUKUR kosong di 874/874 emiten (26 Agu 2026) — lihat
  * referensi proyek. Jangan ditambahkan kembali tanpa bukti baru.
  */
+import { urlData } from './baseData'
 
 /** Kolom `intraday_1h/<KODE>.json` (`bangun_intraday_1h.py:KOLOM`). */
 export interface Bar1H {
@@ -124,7 +125,7 @@ export function agregatSeleksiIntraday(
 }
 
 export async function muatIntraday1h(kode: string): Promise<{ bar: Bar1H[]; galat: GalatIntraday }> {
-  const r = await fetch(`/data-idx/json/intraday_1h/${kode}.json`)
+  const r = await fetch(urlData(`/data-idx/json/intraday_1h/${kode}.json`))
   if (!r.ok) return { bar: [], galat: 'belum-ada' }
   try {
     const bar = dariBerkas(await r.json())
