@@ -10,6 +10,7 @@ import { useHargaLive, type HargaLive } from '../../lib/dasbor/hargaLive'
 import { UmurLive } from '../../components/dasbor/UmurLive'
 import { DetakHariIni } from '../../components/dasbor/DetakHariIni'
 import { langkahTape, vwapTaksiran, nilaiPerTransaksi, type BarisTape, type TitikLive } from '../../lib/dasbor/tapeLive'
+import { angkaAtauPisah, isiTooltipBerjalan } from '../../lib/dasbor/tooltipBerjalan'
 import { jamPasarJakarta, jamDetikJakarta } from '../../lib/tanggalBursa'
 import { StockAutocomplete } from '../../components/dasbor/StockAutocomplete'
 import { ModalKecil } from '../../components/dasbor/ModalKecil'
@@ -213,6 +214,9 @@ export default function WhalesPapan() {
   const volLive = barBerjalan ? candleTampil.volume[candleTampil.volume.length - 1] : null
   // Kunci nilai (bukan identitas objek): efek update hanya jalan saat angkanya berubah.
   const kunciLive = barLive ? `${barLive.time}|${barLive.open}|${barLive.high}|${barLive.low}|${barLive.close}|${volLive?.value ?? 0}` : ''
+  /** Isi tooltip transaksi hari berjalan (#152 D). Tampil selama bar hari ini
+   *  tergambar — juga sesudah 16:15 saat bar DITAHAN — bukan cuma selagi buka. */
+  const isiTx = isiTooltipBerjalan(liveTampil, pasar.status, barLive != null, tape)
   const [intra, setIntra] = useState<{ bar: Bar1H[]; galat: GalatIntraday }>({ bar: [], galat: null })
   const [avgAktif, setAvgAktif] = useState(true)
   const [profilAktif, setProfilAktif] = useState(true)
@@ -452,9 +456,16 @@ export default function WhalesPapan() {
       if (bub && p.point) setBubHover({ b: bub, x: p.point.x, y: p.point.y })
       else setBubHover((cur) => (cur ? null : cur))
     }
-    const saatKlik = (p: { hoveredObjectId?: unknown; point?: { x: number; y: number } }) => {
+    const saatKlik = (p: { hoveredObjectId?: unknown; point?: { x: number; y: number }; time?: unknown }) => {
       const id = typeof p.hoveredObjectId === 'string' ? p.hoveredObjectId : ''
       if (id.startsWith('avg:')) { setBrokerPilih(id.slice(4)); return }
+      // Ketuk lilin hari berjalan membuka tooltip transaksi (#152 D). Satu
+      // ketukan di layar sentuh tak bisa diandalkan menggerakkan crosshair,
+      // jadi jalurnya lewat klik — pola yang sama dengan footprint dan bubble
+      // di bawah. Ketuk di tempat lain di kanvas menutupnya.
+      const waktuLive = barLiveRef.current
+      if (waktuLive && p.point && isoDariTime(p.time) === waktuLive) setTxHover({ x: p.point.x, y: p.point.y })
+      else setTxHover(null)
       const m = bacaFp(id)
       if (m && p.point) setFpHover({ ...m, x: p.point.x, y: p.point.y })
       const bub = id.startsWith('bub:') ? bubbleRef.current?.getBubble(id) : null
@@ -1195,33 +1206,54 @@ export default function WhalesPapan() {
                 onPointerCancel={onUp}
               />
             )}
-            {/* Tooltip lilin hari berjalan (#155 B) — empat angka hari ini plus
+            {/* Tooltip lilin hari berjalan (#155 B, #152 D) — sepuluh isian hari ini plus
                 lima baris tape terakhir. Tape-nya hidup di memori halaman,
                 jadi daftarnya kosong sampai tarikan kedua tiba; itu keadaan
                 yang benar, bukan kegagalan. */}
-            {txHover && liveTampil && pasar.status === 'buka' && (() => {
+            {txHover && isiTx && (() => {
               const lebar = bungkusRef.current?.clientWidth ?? 0
               const kanan = lebar > 0 && txHover.x > lebar / 2
+              const rupiah = (n: number) => `Rp ${rupiahRingkas(n)}`
+              const hargaTeks = (n: number) => n.toLocaleString('id-ID')
               return (
                 <div
-                  className="wp-fp-tip"
+                  className="wp-fp-tip wp-tx-tip"
                   style={{
                     left: kanan ? undefined : txHover.x + 14,
                     right: kanan ? lebar - txHover.x + 14 : undefined,
                     top: Math.max(8, txHover.y - 10),
                   }}
                 >
-                  <div className="wp-fp-tip-judul">Hari berjalan · seluruh pasar</div>
+                  <div className="wp-fp-tip-judul">Transaksi hari ini · seluruh pasar</div>
                   <div className="wp-fp-tip-total">
-                    Nilai Rp {liveTampil.value != null ? rupiahRingkas(liveTampil.value) : '—'}
-                    {' · '}{liveTampil.frequency != null ? liveTampil.frequency.toLocaleString('id-ID') : '—'} kali
-                    <br />
-                    Volume {liveTampil.volume != null ? lotRingkas(liveTampil.volume / 100) : '—'} lot
-                    {' · '}VWAP taksiran {vwapHariIni != null ? Math.round(vwapHariIni).toLocaleString('id-ID') : '—'}
+                    {isiTx.status === 'berjalan' && liveTampil
+                      ? <>berjalan · <UmurLive live={liveTampil} /></>
+                      : <>penutupan sementara · data terakhir {jamDetikJakarta(new Date(isiTx.diterimaPada))}</>}
                   </div>
-                  {tape.length > 0 && (
+                  <div className="wp-tx-tip-isi">
+                    <span>Harga</span>
+                    <b className={`num ${(isiTx.pct ?? 0) < 0 ? 'down' : 'up'}`}>
+                      {angkaAtauPisah(isiTx.harga, hargaTeks)}
+                      {isiTx.pct != null && ` · ${isiTx.pct > 0 ? '+' : ''}${isiTx.pct.toLocaleString('id-ID', { maximumFractionDigits: 2 })}%`}
+                    </b>
+                    <span>O · H · L</span>
+                    <b className="num">
+                      {angkaAtauPisah(isiTx.open, hargaTeks)} · {angkaAtauPisah(isiTx.high, hargaTeks)} · {angkaAtauPisah(isiTx.low, hargaTeks)}
+                    </b>
+                    <span>Volume</span>
+                    <b className="num">{angkaAtauPisah(isiTx.volumeLot, lotRingkas)} lot</b>
+                    <span>Nilai</span>
+                    <b className="num">{angkaAtauPisah(isiTx.nilai, rupiah)}</b>
+                    <span>Frekuensi</span>
+                    <b className="num">{angkaAtauPisah(isiTx.frekuensi, (n) => n.toLocaleString('id-ID'))} kali</b>
+                    <span>VWAP taksiran</span>
+                    <b className="num">{angkaAtauPisah(isiTx.vwap, (n) => Math.round(n).toLocaleString('id-ID'))}</b>
+                    <span>Rata-rata per transaksi</span>
+                    <b className="num">{angkaAtauPisah(isiTx.perTransaksi, rupiah)}</b>
+                  </div>
+                  {isiTx.tape.length > 0 && (
                     <div className="wp-tx-tape">
-                      {tape.slice(0, 5).map((b) => (
+                      {isiTx.tape.map((b) => (
                         <div key={b.pada} className="wp-tx-baris">
                           <span className="num muted">{jamDetikJakarta(new Date(b.pada))}</span>
                           <span className="num">+{lotRingkas(b.volume / 100)} lot</span>
