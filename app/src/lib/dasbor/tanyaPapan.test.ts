@@ -256,7 +256,9 @@ describe('jawab — mekanisme dua-langkah (berkas per-emiten)', () => {
       data: {
         jenis: 'fundamental', kode: 'BBCA',
         payload: { ...fd, pb: 1.45, pbv: 1.52 },
-        rasio: { 'Current Price to Book Value': 1.61 },
+        // PER dan ROE juga dari sumber utama sejak #36 opsi 1; tanpa keduanya
+        // kalimatnya menyebut cadangan untuk PER dan ROE.
+        rasio: { 'Current Price to Book Value': 1.61, 'Current PE Ratio (TTM)': 13.43, 'Return on Equity (TTM)': 21.47 },
       },
     }))
     expect(utama.teks).toContain('PBV 1,61×')
@@ -275,6 +277,32 @@ describe('jawab — mekanisme dua-langkah (berkas per-emiten)', () => {
     }))
     expect(cadangan.teks).toContain('PBV 1,52×')
     expect(cadangan.teks).toContain('sumber cadangan')
+  })
+
+  it('PER dan ROE memakai sumber utama; PER dari laba negatif ditulis kosong (#36 opsi 1)', () => {
+    const utama = jawab('PER BBCA berapa?', konteks({
+      kamus,
+      data: {
+        jenis: 'fundamental', kode: 'BBCA',
+        payload: { ...fd, pe: 13.51, roe: 0.21818, pbv: 1.52 },
+        rasio: { 'Current PE Ratio (TTM)': 13.43, 'Return on Equity (TTM)': 21.47, 'Current Price to Book Value': 1.61 },
+      },
+    }))
+    expect(utama.teks).toContain('PER 13,43×')
+    expect(utama.teks).toContain('ROE 21,47%')
+    expect(utama.teks).not.toContain('sumber cadangan')
+    // Rugi: P/E negatif tak bermakna, dan P/E lama yang basi tidak dipakai.
+    const rugi = jawab('PER BBCA berapa?', konteks({
+      kamus,
+      data: {
+        jenis: 'fundamental', kode: 'BBCA',
+        payload: { ...fd, pe: 336.28 },
+        rasio: { 'Current PE Ratio (TTM)': -9.34, 'Return on Equity (TTM)': -4.25, 'Current Price to Book Value': 0.63 },
+      },
+    }))
+    expect(rugi.teks).toContain('PER —')
+    expect(rugi.teks).toContain('ROE -4,25%')
+    expect(rugi.teks).not.toContain('336')
   })
 
   it('sektor per-emiten dijawab dari fundamental, bukan sektor pasar', () => {

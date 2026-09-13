@@ -32,9 +32,11 @@ export function PanelValuasi({ fd, rasio = null }: { fd: StockFundamental; rasio
         <table>
           <tbody>
             {TR('P/E (Annualised)', fvx(fd.pe_annualised))}
-            {TR('P/E (TTM)', <>{fvx(fd.pe)}<LencanaTurunan fd={fd} ruas="pe" /></>)}
+            {TR('P/E (TTM)', <NilaiRotasi ruas="pe" lama={fd.pe} rasio={rasio}
+              lencanaLama={<LencanaTurunan fd={fd} ruas="pe" />} render={fvx} />)}
             {TR('Forward P/E', fvx(fd.forward_pe))}
-            {TR('Earnings Yield', <FdPercent v={fd.earn_yield} />)}
+            {TR('Earnings Yield', <NilaiRotasi ruas="earn_yield" lama={fd.earn_yield} rasio={rasio}
+              render={(v) => <FdPercent v={v} />} />)}
             {TR('P/S (TTM)', <NilaiRotasi ruas="ps" lama={fd.ps} rasio={rasio} render={fvx} />)}
             {TR('P/BV', <NilaiRotasi ruas="pb" lama={fd.pb} rasio={rasio} render={fvx} />)}
             {TR('P/Cash Flow', fvx(fd.price_cf))}
@@ -50,7 +52,7 @@ export function PanelValuasi({ fd, rasio = null }: { fd: StockFundamental; rasio
 }
 
 /** Panel Per Saham — semua metrik /share (Rp, hasil konversi backend). */
-export function PanelPerSaham({ fd }: { fd: StockFundamental }) {
+export function PanelPerSaham({ fd, rasio = null }: { fd: StockFundamental; rasio?: PetaRasio }) {
   const rp = (v: number | null | undefined) => (v != null ? 'Rp ' + fv(v) : '—')
   return (
     <div className="panel">
@@ -58,7 +60,8 @@ export function PanelPerSaham({ fd }: { fd: StockFundamental }) {
       <div className="panel-b">
         <table>
           <tbody>
-            {TR('EPS (TTM)', <>{rp(fd.eps)}<LencanaTurunan fd={fd} ruas="eps" /></>)}
+            {TR('EPS (TTM)', <NilaiRotasi ruas="eps" lama={fd.eps} rasio={rasio}
+              lencanaLama={<LencanaTurunan fd={fd} ruas="eps" />} render={rp} />)}
             {TR('EPS Forward', rp(fd.eps_fwd))}
             {TR('Revenue/Share', rp(fd.rev_ps))}
             {TR('Cash/Share', rp(fd.cash_ps))}
@@ -121,7 +124,8 @@ export function PanelEfektivitas({ fd, rasio = null }: { fd: StockFundamental; r
         <table>
           <tbody>
             {TR('ROA (TTM)', <FdPercent v={fd.roa != null ? fd.roa * 100 : null} />)}
-            {TR('ROE (TTM)', <><FdPercent v={fd.roe != null ? fd.roe * 100 : null} /><LencanaTurunan fd={fd} ruas="roe" /></>)}
+            {TR('ROE (TTM)', <NilaiRotasi ruas="roe" lama={fd.roe} rasio={rasio}
+              lencanaLama={<LencanaTurunan fd={fd} ruas="roe" />} render={(v) => <FdPercent v={v} />} />)}
             {TR('ROCE (TTM)', <FdPercent v={fd.roce != null ? fd.roce * 100 : null} />)}
             {TR('ROIC (TTM)', <FdPercent v={fd.roic != null ? fd.roic * 100 : null} />)}
             {TR('Days Sales Outstanding', fHari(fd.days_sales_outstanding))}

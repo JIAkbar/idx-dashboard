@@ -24,6 +24,7 @@ import { usePengendali, pengendaliEmiten, labelPengendali } from '../../lib/dasb
 import { tanggalPendek } from '../../lib/dasbor/statistikBerkala'
 import { muatTambahanKeystats, type TambahanKeystats } from '../../lib/dasbor/rasioTambahanKeystats'
 import { NilaiRotasi } from '../../components/dasbor/NilaiRotasi'
+import { pilihRasio } from '../../lib/dasbor/rasioUtamaKeystats'
 import { useKabar, kabarEmiten, waktuKabar } from '../../lib/dasbor/kabar'
 import './StockDetail.css'
 // Baris kabar (.kbr-*) hidup di Kabar.css dan dipakai juga di sini —
@@ -283,6 +284,13 @@ export function StockDetail() {
   // financial_currency masih null di semua file — currency terisi "IDR").
   const mataUang = (fd?.financial_currency as string | undefined) ?? fd?.currency ?? null
   const earningsYield = fd?.eps && fd.last_price ? (fd.eps / fd.last_price) * 100 : null
+  // Kelompok laba TTM dirotasi ke sumber utama (#36 opsi 1). Nilai pilihan
+  // dipakai juga untuk warna dan sub-baris sel, bukan cuma angkanya: satu
+  // rasio, satu angka di satu layar.
+  const rasioUtama = tambahan?.rasio ?? null
+  const eyTampil = pilihRasio('earn_yield', earningsYield, rasioUtama).nilai
+  const epsTampil = pilihRasio('eps', fd?.eps, rasioUtama).nilai
+  const dyTampil = pilihRasio('dividend_yield', fd?.dividend_yield, rasioUtama).nilai
 
   return (
     <div className="lantai">
@@ -444,7 +452,7 @@ export function StockDetail() {
 
           {/* Strip rasio full-width 6 sel */}
           <div className="rasio">
-            <RasioCell lbl="P/E (TTM)" v={<>{fvx(fd.pe)}<LencanaTurunan fd={fd} ruas="pe" /></>} sub={fd.forward_pe != null ? `fwd ${fvx(fd.forward_pe)}` : null} />
+            <RasioCell lbl="P/E (TTM)" v={<NilaiRotasi ruas="pe" lama={fd.pe} rasio={rasioUtama} lencanaLama={<LencanaTurunan fd={fd} ruas="pe" />} render={fvx} />} sub={fd.forward_pe != null ? `fwd ${fvx(fd.forward_pe)}` : null} />
             {/* P/B dan Div Yield di strip ini dulu memakai angka lama apa adanya,
                 sementara panel Valuasi di halaman YANG SAMA sudah memakai sumber
                 yang dirotasi — BBRI memajang 1,45× di atas dan 1,61× di bawah,
@@ -452,12 +460,18 @@ export function StockDetail() {
             <RasioCell lbl="P/B"
               v={<NilaiRotasi ruas="pb" lama={fd.pbv ?? fd.pb} rasio={tambahan?.rasio ?? null} render={fvx} />}
               sub={fd.bv != null ? `BV Rp ${fv(fd.bv)}` : null} />
-            <RasioCell lbl="P/S (TTM)" v={fvx(fd.ps)} sub={fd.rev_ps != null ? `Rev/shr Rp ${fv(fd.rev_ps)}` : null} />
+            <RasioCell lbl="P/S (TTM)" v={<NilaiRotasi ruas="ps" lama={fd.ps} rasio={rasioUtama} render={fvx} />} sub={fd.rev_ps != null ? `Rev/shr Rp ${fv(fd.rev_ps)}` : null} />
             <RasioCell
               lbl="Earnings Yield"
-              v={<>{earningsYield != null ? (earningsYield >= 0 ? '+' : '') + persen(earningsYield, 2) : '—'}<LencanaTurunan fd={fd} ruas="eps" /></>}
-              cls={earningsYield != null ? (earningsYield >= 0 ? 'up' : 'dn') : undefined}
-              sub={fd.eps != null ? `EPS Rp ${fv(fd.eps)}` : null}
+              v={<NilaiRotasi
+                ruas="earn_yield"
+                lama={earningsYield}
+                rasio={rasioUtama}
+                lencanaLama={<LencanaTurunan fd={fd} ruas="eps" />}
+                render={(v) => (v != null ? (v >= 0 ? '+' : '') + persen(v, 2) : '—')}
+              />}
+              cls={eyTampil != null ? (eyTampil >= 0 ? 'up' : 'dn') : undefined}
+              sub={epsTampil != null ? `EPS Rp ${fv(epsTampil)}` : null}
             />
             <RasioCell
               lbl="Div Yield"
@@ -468,7 +482,7 @@ export function StockDetail() {
                 lencanaLama={<LencanaTurunan fd={fd} ruas="dividend_yield" />}
                 render={(v) => (v != null ? '+' + persen(v, 2) : '—')}
               />}
-              cls={fd.dividend_yield != null ? 'up' : undefined}
+              cls={dyTampil != null ? 'up' : undefined}
               sub={fd.dividend != null
                 ? `Rp ${fv(fd.dividend)}${fd.payout_ratio != null ? ` · payout ${persen(fd.payout_ratio * 100, 0)}` : ''}`
                 : null}
@@ -527,7 +541,7 @@ export function StockDetail() {
           {tab === 'statistik' && (
             /* Lima Langkah Uang — dipindah dari Bedah Emiten: penjualan →
                laba → EPS → kas operasi → dividen, dan rasio antar langkahnya. */
-            <PanelLimaLangkahUang fd={fd} />
+            <PanelLimaLangkahUang fd={fd} rasio={rasioUtama} />
           )}
 
           {tab === 'statistik' && (
@@ -541,7 +555,7 @@ export function StockDetail() {
                   baru muncul di bawahnya. */}
               <PanelValuasiHistoris fd={fd} />
               <PanelValuasi fd={fd} rasio={tambahan?.rasio ?? null} />
-              <PanelPerSaham fd={fd} />
+              <PanelPerSaham fd={fd} rasio={rasioUtama} />
               <PanelSolvency fd={fd} rasio={tambahan?.rasio ?? null} />
               <PanelEfektivitas fd={fd} rasio={tambahan?.rasio ?? null} />
               <PanelProfitabilitas fd={fd} />
@@ -588,7 +602,9 @@ export function StockDetail() {
           )}
 
 
-          {tab === 'valuasi' && <PanelValuasiInteraktif key={fd.ticker} fd={fd} rasio={tambahan?.rasio ?? null} />}
+          {/* Kunci ikut kedatangan rasio sumber utama: isian EPS kalkulator diambil
+              sekali saat panel dipasang, jadi tanpa ini ia terkunci di angka cadangan. */}
+          {tab === 'valuasi' && <PanelValuasiInteraktif key={`${fd.ticker}-${rasioUtama ? 'utama' : 'lama'}`} fd={fd} rasio={rasioUtama} />}
 
           {tab === 'banding' && (
             /* Banding Emiten — dipindah dari Bedah Emiten. Tab sendiri

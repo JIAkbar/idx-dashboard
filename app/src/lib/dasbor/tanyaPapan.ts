@@ -291,16 +291,25 @@ function jawabValuasi(kode: string, fd: StockFundamental | null, rasio?: PetaRas
   // menyebutkan sumber sama sekali, jadi tak ada cara tahu mana yang mana.
   // `pb` tetap cadangan terakhir: 61 berkas belum punya `pbv`.
   const { nilai: pbv, asal } = pilihRasio('pb', fd?.pbv ?? fd?.pb, rasio)
-  if (!fd || (fd.pe == null && pbv == null && fd.roe == null)) {
+  // PER dan ROE ikut dirotasi (#36 opsi 1) dengan alasan yang sama. ROE lama
+  // berupa rasio; `pilihRasio` yang menyamakannya jadi persen.
+  const per = pilihRasio('pe', fd?.pe, rasio)
+  const roe = pilihRasio('roe', fd?.roe, rasio)
+  if (!fd || (per.nilai == null && pbv == null && roe.nilai == null)) {
     return { teks: `Data valuasi ${kode} belum ada.`, takPaham: true, topik: 'valuasiEmiten', ...linkEmiten(kode) }
   }
   // Sumbernya disebut hanya saat yang tayang angka CADANGAN — menempelkan
   // "sumber utama" pada tiap jawaban cuma menambah kata tanpa menambah kabar.
-  const catatan = pbv != null && asal === 'cadangan-lama'
-    ? ' (PBV dari sumber cadangan — penyedia utama belum memuat rasio ini untuk emiten tersebut)'
+  const cadangan = [
+    per.nilai != null && per.asal === 'cadangan-lama' ? 'PER' : null,
+    pbv != null && asal === 'cadangan-lama' ? 'PBV' : null,
+    roe.nilai != null && roe.asal === 'cadangan-lama' ? 'ROE' : null,
+  ].filter((x): x is string => x != null)
+  const catatan = cadangan.length > 0
+    ? ` (${cadangan.join(', ')} dari sumber cadangan — penyedia utama belum memuat rasio itu untuk emiten tersebut)`
     : ''
   return {
-    teks: `${kode}: PER ${fd.pe != null ? `${rp(fd.pe)}×` : '—'}, PBV ${pbv != null ? `${rp(pbv)}×` : '—'}, ROE ${fd.roe != null ? `${rp(fd.roe * 100)}%` : '—'}.${catatan}`,
+    teks: `${kode}: PER ${per.nilai != null ? `${rp(per.nilai)}×` : '—'}, PBV ${pbv != null ? `${rp(pbv)}×` : '—'}, ROE ${roe.nilai != null ? `${rp(roe.nilai)}%` : '—'}.${catatan}`,
     topik: 'valuasiEmiten', ...linkEmiten(kode),
   }
 }

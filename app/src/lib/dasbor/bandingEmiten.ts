@@ -10,7 +10,6 @@ import {
 } from './valuasiHistoris'
 import {
   ada,
-  keP,
   kualitasLaba,
   labelSkor,
   marjin,
@@ -24,6 +23,7 @@ import {
 import { fMC, fRingkas, fvx } from './stockDetailFormat'
 import { tanggalPendek } from './statistikBerkala'
 import { keFraksi } from '../fraksiHarga'
+import { pilihRasio, type PetaRasio } from './rasioUtamaKeystats'
 
 /**
  * **Banding sampai lima emiten** di halaman Bedah Emiten, dan **ekspor
@@ -91,6 +91,9 @@ export interface SelBanding {
   /** Teks siap tampil. `'—'` untuk yang tak ada — TIDAK PERNAH `'0'`. */
   teks: string
   arah: Arah
+  /** Angka dari sumber lama karena sumber utama tak memuatnya (#36). Layar
+   *  menandainya `c`; gambar PNG belum. */
+  cadangan?: boolean
 }
 
 export interface BarisBanding {
@@ -132,6 +135,8 @@ export interface SumberBanding {
   deret: DeretValuasi | null
   /** Baris transaksi harian terurut NAIK tanggal; `null` = belum terpanen. */
   asing: AsingHarian[] | null
+  /** Rasio sumber utama emiten ini (#36); kosong = belum dimuat atau tak ada. */
+  rasio?: PetaRasio
 }
 
 /* ────────────────────────── penyusun ────────────────────────── */
@@ -180,17 +185,18 @@ interface Hitung {
   total: { skor: number | null; n: number }
   trx: RingkasTransaksi | null
   net20: { net: number; hari: number } | null
+  rasio: PetaRasio
 }
 
 function hitung(s: SumberBanding): Hitung {
   const fd = s.fd
   if (!fd) {
-    return { kode: s.kode, nama: '', fd: null, pe: null, pb: null, pilar: [], total: { skor: null, n: 0 }, trx: null, net20: null }
+    return { kode: s.kode, nama: '', fd: null, pe: null, pb: null, pilar: [], total: { skor: null, n: 0 }, trx: null, net20: null, rasio: null }
   }
   const harga = fd.last_price ?? null
   const pe = ringkasRasio(s.deret?.pe, rasioKini(harga, s.deret?.eps_dasar))
   const pb = ringkasRasio(s.deret?.pb, rasioKini(harga, s.deret?.bv_dasar))
-  const pilar = skorPilar(fd, pe.vonis, sumbuSektor(fd.pe_vs_sector_pct ?? null))
+  const pilar = skorPilar(fd, pe.vonis, sumbuSektor(fd.pe_vs_sector_pct ?? null), s.rasio ?? null)
   return {
     kode: fd.ticker || s.kode,
     nama: fd.name || '',
@@ -201,6 +207,7 @@ function hitung(s: SumberBanding): Hitung {
     total: skorTotal(pilar),
     trx: ringkasTransaksi(s.asing ?? [], fd.shares),
     net20: netAsing(s.asing, 20),
+    rasio: s.rasio ?? null,
   }
 }
 
@@ -286,7 +293,16 @@ const DEF: DefGrup[] = [
   {
     judul: 'Kualitas Laba',
     baris: [
-      { label: 'ROE', ambil: (h) => sel(persen(keP(h.fd?.roe), 2)) },
+      {
+        // Sumber utama dulu, sumber lama cadangan bertanda (#36 opsi 1) — sama
+        // dengan panel Efektivitas Manajemen di tab Statistik halaman yang sama.
+        label: 'ROE',
+        ambil: (h) => {
+          const r = pilihRasio('roe', h.fd?.roe, h.rasio)
+          const s = sel(persen(r.nilai, 2))
+          return r.asal === 'cadangan-lama' && s !== KOSONG ? { ...s, cadangan: true } : s
+        },
+      },
       { label: 'Marjin bersih', ambil: (h) => sel(persen(marjin(h.fd?.npm), 2)) },
       { label: 'DER', ambil: (h) => sel(persenSel(h.fd ? kualitasLaba(h.fd).der : null, 1)) },
       { label: 'Kas operasi ÷ laba', ambil: (h) => sel(persenSel(h.fd ? kualitasLaba(h.fd).akrual : null, 0)) },

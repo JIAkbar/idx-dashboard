@@ -1,5 +1,6 @@
 import type { StockFundamental, YearMap, QuarterMap } from './stockDetailData'
 import { persen } from './format'
+import { pilihRasio, type PetaRasio } from './rasioUtamaKeystats'
 
 /**
  * Hitungan halaman **Bedah Emiten** (backlog A2 / #153) — semuanya fungsi
@@ -151,6 +152,8 @@ export interface LangkahFlow {
   yoy: number | null
   /** Periode angkanya, ditulis apa adanya di layar. */
   periode: string
+  /** Angka dari sumber lama karena sumber utama tak memuatnya (#36); ditandai `c`. */
+  cadangan?: boolean
 }
 
 /**
@@ -160,11 +163,13 @@ export interface LangkahFlow {
  * `sambunganFlow`): laba yang tak diikuti kas, atau dividen yang melampaui
  * laba, hanya terlihat kalau dua langkah disandingkan.
  *
- * Semua dari `fundamental/` (TTM yfinance) — satu sumber, tak dicampur dengan
- * XBRL kumulatif.
+ * Semua dari `fundamental/` (TTM yfinance), kecuali EPS: sejak #36 opsi 1
+ * (13 Sep 2026) EPS TTM dari sumber utama bila ada, sumber lama cadangan
+ * bertanda. Tak dicampur dengan XBRL kumulatif.
  */
-export function langkahMoneyFlow(fd: StockFundamental): LangkahFlow[] {
+export function langkahMoneyFlow(fd: StockFundamental, rasio: PetaRasio = null): LangkahFlow[] {
   const eps = deretTahun(fd.hist_eps)
+  const epsUtama = pilihRasio('eps', fd.eps, rasio)
   const dps = deretTahun(fd.hist_dps)
   return [
     {
@@ -179,8 +184,9 @@ export function langkahMoneyFlow(fd: StockFundamental): LangkahFlow[] {
     },
     {
       id: 'eps', label: 'EPS', arti: 'Bagian laba untuk tiap satu lembar saham.',
-      nilai: ada(fd.eps) ? fd.eps : null, satuan: 'perlembar',
+      nilai: epsUtama.nilai, satuan: 'perlembar',
       yoy: yoyDeret(eps), periode: 'TTM · pembanding dari laporan tahunan',
+      cadangan: epsUtama.asal === 'cadangan-lama',
     },
     {
       id: 'cfo', label: 'Arus Kas Operasi', arti: 'Kas yang benar-benar diterima dari operasi — laba di atas kertas belum tentu jadi kas.',
@@ -211,11 +217,13 @@ export interface SambunganFlow {
  * PERTANYAAN, bukan tuduhan: piutang yang menumpuk dan pertumbuhan yang
  * dibiayai modal kerja sama-sama menghasilkan angka rendah.
  */
-export function sambunganFlow(fd: StockFundamental): SambunganFlow[] {
+export function sambunganFlow(fd: StockFundamental, rasio: PetaRasio = null): SambunganFlow[] {
   const rev = ada(fd.ttm_revenue) ? fd.ttm_revenue : null
   const ni = ada(fd.ttm_net_income) ? fd.ttm_net_income : null
   const ocf = ada(fd.ttm_ocf) ? fd.ttm_ocf : null
-  const eps = ada(fd.eps) ? fd.eps : null
+  // EPS yang sama dengan langkah 3 di layar, supaya payout tak dihitung dari
+  // angka yang tak pernah tampil.
+  const eps = pilihRasio('eps', fd.eps, rasio).nilai
   const dps = ada(fd.dividend_ttm) ? fd.dividend_ttm : ada(fd.dividend) ? fd.dividend : null
 
   const npm = rev != null && ni != null && rev !== 0 ? (ni / rev) * 100 : null
@@ -268,13 +276,13 @@ export interface KualitasLaba {
   marjinBersih: number | null
 }
 
-export function kualitasLaba(fd: StockFundamental): KualitasLaba {
+export function kualitasLaba(fd: StockFundamental, rasio: PetaRasio = null): KualitasLaba {
   const roeHist = deretTahun(fd.hist_roe, 5)
   const der = derPersen(fd)
   const ni = ada(fd.ttm_net_income) ? fd.ttm_net_income : null
   const ocf = ada(fd.ttm_ocf) ? fd.ttm_ocf : null
   return {
-    roe: keP(fd.roe),
+    roe: pilihRasio('roe', fd.roe, rasio).nilai,
     // hist_roe SUDAH persen — jangan dikali 100 lagi walau `roe` di berkas
     // yang sama berupa rasio.
     roeRerata: roeHist.length ? roeHist.reduce((s, t) => s + t.nilai, 0) / roeHist.length : null,
@@ -356,8 +364,10 @@ function rerata(xs: (number | null)[]): { skor: number | null; n: number } {
  * punya satu pun ruas terisi tetap kosong alih-alih diberi angka tengah.
  * Halaman WAJIB menyebut ini aturan, bukan penilaian model.
  */
-export function skorPilar(fd: StockFundamental, sejarah: Sumbu | null, sektor: Sumbu | null): Pilar[] {
-  const q = kualitasLaba(fd)
+export function skorPilar(
+  fd: StockFundamental, sejarah: Sumbu | null, sektor: Sumbu | null, rasio: PetaRasio = null,
+): Pilar[] {
+  const q = kualitasLaba(fd, rasio)
   const rev = deretTahun(fd.hist_revenue)
   const ni = deretTahun(fd.hist_net_income)
   const cagrRev = cagr(rev)

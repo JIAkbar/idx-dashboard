@@ -1,6 +1,7 @@
 import { fp, persen } from '../../lib/dasbor/format'
 import { langkahMoneyFlow, sambunganFlow } from '../../lib/dasbor/bedahEmiten'
 import type { StockFundamental } from '../../lib/dasbor/stockDetailData'
+import { JUDUL_ASAL, type PetaRasio } from '../../lib/dasbor/rasioUtamaKeystats'
 import { fEps, fMC } from '../../lib/dasbor/stockDetailFormat'
 
 /**
@@ -27,9 +28,9 @@ function kelasArah(v: number | null | undefined): string {
   return v == null || !Number.isFinite(v) ? '' : v >= 0 ? ' up' : ' dn'
 }
 
-export function PanelLimaLangkahUang({ fd }: { fd: StockFundamental }) {
-  const langkah = langkahMoneyFlow(fd)
-  const sambungan = sambunganFlow(fd)
+export function PanelLimaLangkahUang({ fd, rasio = null }: { fd: StockFundamental; rasio?: PetaRasio }) {
+  const langkah = langkahMoneyFlow(fd, rasio)
+  const sambungan = sambunganFlow(fd, rasio)
   const adaIsi = langkah.some((l) => l.nilai != null)
 
   return (
@@ -59,6 +60,7 @@ export function PanelLimaLangkahUang({ fd }: { fd: StockFundamental }) {
                         : l.satuan === 'uang'
                           ? fMC(l.nilai)
                           : `Rp ${fEps(l.nilai)}`}
+                      {l.nilai != null && l.cadangan && <sup title={JUDUL_ASAL['cadangan-lama']} style={{ color: 'var(--text3)' }}>c</sup>}
                       {l.yoy != null && <span className={'bdh-yoy' + kelasArah(l.yoy)}>{pct(l.yoy)} YoY</span>}
                     </div>
                     <span className="bdh-arti">{l.arti}</span>

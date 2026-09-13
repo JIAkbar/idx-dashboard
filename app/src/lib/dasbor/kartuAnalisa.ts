@@ -84,8 +84,13 @@ export interface FundamentalRingkas {
   pbv?: number | null
   /** P/B sumber utama, disalin saat kartu dibangun (#143). Kosong pada kartu
    *  lama dan pada emiten yang rasionya tak dimuat sumber utama; dua-duanya
-   *  jatuh ke `pbv` dan ditandai cadangan di layar. */
-  pb_keystats?: number | null
+   *  jatuh ke `pbv` dan ditandai cadangan di layar. Kartu yang dibangun
+   *  sebelum 13 Sep 2026 menyimpannya sebagai TEKS ("2.88"), jadi tipenya
+   *  mengakui keduanya dan pembacanya lewat `petaRasio`. */
+  pb_keystats?: number | string | null
+  /** P/E dan ROE (persen) sumber utama, disalin saat kartu dibangun (#36 opsi 1). */
+  pe_keystats?: number | null
+  roe_keystats?: number | null
   /** Tanggal bar harga yang dipakai ruas berbasis harga di kartu ini. */
   harga_pada?: string | null
   eps?: number | null

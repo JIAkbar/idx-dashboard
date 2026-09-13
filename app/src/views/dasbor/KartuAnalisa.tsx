@@ -278,7 +278,15 @@ function KartuSatuEmiten({ kode }: { kode: string }) {
 
           <div className="blok">
             <h4>Fundamental Ringkas</h4>
-            <div className="baris"><span>PER</span><span>{f.pe == null ? '—' : `${fmtDes(f.pe, 1)}×`}</span></div>
+            {/* PER dan ROE dari sumber utama sejak #36 opsi 1, sama dengan PBV di bawah. */}
+            <div className="baris"><span>PER</span><span>
+              <NilaiRotasi
+                ruas="pe"
+                lama={f.pe}
+                rasio={petaRasio('pe', f.pe_keystats)}
+                render={(v) => (v == null ? '—' : `${fmtDes(v, 1)}×`)}
+              />
+            </span></div>
             {/* Labelnya PBV, jadi angkanya `pbv` — `pb` cuma cadangan untuk
                 berkas yang belum sempat dihitung ulang saat harga disegarkan. */}
             <div className="baris"><span>PBV</span><span>
@@ -289,7 +297,14 @@ function KartuSatuEmiten({ kode }: { kode: string }) {
                 render={(v) => (v == null ? '—' : `${fmtDes(v, 2)}×`)}
               />
             </span></div>
-            <div className="baris"><span>ROE</span><span>{f.roe == null ? '—' : fmtPct0(f.roe * 100, 1)}</span></div>
+            <div className="baris"><span>ROE</span><span>
+              <NilaiRotasi
+                ruas="roe"
+                lama={f.roe}
+                rasio={petaRasio('roe', f.roe_keystats)}
+                render={(v) => (v == null ? '—' : fmtPct0(v, 1))}
+              />
+            </span></div>
             <div className="baris"><span>DER</span><span>{f.der == null ? '—' : fmtPct0(f.der, 1)}</span></div>
             <div className="baris"><span>Pendapatan YoY</span><span className={naikTurun(f.rev_yoy)}>{fmtPct(f.rev_yoy, 1)}</span></div>
             <div className="baris"><span>Laba Bersih YoY</span><span className={naikTurun(f.ni_yoy)}>{fmtPct(f.ni_yoy, 1)}</span></div>

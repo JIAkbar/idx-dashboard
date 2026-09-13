@@ -35,6 +35,11 @@ describe('satuan — dua ruas sekeluarga bisa beda skala 100×', () => {
     expect(q.roeRerata).toBeCloseTo(20.475, 3)
   })
 
+  it('ROE sumber utama sudah persen; cadangan lama tetap dikali 100 (#36 opsi 1)', () => {
+    expect(kualitasLaba(fdDasar({ roe: 0.21818 }), { 'Return on Equity (TTM)': 21.47 }).roe).toBe(21.47)
+    expect(kualitasLaba(fdDasar({ roe: 0.21818 }), null).roe).toBeCloseTo(21.818, 3)
+  })
+
   it('der persen dipakai apa adanya; der_q rasio dikali 100', () => {
     expect(derPersen(fdDasar({ der: 59.982, der_q: 0.6835 }))).toEqual({ nilai: 59.982, sumber: 'ttm' })
     expect(derPersen(fdDasar({ der_q: 0.6835 }))).toEqual({ nilai: 68.35, sumber: 'kuartal' })
@@ -99,6 +104,16 @@ describe('money flow 5 langkah', () => {
   it('payout di atas 100% diberi kalimat yang menyebut itu tak berkelanjutan', () => {
     const s = sambunganFlow(fdDasar({ eps: 100, dividend_ttm: 130 }))
     expect(s.find((x) => x.id === 'payout')!.baca).toMatch(/melebihi laba/)
+  })
+
+  it('EPS langkah dan payout memakai sumber utama bila ada; cadangan ditandai (#36 opsi 1)', () => {
+    const rasio = { 'Current EPS (TTM)': 200 }
+    const utama = langkahMoneyFlow(fdDasar({ eps: 100 }), rasio).find((x) => x.id === 'eps')!
+    expect(utama.nilai).toBe(200)
+    expect(utama.cadangan).toBe(false)
+    expect(langkahMoneyFlow(fdDasar({ eps: 100 })).find((x) => x.id === 'eps')!.cadangan).toBe(true)
+    const s = sambunganFlow(fdDasar({ eps: 100, dividend_ttm: 130 }), rasio)
+    expect(s.find((x) => x.id === 'payout')!.nilai).toBeCloseTo(65, 6)
   })
 })
 

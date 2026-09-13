@@ -3,7 +3,7 @@ import type { StockFundamental } from '../../../lib/dasbor/stockDetailData'
 import { fp2 } from '../../../lib/dasbor/stockDetailFormat'
 import { FdPercent } from '../../../components/dasbor/FdPercent'
 import { IkonMenu, IKON_PENGGARIS, IKON_KALKULATOR, IKON_LAMPU, IKON_GRAFIK_BATANG, IKON_UANG, IKON_PERINGATAN, IKON_GRAFIK_NAIK } from '../../../components/dasbor/IkonMenu'
-import { pilihRasio } from '../../../lib/dasbor/rasioUtamaKeystats'
+import { JUDUL_ASAL, pilihRasio } from '../../../lib/dasbor/rasioUtamaKeystats'
 import type { PetaRasio } from '../../../components/dasbor/NilaiRotasi'
 import { persen } from '../../../lib/dasbor/format'
 
@@ -38,11 +38,14 @@ function pctPlain(v: number | null, d = 1): string {
 const AMBANG_REL = 5
 
 /** Satu baris tabel Relative Valuation — port relRow() index_live.html baris 4254-4265. */
-function RelRow({ label, val, secMed, fmt, invert }: {
+function RelRow({ label, val, secMed, fmt, invert, cadangan = false }: {
   label: string; val: number | null; secMed: number | null; fmt: (v: number | null) => string; invert: boolean
+  /** Angka saham dari sumber lama (#36): ditandai `c` seperti panel lain. */
+  cadangan?: boolean
 }) {
+  const tandaC = cadangan ? <sup title={JUDUL_ASAL['cadangan-lama']} style={{ color: 'var(--text3)' }}>c</sup> : null
   if (val == null || secMed == null) {
-    return <tr><td>{label}</td><td className="r">{fmt(val)}</td><td className="r muted">—</td><td className="r muted">—</td></tr>
+    return <tr><td>{label}</td><td className="r">{fmt(val)}{tandaC}</td><td className="r muted">—</td><td className="r muted">—</td></tr>
   }
   const diff = (val / secMed - 1) * 100
   const isCheap = invert ? diff > AMBANG_REL : diff < -AMBANG_REL
@@ -56,7 +59,7 @@ function RelRow({ label, val, secMed, fmt, invert }: {
   return (
     <tr>
       <td>{label}</td>
-      <td className="r">{fmt(val)}</td>
+      <td className="r">{fmt(val)}{tandaC}</td>
       <td className="r">{fmt(secMed)}</td>
       <td className="r"><span style={{ color: diffColor }}>{fp2(diff)}</span> {badge}</td>
     </tr>
@@ -78,8 +81,12 @@ function RelRow({ label, val, secMed, fmt, invert }: {
 export function PanelValuasiInteraktif({ fd, rasio = null }: { fd: StockFundamental; rasio?: PetaRasio }) {
   // Angka P/B yang dipajang tabel di bawah harus sama dengan yang dipajang
   // strip hero dan panel Valuasi — satu rasio, satu angka per halaman.
-  const pb = pilihRasio('pb', fd.pbv ?? fd.pb, rasio).nilai
-  const epsDefault = fd.eps || 0
+  // P/E, ROE, dan EPS bawaan kalkulator ikut aturan yang sama sejak #36 opsi 1.
+  const pbPilih = pilihRasio('pb', fd.pbv ?? fd.pb, rasio)
+  const pb = pbPilih.nilai
+  const pePilih = pilihRasio('pe', fd.pe, rasio)
+  const roePilih = pilihRasio('roe', fd.roe, rasio)
+  const epsDefault = pilihRasio('eps', fd.eps, rasio).nilai || 0
   const bvDefault = fd.bv || 0
   const gDefault = fd.eps_cagr_3y ?? fd.eps_cagr_2y ?? 5
   const gClamped = Number(Math.max(0, Math.min(gDefault, 20)).toFixed(1))
@@ -216,13 +223,13 @@ export function PanelValuasiInteraktif({ fd, rasio = null }: { fd: StockFundamen
               <table style={{ minWidth: 260 }}>
                 <thead><tr><th>Metrik</th><th className="r">Saham</th><th className="r">Sektor</th><th className="r">Status</th></tr></thead>
                 <tbody>
-                  <RelRow label="P/E Ratio" val={fd.pe ?? null} secMed={secPE} fmt={(v) => v != null ? v.toFixed(1) + 'x' : '—'} invert={false} />
-                  <RelRow label="P/B Ratio" val={pb} secMed={secPB} fmt={(v) => v != null ? v.toFixed(2) + 'x' : '—'} invert={false} />
+                  <RelRow label="P/E Ratio" val={pePilih.nilai} cadangan={pePilih.asal === 'cadangan-lama'} secMed={secPE} fmt={(v) => v != null ? v.toFixed(1) + 'x' : '—'} invert={false} />
+                  <RelRow label="P/B Ratio" val={pb} cadangan={pbPilih.asal === 'cadangan-lama'} secMed={secPB} fmt={(v) => v != null ? v.toFixed(2) + 'x' : '—'} invert={false} />
                   {/* EV/EBITDA pindah ke sini dari panel "Current Valuation" lama
                       (dihapus di re-layout) — median sektornya memang sudah ada. */}
                   <RelRow label="EV/EBITDA" val={fd.ev_ebitda ?? null} secMed={fd.sector_ev_ebitda_median ?? null} fmt={(v) => v != null ? v.toFixed(1) + 'x' : '—'} invert={false} />
                   <RelRow label="Net Margin" val={fd.npm != null ? fd.npm * 100 : null} secMed={secNPM != null ? secNPM * 100 : null} fmt={(v) => pctPlain(v)} invert={true} />
-                  <RelRow label="ROE" val={fd.roe != null ? fd.roe * 100 : null} secMed={secROE != null ? secROE * 100 : null} fmt={(v) => pctPlain(v)} invert={true} />
+                  <RelRow label="ROE" val={roePilih.nilai} cadangan={roePilih.asal === 'cadangan-lama'} secMed={secROE != null ? secROE * 100 : null} fmt={(v) => pctPlain(v)} invert={true} />
                 </tbody>
               </table>
               <p style={{ fontSize: 9, color: 'var(--text3)', marginTop: 6 }}>

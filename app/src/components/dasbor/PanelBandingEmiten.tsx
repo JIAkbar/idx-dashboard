@@ -12,6 +12,8 @@ import {
 } from '../../lib/dasbor/stockDetailData'
 import { useValuasiHistoris, valuasiEmiten } from '../../lib/dasbor/valuasiHistoris'
 import { MAKS_BANDING, kalimatTanggal, susunBanding, unduhBandingPng } from '../../lib/dasbor/bandingEmiten'
+import { muatTambahanKeystats } from '../../lib/dasbor/rasioTambahanKeystats'
+import { JUDUL_ASAL, type PetaRasio } from '../../lib/dasbor/rasioUtamaKeystats'
 
 /**
  * Panel/tab "Banding Emiten" — dipindah dari halaman Bedah Emiten (pensiun 21
@@ -36,6 +38,7 @@ import { MAKS_BANDING, kalimatTanggal, susunBanding, unduhBandingPng } from '../
 interface BahanKolom {
   fd: StockFundamental | null
   asing: AsingHarian[] | null
+  rasio: PetaRasio
 }
 
 export function PanelBandingEmiten({ awal }: { awal: string }) {
@@ -62,8 +65,8 @@ export function PanelBandingEmiten({ awal }: { awal: string }) {
     setMemuat(true)
     Promise.all(
       belum.map((k) =>
-        Promise.all([fetchFundamental(k), fetchAsing(k)]).then(
-          ([fd, asing]) => [k, { fd, asing: asing?.d ?? null }] as const,
+        Promise.all([fetchFundamental(k), fetchAsing(k), muatTambahanKeystats(k).catch(() => null)]).then(
+          ([fd, asing, tambahan]) => [k, { fd, asing: asing?.d ?? null, rasio: tambahan?.rasio ?? null }] as const,
         ),
       ),
     )
@@ -84,6 +87,7 @@ export function PanelBandingEmiten({ awal }: { awal: string }) {
       fd: bahan[k]?.fd ?? null,
       deret: valuasiEmiten(daftarValuasi, k),
       asing: bahan[k]?.asing ?? null,
+      rasio: bahan[k]?.rasio ?? null,
     }))),
     [kode, bahan, daftarValuasi],
   )
@@ -194,6 +198,7 @@ export function PanelBandingEmiten({ awal }: { awal: string }) {
                           className={'r num' + (s.arah === 1 ? ' up' : s.arah === -1 ? ' dn' : '')}
                         >
                           {s.teks}
+                          {s.cadangan && <sup title={JUDUL_ASAL['cadangan-lama']} style={{ color: 'var(--text3)' }}>c</sup>}
                         </td>
                       ))}
                     </tr>

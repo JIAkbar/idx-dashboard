@@ -17,8 +17,18 @@
  *  - profil perusahaan naratif (alamat, kontak, sekretaris perusahaan,
  *    ringkasan pencatatan awal) — fundamental lama cuma punya `summary`
  *    Inggris dari penyedia lama, bukan alamat/kontak resmi.
+ *
+ * Catatan 13 Sep 2026: sejak #36 A (8 Sep) dan #36 opsi 1 (13 Sep), sembilan
+ * rasio yang sudah tayang itu dibaca dari keystats sebagai sumber UTAMA, lewat
+ * `rasio` di bawah dan `rasioUtamaKeystats.ts`. Berkas ini tetap tidak
+ * menyalinnya ke ruas bernama sendiri.
  */
 import { urlData } from './baseData'
+import { angka } from './rasioUtamaKeystats'
+
+// `angka()` pindah ke `rasioUtamaKeystats.ts` supaya pembaca kartu tak ikut
+// memuat pengambil berkas; diekspor ulang untuk pemanggil lama.
+export { angka }
 
 export interface RasioBank {
   nplGross: number | null
@@ -99,18 +109,6 @@ interface BerkasProfil {
 }
 
 const CACHE = new Map<string, Promise<TambahanKeystats | null>>()
-
-/** String "5.32%" / "-" / "1.234,00" → angka; kosong/"-" → null. */
-export function angka(v: unknown): number | null {
-  if (v == null) return null
-  const s = String(v).trim()
-  if (s === '' || s === '-' || s === 'N/A') return null
-  const neg = s.startsWith('(') && s.endsWith(')')
-  const bersih = s.replace(/[()]/g, '').replace(/,/g, '').replace(/%/g, '').trim()
-  const n = parseFloat(bersih)
-  if (!Number.isFinite(n)) return null
-  return neg ? -n : n
-}
 
 // Parameternya `object`, BUKAN `Record<string, number | null>`. Antarmuka
 // (`interface`) di TypeScript tak punya index signature implisit, jadi

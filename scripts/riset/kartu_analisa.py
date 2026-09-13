@@ -710,7 +710,13 @@ def fundamental(kode: str) -> dict:
     # rasio, dua angka, dan tak ada yang menyatakan bedanya. Disalin di sini,
     # bukan dimuat halaman: kartu sudah satu berkas per emiten, dan menambah
     # tarikan kedua demi satu angka membuat halaman menunggu dua kali.
-    out["pb_keystats"] = rasio_keystats(kode).get("Current Price to Book Value")
+    # P/E dan ROE ikut disalin (#36 opsi 1, 13 Sep 2026), dan ketiganya ditulis
+    # sebagai ANGKA. Sebelumnya teks mentah ("2.88") yang disalin; layar menolak
+    # teks sebagai angka, jadi P/BV kartu selalu jatuh ke cadangan tanpa galat.
+    ks = rasio_keystats(kode)
+    out["pb_keystats"] = angka_keystats(ks.get("Current Price to Book Value"))
+    out["pe_keystats"] = angka_keystats(ks.get("Current PE Ratio (TTM)"))
+    out["roe_keystats"] = angka_keystats(ks.get("Return on Equity (TTM)"))
     return out
 
 
@@ -722,6 +728,29 @@ def rasio_keystats(kode: str) -> dict:
         return json.loads(p.read_text(encoding="utf-8")).get("rasio") or {}
     except (json.JSONDecodeError, OSError):
         return {}
+
+
+def angka_keystats(v) -> float | None:
+    """Teks rasio keystats -> angka: "21.47%" -> 21.47, "-17,434.73" -> -17434.73,
+    "(3.2)" -> -3.2, kosong/"-"/"N/A" -> None. Setara angka() di
+    app/src/lib/dasbor/rasioUtamaKeystats.ts untuk bentuk teks yang dipakai keystats,
+    supaya kartu dan Stock Detail membaca angka yang sama."""
+    if v is None:
+        return None
+    if isinstance(v, (int, float)):
+        return float(v) if math.isfinite(v) else None
+    s = str(v).strip()
+    if s in ("", "-", "N/A"):
+        return None
+    neg = s.startswith("(") and s.endswith(")")
+    s = s.replace("(", "").replace(")", "").replace(",", "").replace("%", "").strip()
+    try:
+        n = float(s)
+    except ValueError:
+        return None
+    if not math.isfinite(n):
+        return None
+    return -n if neg else n
 
 
 # --------------------------------------------------------------------- asing
@@ -954,6 +983,10 @@ def uji_bar_hantu() -> None:
 
 def uji() -> None:
     uji_bar_hantu()
+    # teks rasio keystats -> angka (#36 opsi 1)
+    assert angka_keystats("21.47%") == 21.47 and angka_keystats("-17,434.73") == -17434.73
+    assert angka_keystats("(3.2)") == -3.2 and angka_keystats("-") is None and angka_keystats("") is None
+    assert angka_keystats(None) is None and angka_keystats(2.5) == 2.5 and angka_keystats("N/A") is None
     assert ke_fraksi(1237, "atas") == 1240 and ke_fraksi(1237, "bawah") == 1235
     assert ke_fraksi(2000, "dekat") == 2000 and fraksi(2001) == 10
     # pivot fraktal: puncak tunggal di tengah

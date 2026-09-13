@@ -150,6 +150,15 @@ describe('susunBanding', () => {
     expect(ambilBaris(t, 'Net asing 20 hari (lembar)').sel[0].arah).toBe(1)
   })
 
+  it('ROE memakai sumber utama bila ada; cadangan lama ditandai (#36 opsi 1)', () => {
+    const utama = susunBanding([{
+      kode: 'AAAA', fd: fd({ roe: 0.21818 }), deret: null, asing: null, rasio: { 'Return on Equity (TTM)': 21.47 },
+    }])
+    expect(ambilBaris(utama, 'ROE').sel[0]).toEqual({ teks: '21,47%', arah: 0 })
+    const lama = susunBanding([{ kode: 'AAAA', fd: fd({ roe: 0.21818 }), deret: null, asing: null }])
+    expect(ambilBaris(lama, 'ROE').sel[0]).toEqual({ teks: '21,82%', arah: 0, cadangan: true })
+  })
+
   it('vonis valuasi butuh riwayat lima tahun — kurang dari itu "—", bukan tebakan', () => {
     const pendek = { saham: 1, tahun_terakhir: '2025', eps_dasar: 100, bv_dasar: 500, pe: { '2023': 10, '2024': 11 }, pb: {} }
     const panjang = {
