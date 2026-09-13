@@ -74,9 +74,17 @@ jobs:
           SITUS=$(gh api "repos/$GH_REPO/pages" --jq '.html_url')
           SITUS=${SITUS%/}
           read -r TERPOTONG BYTE < <(gh api "repos/$GH_REPO/git/trees/$GITHUB_SHA?recursive=1" \
-            --jq '"\(.truncated) \([.tree[] | select(.type == "blob") | .size] | add)"')
+            --jq '"\(.truncated) \([.tree[] | select(.type == "blob") | .size] | add)"') || true
           echo "situs Pages            : $SITUS"
-          echo "ukuran pohon repo      : $(( BYTE / 1048576 )) MB (batas situs 1 GB; pohon terpotong: $TERPOTONG)"
+          # Hanya informasi: API pohon yang gagal tak boleh menjatuhkan pemantau
+          # (sanggahan Pemeriksa Akhir 13 Sep 2026). Di bawah `set -e`, `read` yang
+          # menerima nol baris keluar 1 dan menghentikan skrip sebelum pemeriksaan
+          # ini, jadi kedua `read` dari API memakai `|| true`.
+          if [[ "${BYTE:-}" =~ ^[0-9]+$ ]]; then
+            echo "ukuran pohon repo      : $(( BYTE / 1048576 )) MB (batas situs 1 GB; pohon terpotong: $TERPOTONG)"
+          else
+            echo "::warning::ukuran pohon repo tak terbaca"
+          fi
 
           # ── Ambang durasi build ────────────────────────────────────────────
           AMBANG_MS=$(( AMBANG_MENIT * 60000 ))
@@ -98,7 +106,7 @@ jobs:
 
           # ── Ambang kesegaran ───────────────────────────────────────────────
           read -r SHA_UBAH WAKTU_UBAH < <(gh api "repos/$GH_REPO/commits?path=data-idx/json/index.json&sha=$GITHUB_SHA&per_page=1" \
-            --jq '.[0] | "\(.sha) \(.commit.committer.date)"')
+            --jq '.[0] | "\(.sha) \(.commit.committer.date)"') || true
           if [ -z "${SHA_UBAH:-}" ]; then echo "::error::commit yang mengubah index.json tak terbaca"; exit 1; fi
           UMUR_MENIT=$(( ( $(date -u +%s) - $(date -u -d "$WAKTU_UBAH" +%s) ) / 60 ))
           echo "HEAD yang diperiksa    : ${GITHUB_SHA:0:9}"
@@ -129,7 +137,9 @@ jobs:
             exit 0
           fi
           printf '%s' "$ALARM"
-          ADA=$(gh issue list --state open --search "Ambang Pages in:title" --json title \
+          # Daftar biasa, bukan pencarian: indeks pencarian GitHub bisa tertinggal dari
+          # issue yang baru dibuat, dan dua pemicu berdekatan lalu membuat issue dobel.
+          ADA=$(gh issue list --state open --limit 200 --json title \
             --jq '[.[] | select(.title | startswith("Ambang Pages"))] | length')
           if [ "$ADA" != "0" ]; then
             echo "::warning::issue Ambang Pages sudah terbuka, tak dibuat lagi"
