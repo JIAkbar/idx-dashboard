@@ -101,6 +101,13 @@ data-idx/json/tesis_masuk.json
 # Keluaran uji acak (#69) - laporan JSON per jalan, dibuang tiap kali
 app/uji-acak.json
 
+# Berkas status scripts/pantau_panen.py (antrean #184, 13 Sep 2026): tanda
+# hari yang sudah lengkap dan simpanan sementara jumlah hari per rentang.
+# Dibaca ulang skripnya, jadi tidak dihapus; cukup tidak dilacak.
+.papan_pantau*.json
+.papan_target_*.json
+.papan_cek.json
+
 # Log panen (#102 A). Isinya keluaran konsol per jalan — berguna saat
 # menelusuri kegagalan, tapi tak ada gunanya di riwayat repo dan tumbuh
 # tiap hari.
