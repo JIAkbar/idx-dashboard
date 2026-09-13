@@ -749,7 +749,7 @@ di halaman yang sama.
 
 Asal: keputusan Johan 13 Sep 2026 atas antrean #36 opsi 1, dikutip pengawas (sidik
 PGW-0913-KERJAKAN-SEMUA): *"kerjakan semua sampai beres"*. Aturan 3c: sumber terlengkap jadi
-utama, yang lama jadi cadangan bertanda. Kode: commit `cbd3b3833`.
+utama, yang lama jadi cadangan bertanda. Kode: commit `1e7104424`.
 
 ### Kenapa keystats, dan wasitnya siapa
 
