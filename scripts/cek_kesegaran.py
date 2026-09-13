@@ -398,20 +398,18 @@ MANIFEST: list[Turunan] = [
     # "basi 0" yang tak melihat dataset yang dipakai lima halaman adalah hijau
     # yang menyesatkan, persis kegagalan yang gerbang ini dibuat untuk mencegah.
     #
-    # Toleransinya bukan harian karena iramanya bukan harian: keystats bergerak
-    # per kuartal (angka rasio hanya berubah saat laporan baru terbit), info
-    # membawa keanggotaan indeks & notasi yang berubah mingguan-bulanan. Angka
-    # di bawah dipilih dari irama sumbernya — bukan dari seberapa basi ia
-    # kebetulan hari ini.
-    #
-    # Catatan 13 Sep 2026 (#182 A, keputusan Johan): keystats dan info kini
-    # SENGAJA dipanen tiap sore, karena rasio yang bergerak mengikuti harga
-    # dibaca dari keystats. Toleransi 30 hari di bawah belum diubah, jadi ia
-    # tak akan berbunyi kalau panen harian itu berhenti. Itu dicatat antrean
-    # #183, bukan diubah diam-diam.
+    # Iramanya HARIAN sejak 13 Sep 2026 (#182 A, keputusan Johan): bat sore
+    # memanen keystats dan info tiap hari, karena P/BV, P/S, P/E, earnings
+    # yield, dan kelompok laba TTM di Stock Detail dibaca dari keystats.
+    # Maka toleransinya ukuran harian, sama dengan turunan harian lain di
+    # manifest ini (#183 A): panen sore yang berhenti sehari sudah berbunyi.
+    # Diukur sebelum dipasang: commit bat sore 6-12 Sep 2026 selesai antara
+    # 19:17 dan 21:48 WIB, sedangkan jalan CI rumah yang memanggil gerbang ini
+    # dibuat antara 22:01 dan 23:33 WIB. Gerbang CI tidak mendahului panen
+    # hari yang sama, jadi angka 0 tidak berbunyi palsu di hari yang normal.
     Turunan("Rasio Stockbit (snapshot)", "keystats_stockbit",
             dari_ruas_direktori("dipanen_pada"),
-            "Berkas Emiten blok F · Stock Detail · Kuli Papan", toleransi=30,
+            "Berkas Emiten blok F · Stock Detail · Tanya PAPAN · Kuli Papan", toleransi=0,
             pembangun="panen_keystats_stockbit.py"),
     # Tiga gudang yang iramanya BUKAN harian dan karena itu selama ini tak
     # pernah diperiksa sama sekali (#101 A). Toleransinya dari irama
@@ -436,13 +434,11 @@ MANIFEST: list[Turunan] = [
             pembangun="panen_ipot_arsip.py (diparkir - lihat status-panen.md)"),
     Turunan("Info emiten Stockbit (snapshot)", "info_stockbit",
             dari_ruas_direktori("dipanen_pada"),
-            # 30, bukan 7: ketetapan Johan 1 Sep 2026 "keystat dan profile
-            # cukup 1 bulan sekali" — bat Buka Laptop memanennya per 28 hari.
-            # Toleransi 7 akan melapor BASI di 21 dari 28 hari tanpa ada yang
-            # salah, dan alarm yang menyala terus adalah alarm yang diabaikan.
-            # Sejak 13 Sep 2026 info dipanen HARIAN oleh bat sore (#182 A), jadi
-            # alasan di atas tak berlaku lagi; toleransinya menunggu #183.
-            "Berkas Emiten blok G (notasi & UMA) · Neo Papan (indeks)", toleransi=30,
+            # Harian sejak 13 Sep 2026, sama dengan keystats di atas (#182 A,
+            # #183 A). Angka lama 30 berasal dari ketetapan 1 Sep 2026 "keystat
+            # dan profile cukup 1 bulan sekali"; untuk keystats dan info
+            # ketetapan itu sudah diganti keputusan #182 A. Profil tetap 30.
+            "Berkas Emiten blok G (notasi & UMA) · Neo Papan (indeks)", toleransi=0,
             pembangun="panen_info_stockbit.py"),
 ]
 
@@ -752,6 +748,19 @@ def _uji() -> None:
     }
     kurang = wajib - {t.jalur for t in MANIFEST}
     assert not kurang, f"gudang dibaca halaman tapi tak diperiksa gerbang: {sorted(kurang)}"
+
+    # Keystats dan info dipanen HARIAN sejak #182 A, jadi toleransinya ukuran
+    # harian (#183 A); profil tetap bulanan. Aturan yang sama dengan periksa():
+    # basi kalau umur > toleransi. Tanggal disusun, cakram tak dibaca.
+    per_jalur = {t.jalur: t for t in MANIFEST}
+    for jalur in ("keystats_stockbit", "info_stockbit"):
+        tol = per_jalur[jalur].toleransi
+        assert tol == 0, f"{jalur}: toleransi {tol}, harusnya ukuran harian"
+        assert not selisih_hari("2026-09-11", "2026-09-11") > tol, "dipanen di hari bursa terakhir = segar"
+        assert not selisih_hari("2026-09-12", "2026-09-11") > tol, "dipanen Sabtu sesudah Jumat = segar"
+        assert selisih_hari("2026-09-10", "2026-09-11") > tol, "tertinggal satu hari = basi"
+    assert per_jalur["profil_stockbit"].toleransi == 30, "profil tetap bulanan"
+    assert selisih_hari("2026-08-23", "2026-09-11") <= 30, "profil 19 hari = segar"
 
     print(f"uji cek_kesegaran: LOLOS ({len(MANIFEST)} turunan di manifest)")
 
