@@ -458,7 +458,7 @@ export default function WhalesPapan() {
     }
     const saatKlik = (p: { hoveredObjectId?: unknown; point?: { x: number; y: number }; time?: unknown }) => {
       const id = typeof p.hoveredObjectId === 'string' ? p.hoveredObjectId : ''
-      if (id.startsWith('avg:')) { setBrokerPilih(id.slice(4)); return }
+      if (id.startsWith('avg:')) { setTxHover(null); setBrokerPilih(id.slice(4)); return }
       // Ketuk lilin hari berjalan membuka tooltip transaksi (#152 D). Satu
       // ketukan di layar sentuh tak bisa diandalkan menggerakkan crosshair,
       // jadi jalurnya lewat klik — pola yang sama dengan footprint dan bubble
