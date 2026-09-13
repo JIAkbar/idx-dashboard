@@ -228,7 +228,7 @@ def jalankan() -> dict:
             "fitur": {str(k): v for k, v in fitur.items()}}
 
 
-def swauji() -> None:
+def uji_bawaan() -> None:
     # Penjaga (1): fitur_volval tak boleh melihat tanggal di luar `sampai`.
     import inspect
     src = inspect.getsource(fitur_volval)
@@ -246,7 +246,7 @@ def swauji() -> None:
     assert ember("09:30") == ember("09:34") != ember("09:35"), "pengelompokan 5 menit salah"
     assert ember("10:00") - ember("09:55") == 1
 
-    print("swauji volval_backtest: 4 penjaga lolos")
+    print("uji bawaan volval_backtest: 4 penjaga lolos")
 
 
 if __name__ == "__main__":
@@ -254,7 +254,7 @@ if __name__ == "__main__":
     ap.add_argument("--uji", action="store_true")
     a = ap.parse_args()
     if a.uji:
-        swauji()
+        uji_bawaan()
         sys.exit(0)
     h = jalankan()
     KELUARAN.write_text(json.dumps(h, ensure_ascii=False), encoding="utf-8")

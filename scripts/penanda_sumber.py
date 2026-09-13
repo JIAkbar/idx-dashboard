@@ -59,7 +59,7 @@ def milik_sumber_utama(tgl: str, sumber_lama: list[list] | None) -> bool:
     return (kode_lama(tgl, sumber_lama) or CADANGAN) != CADANGAN
 
 
-def swauji() -> None:
+def uji_bawaan() -> None:
     """Aturan intinya diuji lewat data kecil, bukan lewat arsip."""
     penanda = [["1990-04-06", "1997-06-30", "yh"], ["1997-07-01", "2026-09-08", "sb"]]
     assert milik_sumber_utama("2026-09-08", penanda) is True
@@ -73,8 +73,8 @@ def swauji() -> None:
     baru = ["1995-01-03", "2026-09-08", "2026-09-09"]
     sisa = [t for t in baru if not milik_sumber_utama(t, penanda)]
     assert sisa == ["1995-01-03", "2026-09-09"], sisa
-    print("swauji penanda_sumber lolos")
+    print("uji bawaan penanda_sumber lolos")
 
 
 if __name__ == "__main__":
-    swauji()
+    uji_bawaan()

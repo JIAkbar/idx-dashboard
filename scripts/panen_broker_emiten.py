@@ -62,7 +62,7 @@ Pakai:
     python scripts/panen_broker_emiten.py BUMI --dari 2026-08-03 --sampai 2026-08-14
     python scripts/panen_broker_emiten.py BUMI --sumber indexalpha
     python scripts/panen_broker_emiten.py --bantuan-token
-    python scripts/panen_broker_emiten.py --uji        # swauji, nol jaringan
+    python scripts/panen_broker_emiten.py --uji        # uji bawaan, nol jaringan
 """
 from __future__ import annotations
 
@@ -422,8 +422,8 @@ def simpan(rapi: dict, mentah) -> tuple[Path, Path]:
     return out, ark
 
 
-# ── Swauji ──────────────────────────────────────────────────────────────────
-def swauji() -> int:
+# ── Uji bawaan ──────────────────────────────────────────────────────────────────
+def uji_bawaan() -> int:
     contoh_sb = {"data": {
         "broker_summary": {
             "brokers_buy": [
@@ -520,11 +520,11 @@ def main() -> int:
                     help="bawaan: stockbit kalau tokennya ada, kalau tidak indexalpha")
     ap.add_argument("--pasar", help="stockbit: MARKET_BOARD_REGULER · indexalpha: RG/NG/ALL")
     ap.add_argument("--bantuan-token", action="store_true", help="cara mengambil token")
-    ap.add_argument("--uji", action="store_true", help="swauji, nol jaringan")
+    ap.add_argument("--uji", action="store_true", help="uji bawaan, nol jaringan")
     a = ap.parse_args()
 
     if a.uji:
-        return swauji()
+        return uji_bawaan()
     if a.bantuan_token:
         print(BANTUAN_TOKEN)
         return 0

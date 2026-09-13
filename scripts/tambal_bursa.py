@@ -179,7 +179,7 @@ def sisipkan(baris: list, tambahan: list | None, i_volume: int = 5) -> list:
 
 
 def _uji() -> None:
-    """Swauji tanpa menyentuh cakram."""
+    """Uji bawaan tanpa menyentuh cakram."""
     d = [["2026-08-26", 1, 1, 1, 100, 500], ["2026-08-27", 1, 1, 1, 110, 0]]
     assert tanggal_berisi_terakhir(d) == "2026-08-26", "bar hantu tak boleh menang"
 

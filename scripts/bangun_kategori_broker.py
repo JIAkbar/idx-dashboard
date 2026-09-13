@@ -13,7 +13,7 @@ dari `data-idx/json/ohlc/IHSG.json` (pola sama `cek_radar_basi.py`).
 
 Pakai:
     python scripts/bangun_kategori_broker.py            # bangun penuh
-    python scripts/bangun_kategori_broker.py --uji       # swauji
+    python scripts/bangun_kategori_broker.py --uji       # uji bawaan
 """
 from __future__ import annotations
 
@@ -235,7 +235,7 @@ def bangun() -> dict:
     }
 
 
-def swauji() -> int:
+def uji_bawaan() -> int:
     """Skenario tangan: 2 emiten x 3 hari, 2 broker. Cek jumlah lintas
     emiten, arah, ambang, dan idempotensi."""
     import tempfile
@@ -300,7 +300,7 @@ def swauji() -> int:
 
 def main() -> int:
     if "--uji" in sys.argv:
-        return swauji()
+        return uji_bawaan()
     hasil = bangun()
     KELUARAN.parent.mkdir(parents=True, exist_ok=True)
     tulis_retry(KELUARAN, json.dumps(hasil, ensure_ascii=False, separators=(",", ":")))

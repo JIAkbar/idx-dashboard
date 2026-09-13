@@ -41,7 +41,7 @@ Pakai:
     python scripts/panen_broker_harian.py                   # tanggal = bar OHLC terakhir
     python scripts/panen_broker_harian.py --tanggal 2026-08-21
     python scripts/panen_broker_harian.py --hanya BUMI,DSSA --jeda 0.5
-    python scripts/panen_broker_harian.py --uji             # swauji, nol jaringan
+    python scripts/panen_broker_harian.py --uji             # uji bawaan, nol jaringan
 """
 from __future__ import annotations
 
@@ -131,7 +131,7 @@ JENDELA_HARI = 20
 # dokumentasi: pembaca memakainya untuk tahu isi lariknya. Ketinggalan satu
 # jalan saja dan berkasnya menyatakan lima kolom sementara barisnya delapan —
 # terjadi persis begitu di #81, dan tak ada satu pun galat yang menyebutnya.
-# `swauji` sekarang menahan itu: len(KOLOM) wajib sama dengan panjang baris.
+# `uji bawaan` sekarang menahan itu: len(KOLOM) wajib sama dengan panjang baris.
 KOLOM = ["broker", "beli_lot", "beli_nilai", "jual_lot", "jual_nilai",
          "freq_beli", "freq_jual", "jenis"]
 TOLERANSI_VOLUME = 0.01
@@ -756,7 +756,7 @@ def jalankan(a) -> int:
     return 1 if n_gagal else 0
 
 
-def swauji() -> int:
+def uji_bawaan() -> int:
     mentah = {"data": {
         "from": "2026-08-21", "to": "2026-08-21",
         "broker_summary": {
@@ -852,7 +852,7 @@ def main() -> int:
     ap.add_argument("--uji", action="store_true")
     a = ap.parse_args()
     if a.uji:
-        return swauji()
+        return uji_bawaan()
     return jalankan(a)
 
 

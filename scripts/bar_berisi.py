@@ -117,7 +117,7 @@ def buang_bar_hari_berjalan(baris: list, i_volume: int = I_VOLUME,
                     and b[i_tanggal] == hari_ini and not (tutup and b[i_volume]))]
 
 
-def swauji() -> int:
+def uji_bawaan() -> int:
     lulus = gagal = 0
 
     def cek(nama, syarat):
@@ -179,4 +179,4 @@ def swauji() -> int:
 
 if __name__ == "__main__":
     import sys
-    sys.exit(swauji())
+    sys.exit(uji_bawaan())

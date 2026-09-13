@@ -114,7 +114,7 @@ PENGAMAN YANG SUDAH ADA SEBELUMNYA DAN TETAP BERLAKU
 - Ruas non-moneter (lembar saham, EPS, rasio) tak pernah disentuh: ABAIKAN.
 
 Pakai:
-    python scripts/perbaiki_skala_keuangan.py --uji      # swauji, tak menulis
+    python scripts/perbaiki_skala_keuangan.py --uji      # uji bawaan, tak menulis
     python scripts/perbaiki_skala_keuangan.py --pindai   # laporkan saja
     python scripts/perbaiki_skala_keuangan.py --tulis    # perbaiki berkas
 """
@@ -388,7 +388,7 @@ def jalankan(tulis: bool, dasar_peta: dict | None = None) -> int:
 
 
 def uji() -> None:
-    """Swauji: kasus yang HARUS dibetulkan dan yang HARUS dibiarkan."""
+    """Uji bawaan: kasus yang HARUS dibetulkan dan yang HARUS dibiarkan."""
 
     def dasar_dari(bucket: dict) -> dict:
         return {k: {"nilai": v} for k, v in bucket.items()}
@@ -562,7 +562,7 @@ def uji() -> None:
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--uji", action="store_true", help="swauji, tak menyentuh data")
+    ap.add_argument("--uji", action="store_true", help="uji bawaan, tak menyentuh data")
     ap.add_argument("--pindai", action="store_true", help="laporkan tanpa menulis")
     ap.add_argument("--tulis", action="store_true", help="terapkan perbaikan")
     a = ap.parse_args()

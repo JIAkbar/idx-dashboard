@@ -46,7 +46,7 @@ poin (galat pembulatan Yahoo, bukan beda sumber) — median 0.00003%.
 Cara pakai:
   python scripts/panen_ihsg.py --penuh     # riwayat 1990-sekarang (sekali)
   python scripts/panen_ihsg.py             # harian: tambah hari baru + tambal index.json
-  python scripts/panen_ihsg.py --swauji    # uji gabung & cadangan, tanpa jaringan
+  python scripts/panen_ihsg.py --uji-bawaan    # uji gabung & cadangan, tanpa jaringan
 """
 import argparse
 import json
@@ -228,7 +228,7 @@ def isi_cadangan_index(baris: list[list], hari_window: int = 14, kini: datetime 
     return ditambal
 
 
-def swauji() -> None:
+def uji_bawaan() -> None:
     a = [["2026-08-13", 1, 2, 0, 1, 10], ["2026-08-14", 2, 3, 1, 2, 20]]
     b = [["2026-08-14", 9, 9, 9, 9, 99], ["2026-08-17", 3, 4, 2, 3, 30]]
     g = gabung(a, b)
@@ -237,14 +237,14 @@ def swauji() -> None:
     assert len(g) == 3, "penggabungan tidak boleh menggandakan baris"
 
     # isi_cadangan_index: pakai index.json & folder data-idx/json ASLI (baca
-    # saja + tulis ke stem palsu yang dibersihkan lagi) supaya swauji tetap
+    # saja + tulis ke stem palsu yang dibersihkan lagi) supaya uji bawaan tetap
     # tanpa jaringan tapi menguji jalur nyata (save_json/update_index asli).
     kini = datetime(2099, 1, 8, tzinfo=timezone.utc)  # Kamis rekaan, jauh dari data asli
     stem = "ds_990107"
     ds_path = AKAR / "data-idx" / "json" / f"{stem}.json"
     idx_file = AKAR / "data-idx" / "json" / "index.json"
     idx_sebelum = idx_file.read_text(encoding="utf-8")
-    assert not ds_path.exists(), f"{ds_path} sudah ada — swauji butuh stem yang bersih"
+    assert not ds_path.exists(), f"{ds_path} sudah ada — uji bawaan butuh stem yang bersih"
     try:
         palsu = [["2099-01-06", 100, 101, 99, 100, 1], ["2099-01-07", 101, 102, 100, 101.5, 1]]
         n = isi_cadangan_index(palsu, hari_window=1, kini=kini)
@@ -262,10 +262,10 @@ def swauji() -> None:
     finally:
         ds_path.unlink(missing_ok=True)
         idx_file.write_text(idx_sebelum, encoding="utf-8")  # kembalikan index.json persis semula
-    print("swauji lolos")
+    print("uji bawaan lolos")
 
 
-def swauji_penulis_tunggal() -> None:
+def uji_bawaan_penulis_tunggal() -> None:
     """Bar bertanda sumber utama tak boleh tergeser Yahoo (#134 D)."""
     penanda = [["1990-04-06", "1997-06-30", "yh"], ["1997-07-01", "2026-09-08", "sb"]]
     assert milik_sumber_utama("2026-09-08", penanda) is True
@@ -281,17 +281,17 @@ def swauji_penulis_tunggal() -> None:
     assert peta["2026-09-08"][5] == 900, "bar sumber utama ikut tertimpa"
     assert peta["1995-01-03"][5] == 1, "bar pra-1997 justru harus disegarkan Yahoo"
     assert "2026-09-09" in peta, "hari baru harus masuk"
-    print("swauji penulis tunggal lolos")
+    print("uji bawaan penulis tunggal lolos")
 
 
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--penuh", action="store_true", help="tarik riwayat 1990-sekarang")
-    ap.add_argument("--swauji", action="store_true", help="uji gabung saja, tanpa jaringan")
+    ap.add_argument("--uji-bawaan", action="store_true", help="uji gabung saja, tanpa jaringan")
     arg = ap.parse_args()
-    if arg.swauji:
-        swauji()
-        swauji_penulis_tunggal()
+    if arg.uji_bawaan:
+        uji_bawaan()
+        uji_bawaan_penulis_tunggal()
         return
 
     lama = json.loads(OHLC.read_text(encoding="utf-8"))["d"] if OHLC.exists() else []

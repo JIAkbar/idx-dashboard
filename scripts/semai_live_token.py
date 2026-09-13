@@ -56,7 +56,7 @@ tanggal terbit/kedaluwarsa, sidik pendek (8 aksara SHA-256), kode HTTP.
     python scripts/semai_live_token.py            # semai dari app/.env.local
     python scripts/semai_live_token.py --dari-berkas   # semai dari token runner (rantai tunggal)
     python scripts/semai_live_token.py --periksa   # cek keadaan saja, nol tulis
-    python scripts/semai_live_token.py --swauji    # uji murni, nol jaringan
+    python scripts/semai_live_token.py --uji-bawaan    # uji murni, nol jaringan
 
 Prasyarat: `app/.env.local` memuat `STOCKBIT_LIVE_TOKEN`,
 `STOCKBIT_LIVE_REFRESH_TOKEN`, `VITE_SUPABASE_URL`, dan
@@ -286,7 +286,7 @@ def semai(env: dict, paksa: bool, dari_berkas: bool = False) -> int:
     return uji_hidup()
 
 
-def swauji() -> int:
+def uji_bawaan() -> int:
     lulus = gagal = 0
 
     def cek(nama, syarat):
@@ -334,13 +334,13 @@ def swauji() -> int:
     cek('mode --dari-berkas menolak saat .panen.lock ada', '.panen.lock' in isi)
     cek('penjaga pemilik hanya untuk mode dua rantai', 'not dari_berkas and p_live' in isi)
 
-    print(f"swauji semai_live_token: {lulus} lolos, {gagal} gagal")
+    print(f"uji bawaan semai_live_token: {lulus} lolos, {gagal} gagal")
     return 1 if gagal else 0
 
 
 def main() -> int:
-    if "--swauji" in sys.argv:
-        return swauji()
+    if "--uji-bawaan" in sys.argv:
+        return uji_bawaan()
     env = env_gabungan()
     if "--periksa" in sys.argv:
         return periksa(env)

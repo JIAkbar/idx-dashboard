@@ -24,7 +24,7 @@ Cek jujur yang DICETAK, bukan dipercaya:
 Pakai:
     python scripts/bangun_intraday_1h.py            # semua emiten berarsip
     python scripts/bangun_intraday_1h.py --hanya BBCA,BUMI
-    python scripts/bangun_intraday_1h.py --uji      # swauji, nol jaringan/arsip
+    python scripts/bangun_intraday_1h.py --uji      # uji bawaan, nol jaringan/arsip
 """
 from __future__ import annotations
 
@@ -90,7 +90,7 @@ def baca_arsip(kode: str) -> list[dict]:
     return bar
 
 
-def swauji() -> int:
+def uji_bawaan() -> int:
     e = lambda s: int(datetime.strptime(s, "%Y-%m-%d %H:%M").replace(tzinfo=WIB).timestamp())  # noqa: E731
     def m(ts, o, h, l, c, v):  # noqa: E306,E741
         return {"unix_timestamp": ts, "open": o, "high": h, "low": l, "close": c,
@@ -110,7 +110,7 @@ def swauji() -> int:
     j15 = h[2]
     assert datetime.fromtimestamp(j15[0], WIB).hour == 15 and j15[5] == 40
     assert sum(r[5] for r in h) == sum(int(b["volume"]) for b in bar)  # Σvol utuh
-    print("swauji lolos")
+    print("uji bawaan lolos")
     return 0
 
 
@@ -120,7 +120,7 @@ def utama() -> int:
     ap.add_argument("--uji", action="store_true")
     a = ap.parse_args()
     if a.uji:
-        return swauji()
+        return uji_bawaan()
     emiten = sorted(d.name for d in ARSIP.iterdir() if d.is_dir() and not d.name.startswith("_"))
     if a.hanya:
         pilih = {k.strip().upper() for k in a.hanya.split(",")}

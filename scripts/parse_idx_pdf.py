@@ -550,7 +550,7 @@ def update_index(stem: str, data: dict):
     with open(idx_file, "w", encoding="utf-8") as f:
         json.dump(idx, f, ensure_ascii=False, indent=2)
 
-def swauji_net_foreign() -> None:
+def uji_bawaan_net_foreign() -> None:
     """Cukup untuk MERAH kalau ambang besaran kembali, atau USD salah ambil."""
     B = chr(10)
 
@@ -586,18 +586,18 @@ def swauji_net_foreign() -> None:
     r = parse_page2("AVERAGE DAILY TRADING" + B + "123.45 678.90")
     assert "nf_today_idr" not in r
 
-    print("swauji Net Foreign: 4 kasus lolos")
+    print("uji bawaan Net Foreign: 4 kasus lolos")
 
 
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("files", nargs="*")
     ap.add_argument("--semua", action="store_true")
-    ap.add_argument("--swauji", action="store_true",
+    ap.add_argument("--uji-bawaan", action="store_true",
                     help="uji pembacaan Net Foreign lalu keluar")
     args = ap.parse_args()
-    if args.swauji:
-        return swauji_net_foreign()
+    if args.uji_bawaan:
+        return uji_bawaan_net_foreign()
 
     pdfs = sorted(PDF_DIR.glob("ds_*.pdf")) if args.semua else [PDF_DIR / f for f in args.files]
     if not pdfs:

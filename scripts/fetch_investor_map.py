@@ -258,7 +258,7 @@ def validasi(baru, lama):
     return m
 
 
-def swauji() -> None:
+def uji_bawaan() -> None:
     """Cukup untuk gagal kalau penamaan cadangan kembali membohong."""
     import tempfile
     global OUT, META
@@ -287,17 +287,17 @@ def swauji() -> None:
             assert nama_cadangan().name != "investor_map.json.bak-2026-06"
     finally:
         OUT, META = simpan
-    print("swauji penamaan cadangan: 6 kasus lolos")
+    print("uji bawaan penamaan cadangan: 6 kasus lolos")
 
 
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--pdf", help="parse PDF lampiran lokal (lewati download)")
     ap.add_argument("--dry-run", action="store_true", help="jangan timpa output")
-    ap.add_argument("--swauji", action="store_true", help="uji penamaan cadangan lalu keluar")
+    ap.add_argument("--uji-bawaan", action="store_true", help="uji penamaan cadangan lalu keluar")
     args = ap.parse_args()
-    if args.swauji:
-        return swauji()
+    if args.uji_bawaan:
+        return uji_bawaan()
 
     sumber_info = {}
     if args.pdf:

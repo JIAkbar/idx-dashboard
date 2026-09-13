@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Swauji stempel `data-idx/json/prob/` — dua stempel, bukan satu.
+"""Uji bawaan stempel `data-idx/json/prob/` — dua stempel, bukan satu.
 
 Menguji bagian yang ditambahkan ke `bangun_prob.py` saja (pembacaan tanggal
 bar terakhir), BUKAN matematika peluangnya: pool-nya mahal dibangun dan

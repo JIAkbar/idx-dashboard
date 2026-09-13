@@ -164,7 +164,7 @@ def jalankan(kode_semua: list[str], jeda: float = 1.5) -> int:
     return 0 if n_ok else 1
 
 
-def swauji() -> int:
+def uji_bawaan() -> int:
     d = {"Profiles": [{"NamaEmiten": "Uji Tbk", "Sektor": "Energi", "PapanPencatatan": "Utama"}],
          "PemegangSaham": [{"Nama": "Induk Ltd", "Kategori": "Lebih dari 5%", "Persentase": "45.78", "Jumlah": 170000000000.0, "Pengendali": True},
                            {"Nama": "Masyarakat Non Warkat", "Kategori": "Masyarakat Non Warkat", "Persentase": 54.2, "Jumlah": 2.0, "Pengendali": False}],
@@ -185,6 +185,6 @@ def swauji() -> int:
 if __name__ == "__main__":
     arg = [a for a in sys.argv[1:] if not a.startswith("-")]
     if "--uji" in sys.argv:
-        raise SystemExit(swauji())
+        raise SystemExit(uji_bawaan())
     kode = [a.upper() for a in arg] or [e["kode"] for e in (baca(DAFTAR) or {}).get("emiten", []) if e.get("kode")]
     raise SystemExit(jalankan(kode))

@@ -19,7 +19,7 @@ tidak bisa dibatalkan).
 Pemakaian:
   python scripts/ganti_volume_ohlc.py --kering    # hitung saja, TIDAK menulis
   python scripts/ganti_volume_ohlc.py             # tulis beneran (cadangan dulu)
-  python scripts/ganti_volume_ohlc.py --swauji     # uji unit kecil, keluar
+  python scripts/ganti_volume_ohlc.py --uji-bawaan     # uji unit kecil, keluar
 """
 import argparse
 import json
@@ -137,7 +137,7 @@ def hitung_potensi_perluasan(berkas_ohlc: list[Path]) -> dict:
     }
 
 
-def swauji():
+def uji_bawaan():
     """Uji unit kecil murni in-memory, tanpa I/O berkas."""
     ohlc = {"kode": "TEST", "d": [
         ["2024-01-01", 100, 100, 100, 100, 1000],   # naik
@@ -157,17 +157,17 @@ def swauji():
 
     # berkas tanpa "d" (mis. _gagal.json) harus dilewati oleh pemanggil,
     # bukan dites di sini karena proses_satu murni menerima dict ohlc valid.
-    print("swauji OK — 4/4 assert lulus")
+    print("uji bawaan OK — 4/4 assert lulus")
 
 
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--kering", action="store_true", help="hitung saja, jangan menulis")
-    ap.add_argument("--swauji", action="store_true", help="jalankan uji unit lalu keluar")
+    ap.add_argument("--uji-bawaan", action="store_true", help="jalankan uji unit lalu keluar")
     a = ap.parse_args()
 
-    if a.swauji:
-        swauji()
+    if a.uji_bawaan:
+        uji_bawaan()
         return
 
     berkas = sorted(DIR_OHLC.glob("*.json"))

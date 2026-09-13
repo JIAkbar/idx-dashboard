@@ -1,4 +1,4 @@
-"""Swauji alur kerja GitHub Actions: kunci GANDA di tingkat atas.
+"""Uji bawaan alur kerja GitHub Actions: kunci GANDA di tingkat atas.
 
 Kenapa berkas ini ada, terukur 13 Sep 2026:
 
@@ -63,7 +63,7 @@ def periksa(akar):
     return rusak
 
 
-def swauji():
+def uji_bawaan():
     assert kunci_ganda("env:\n  a: 1\n") == []
     assert kunci_ganda("env:\n  a: 1\n\nenv:\n  b: 2\n") == [("env", 1, 4)]
     # yang menjorok BUKAN kunci tingkat atas - dua `run:` di bawah langkah
@@ -73,6 +73,6 @@ def swauji():
 
 
 if __name__ == "__main__":
-    swauji()
+    uji_bawaan()
     akar = sys.argv[1] if len(sys.argv) > 1 else os.path.join(".github", "workflows")
     sys.exit(1 if periksa(akar) else 0)

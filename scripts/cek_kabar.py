@@ -39,7 +39,7 @@ tak dihitung, tanpa perlu daftar libur yang harus disunting tangan.
 Pakai:
   python scripts/cek_kabar.py                       # periksa kesegaran saja
   python scripts/cek_kabar.py --status s.jsonl      # + hasil panen per sumber
-  python scripts/cek_kabar.py --demo                # swauji (data buatan)
+  python scripts/cek_kabar.py --demo                # uji bawaan (data buatan)
 """
 from __future__ import annotations
 
@@ -273,7 +273,7 @@ def tabel(baris: list[dict]) -> str:
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description="Periksa hasil panen & kesegaran kabar")
     ap.add_argument("--status", help="berkas JSONL hasil panen per sumber (opsional)")
-    ap.add_argument("--demo", action="store_true", help="jalankan swauji lalu keluar")
+    ap.add_argument("--demo", action="store_true", help="jalankan uji bawaan lalu keluar")
     args = ap.parse_args(argv)
     if args.demo:
         return demo()
@@ -322,7 +322,7 @@ def main(argv: list[str] | None = None) -> int:
     return 1 if merah else 0
 
 
-# ── Swauji ──────────────────────────────────────────────────────────────────
+# ── Uji bawaan ──────────────────────────────────────────────────────────────────
 def demo() -> int:
     """Data buatan; tiap kasus yang pernah lolos diam-diam diuji di sini."""
     jum = datetime(2026, 8, 14, 16, 0, tzinfo=WIB)   # Jumat sore
@@ -386,7 +386,7 @@ def demo() -> int:
     b = periksa({**segar, "snips": None}, ok, base, sen)
     assert [x["nama"] for x in b if x["merah"]] == ["Stockbit Snips"]
 
-    print("cek_kabar: swauji lolos — 9 kasus")
+    print("cek_kabar: uji bawaan lolos — 9 kasus")
     return 0
 
 

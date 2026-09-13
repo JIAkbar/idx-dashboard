@@ -409,7 +409,7 @@ null untuk itu, dan layar jatuh ke kurasi tangan.
 **Kepala tiap berkas menyebut nama kolomnya sendiri** di ruas `kolom`, dan sejak
 8 Sep 2026 isinya delapan nama untuk berkas 2026. Sempat ketinggalan satu jalan —
 881 berkas tayang menyatakan lima kolom padahal barisnya delapan, tanpa satu pun
-galat. Sekarang ada penjaga di dua bahasa yang menahan pengulangannya: swauji
+galat. Sekarang ada penjaga di dua bahasa yang menahan pengulangannya: uji bawaan
 pemanen membandingkan `len(KOLOM)` dengan panjang baris hasil, dan uji sisi layar
 membandingkan `KOLOM_BROKER.length` dengan panjang tuple `BarisBroker`. Berkas
 tahun 2016–2025 masih lima kolom, dan kepala lima nama di situ **masih pernyataan

@@ -39,7 +39,7 @@ soal penambal yang menimpa sumbernya sendiri.
 Pakai:
   python scripts/jahit_ihsg.py --kering    # hitung saja, TIDAK menulis
   python scripts/jahit_ihsg.py             # tulis (cadangan dulu)
-  python scripts/jahit_ihsg.py --swauji
+  python scripts/jahit_ihsg.py --uji-bawaan
 """
 from __future__ import annotations
 
@@ -125,7 +125,7 @@ def jahit(bar_yahoo: list[list], peta_sb: dict[str, list]) -> tuple[list[list], 
     return baris, stat
 
 
-def swauji() -> int:
+def uji_bawaan() -> int:
     y = [["1999-12-30", 1, 2, 0.5, 1.5, 0],
          ["2000-01-04", 10, 12, 9, 11, 0],
          ["2001-07-24", 20, 22, 19, 21, 22755300]]  # hanya ada di Yahoo
@@ -156,17 +156,17 @@ def swauji() -> int:
                                 ["2001-07-24", "2001-07-24", "yh"]], st["sumber_bar"]
     assert sum(1 for _ in baris) == sum(
         1 for d, _, _ in st["sumber_bar"] for _ in [d]), "tiap bar wajib berpenanda"
-    print("swauji OK — 8/8 assert lulus")
+    print("uji bawaan OK — 8/8 assert lulus")
     return 0
 
 
 def main() -> int:
     ap = argparse.ArgumentParser(description="Jahit IHSG Yahoo + volume Stockbit")
     ap.add_argument("--kering", action="store_true", help="hitung saja, tidak menulis")
-    ap.add_argument("--swauji", action="store_true")
+    ap.add_argument("--uji-bawaan", action="store_true")
     a = ap.parse_args()
-    if a.swauji:
-        return swauji()
+    if a.uji_bawaan:
+        return uji_bawaan()
 
     oh = baca(P_OHLC)
     sb = baca(P_SB)

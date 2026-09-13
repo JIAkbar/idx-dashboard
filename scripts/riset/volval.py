@@ -12,7 +12,7 @@ berbeda dari yang dipakai memilih — dan tak ada yang akan menyadarinya.
 
     python scripts/riset/volval.py --ukur    # sapu seluruh tanggal -> dasar win rate
     python scripts/riset/volval.py           # sinyal hari terakhir -> dipakai halaman
-    python scripts/riset/volval.py --uji     # swauji, nol I/O
+    python scripts/riset/volval.py --uji     # uji bawaan, nol I/O
 
 ## Dua skor, dua horizon — bukan dua kandidat yang salah satunya menang
 
@@ -279,7 +279,7 @@ def sinyal_terakhir() -> dict:
     }
 
 
-def swauji() -> None:
+def uji_bawaan() -> None:
     import inspect
     src = inspect.getsource(skor_hari)
     assert "tanggal" in src and "kal" not in src.split("\n")[0], "skor_hari bisa mengintip"
@@ -295,7 +295,7 @@ def swauji() -> None:
     # rata-rata datar, jadi hanya `gelombang` yang tak ikut naik.
     s = skor_hari(per, ["2026-08-03"])
     assert s is None, "MIN_BAR harus menolak hari sependek ini"
-    print("swauji volval: 4 penjaga lolos")
+    print("uji bawaan volval: 4 penjaga lolos")
 
 
 if __name__ == "__main__":
@@ -304,7 +304,7 @@ if __name__ == "__main__":
     ap.add_argument("--uji", action="store_true")
     a = ap.parse_args()
     if a.uji:
-        swauji()
+        uji_bawaan()
         sys.exit(0)
     if a.ukur:
         h = ukur()

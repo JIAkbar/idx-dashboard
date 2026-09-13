@@ -1,4 +1,4 @@
-"""Swauji prob.py v2 — deret sintetis dengan jawaban yang dihitung tangan.
+"""Uji bawaan prob.py v2 — deret sintetis dengan jawaban yang dihitung tangan.
 
 Jalankan: C:\\Python314\\python.exe test_prob.py   (dari folder arus-pasar/)
 Tiap blok memeriksa SATU hal yang kalau salah akan gagal senyap di terbitan

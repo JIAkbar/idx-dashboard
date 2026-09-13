@@ -213,7 +213,7 @@ def cetak(h: dict) -> None:
         print()
 
 
-def swauji() -> None:
+def uji_bawaan() -> None:
     pasar = {
         "A": {"2026-09-01": (110, 5), "2026-08-31": (100, 5)},   # +10%
         "B": {"2026-09-01": (99, 5), "2026-08-31": (100, 5)},    # -1%
@@ -243,7 +243,7 @@ def swauji() -> None:
     p2["E"] = {"2026-09-02": (100, 5)}
     assert "2026-09-02" not in kalender(p2), kalender(p2)
 
-    print("swauji selisih_terkunci: 5 kasus lolos")
+    print("uji bawaan selisih_terkunci: 5 kasus lolos")
 
 
 if __name__ == "__main__":
@@ -251,7 +251,7 @@ if __name__ == "__main__":
     ap.add_argument("--uji", action="store_true")
     a = ap.parse_args()
     if a.uji:
-        swauji()
+        uji_bawaan()
         sys.exit(0)
     h = jalankan()
     cetak(h)

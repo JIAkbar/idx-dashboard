@@ -98,7 +98,7 @@ PAKAI
   python scripts/panen_keuangan_idx.py --semua                  # 778 emiten TW2 2026
   python scripts/panen_keuangan_idx.py --semua --paksa          # ulang walau sudah ada
   python scripts/panen_keuangan_idx.py --semua --periode tw1    # tambah TW1
-  python scripts/panen_keuangan_idx.py --swauji                 # uji penaksir mata uang
+  python scripts/panen_keuangan_idx.py --uji-bawaan                 # uji penaksir mata uang
   python scripts/panen_keuangan_idx.py --dari-arsip --tahun 2025 --periode tw3
 
 `--dari-arsip` memeras ULANG dari `_arsip-mentah/` -- NOL permintaan jaringan.
@@ -629,8 +629,8 @@ def lengkapi_mata_uang(isi: dict) -> dict[str, str]:
     return hasil
 
 
-def swauji_mata_uang() -> None:
-    """Swauji `lengkapi_mata_uang` -- bentuk nyata dari empat emiten yang
+def uji_bawaan_mata_uang() -> None:
+    """Uji bawaan `lengkapi_mata_uang` -- bentuk nyata dari empat emiten yang
     masing-masing mematahkan satu versi sebelumnya dari penaksirnya."""
     def bikin(aset: dict[str, float], laporan: dict[str, str]) -> dict:
         return {"kuartal": {}, "tahunan": {t: {"total_assets": v} for t, v in aset.items()},
@@ -667,7 +667,7 @@ def swauji_mata_uang() -> None:
 
     # Belum pernah ada laporan terbaca -> peta kosong, BUKAN tebakan "IDR".
     assert lengkapi_mata_uang(bikin({"2024-12-31": 1e12}, {})) == {}
-    print("lengkapi_mata_uang: swauji lolos")
+    print("lengkapi_mata_uang: uji bawaan lolos")
 
 
 def _dominan(peta: dict[str, str], cadangan: str) -> str:
@@ -862,14 +862,14 @@ def main() -> int:
                     help="Probe MURAH: berapa laporan yang IDX sajikan per (tahun, "
                          "periode), plus berapa periode kita yang mata uangnya masih "
                          "ditaksir. Nol unduhan XLSX.")
-    ap.add_argument("--swauji", action="store_true",
+    ap.add_argument("--uji-bawaan", action="store_true",
                     help="Uji penaksir mata uang per periode, tak menyentuh data")
     ap.add_argument("--segarkan-mata-uang", action="store_true",
                     help="Hitung ulang peta `mata_uang` seluruh berkas dari `mata_uang_laporan`")
     args = ap.parse_args()
 
-    if args.swauji:
-        swauji_mata_uang()
+    if args.uji_bawaan:
+        uji_bawaan_mata_uang()
         return 0
 
     if args.periksa_ketersediaan:

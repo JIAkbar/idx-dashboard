@@ -122,14 +122,14 @@ def get(url: str, *, headers: dict | None = None, params: dict | None = None,
 
 
 def demo() -> None:
-    """Swauji: satu endpoint yang DULU 403 lewat `requests` harus 200 di sini."""
+    """Uji bawaan: satu endpoint yang DULU 403 lewat `requests` harus 200 di sini."""
     r = get("https://www.idx.co.id/primary/TradingSummary/GetStockSummary",
             params={"date": "20260818", "start": 0, "length": 20},
             referer="https://www.idx.co.id/id/data-pasar/ringkasan-perdagangan")
     assert r.status_code == 200, r.status_code
     n = len(r.json().get("data") or [])
     assert n > 0, "GetStockSummary 200 tapi kosong"
-    print(f"idx_net: swauji lolos — GetStockSummary HTTP 200, {n} baris")
+    print(f"idx_net: uji bawaan lolos — GetStockSummary HTTP 200, {n} baris")
 
 
 if __name__ == "__main__":

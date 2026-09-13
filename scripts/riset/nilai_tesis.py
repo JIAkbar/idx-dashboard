@@ -26,7 +26,7 @@ Keluaran:
 
 Jalankan dari akar repo:
     python scripts/riset/nilai_tesis.py
-    python scripts/riset/nilai_tesis.py --uji     # swauji, nol I/O
+    python scripts/riset/nilai_tesis.py --uji     # uji bawaan, nol I/O
 """
 from __future__ import annotations
 
@@ -211,7 +211,7 @@ def segel(hasil: dict) -> dict:
     return n
 
 
-def swauji() -> None:
+def uji_bawaan() -> None:
     kal = ["2026-08-24", "2026-08-26", "2026-08-27", "2026-08-28", "2026-08-31",
            "2026-09-01", "2026-09-02"]
     singgahan = {"X": {
@@ -267,7 +267,7 @@ def swauji() -> None:
                      "target": 999, "stop": 1}, kal, singgahan)
     assert v["status"] == "menggantung", v
 
-    print("swauji nilai_tesis: 17 kasus lolos")
+    print("uji bawaan nilai_tesis: 17 kasus lolos")
 
 
 if __name__ == "__main__":
@@ -275,7 +275,7 @@ if __name__ == "__main__":
     ap.add_argument("--uji", action="store_true")
     a = ap.parse_args()
     if a.uji:
-        swauji()
+        uji_bawaan()
         sys.exit(0)
 
     h = jalankan()

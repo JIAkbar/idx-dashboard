@@ -36,7 +36,7 @@ untuk berkas itu DILEWATI dengan alasan tertulis — bukan ditebak dari narasi.
 Pakai:
     python scripts/riset/tinjau_deepdive.py           # semua terbitan
     python scripts/riset/tinjau_deepdive.py BUMI      # satu ticker
-    python scripts/riset/tinjau_deepdive.py --uji     # swauji
+    python scripts/riset/tinjau_deepdive.py --uji     # uji bawaan
 """
 from __future__ import annotations
 

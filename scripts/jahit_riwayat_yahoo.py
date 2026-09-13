@@ -19,7 +19,7 @@ Pakai:
   python scripts/jahit_riwayat_yahoo.py --batas 5     # uji cepat
   python scripts/jahit_riwayat_yahoo.py                # jalan penuh
   python scripts/jahit_riwayat_yahoo.py --batalkan
-  python scripts/jahit_riwayat_yahoo.py --swauji
+  python scripts/jahit_riwayat_yahoo.py --uji-bawaan
 """
 from __future__ import annotations
 
@@ -252,7 +252,7 @@ def kandidat_jahit() -> list[str]:
     return out
 
 
-def swauji() -> int:
+def uji_bawaan() -> int:
     # uji_ekor
     assert uji_ekor([1.0] * 250)[0] is True
     assert uji_ekor([1.0] * 50)[1] == "kurang tumpang tindih"
@@ -288,19 +288,19 @@ def swauji() -> int:
 
     # v2: outlier sedikit (1%) TIDAK boleh menggugurkan — inti perbaikannya
     assert uji_ekor([1.0] * 297 + [1.30] * 3)[0] is True
-    print("swauji OK — 8/8 assert lulus")
+    print("uji bawaan OK — 8/8 assert lulus")
     return 0
 
 
 def main() -> int:
     ap = argparse.ArgumentParser(description="Jahit bar awal dari Yahoo ke ohlc/ (yang lolos uji ekor)")
     ap.add_argument("--batalkan", action="store_true")
-    ap.add_argument("--swauji", action="store_true")
+    ap.add_argument("--uji-bawaan", action="store_true")
     ap.add_argument("--batas", type=int, default=None, help="proses N emiten pertama saja (uji cepat)")
     ap.add_argument("--kode", type=str, default=None, help="proses satu kode saja")
     a = ap.parse_args()
-    if a.swauji:
-        return swauji()
+    if a.uji_bawaan:
+        return uji_bawaan()
 
     if a.batalkan:
         n = 0

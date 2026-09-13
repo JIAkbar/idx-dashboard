@@ -30,7 +30,7 @@ ditinjau ulang: dua dari empat kemungkinan besar sembuh sendiri.
 
 PAKAI
 -----
-    python scripts/cacat_sumber.py --uji      # swauji, tak menyentuh data
+    python scripts/cacat_sumber.py --uji      # uji bawaan, tak menyentuh data
     python scripts/cacat_sumber.py --tandai   # tulis ruas `cacat` ke JSON
 
 Idempoten: menulis peta yang sama berkali-kali tak mengubah apa pun, dan
@@ -125,7 +125,7 @@ def _uji() -> None:
 if __name__ == "__main__":
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--tandai", action="store_true", help="tulis ke berkas")
-    ap.add_argument("--uji", action="store_true", help="swauji saja")
+    ap.add_argument("--uji", action="store_true", help="uji bawaan saja")
     a = ap.parse_args()
     _uji()
     if a.tandai:

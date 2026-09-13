@@ -25,7 +25,7 @@ pintas: emiten yang `_progres_backfill_broker.json` sudah tandai "selesai"
 dilewati tanpa dihitung ulang sama sekali.
 
 Pakai:
-    python scripts/backfill_broker_massal.py --swauji
+    python scripts/backfill_broker_massal.py --uji-bawaan
     python scripts/backfill_broker_massal.py --batas 2 --dari 2026-08-18 --sampai 2026-08-21
     python scripts/backfill_broker_massal.py --paralel 8 --lanjut
 """
@@ -169,14 +169,14 @@ def buat_parser() -> argparse.ArgumentParser:
     ap.add_argument("--batas", type=int, default=None, help="maksimum emiten yang dikerjakan")
     ap.add_argument("--lanjut", action="store_true", help="lewati emiten yang progresnya 'selesai'")
     ap.add_argument("--jeda", type=float, default=0.8)
-    ap.add_argument("--swauji", action="store_true")
+    ap.add_argument("--uji-bawaan", action="store_true")
     return ap
 
 
 def main() -> int:
     a = buat_parser().parse_args()
-    if a.swauji:
-        return swauji()
+    if a.uji_bawaan:
+        return uji_bawaan()
 
     try:
         sampai = a.sampai or ph.tanggal_bawaan()
@@ -256,7 +256,7 @@ def main() -> int:
     return 1 if gagal_semua else 0
 
 
-def swauji() -> int:
+def uji_bawaan() -> int:
     import tempfile
 
     global DIR_ASING

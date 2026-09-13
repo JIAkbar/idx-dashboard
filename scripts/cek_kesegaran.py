@@ -48,7 +48,7 @@ paling perlu diperiksa.
 Pakai:
     python scripts/cek_kesegaran.py          # keluar 1 kalau ada yang basi
     python scripts/cek_kesegaran.py --semua  # cetak yang segar juga
-    python scripts/cek_kesegaran.py --uji    # swauji, nol berkas dibaca
+    python scripts/cek_kesegaran.py --uji    # uji bawaan, nol berkas dibaca
 """
 from __future__ import annotations
 
@@ -666,7 +666,7 @@ def periksa(cetak_semua: bool = False) -> int:
 
 
 def _uji() -> None:
-    """Swauji tanpa menyentuh cakram — yang diuji aturannya, bukan datanya."""
+    """Uji bawaan tanpa menyentuh cakram — yang diuji aturannya, bukan datanya."""
     # Modus, bukan maksimum: satu emiten lebih baru tak boleh menutupi 900 yang basi.
     c = collections.Counter({"2026-08-19": 900, "2026-08-20": 1})
     assert c.most_common(1)[0] == ("2026-08-19", 900)

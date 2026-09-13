@@ -20,7 +20,7 @@ Jalankan dari akar repo:
     python scripts/riset/rekap_preset.py                       # tanggal bertransaksi terbaru (otomatis)
     python scripts/riset/rekap_preset.py --tanggal 2026-08-27   # tanggal tertentu (perlu kartu/arsip/<tgl>.json)
     python scripts/riset/rekap_preset.py --backtest 2026-07-24 2026-08-21   # semua tanggal arsip di rentang itu
-    python scripts/riset/rekap_preset.py --uji                  # swauji tanpa I/O
+    python scripts/riset/rekap_preset.py --uji                  # uji bawaan tanpa I/O
 """
 from __future__ import annotations
 
@@ -339,7 +339,7 @@ def tulis_untuk_tanggal(tanggal: str, backtest: bool, top_n: int = TOP_N, rekome
                         ambang: int = AMBANG_HARI_TERISI) -> bool:
     """`True` kalau berkas baru ditulis, `False` kalau dilewati (sudah ada /
     arsipnya tak ketemu). `rekomendasi_dir` dioper eksplisit di uji supaya
-    swauji tak pernah menyentuh `data-idx/json/rekomendasi/` sungguhan."""
+    uji bawaan tak pernah menyentuh `data-idx/json/rekomendasi/` sungguhan."""
     out_dir = rekomendasi_dir or REKOMENDASI_DIR
     out = out_dir / f"{tanggal}.json"
     if out.exists():
@@ -405,7 +405,7 @@ def tulis_untuk_tanggal(tanggal: str, backtest: bool, top_n: int = TOP_N, rekome
     return True
 
 
-# ------------------------------------------------------------------- swauji
+# ------------------------------------------------------------------- uji bawaan
 def uji() -> None:
     import tempfile
 
@@ -501,7 +501,7 @@ def uji() -> None:
         finally:
             arsip_hantu.unlink(missing_ok=True)
 
-    print("swauji rekap_preset.py: SEMUA LOLOS")
+    print("uji bawaan rekap_preset.py: SEMUA LOLOS")
 
 
 # --------------------------------------------------------------------- main

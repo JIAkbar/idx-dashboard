@@ -392,7 +392,7 @@ def main() -> None:
         (KELUARAN / "_gagal.json").write_text(json.dumps(gagal, ensure_ascii=False, indent=2), encoding="utf-8")
 
 
-def swauji() -> int:
+def uji_bawaan() -> int:
     """Uji penanda sumber saat refresh harian — bagian yang gagal SENYAP.
 
     Kelas kesalahannya sudah dibayar 5 Sep 2026: penulis yang membangun berkas
@@ -432,9 +432,9 @@ def swauji() -> int:
     # Tanpa penanda sama sekali (berkas lama), perilakunya seperti dulu.
     assert [b for b in tarikan if not milik_sumber_utama(b[0], None)] == tarikan
 
-    print("swauji OK — 11/11 assert lulus")
+    print("uji bawaan OK — 11/11 assert lulus")
     return 0
 
 
 if __name__ == "__main__":
-    sys.exit(swauji() if "--swauji" in sys.argv else (main() or 0))
+    sys.exit(uji_bawaan() if "--uji-bawaan" in sys.argv else (main() or 0))

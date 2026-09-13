@@ -59,7 +59,7 @@ def jalan(indeks: Path, ihsg: Path, ambang: int, penanda: Path) -> int:
     return n
 
 
-def swauji() -> None:
+def uji_bawaan() -> None:
     import tempfile
     with tempfile.TemporaryDirectory() as d:
         d = Path(d)
@@ -78,7 +78,7 @@ def swauji() -> None:
 
         idx.write_text(json.dumps({"dates": ["2026-08-27"]}), encoding="utf-8")
         assert jalan(idx, ihsg, 3, pen) == 0 and not pen.exists(), "segar lagi: penanda dihapus"
-    print("swauji lolos")
+    print("uji bawaan lolos")
 
 
 def main() -> int:
@@ -86,11 +86,11 @@ def main() -> int:
     p.add_argument("--ambang", type=int, default=AMBANG_BAWAAN)
     p.add_argument("--indeks", type=Path, default=AKAR / "data-idx/radar/index.json")
     p.add_argument("--ihsg", type=Path, default=AKAR / "data-idx/json/ohlc/IHSG.json")
-    p.add_argument("--swauji", action="store_true")
+    p.add_argument("--uji-bawaan", action="store_true")
     a = p.parse_args()
     try:
-        if a.swauji:
-            swauji()
+        if a.uji_bawaan:
+            uji_bawaan()
         else:
             jalan(a.indeks, a.ihsg, a.ambang, PENANDA)
     except Exception as e:  # penjaga tak boleh mematikan pipeline

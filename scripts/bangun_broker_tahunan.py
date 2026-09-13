@@ -71,7 +71,7 @@ def periksa_kode(kode: str) -> str:
     proses, bukan melewati kode itu diam-diam.
 
     3-5 huruf, bukan 4: kode bursa memang 4, tapi arsipnya memuat GOTOM (5)
-    dan swauji memakai UJI (3). Yang dijaga bentuknya, bukan panjang yang
+    dan uji bawaan memakai UJI (3). Yang dijaga bentuknya, bukan panjang yang
     kebetulan berlaku hari ini.
     """
     if not BENTUK_KODE.match(kode):
@@ -183,7 +183,7 @@ def bangun_emiten(kode: str, tahun_boleh: tuple[str, ...] = TAHUN_PENUH) -> dict
     return hasil
 
 
-def swauji() -> int:
+def uji_bawaan() -> int:
     import tempfile
     global KELUARAN
     asli_arsip, asli_out = ph.ARSIP, KELUARAN
@@ -214,7 +214,7 @@ def swauji() -> int:
     # Penjaga bentuk kode (#68) - "8" pernah lolos jadi emiten dan
     # melahirkan direktori arsip kosong tanpa satu pun galat.
     assert periksa_kode("BUMI") == "BUMI"
-    assert periksa_kode("UJI") == "UJI"      # swauji sendiri 3 huruf
+    assert periksa_kode("UJI") == "UJI"      # uji bawaan sendiri 3 huruf
     assert periksa_kode("GOTOM") == "GOTOM"  # ada di arsip, 5 huruf
     for buruk in ("8", "", "2026", "--paralel", "bumi.json", "AB"):
         try:
@@ -243,7 +243,7 @@ def main() -> int:
     emiten ke N proses (IO-bound baca ribuan JSON arsip; serial terukur
     ±2 menit/8 emiten = ±30 jam untuk 962)."""
     if "--uji" in sys.argv:
-        return swauji()
+        return uji_bawaan()
     if "-h" in sys.argv or "--help" in sys.argv:
         print(main.__doc__)
         return 0

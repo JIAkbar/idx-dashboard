@@ -43,7 +43,7 @@ dibantah alih-alih diasumsikan:
 
 Jalankan dari akar repo:
     python scripts/riset/nilai_jejak.py            # semua tanggal, tabel + JSON
-    python scripts/riset/nilai_jejak.py --uji      # swauji, nol I/O
+    python scripts/riset/nilai_jejak.py --uji      # uji bawaan, nol I/O
 """
 from __future__ import annotations
 
@@ -549,7 +549,7 @@ def cetak(hasil: dict) -> None:
         print("\n  Belum ada tanggal yang jendelanya tutup penuh.")
 
 
-def swauji() -> None:
+def uji_bawaan() -> None:
     kal = ["2026-08-24", "2026-08-26", "2026-08-27", "2026-08-28", "2026-08-31",
            "2026-09-01", "2026-09-02"]
     # (buka, tinggi, rendah, tutup) — empat, bukan dua, sejak hakim juga
@@ -751,7 +751,7 @@ def swauji() -> None:
     # Stempel waktu BUKAN penyimpangan — ia memang berbeda tiap jalan.
     assert beda_segel({**nol, "dinilaiPada": "a"}, {**nol, "dinilaiPada": "b"}) == {}
 
-    print("swauji nilai_jejak: 40 kasus lolos")
+    print("uji bawaan nilai_jejak: 40 kasus lolos")
 
 
 if __name__ == "__main__":
@@ -759,7 +759,7 @@ if __name__ == "__main__":
     ap.add_argument("--uji", action="store_true")
     a = ap.parse_args()
     if a.uji:
-        swauji()
+        uji_bawaan()
         sys.exit(0)
     h = jalankan()
     # Segel & koreksi DULUAN: keduanya menempelkan ruas `koreksi` ke perTanggal,

@@ -41,7 +41,7 @@ Perubahan v2, semuanya keputusan audit:
 Keluaran: `data-idx/json/rezim_pasar.json`.
 
     python scripts/bangun_rezim_pasar.py
-    python scripts/bangun_rezim_pasar.py --uji     # swauji, tanpa menulis
+    python scripts/bangun_rezim_pasar.py --uji     # uji bawaan, tanpa menulis
 """
 from __future__ import annotations
 
@@ -312,7 +312,7 @@ def bangun() -> dict:
     }
 
 
-def swauji() -> None:
+def uji_bawaan() -> None:
     from datetime import timedelta
     tgl0 = date(2018, 1, 2)
 
@@ -373,14 +373,14 @@ def swauji() -> None:
     # 8. Sampel tipis -> None.
     assert beta([(0.01, 0.01)] * 10) is None
 
-    print("swauji lolos: 8 pemeriksaan (termasuk uji kunci anti-drift)")
+    print("uji bawaan lolos: 8 pemeriksaan (termasuk uji kunci anti-drift)")
 
 
 if __name__ == "__main__":
     if "--uji" in sys.argv:
-        swauji()
+        uji_bawaan()
         raise SystemExit(0)
-    swauji()
+    uji_bawaan()
     data = bangun()
     if data["n_emiten"] < 500:
         raise SystemExit(f"BATAL: cuma {data['n_emiten']} emiten terhitung — arsip harga kurang?")

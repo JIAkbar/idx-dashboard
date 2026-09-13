@@ -189,7 +189,7 @@ def jalankan(tahun_semua: list[int], jeda: float = 1.0) -> int:
     return 0
 
 
-def swauji() -> int:
+def uji_bawaan() -> int:
     teks = ("Date|Code|Type|Sec. Num|Price|Local IS|Local CP|Local PF|Local IB|Local ID|Local MF|Local SC|Local FD|Local OT|Total|"
             "Foreign IS|Foreign CP|Foreign PF|Foreign IB|Foreign ID|Foreign MF|Foreign SC|Foreign FD|Foreign OT|Total\n"
             "31-JUL-2026|UJI|EQUITY|1000|150|1|2|3|4|5|6|7|8|9|45|10|20|30|40|50|60|70|80|90|450\n"
@@ -213,5 +213,5 @@ if __name__ == "__main__":
     ap.add_argument("--uji", action="store_true")
     a = ap.parse_args()
     if a.uji:
-        raise SystemExit(swauji())
+        raise SystemExit(uji_bawaan())
     raise SystemExit(jalankan(a.tahun or list(range(2020, datetime.now(WIB).year + 1))))

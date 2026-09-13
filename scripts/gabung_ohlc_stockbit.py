@@ -28,7 +28,7 @@ sendiri tak bisa dicabut.
 Pakai:
   python scripts/gabung_ohlc_stockbit.py --kering
   python scripts/gabung_ohlc_stockbit.py
-  python scripts/gabung_ohlc_stockbit.py --swauji
+  python scripts/gabung_ohlc_stockbit.py --uji-bawaan
 """
 from __future__ import annotations
 
@@ -143,7 +143,7 @@ def buang_lompatan_mustahil(baris: list[list]) -> tuple[list[list], list[str]]:
         # Jendela dimulai dari i+1: bar yang sedang DIADILI tak boleh ikut
         # menentukan vonisnya sendiri. Versi pertama memasukkannya, dan
         # median jadi tertarik ke nilai rusak sehingga spike terbaca sebagai
-        # "level baru" dan lolos — swauji yang menangkapnya.
+        # "level baru" dan lolos — uji bawaan yang menangkapnya.
         depan = [float(x[4]) for x in baris[i + 1:i + 1 + JENDELA_PERIKSA] if x[4]]
         if not depan:
             keluar.append(b)
@@ -335,7 +335,7 @@ def gabung(bar_yahoo: list[list], peta_sb: dict[str, list],
     }
 
 
-def swauji() -> int:
+def uji_bawaan() -> int:
     y = [["2016-08-10", 1, 2, 1, 2, 100], ["2016-08-11", 2, 3, 2, 3, 200]]
     sb = {"2004-01-02": ["2004-01-02", 9, 9, 9, 9, 50],
           "2016-08-10": ["2016-08-10", 1, 2, 1, 2, 111]}
@@ -375,17 +375,17 @@ def swauji() -> int:
     # Gerak besar yang MASIH mungkin (ARA beruntun, +250%) tak boleh terbuang.
     wajar = [["2020-01-02", 100, 100, 100, 100, 1], ["2020-01-03", 350, 350, 350, 350, 1]]
     assert buang_lompatan_mustahil(wajar)[1] == [], "gerak 250% bukan bar rusak"
-    print("swauji OK — 8/8 assert lulus")
+    print("uji bawaan OK — 8/8 assert lulus")
     return 0
 
 
 def main() -> int:
     ap = argparse.ArgumentParser(description="Gabung ohlc/ dengan riwayat penuh Stockbit")
     ap.add_argument("--kering", action="store_true")
-    ap.add_argument("--swauji", action="store_true")
+    ap.add_argument("--uji-bawaan", action="store_true")
     a = ap.parse_args()
-    if a.swauji:
-        return swauji()
+    if a.uji_bawaan:
+        return uji_bawaan()
     if not DIR_YAHOO.exists():
         raise SystemExit(f"cadangan Yahoo tak ada: {DIR_YAHOO}")
 

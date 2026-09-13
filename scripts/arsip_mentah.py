@@ -178,7 +178,7 @@ def ambil_atau_unduh(sumber: str, *bagian: str, unduh: Callable[[], bytes]) -> b
 
 
 def demo() -> None:
-    """Swauji kecil — tanpa jaringan, tanpa framework."""
+    """Uji bawaan kecil — tanpa jaringan, tanpa framework."""
     import shutil
     import tempfile
 
@@ -205,7 +205,7 @@ def demo() -> None:
         assert r1 == r2 == b"isi-mentah"
         assert len(panggilan) == 1, "ambil_atau_unduh tak boleh memanggil unduh() dua kali"
 
-        print("arsip_mentah: swauji lolos")
+        print("arsip_mentah: uji bawaan lolos")
     finally:
         AKAR_ARSIP = asli
         shutil.rmtree(tmp, ignore_errors=True)

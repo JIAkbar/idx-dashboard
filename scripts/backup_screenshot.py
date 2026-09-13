@@ -47,7 +47,7 @@ backup, bukan pemindahan).
 
 Cara pakai:
   python scripts/backup_screenshot.py             # backup dari manifest
-  python scripts/backup_screenshot.py --swauji     # uji idempoten, tanpa jaringan
+  python scripts/backup_screenshot.py --uji-bawaan     # uji idempoten, tanpa jaringan
 """
 import argparse
 import json
@@ -150,7 +150,7 @@ def jalankan(manifest_path: Path = MANIFEST) -> None:
     )
 
 
-def swauji() -> None:
+def uji_bawaan() -> None:
     """Uji idempoten TANPA jaringan: berkas yang sudah ada tak boleh memicu
     `requests.get` sama sekali — dicoba lewat host yang pasti gagal DNS
     kalau (secara keliru) benar-benar dipanggil."""
@@ -162,16 +162,16 @@ def swauji() -> None:
         n = unduh_satu("http://url-tak-valid.invalid", "kunci-palsu", "x/y.jpg", dest)
         assert n == 0, "berkas yang sudah ada tak boleh diunduh ulang"
         assert dest.read_bytes() == b"isi lama", "berkas lama tak boleh ditimpa"
-    print("swauji lolos")
+    print("uji bawaan lolos")
 
 
 def main() -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--swauji", action="store_true", help="uji idempoten saja, tanpa jaringan")
+    ap.add_argument("--uji-bawaan", action="store_true", help="uji idempoten saja, tanpa jaringan")
     ap.add_argument("--manifest", type=Path, default=MANIFEST)
     arg = ap.parse_args()
-    if arg.swauji:
-        swauji()
+    if arg.uji_bawaan:
+        uji_bawaan()
         return
     jalankan(arg.manifest)
 

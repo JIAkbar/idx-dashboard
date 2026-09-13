@@ -100,7 +100,7 @@ Skrip TIDAK pernah mencetak token, termasuk saat galat.
 Pakai:
     python scripts/stockbit_token.py --status      # umur kedua token, tanpa isinya
     python scripts/stockbit_token.py --segarkan    # paksa refresh sekarang
-    python scripts/stockbit_token.py --uji         # swauji, nol jaringan
+    python scripts/stockbit_token.py --uji         # uji bawaan, nol jaringan
 Dari skrip lain:
     from stockbit_token import token_segar
     access = token_segar()                          # refresh otomatis kalau perlu
@@ -364,7 +364,7 @@ def status() -> int:
     return 0
 
 
-def swauji() -> int:
+def uji_bawaan() -> int:
     def jwt_palsu(exp: int) -> str:
         isi = base64.urlsafe_b64encode(json.dumps({"exp": exp}).encode()).decode().rstrip("=")
         return f"x.{isi}.y"
@@ -406,7 +406,7 @@ def swauji() -> int:
 
 if __name__ == "__main__":
     if "--uji" in sys.argv:
-        raise SystemExit(swauji())
+        raise SystemExit(uji_bawaan())
     if "--segarkan" in sys.argv:
         refresh_sekarang(baca_simpanan())
         print("refresh berhasil")

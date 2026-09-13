@@ -49,7 +49,7 @@ tampak sesegar harga hari ini — persis jenis kebohongan senyap yang mahal.
 Pakai:
     python scripts/segarkan_harga_fundamental.py            # semua emiten
     python scripts/segarkan_harga_fundamental.py BBCA ARCI  # sebagian
-    python scripts/segarkan_harga_fundamental.py --uji      # swauji, tak menulis
+    python scripts/segarkan_harga_fundamental.py --uji      # uji bawaan, tak menulis
 """
 from __future__ import annotations
 
@@ -162,7 +162,7 @@ def segarkan(kode_terpilih: list[str] | None = None) -> dict:
 
 
 def uji() -> None:
-    """Swauji dengan deret buatan — angka acuannya dihitung tangan."""
+    """Uji bawaan dengan deret buatan — angka acuannya dihitung tangan."""
     bar = [[f"2026-01-{i+1:02d}", 100, 110, 90, 100 + i, 1000] for i in range(300)]
     fd = {"shares": 1_000_000, "eps": 10.0, "bv": 50.0, "rev_ps": 20.0,
           "fcf_ps": 5.0, "diperbarui": "2026-08-13 21:09"}

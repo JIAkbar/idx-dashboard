@@ -13,7 +13,7 @@ service key — yang bisa menulis apa pun tak perlu dipegang oleh pembaca.
 
 Jalankan dari akar repo:
     python scripts/tarik_tesis.py
-    python scripts/tarik_tesis.py --uji     # swauji parser env, nol jaringan
+    python scripts/tarik_tesis.py --uji     # uji bawaan parser env, nol jaringan
 """
 from __future__ import annotations
 
@@ -48,7 +48,7 @@ def baca_env(teks: str) -> dict[str, str]:
 
 
 def main() -> int:
-    import requests  # lokal: swauji tak butuh jaringan sama sekali
+    import requests  # lokal: uji bawaan tak butuh jaringan sama sekali
 
     if not ENV_LOCAL.exists():
         print(f"Tak ada {ENV_LOCAL.relative_to(AKAR)} — kunci Supabase belum tersedia.",
@@ -82,7 +82,7 @@ def main() -> int:
     return 0
 
 
-def swauji() -> None:
+def uji_bawaan() -> None:
     e = baca_env('# komentar\nVITE_SUPABASE_URL=https://x.supabase.co\n'
                  'VITE_SUPABASE_ANON_KEY="abc"\n\nSTOCKBIT_TOKEN=zzz\n')
     assert e["VITE_SUPABASE_URL"] == "https://x.supabase.co", e
@@ -91,13 +91,13 @@ def swauji() -> None:
     assert baca_env("bukan-pasangan\n") == {}
     # Ruas disebut eksplisit, tak pernah `*`.
     assert "*" not in RUAS and "alasan" in RUAS and "lampiran" not in RUAS
-    print("swauji tarik_tesis: 5 kasus lolos")
+    print("uji bawaan tarik_tesis: 5 kasus lolos")
 
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--uji", action="store_true")
     if ap.parse_args().uji:
-        swauji()
+        uji_bawaan()
         sys.exit(0)
     sys.exit(main())

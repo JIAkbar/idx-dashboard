@@ -205,10 +205,10 @@ def susun(agg, total, preset: str, broker: str) -> dict:
     return {'beli': beli, 'jual': jual, 'n_emiten': len(baris)}
 
 
-def swauji() -> int:
+def uji_bawaan() -> int:
     """Periksa dua bagian yang bisa salah tanpa satu pun galat.
 
-    Dijalankan `--swauji`, tanpa menyentuh arsip. Yang diuji bukan
+    Dijalankan `--uji-bawaan`, tanpa menyentuh arsip. Yang diuji bukan
     aritmetikanya melainkan DEFINISI periodenya dan pemisahan sisinya -
     dua hal yang kalau meleset menghasilkan tabel yang tetap terlihat
     masuk akal.
@@ -260,18 +260,18 @@ def swauji() -> int:
     # Harga rata-rata sisi beli = nilai/lot/100 = 300/200/100 = 0,015.
     # Dihitung di layar, tapi bahannya wajib ada di sini.
     assert d2['beli'][0]['beli_nilai'] == 300
-    print('swauji lolos')
+    print('uji bawaan lolos')
     return 0
 
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument('--tulis', action='store_true')
-    ap.add_argument('--swauji', action='store_true', help='periksa definisi periode & pemisahan sisi')
+    ap.add_argument('--uji-bawaan', action='store_true', help='periksa definisi periode & pemisahan sisi')
     ap.add_argument('--emiten', type=int, default=None, help='batasi jumlah emiten (uji cepat)')
     a = ap.parse_args()
-    if a.swauji:
-        return swauji()
+    if a.uji_bawaan:
+        return uji_bawaan()
 
     akhir, kalender = hari_bursa_terakhir()
     mulai = {k: batas(k, akhir, kalender) for k in PRESET}

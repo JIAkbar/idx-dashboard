@@ -1,5 +1,5 @@
 /**
- * Swauji pagar bersama (#109 A, dipakai #112) — murni, nol jaringan, nol token.
+ * Uji bawaan pagar bersama (#109 A, dipakai #112) — murni, nol jaringan, nol token.
  *
  * Fungsi serverless tak ikut suite vitest `app/` (di luar akar proyeknya), jadi
  * pagarnya diuji di sini dan dijalankan tangan sebelum deploy:

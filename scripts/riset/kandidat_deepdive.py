@@ -72,7 +72,7 @@ baris membawa ALASAN per sinyal (bukan cuma angka) supaya bisa dibantah.
 
 Pakai:
     python scripts/riset/kandidat_deepdive.py            # tulis JSON
-    python scripts/riset/kandidat_deepdive.py --uji      # swauji, tak menulis
+    python scripts/riset/kandidat_deepdive.py --uji      # uji bawaan, tak menulis
 """
 from __future__ import annotations
 
@@ -262,7 +262,7 @@ def jalankan() -> dict:
 
 
 def uji() -> None:
-    """Swauji: deret buatan yang memicu sinyal tertentu, dihitung tangan."""
+    """Uji bawaan: deret buatan yang memicu sinyal tertentu, dihitung tangan."""
     # 300 bar; SEPULUH bar terakhir volume 3x lipat sementara harga hampir diam.
     # Sepuluh, bukan enam puluh: RVOL membandingkan ke median 20 hari SEBELUMNYA,
     # jadi lonjakan yang sudah berlangsung 60 hari menaikkan pembanding itu

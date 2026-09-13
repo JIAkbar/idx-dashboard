@@ -47,7 +47,7 @@ Pakai:
     python scripts/panen_intraday_stockbit.py --hari 90 --paralel 24   # perdana
     python scripts/panen_intraday_stockbit.py                          # rutin (7 hari)
     python scripts/panen_intraday_stockbit.py --hanya BBCA,BUMI --hari 14
-    python scripts/panen_intraday_stockbit.py --uji                    # swauji, nol jaringan
+    python scripts/panen_intraday_stockbit.py --uji                    # uji bawaan, nol jaringan
 """
 from __future__ import annotations
 
@@ -260,7 +260,7 @@ def kerjakan(token: str, kode: str, dari_e: int, sampai_e: int,
     return f"ok {len(bar)} bar (+{baru} baru)"
 
 
-def swauji() -> int:
+def uji_bawaan() -> int:
     """Nol jaringan: pemilah bulan + buang-hari-ini + merge-dedup."""
     import tempfile
     global ARSIP, BERES
@@ -291,7 +291,7 @@ def swauji() -> int:
         assert cari_bar({"data": {"apapun": [{"unix_timestamp": 1, "close": 9}]}})[0]["close"] == 9
     ARSIP = asli
     BERES = asli / "_beres"
-    print("swauji lolos")
+    print("uji bawaan lolos")
     return 0
 
 
@@ -304,7 +304,7 @@ def utama() -> int:
     ap.add_argument("--uji", action="store_true")
     a = ap.parse_args()
     if a.uji:
-        return swauji()
+        return uji_bawaan()
 
     token = token_tanpa_refresh()
     kini = datetime.now(WIB)

@@ -356,7 +356,7 @@ def main() -> int:
     return 0
 
 
-def swauji() -> int:
+def uji_bawaan() -> int:
     """Nol jaringan, nol berkas — memeriksa yang gampang salah diam-diam."""
     lulus = gagal = 0
 
@@ -401,4 +401,4 @@ def swauji() -> int:
 
 
 if __name__ == "__main__":
-    sys.exit(swauji() if "--uji" in sys.argv else main())
+    sys.exit(uji_bawaan() if "--uji" in sys.argv else main())

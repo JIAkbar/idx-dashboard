@@ -13,7 +13,7 @@ berlabel jelas, dan angka dari sini hanya mengisi harga Bid/Offer-nya.
 
 Pakai:
   python scripts/bangun_bidoffer.py
-  python scripts/bangun_bidoffer.py --swauji
+  python scripts/bangun_bidoffer.py --uji-bawaan
 """
 from __future__ import annotations
 
@@ -71,7 +71,7 @@ def padatkan(rows: list) -> dict[str, list]:
     return out
 
 
-def swauji() -> int:
+def uji_bawaan() -> int:
     rows = [
         {"StockCode": "BUMI", "Bid": 195.0, "BidVolume": 95073200.0,
          "Offer": 196.0, "OfferVolume": 66205700.0, "Close": 196.0, "Previous": 190.0},
@@ -80,16 +80,16 @@ def swauji() -> int:
     p = padatkan(rows)
     assert p["BUMI"] == [195, 950732, 196, 662057, 196, 190], p["BUMI"]
     assert "KOSONG" not in p, "emiten tanpa antrean tak boleh masuk"
-    print("swauji OK — 2/2 assert lulus")
+    print("uji bawaan OK — 2/2 assert lulus")
     return 0
 
 
 def main() -> int:
     ap = argparse.ArgumentParser(description="Bangun bidoffer.json dari arsip harian IDX")
-    ap.add_argument("--swauji", action="store_true")
+    ap.add_argument("--uji-bawaan", action="store_true")
     a = ap.parse_args()
-    if a.swauji:
-        return swauji()
+    if a.uji_bawaan:
+        return uji_bawaan()
 
     tgl, rows = baris_terakhir()
     data = padatkan(rows)

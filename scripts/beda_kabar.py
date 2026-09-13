@@ -62,7 +62,7 @@ def beda(berkas=BERKAS, basis: str = "HEAD") -> int:
     return total
 
 
-def swauji() -> int:
+def uji_bawaan() -> int:
     def k(items):
         return kunci(json.dumps({"item": items}))
     a = k([{"tautan": "x", "judul": "A", "waktu": "1"}])
@@ -72,14 +72,14 @@ def swauji() -> int:
     assert len(c ^ a) == 1, "satu item bertambah"
     assert len(a ^ c) == 1, "satu item BERKURANG juga dihitung - inilah #142 B"
     assert kunci("bukan json") is None
-    print("swauji beda_kabar lolos")
+    print("uji bawaan beda_kabar lolos")
     return 0
 
 
 if __name__ == "__main__":
     arg = sys.argv[1:]
-    if "--swauji" in arg:
-        raise SystemExit(swauji())
+    if "--uji-bawaan" in arg:
+        raise SystemExit(uji_bawaan())
     basis = "HEAD"
     if "--basis" in arg:
         basis = arg[arg.index("--basis") + 1]

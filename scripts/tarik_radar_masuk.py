@@ -26,7 +26,7 @@ Idempoten: berkas yang sudah ada & >0 byte dilewati; tak pernah menghapus.
 
 Pakai:
   C:/Python314/python.exe scripts/tarik_radar_masuk.py
-  C:/Python314/python.exe scripts/tarik_radar_masuk.py --swauji
+  C:/Python314/python.exe scripts/tarik_radar_masuk.py --uji-bawaan
 """
 from __future__ import annotations
 
@@ -71,16 +71,16 @@ def daftar(url: str, key: str, prefix: str) -> list[dict]:
     return r.json()
 
 
-def swauji() -> int:
+def uji_bawaan() -> int:
     assert stem("2026-08-13") == "r_260813"
     assert stem("2026-01-02") == "r_260102"
-    print("swauji lolos")
+    print("uji bawaan lolos")
     return 0
 
 
 def main() -> int:
-    if "--swauji" in sys.argv:
-        return swauji()
+    if "--uji-bawaan" in sys.argv:
+        return uji_bawaan()
     env = baca_env()
     url = env.get("VITE_SUPABASE_URL", "").rstrip("/")
     key = env.get("VITE_SUPABASE_ANON_KEY", "")

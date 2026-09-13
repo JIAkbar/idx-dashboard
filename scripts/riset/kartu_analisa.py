@@ -32,7 +32,7 @@ volume pasar); panel lengkap ada di Stock Detail, bukan di kartu ini.
 mengembalikan `None` — pembaca kartu WAJIB menampilkan "belum tersedia",
 bukan 0 (nol berarti asing tak bertransaksi, itu klaim berbeda).
 
-Swauji: `python scripts/riset/kartu_analisa.py --uji`.
+Uji bawaan: `python scripts/riset/kartu_analisa.py --uji`.
 """
 from __future__ import annotations
 
@@ -1031,7 +1031,7 @@ def uji() -> None:
     rk3 = ringkas_dari_kartu({**kp, "ichimoku": None, "regresi60": None})
     assert rk3["di_atas_kumo"] is None and rk3["posisi_regresi"] is None
     periksa_ringkas()
-    print("kartu_analisa: swauji lolos")
+    print("kartu_analisa: uji bawaan lolos")
 
 
 # Ambang POPULASI STATISTIK (docs/riset/keputusan-kartu-ringkas.md, bagian

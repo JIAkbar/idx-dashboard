@@ -176,8 +176,8 @@ def main() -> None:
     print(f"indeks.json {berkas_indeks.stat().st_size/1024:.0f} KB — cukup untuk kotak pencarian")
 
 
-def swauji() -> None:
-    """GAGAL kalau bulan berjalan bocor.  `python scripts/siapkan_seasonality.py --swauji`"""
+def uji_bawaan() -> None:
+    """GAGAL kalau bulan berjalan bocor.  `python scripts/siapkan_seasonality.py --uji-bawaan`"""
     seri = {"2026-06": 100.0, "2026-07": 110.0, "2026-08": 121.0, "2026-09": 60.5}
     # 1. Bulan sesudah batas dibuang; bulan tuntas terakhir tetap terhitung.
     im = imbal_bulanan(seri, "2026-08")
@@ -199,9 +199,9 @@ def swauji() -> None:
                         for m in imb if m > batas})
         assert not bocor, f"{b.name} memuat bulan belum tuntas: {bocor}"
 
-    print(f"swauji LOLOS — batas {batas}, hari bursa terakhir jatuh di {akhir}, "
+    print(f"uji bawaan LOLOS — batas {batas}, hari bursa terakhir jatuh di {akhir}, "
           f"{len(berkas)} berkas huruf bersih")
 
 
 if __name__ == "__main__":
-    swauji() if "--swauji" in sys.argv else main()
+    uji_bawaan() if "--uji-bawaan" in sys.argv else main()

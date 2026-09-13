@@ -248,7 +248,7 @@ def main() -> int:
 
 
 def demo() -> None:
-    """Swauji tanpa jaringan/tanpa disk -- data rekaan dengan angka bulat."""
+    """Uji bawaan tanpa jaringan/tanpa disk -- data rekaan dengan angka bulat."""
     data = {
         "ticker": "UJI", "currency": "IDR",
         "kuartal": {
@@ -303,7 +303,7 @@ def demo() -> None:
     assert kc["2025-09-30"]["asal"]["revenue"] == "cacat-sumber"
     assert kc["2025-03-31"]["nilai"]["revenue"] == 100, "kuartal lain tak ikut terseret"
     assert kc["2025-12-31"]["nilai"]["revenue"] == 130, "Q4 = audit-TW3, dua-duanya bersih"
-    print("turunkan_kuartal_diskret: swauji lolos")
+    print("turunkan_kuartal_diskret: uji bawaan lolos")
 
 
 if __name__ == "__main__":

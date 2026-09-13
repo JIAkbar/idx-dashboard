@@ -21,7 +21,7 @@ Pakai:
     python scripts/panen_profil_stockbit.py BBCA BUMI AADI
     python scripts/panen_profil_stockbit.py --semua --jeda 0.4
     python scripts/panen_profil_stockbit.py BBCA --paksa
-    python scripts/panen_profil_stockbit.py --swauji
+    python scripts/panen_profil_stockbit.py --uji-bawaan
 """
 from __future__ import annotations
 
@@ -178,7 +178,7 @@ def jalankan(a) -> int:
     return 0 if n_ok else 1
 
 
-def swauji() -> int:
+def uji_bawaan() -> int:
     mentah = {"data": {
         "background": "Bank umum.",
         "shareholder": [
@@ -223,10 +223,10 @@ def main() -> int:
     ap.add_argument("--semua", action="store_true", help="seluruh daftar_emiten.json")
     ap.add_argument("--jeda", type=float, default=0.4, help="detik antar permintaan")
     ap.add_argument("--paksa", action="store_true", help="abaikan arsip hari ini, tarik ulang")
-    ap.add_argument("--swauji", action="store_true")
+    ap.add_argument("--uji-bawaan", action="store_true")
     a = ap.parse_args()
-    if a.swauji:
-        return swauji()
+    if a.uji_bawaan:
+        return uji_bawaan()
     return jalankan(a)
 
 

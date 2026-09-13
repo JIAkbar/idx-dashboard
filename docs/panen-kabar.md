@@ -197,6 +197,6 @@ IDX berita 15,8 jam kabar. Ambang dipasang ~2–3× angka itu (18 / 18 / 18 / 30
 48). Kalau sebuah sumber berubah ritme, ukur dulu — jangan menaikkan ambang
 supaya alarmnya diam.
 
-**Swauji:** `python scripts/cek_kabar.py --demo` (9 kasus, termasuk yang paling
+**Uji bawaan:** `python scripts/cek_kabar.py --demo` (9 kasus, termasuk yang paling
 mudah luput: keseluruhan segar tapi satu sumber diam berhari-hari, dan akhir
 pekan/libur yang tak boleh berbunyi).

@@ -22,7 +22,7 @@ kemudian saat ada yang membaca angkanya dekat-dekat.
 
 Cara pakai:
   python scripts/cek_panen_ohlcv.py            # periksa, keluar 1 bila ada
-  python scripts/cek_panen_ohlcv.py --swauji   # uji logikanya, tanpa arsip
+  python scripts/cek_panen_ohlcv.py --uji-bawaan   # uji logikanya, tanpa arsip
 """
 import argparse
 import io
@@ -158,7 +158,7 @@ def tertinggal_mentah(acuan: str) -> list[tuple[str, str, str]]:
     return out
 
 
-def swauji() -> int:
+def uji_bawaan() -> int:
     kal = "2026-09-08"
     assert not tertinggal.__doc__ is None
     # Aturan intinya diuji lewat data kecil, bukan lewat arsip: yang gampang
@@ -193,16 +193,16 @@ def swauji() -> int:
     ]
     for ts, tm, harap in kasus2:
         assert ((tm == kal) and (ts < kal)) is harap, (ts, tm, harap)
-    print("swauji lolos")
+    print("uji bawaan lolos")
     return 0
 
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--swauji", action="store_true")
+    ap.add_argument("--uji-bawaan", action="store_true")
     a = ap.parse_args()
-    if a.swauji:
-        return swauji()
+    if a.uji_bawaan:
+        return uji_bawaan()
 
     acuan = hari_terakhir_gabungan()
     sisa = tertinggal(acuan)

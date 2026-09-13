@@ -41,7 +41,7 @@ Keluaran: `data-idx/json/winrate/<KODE>.json` per emiten dan `index.json`
 Jalankan dari akar repo:
     python scripts/riset/winrate_emiten.py                 # semua emiten
     python scripts/riset/winrate_emiten.py --emiten BNBR,ARCI
-    python scripts/riset/winrate_emiten.py --uji           # swauji + kesamaan
+    python scripts/riset/winrate_emiten.py --uji           # uji bawaan + kesamaan
 """
 from __future__ import annotations
 
@@ -429,7 +429,7 @@ def jalankan(kode_dipilih: list[str] | None = None, tulis: bool = True) -> dict:
 KUNCI_SAMA = ("menang", "kalah", "gantung", "n", "winRate", "winRateSemua", "ekspektansi", "ekspektansiBiaya")
 
 
-def swauji() -> None:
+def uji_bawaan() -> None:
     # 1) naik lurus, turun lurus, datar: arah yang sudah dibuktikan telusuri
     naik = [["2026-01-%02d" % (i + 1), 100 + i, 101 + i, 99 + i, 100 + i, 1000] for i in range(60)]
     r = ringkas(sinyal_per_hari(naik, 30, 5, atr_deret(naik)))
@@ -493,7 +493,7 @@ def swauji() -> None:
 
     # 5) persentil: nilai terkecil = 0, terbesar < 100, nilai di luar tak ikut
     assert persentil([1, 2, 3, 4], 1) == 0 and persentil([1, 2, 3, 4], 4) == 75
-    print(f"swauji winrate_emiten: lolos ({n_cek} pembanding data nyata identik)")
+    print(f"uji bawaan winrate_emiten: lolos ({n_cek} pembanding data nyata identik)")
 
 
 if __name__ == "__main__":
@@ -503,7 +503,7 @@ if __name__ == "__main__":
     ap.add_argument("--tanpa-tulis", action="store_true")
     a = ap.parse_args()
     if a.uji:
-        swauji()
+        uji_bawaan()
         sys.exit(0)
     dipilih = [k.strip().upper() for k in a.emiten.split(",") if k.strip()] if a.emiten else None
     jalankan(dipilih, tulis=not a.tanpa_tulis)

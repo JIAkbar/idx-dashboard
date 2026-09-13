@@ -65,7 +65,7 @@ PAKAI
   py -3.14 scripts/panen_asing.py --penuh              # bangun ulang sejak 2020-01-02
   py -3.14 scripts/panen_asing.py --mulai 2026-01-01
   py -3.14 scripts/panen_asing.py --dari-arsip         # tanpa jaringan sama sekali
-  py -3.14 scripts/panen_asing.py --demo               # swauji, tanpa jaringan
+  py -3.14 scripts/panen_asing.py --demo               # uji bawaan, tanpa jaringan
 """
 from __future__ import annotations
 
@@ -345,7 +345,7 @@ def panen(mulai: date, akhir: date, *, jeda: float, dari_arsip: bool, timpa: boo
 
 
 def demo() -> None:
-    """Swauji tanpa jaringan — yang gagal kalau logika petik/tulis rusak."""
+    """Uji bawaan tanpa jaringan — yang gagal kalau logika petik/tulis rusak."""
     import shutil
     import tempfile
 
@@ -425,7 +425,7 @@ def demo() -> None:
     finally:
         KELUARAN = asli
         shutil.rmtree(tmp, ignore_errors=True)
-    print("panen_asing: swauji lolos")
+    print("panen_asing: uji bawaan lolos")
 
 
 def main() -> None:

@@ -464,7 +464,7 @@ def tulis_index():
 
 
 def periksa():
-    """Swauji tanpa jaringan atas SELURUH ms_*.json yang sudah ada.
+    """Uji bawaan tanpa jaringan atas SELURUH ms_*.json yang sudah ada.
 
     Kuncinya satu invarian yang datang dari DUA halaman berbeda: jumlah nilai
     transaksi 11 sektor (hal 4) harus sama dengan total nilai pasar saham
@@ -487,14 +487,14 @@ def periksa():
         assert all(m["poin"] > 0 for m in d["index_movers"]["ihsg"]["top_leaders"]), f"{f.name}: leader poin negatif"
         assert len(d["indeks_kinerja"]) > 30, f"{f.name}: indeks cuma {len(d['indeks_kinerja'])}"
         assert d["asing"], f"{f.name}: ruas asing kosong"
-    print(f"parse_idx_monthly: swauji lolos — {len(berkas)} periode konsisten")
+    print(f"parse_idx_monthly: uji bawaan lolos — {len(berkas)} periode konsisten")
 
 
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("pdf", nargs="?")
     ap.add_argument("--semua", action="store_true")
-    ap.add_argument("--periksa", action="store_true", help="swauji invarian, tanpa parsing ulang")
+    ap.add_argument("--periksa", action="store_true", help="uji bawaan invarian, tanpa parsing ulang")
     args = ap.parse_args()
 
     if args.periksa:

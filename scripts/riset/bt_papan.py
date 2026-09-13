@@ -9,7 +9,7 @@ harian). Tulis data-idx/json/bt/<strategi>-<hash8>.json (+ .json.gz kalau
 >5MB) dan bt/index.json. NOL jaringan, NOL token, NOL git.
 
 Jalankan dari akar repo:
-    python scripts/riset/bt_papan.py --uji                 # swauji sintetis
+    python scripts/riset/bt_papan.py --uji                 # uji bawaan sintetis
     python scripts/riset/bt_papan.py --semesta-hari-ini     # validasi vs riset_rbs_gap_hasil.md
     python scripts/riset/bt_papan.py --resmi                 # run beku (rbs, rbs-tpsl, gap, preset-scalping, preset-swing)
 
@@ -919,13 +919,13 @@ def _uji_preset() -> None:
     print("  [ok] preset-scalping: baris yang memenuhi semua kriteria terukur -> sinyal True")
 
 
-def swauji() -> None:
-    print("=== Swauji bt_papan.py ===")
+def uji_bawaan() -> None:
+    print("=== Uji bawaan bt_papan.py ===")
     _uji_vektor_cocok_kartu()
     _uji_rbs()
     _uji_gap()
     _uji_preset()
-    print("=== Semua swauji lolos ===")
+    print("=== Semua uji bawaan lolos ===")
 
 
 # ======================================================================= cli
@@ -939,7 +939,7 @@ def main() -> None:
     args = ap.parse_args()
 
     if args.uji:
-        swauji()
+        uji_bawaan()
         return
 
     if args.semesta_hari_ini:

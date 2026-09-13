@@ -31,7 +31,7 @@ jeda itu paling lama satu hari.
 
 Jalankan:
   C:/Python314/python.exe scripts/bangun_ihsg_bulanan.py
-  C:/Python314/python.exe scripts/bangun_ihsg_bulanan.py --swauji
+  C:/Python314/python.exe scripts/bangun_ihsg_bulanan.py --uji-bawaan
 """
 import json
 import sys
@@ -66,7 +66,7 @@ def imbal_bulanan(tutup: dict[str, float]) -> dict[str, float]:
             for lalu, kini in zip(bulan, bulan[1:]) if tutup[lalu] > 0}
 
 
-def swauji() -> None:
+def uji_bawaan() -> None:
     bar = [["2026-06-30", 0, 0, 0, 100.0, 0],
            ["2026-07-15", 0, 0, 0, 999.0, 0],
            ["2026-07-31", 0, 0, 0, 110.0, 0],
@@ -80,12 +80,12 @@ def swauji() -> None:
     assert satu == dua, "keluaran tidak idempoten"
     assert imbal_bulanan({"2026-06": 0.0, "2026-07": 5.0}) == {}        # pembagi nol dilewati
     assert tutup_bulanan([]) == {} and imbal_bulanan({}) == {}
-    print("swauji lolos")
+    print("uji bawaan lolos")
 
 
 def main() -> None:
-    if "--swauji" in sys.argv:
-        return swauji()
+    if "--uji-bawaan" in sys.argv:
+        return uji_bawaan()
     sumber = json.loads(SUMBER.read_text(encoding="utf-8"))
     tutup = tutup_bulanan(sumber["d"])
     imbal = imbal_bulanan(tutup)

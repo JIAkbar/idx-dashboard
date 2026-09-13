@@ -217,7 +217,7 @@ def _rsi(c: pd.Series, n: int = 14) -> pd.Series:
     tak pernah turun (auto-reject atas berturut-turut itu nyata di papan
     ini) membuat penyebutnya nol, dan `x / 0 -> NaN` menghasilkan RSI
     kosong: sinyalnya lalu diam di emiten yang justru paling ekstrem, tanpa
-    satu pun galat. Ditangkap swauji sebelum jalan penuh.
+    satu pun galat. Ditangkap uji bawaan sebelum jalan penuh.
     """
     delta = c.diff()
     naik = delta.clip(lower=0).ewm(alpha=1 / n, adjust=False).mean()
@@ -401,7 +401,7 @@ def main() -> int:
     a = ap.parse_args()
 
     if a.uji:
-        return swauji()
+        return uji_bawaan()
     if a.semua:
         rc = 0
         for tf in ['D', 'W', 'M', '1H', '4H']:
@@ -529,7 +529,7 @@ def tulis_ringkas(strategi: str, params: dict, ringkasan: dict,
     perbarui_index(strategi, h8, jalur.name, params, ringkasan, akhir_data)
 
 
-def swauji() -> int:
+def uji_bawaan() -> int:
     """Periksa bagian yang bisa salah tanpa satu pun galat."""
     # 1. Silang naik hanya menandai perlintasan, bukan "berada di atas".
     a = pd.Series([1.0, 2, 3, 4, 3, 2])
@@ -598,7 +598,7 @@ def swauji() -> int:
     assert 'volume' not in BERARAH and 'atr' not in BERARAH
     assert set(TAK_BERARAH) == {'volume', 'atr'}
 
-    print('swauji lolos')
+    print('uji bawaan lolos')
     return 0
 
 

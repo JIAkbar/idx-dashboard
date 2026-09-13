@@ -59,7 +59,7 @@ nilai 15,78 triliun (IDX 15,78).
 
     python scripts/bangun_aliran_investor.py            # seluruh arsip
     python scripts/bangun_aliran_investor.py --hari 400 # 400 tanggal terakhir
-    python scripts/bangun_aliran_investor.py --uji      # swauji, tanpa tulis
+    python scripts/bangun_aliran_investor.py --uji      # uji bawaan, tanpa tulis
 """
 from __future__ import annotations
 
@@ -219,7 +219,7 @@ def bangun(batas: int | None = None) -> dict:
 
 
 def _uji() -> None:
-    """Swauji ke ANGKA RESMI IDX, bukan ke angka buatan sendiri."""
+    """Uji bawaan ke ANGKA RESMI IDX, bukan ke angka buatan sendiri."""
     p = ARSIP / "2026" / "20260820.json.gz"
     if not p.exists():
         print("uji dilewati: arsip 2026-08-20 tak ada")

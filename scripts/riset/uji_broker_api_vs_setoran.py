@@ -40,7 +40,7 @@ berikutnya MELEWATI yang sudah ada (idempoten, nol permintaan ulang).
 Pakai:
     python scripts/riset/uji_broker_api_vs_setoran.py
     python scripts/riset/uji_broker_api_vs_setoran.py BUMI DSSA
-    python scripts/riset/uji_broker_api_vs_setoran.py --uji     # swauji
+    python scripts/riset/uji_broker_api_vs_setoran.py --uji     # uji bawaan
 """
 from __future__ import annotations
 
@@ -269,7 +269,7 @@ def jalankan(pilih: list[str] | None = None) -> int:
     return 0
 
 
-def swauji() -> int:
+def uji_bawaan() -> int:
     setoran = {
         "beli": [["LG", 32400, 1900000, 169], ["AK", 16600, 987500, 169]],
         "jual": [["ZP", 32200, 1900000, 169]],
@@ -320,5 +320,5 @@ def swauji() -> int:
 if __name__ == "__main__":
     arg = [a for a in sys.argv[1:] if not a.startswith("-")]
     if "--uji" in sys.argv:
-        raise SystemExit(swauji())
+        raise SystemExit(uji_bawaan())
     raise SystemExit(jalankan(arg or None))

@@ -207,7 +207,7 @@ def main() -> int:
 
 
 def demo() -> None:
-    """Swauji tanpa cakram: ruas neraca kolom C tak boleh masuk slot interim."""
+    """Uji bawaan tanpa cakram: ruas neraca kolom C tak boleh masuk slot interim."""
     data_c = {f: 100.0 for f in FIELD_ARUS}
     data_c.update({"total_assets": 999.0, "equity": 888.0, "cash": 777.0,
                    "total_liabilities": 1.0, "total_debt": 2.0})
@@ -216,7 +216,7 @@ def demo() -> None:
     assert hasil["total_assets"] is None, "neraca kolom C bertanggal 31 Des -- jangan masuk interim"
     assert hasil["equity"] is None and hasil["total_debt"] is None
     assert hasil["cash"] == 42.0, "cash wajib dari sheet arus kas, bukan dari neraca"
-    print("panen_pembanding: swauji lolos")
+    print("panen_pembanding: uji bawaan lolos")
 
 
 if __name__ == "__main__":

@@ -242,7 +242,7 @@ def jalankan() -> dict:
     }
 
 
-def swauji() -> None:
+def uji_bawaan() -> None:
     # naik lurus: target selalu kena lebih dulu
     naik = [["2026-01-%02d" % (i + 1), 100 + i, 101 + i, 99 + i, 100 + i, 1000]
             for i in range(60)]
@@ -267,7 +267,7 @@ def swauji() -> None:
     lv = level(1000, 5.0, None)
     assert lv["tp1"] == 1050 and lv["tp2"] == 1100 and lv["sl"] == 925, lv
 
-    print("swauji rencana_saham: 5 kasus lolos")
+    print("uji bawaan rencana_saham: 5 kasus lolos")
 
 
 if __name__ == "__main__":
@@ -275,7 +275,7 @@ if __name__ == "__main__":
     ap.add_argument("--uji", action="store_true")
     a = ap.parse_args()
     if a.uji:
-        swauji()
+        uji_bawaan()
         sys.exit(0)
     h = jalankan()
     KELUARAN.write_text(json.dumps(h, ensure_ascii=False, separators=(",", ":")),
