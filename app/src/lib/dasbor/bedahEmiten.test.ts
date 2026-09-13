@@ -177,11 +177,31 @@ describe('skor pilar — rule engine', () => {
 })
 
 describe('panel khas PAPAN', () => {
-  it('ambang Altman klasik 1,81 / 2,99', () => {
-    expect(zonaAltman(3.29)).toBe('aman')
-    expect(zonaAltman(1.97)).toBe('abu')
-    expect(zonaAltman(1.8)).toBe('tertekan')
+  it('ambang Altman model modifikasi 1,1 / 2,6 — model yang dipakai kedua sumber (#185)', () => {
+    expect(zonaAltman(2.61)).toBe('aman')
+    expect(zonaAltman(2.6)).toBe('abu')
+    expect(zonaAltman(1.1)).toBe('abu')
+    expect(zonaAltman(1.09)).toBe('tertekan')
     expect(zonaAltman(null)).toBeNull()
+  })
+
+  it('Altman: sumber utama menang, cadangan bertanda c, kosong berbunyi kosong (#185)', () => {
+    const cari = (b: ReturnType<typeof panelKhas>) => b.find((x) => x.label === 'Altman Z-Score')!
+    // Keystats ada: angkanya yang dinilai, ruas lama diabaikan.
+    const utama = cari(panelKhas(fdDasar({ altman_z: 3.5 }), { 'Altman Z-Score (Modified)': 1.5 }))
+    expect(utama.nilai).toBe('1.50')
+    expect(utama.cadangan).toBe(false)
+    expect(utama.baca).toMatch(/^Zona abu-abu — model modifikasi/)
+    // Keystats kosong, ruas lama ada: tampil bertanda, dinilai dengan ambang yang SAMA.
+    // 2,8 berada di atas 2,6 (aman) tapi di bawah 2,99 klasik — kasus yang dulu mendapat dua vonis.
+    const cadangan = cari(panelKhas(fdDasar({ altman_z: 2.8 }), {}))
+    expect(cadangan.nilai).toBe('2.80')
+    expect(cadangan.cadangan).toBe(true)
+    expect(cadangan.baca).toMatch(/^Zona aman/)
+    // Dua-duanya kosong.
+    const kosong = cari(panelKhas(fdDasar(), null))
+    expect(kosong.nilai).toBe('Belum bisa dihitung')
+    expect(kosong.cadangan).toBe(false)
   })
 
   it('F-Score dinilai dari PROPORSI, bukan angka mentah — 4/6 bukan 4/9', () => {

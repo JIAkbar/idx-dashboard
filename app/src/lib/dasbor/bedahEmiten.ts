@@ -509,8 +509,15 @@ export const LABEL_ZONA_ALTMAN: Record<ZonaAltman, string> = {
 }
 
 /**
- * Altman Z-Score, ambang klasik model manufaktur publik (Altman 1968):
- * > 2,99 aman · 1,81–2,99 abu-abu · < 1,81 tertekan.
+ * Altman Z"-Score model MODIFIKASI (Altman 1995), satu-satunya model di data kita:
+ * > 2,6 aman · 1,1–2,6 abu-abu · < 1,1 tertekan.
+ *
+ * Kedua sumber memakai model ini: keystats *Altman Z-Score (Modified)* dan ruas lama
+ * `altman_z` (6,56·WC/TA + 3,26·RE/TA + 6,72·EBIT/TA + 1,05·BVE/TL,
+ * `scripts/fetch_fundamental.py`). Sampai 13 Sep 2026 panel ini menilainya dengan ambang
+ * KLASIK 1,81/2,99 sementara panel Solvabilitas di halaman yang sama memakai 1,1/2,6, jadi
+ * 100 dari 966 emiten mendapat dua vonis untuk satu angka (#185). Ambangnya sekarang satu
+ * tempat ini, dipakai kedua panel.
  *
  * `null` untuk emiten yang tak punya angkanya — 569 dari 966 berkas yang
  * punya (20 Agu 2026). Model ini memang **tidak berlaku untuk bank dan
@@ -520,8 +527,8 @@ export const LABEL_ZONA_ALTMAN: Record<ZonaAltman, string> = {
  */
 export function zonaAltman(z: number | null | undefined): ZonaAltman | null {
   if (!ada(z)) return null
-  if (z > 2.99) return 'aman'
-  if (z >= 1.81) return 'abu'
+  if (z > 2.6) return 'aman'
+  if (z >= 1.1) return 'abu'
   return 'tertekan'
 }
 
@@ -552,6 +559,8 @@ export function bandFScore(skor: number | null | undefined, n: number | null | u
 export interface BarisKhas {
   label: string
   nilai: string
+  /** `true` kalau nilainya dari sumber cadangan — layar menandainya `c`. */
+  cadangan?: boolean
   /** Kalimat penjelas; `null` = tak ada angkanya. */
   baca: string | null
 }
@@ -561,8 +570,10 @@ export interface BarisKhas {
  * dan siklus konversi kas. Yang kosong disebut kosong — tak pernah ditambal
  * taksiran (aturan A2).
  */
-export function panelKhas(fd: StockFundamental): BarisKhas[] {
-  const z = ada(fd.altman_z) ? fd.altman_z : null
+export function panelKhas(fd: StockFundamental, rasio: PetaRasio = null): BarisKhas[] {
+  // Sumber utama dulu, ruas lama cadangan bertanda (#185). Keduanya model modifikasi.
+  const alt = pilihRasio('altman_z', fd.altman_z, rasio)
+  const z = alt.nilai
   const zona = zonaAltman(z)
   const band = bandFScore(fd.f_score, fd.f_score_n)
   const roic = keP(fd.roic)
@@ -572,8 +583,9 @@ export function panelKhas(fd: StockFundamental): BarisKhas[] {
     {
       label: 'Altman Z-Score',
       nilai: z != null ? z.toFixed(2) : 'Belum bisa dihitung',
+      cadangan: z != null && alt.asal === 'cadangan-lama',
       baca: zona
-        ? `${LABEL_ZONA_ALTMAN[zona]} — ambang klasik 1,81 / 2,99.`
+        ? `${LABEL_ZONA_ALTMAN[zona]} — model modifikasi, ambang 1,1 / 2,6.`
         : 'Ruas pembentuknya tak lengkap. Model ini memang tak berlaku untuk bank dan lembaga keuangan.',
     },
     {

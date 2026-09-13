@@ -159,6 +159,16 @@ describe('susunBanding', () => {
     expect(ambilBaris(lama, 'ROE').sel[0]).toEqual({ teks: '21,82%', arah: 0, cadangan: true })
   })
 
+  it('imbal hasil dividen: sumber utama dulu, sumber lama bertanda cadangan (#185)', () => {
+    const utama = susunBanding([{ kode: 'AAAA', fd: fd({ dividend_yield: 5.61 }), deret: null, asing: null,
+      rasio: { 'Dividend Yield': 4.25 } }])
+    expect(ambilBaris(utama, 'Imbal hasil dividen').sel[0].teks).toBe('4,25%')
+    expect(ambilBaris(utama, 'Imbal hasil dividen').sel[0].cadangan).toBeFalsy()
+    const lama = susunBanding([{ kode: 'AAAA', fd: fd({ dividend_yield: 5.61 }), deret: null, asing: null, rasio: {} }])
+    expect(ambilBaris(lama, 'Imbal hasil dividen').sel[0].teks).toBe('5,61%')
+    expect(ambilBaris(lama, 'Imbal hasil dividen').sel[0].cadangan).toBe(true)
+  })
+
   it('vonis valuasi butuh riwayat lima tahun — kurang dari itu "—", bukan tebakan', () => {
     const pendek = { saham: 1, tahun_terakhir: '2025', eps_dasar: 100, bv_dasar: 500, pe: { '2023': 10, '2024': 11 }, pb: {} }
     const panjang = {

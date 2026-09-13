@@ -1,5 +1,6 @@
 import { panelKhas } from '../../lib/dasbor/bedahEmiten'
 import type { StockFundamental } from '../../lib/dasbor/stockDetailData'
+import { JUDUL_ASAL, type PetaRasio } from '../../lib/dasbor/rasioUtamaKeystats'
 
 /**
  * Panel "Panel Khas PAPAN" — dipindah dari halaman Bedah Emiten (pensiun 21
@@ -11,8 +12,8 @@ import type { StockFundamental } from '../../lib/dasbor/stockDetailData'
  * (`lib/dasbor/bedahEmiten.ts`). Yang tak bisa dihitung dari data yang ada
  * disebut apa adanya, tak pernah ditambal taksiran.
  */
-export function PanelKhasPapan({ fd }: { fd: StockFundamental }) {
-  const khas = panelKhas(fd)
+export function PanelKhasPapan({ fd, rasio = null }: { fd: StockFundamental; rasio?: PetaRasio }) {
+  const khas = panelKhas(fd, rasio)
 
   return (
     <div className="panel" style={{ marginBottom: 12 }}>
@@ -31,7 +32,10 @@ export function PanelKhasPapan({ fd }: { fd: StockFundamental }) {
               {khas.map((b) => (
                 <tr key={b.label}>
                   <td>{b.label}</td>
-                  <td className="r num">{b.nilai}</td>
+                  <td className="r num">
+                    {b.nilai}
+                    {b.cadangan && <sup title={JUDUL_ASAL['cadangan-lama']} style={{ color: 'var(--text3)' }}>c</sup>}
+                  </td>
                   <td style={{ fontSize: 10.5, lineHeight: 1.55, color: 'var(--text2)' }}>{b.baca ?? '—'}</td>
                 </tr>
               ))}

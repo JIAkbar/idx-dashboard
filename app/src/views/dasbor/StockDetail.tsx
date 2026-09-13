@@ -593,7 +593,7 @@ export function StockDetail() {
                berubah. Panel yang PUNYA chart (Laporan Keuangan, Aliran Asing)
                tetap penuh: chartnya memang selebar panel. */
             <div className="grid2">
-              <PanelKhasPapan fd={fd} />
+              <PanelKhasPapan fd={fd} rasio={rasioUtama} />
               <PanelProfilPerusahaan profil={tambahan?.profil ?? null} />
             </div>
           )}

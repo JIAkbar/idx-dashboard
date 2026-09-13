@@ -140,3 +140,8 @@ export const JUDUL_ASAL: Record<AsalRasio, string> = {
   'cadangan-lama':
     'Angka cadangan: penyedia utama tidak memuat rasio ini untuk emiten ini, jadi dipakai sumber lama',
 }
+
+/** Keterangan hover untuk rasio yang BELUM dirotasi sama sekali (#185 tahap sementara): angkanya
+ *  memang dari sumber lama untuk semua emiten, bukan karena penyedia utama kosong. */
+export const JUDUL_BELUM_DIROTASI =
+  'Angka sumber lama: rasio ini belum dirotasi ke penyedia utama, menunggu tabel pembanding'

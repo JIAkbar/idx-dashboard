@@ -5,6 +5,8 @@ import { fB, fMC, fv, fvx } from '../../../lib/dasbor/stockDetailFormat'
 import { FdPercent } from '../../../components/dasbor/FdPercent'
 import { LencanaTurunan } from '../../../components/dasbor/LencanaTurunan'
 import { NilaiRotasi, type PetaRasio } from '../../../components/dasbor/NilaiRotasi'
+import { JUDUL_BELUM_DIROTASI } from '../../../lib/dasbor/rasioUtamaKeystats'
+import { zonaAltman } from '../../../lib/dasbor/bedahEmiten'
 
 /** Baris <tr> label + nilai rata-kanan — port TR() index_live.html baris 4044. */
 function TR(lbl: string, val: ReactNode) {
@@ -14,6 +16,11 @@ function TR(lbl: string, val: ReactNode) {
       <td className="r">{val}</td>
     </tr>
   )
+}
+
+/** Tanda untuk rasio yang belum dirotasi ke penyedia utama (#185 tahap sementara). */
+function TandaLama({ v }: { v: number | null | undefined }) {
+  return v != null ? <sup title={JUDUL_BELUM_DIROTASI} style={{ color: 'var(--text3)' }}>c</sup> : null
 }
 
 /** "N hari" 1 desimal, null → "—". */
@@ -31,10 +38,10 @@ export function PanelValuasi({ fd, rasio = null }: { fd: StockFundamental; rasio
       <div className="panel-b">
         <table>
           <tbody>
-            {TR('P/E (Annualised)', fvx(fd.pe_annualised))}
+            {TR('P/E (Annualised)', <>{fvx(fd.pe_annualised)}<TandaLama v={fd.pe_annualised} /></>)}
             {TR('P/E (TTM)', <NilaiRotasi ruas="pe" lama={fd.pe} rasio={rasio}
               lencanaLama={<LencanaTurunan fd={fd} ruas="pe" />} render={fvx} />)}
-            {TR('Forward P/E', fvx(fd.forward_pe))}
+            {TR('Forward P/E', <>{fvx(fd.forward_pe)}<TandaLama v={fd.forward_pe} /></>)}
             {TR('Earnings Yield', <NilaiRotasi ruas="earn_yield" lama={fd.earn_yield} rasio={rasio}
               render={(v) => <FdPercent v={v} />} />)}
             {TR('P/S (TTM)', <NilaiRotasi ruas="ps" lama={fd.ps} rasio={rasio} render={fvx} />)}
@@ -62,7 +69,7 @@ export function PanelPerSaham({ fd, rasio = null }: { fd: StockFundamental; rasi
           <tbody>
             {TR('EPS (TTM)', <NilaiRotasi ruas="eps" lama={fd.eps} rasio={rasio}
               lencanaLama={<LencanaTurunan fd={fd} ruas="eps" />} render={rp} />)}
-            {TR('EPS Forward', rp(fd.eps_fwd))}
+            {TR('EPS Forward', <>{rp(fd.eps_fwd)}<TandaLama v={fd.eps_fwd} /></>)}
             {TR('Revenue/Share', rp(fd.rev_ps))}
             {TR('Cash/Share', rp(fd.cash_ps))}
             {TR('Book Value/Share', rp(fd.bv))}
@@ -74,11 +81,13 @@ export function PanelPerSaham({ fd, rasio = null }: { fd: StockFundamental; rasi
   )
 }
 
-/** Badge warna Altman Z" (EM-score): >2.6 aman, 1.1–2.6 abu-abu, <1.1 distress. */
+/** Badge warna Altman Z" model modifikasi. Ambangnya dari `zonaAltman` — satu tempat yang sama
+ *  dengan Panel Khas PAPAN, supaya satu angka tak pernah mendapat dua vonis di satu halaman (#185). */
 function AltmanBadge({ z }: { z: number | null | undefined }) {
-  if (z == null) return <>—</>
-  const cls = z > 2.6 ? 'ks-g' : z >= 1.1 ? 'ks-a' : 'ks-r'
-  const lbl = z > 2.6 ? 'aman' : z >= 1.1 ? 'abu-abu' : 'distress'
+  const zona = zonaAltman(z)
+  if (z == null || zona == null) return <>—</>
+  const cls = zona === 'aman' ? 'ks-g' : zona === 'abu' ? 'ks-a' : 'ks-r'
+  const lbl = zona === 'aman' ? 'aman' : zona === 'abu' ? 'abu-abu' : 'distress'
   return (
     <>
       {Number(z).toFixed(2)}<span className={`ks-badge ${cls}`}>{lbl}</span>

@@ -306,7 +306,16 @@ const DEF: DefGrup[] = [
       { label: 'Marjin bersih', ambil: (h) => sel(persen(marjin(h.fd?.npm), 2)) },
       { label: 'DER', ambil: (h) => sel(persenSel(h.fd ? kualitasLaba(h.fd).der : null, 1)) },
       { label: 'Kas operasi ÷ laba', ambil: (h) => sel(persenSel(h.fd ? kualitasLaba(h.fd).akrual : null, 0)) },
-      { label: 'Imbal hasil dividen', ambil: (h) => sel(persenSel(h.fd?.dividend_yield, 2)) },
+      {
+        // Sumber utama dulu, sumber lama cadangan bertanda (#185, mekanisme #36 A) — sama
+        // dengan strip atas Stock Detail di halaman yang sama.
+        label: 'Imbal hasil dividen',
+        ambil: (h) => {
+          const r = pilihRasio('dividend_yield', h.fd?.dividend_yield, h.rasio)
+          const s = sel(persenSel(r.nilai, 2))
+          return r.asal === 'cadangan-lama' && s !== KOSONG ? { ...s, cadangan: true } : s
+        },
+      },
     ],
   },
   {

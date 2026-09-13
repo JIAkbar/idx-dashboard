@@ -1009,6 +1009,8 @@ export default function BerkasEmiten() {
                 <> {rasio.totalTambalan} di antaranya tak ada di sumber utama dan diambil dari{' '}
                 <b>{NAMA_CADANGAN}</b> — ditandai pada barisnya masing-masing.</>
               )}
+              {' '}Angka di blok ini disalin apa adanya dari sumbernya: P/E dari laba negatif dan
+              ROE 0,00% tetap tampil, tidak dikosongkan seperti di Stock Detail.
             </p>
           </div>
         </div>
