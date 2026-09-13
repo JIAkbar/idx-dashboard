@@ -403,6 +403,12 @@ MANIFEST: list[Turunan] = [
     # membawa keanggotaan indeks & notasi yang berubah mingguan-bulanan. Angka
     # di bawah dipilih dari irama sumbernya — bukan dari seberapa basi ia
     # kebetulan hari ini.
+    #
+    # Catatan 13 Sep 2026 (#182 A, keputusan Johan): keystats dan info kini
+    # SENGAJA dipanen tiap sore, karena rasio yang bergerak mengikuti harga
+    # dibaca dari keystats. Toleransi 30 hari di bawah belum diubah, jadi ia
+    # tak akan berbunyi kalau panen harian itu berhenti. Itu dicatat antrean
+    # #183, bukan diubah diam-diam.
     Turunan("Rasio Stockbit (snapshot)", "keystats_stockbit",
             dari_ruas_direktori("dipanen_pada"),
             "Berkas Emiten blok F · Stock Detail · Kuli Papan", toleransi=30,
@@ -434,6 +440,8 @@ MANIFEST: list[Turunan] = [
             # cukup 1 bulan sekali" — bat Buka Laptop memanennya per 28 hari.
             # Toleransi 7 akan melapor BASI di 21 dari 28 hari tanpa ada yang
             # salah, dan alarm yang menyala terus adalah alarm yang diabaikan.
+            # Sejak 13 Sep 2026 info dipanen HARIAN oleh bat sore (#182 A), jadi
+            # alasan di atas tak berlaku lagi; toleransinya menunggu #183.
             "Berkas Emiten blok G (notasi & UMA) · Neo Papan (indeks)", toleransi=30,
             pembangun="panen_info_stockbit.py"),
 ]

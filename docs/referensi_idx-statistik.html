@@ -1250,7 +1250,7 @@ Bangun HTML (tiap berkas ini berubah): <code>python "C:\1-Johan\10. Pengembangan
 <tr>
 <td>keystats + profil + info, semua emiten</td>
 <td>2.886</td>
-<td>≈ 1,8 jam berurutan dengan jeda; mingguan/bulanan cukup</td>
+<td>≈ 1,8 jam berurutan dengan jeda; keystats dan info HARIAN lewat bat sore (#182 A, keputusan Johan 13 Sep 2026), profil bulanan</td>
 <td>±120 MB</td>
 <td>snapshot, jarang berubah</td>
 </tr>
@@ -2025,7 +2025,7 @@ keputusan itu bisa diubah tanpa panen ulang.</p>
 <ul>
 <li><strong>URL / endpoint:</strong> <code>https://exodus.stockbit.com/keystats/&lt;KODE&gt;</code> (<code>panen_keystats_stockbit.py:49</code>); <code>https://exodus.stockbit.com/emitten/&lt;KODE&gt;</code> (<code>panen_profil_stockbit.py:45</code>, <code>panen_info_stockbit.py:52</code>); <code>https://snips.stockbit.com/sitemap.xml</code>, <code>/snips-terbaru</code>, <code>?format=json</code> (<code>panen_snips.py:13,44,116</code>)</li>
 <li><strong>Jenis:</strong> API tidak resmi (token) · Snips: situs publik (Squarespace JSON)</li>
-<li><strong>Akses &amp; batasan:</strong> token akun; keystats/profil/info snapshot → cukup mingguan/bulanan. Snips ikut <code>panen-kabar.yml</code> yang <strong>belum pernah jalan sekalipun</strong> sejak langkahnya ditambahkan 18 Agu.</li>
+<li><strong>Akses &amp; batasan:</strong> token akun. Keystats dan info dipanen <strong>harian</strong> lewat bat sore (keputusan Johan 13 Sep 2026, #182 A: rasio yang bergerak mengikuti harga dibaca dari keystats; log sore 11–12 Sep nol penolakan); profil tetap bulanan. Snips ikut <code>panen-kabar.yml</code> yang <strong>belum pernah jalan sekalipun</strong> sejak langkahnya ditambahkan 18 Agu.</li>
 <li><strong>Berkas lokal:</strong> <code>keystats_stockbit/</code> (963), <code>profil_stockbit/</code> (963), <code>info_stockbit/</code> (963), <code>snips.json</code> (238, 14 Agu)</li>
 <li><strong>Dipakai untuk:</strong> <code>profil_stockbit/</code> → Shareholders v2 (<code>brokerProfilKsei.ts:5,136</code>); <code>snips.json</code> → Beranda, Kabar Pasar; <code>keystats_stockbit/</code> → <strong>tiga</strong> halaman (Kuli Papan <code>kuliPapanData.ts:105</code> · Stock Detail <code>rasioTambahanKeystats.ts:134</code> · Berkas Emiten blok F <code>berkasRasio.ts:331</code>); <code>info_stockbit/</code> → <strong>dua</strong> halaman (Neo Papan <code>neoPapanData.ts:194</code> · Berkas Emiten blok G <code>BerkasEmiten.tsx:145</code>)</li>
 <li><strong>Catatan atas klaim lama bahwa keystats &amp; info belum dibaca satu halaman pun.</strong> Kalimat itu benar <strong>saat ditulis</strong> (commit <code>1baa42477</code>, 23 Agu <strong>16:28</strong>) dan berhenti benar <strong>empat jam kemudian</strong>: <code>kuliPapanData.ts</code> masuk 20:44 dan <code>neoPapanData.ts</code> 20:58 hari yang sama. Yang membuatnya bertahan sepekan bukan grep yang salah, melainkan <strong>hasil grep yang dibekukan jadi fakta</strong> — bukti "(grep <code>app/src</code> 23 Agu nol)" ikut tercetak di sebelahnya dan justru membuat kalimatnya terbaca sudah terverifikasi. Klaim "belum dipakai" berumur pendek di repo yang aktif; tulis tanggal pemeriksaannya, dan periksa ulang sebelum mengutipnya.</li>

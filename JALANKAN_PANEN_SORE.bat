@@ -254,7 +254,10 @@ REM Johan "bnyk yang setelah panen data, page-page itu tidak saling
 REM terhubung"): aliran investor (tab Flow), bidoffer (Kuli Papan),
 REM peta grup+harga terakhir (Deret Konglomerat), keystats+info Stockbit
 REM (Kuli Papan & Neo). Keystats/info punya guard arsip-hari-ini, jadi
-REM aman dipanggil dari kedua jalur tanpa panen dobel.
+REM aman dipanggil dari kedua jalur tanpa panen dobel. Irama HARIAN ini
+REM disengaja (#182 A, keputusan Johan 13 Sep 2026): P/BV, P/S, dan
+REM kelompok laba TTM di Stock Detail dibaca dari keystats, dan semuanya
+REM bergerak mengikuti harga. Profil tetap bulanan di blok Buka Laptop.
 "%PYEXE%" scripts\bangun_aliran_investor.py
 if errorlevel 1 echo   (aliran investor gagal - lanjut)
 "%PYEXE%" scripts\bangun_bidoffer.py

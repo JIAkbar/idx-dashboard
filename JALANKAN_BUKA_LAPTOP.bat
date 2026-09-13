@@ -331,11 +331,14 @@ REM hilirnya berhenti di 19 Agustus - nol galat, angkanya salah di layar.
 if errorlevel 1 echo   (ihsg bulanan gagal - lanjut)
 "%PYEXE%" scripts\siapkan_seasonality.py
 if errorlevel 1 echo   (siapkan seasonality gagal - lanjut)
-REM -- Keystats + profil: SEBULAN SEKALI, ketetapan Johan 1 Sep 2026
-REM -- ("keystat dan profile cukup 1 bulan sekali"). Keduanya memanen 963
-REM -- emiten dan makan puluhan menit, sementara isinya rasio & profil yang
-REM -- berubah per laporan keuangan - bukan per hari. Menjalankannya harian
-REM -- membakar kuota permintaan yang justru dibutuhkan panen harga.
+REM -- Profil: SEBULAN SEKALI, ketetapan Johan 1 Sep 2026 ("keystat dan
+REM -- profile cukup 1 bulan sekali"). Keystats dan info TIDAK lagi bulanan:
+REM -- sejak 13 Sep 2026 (#182 A, keputusan Johan) keduanya sengaja dipanen
+REM -- tiap sore oleh JALANKAN_PANEN_SORE.bat, karena rasio yang bergerak
+REM -- mengikuti harga (P/BV, P/S, kelompok laba TTM) dibaca dari keystats.
+REM -- Log sore 11-12 Sep 2026: nol penolakan Stockbit di tiga jalan harian.
+REM -- Blok ini tetap memanggil keduanya saat profil jatuh tempo; kalau hari
+REM -- itu sudah dipanen, penjaga arsip-hari-ini melewatinya tanpa jaringan.
 REM -- Umur dibaca dari ISI berkas profil_stockbit: ruas dipanen_pada,
 REM -- tanggal terbanyak di seluruh berkas (#170, 13 Sep 2026). Dulu dari
 REM -- berkas penanda tak-terlacak di akar repo, yang tak ada di ruang kerja
