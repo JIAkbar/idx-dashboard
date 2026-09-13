@@ -1,0 +1,146 @@
+# Pemantau ambang berhenti GitHub Pages (antrean #180, 13 Sep 2026).
+#
+# Keputusan Johan 13 Sep 2026 (dikutip pengawas): "Pages dulu, R2 kalau ambang
+# tersentuh — paling tidak ribet, dengan risiko yang terpantau." Pindah ke R2
+# hanya terjadi kalau ambang tersentuh, dan ambang hanya tersentuh kalau ada
+# yang melihatnya. Alur ini yang melihat.
+#
+# Ambang durasi build — batas keras build Pages 10 menit. Alarm kalau TIGA
+#   build sukses terakhir semuanya di atas ambang (bawaan 8 menit; terlama
+#   sampai 13 Sep 2026: 479.176 ms). Build `errored` punya duration 0, jadi
+#   DISARING DULU baru diambil tiga teratas — kebalikannya membuat build gagal
+#   menutupi build lambat. Sejauh ini 25 dari 100 build terakhir errored.
+#
+# Ambang kesegaran — ISI index.json di Pages dibandingkan dengan isinya di
+#   repo. Identik = aman berapa pun umurnya. Beda DAN commit terakhir yang
+#   mengubah index.json sudah lebih dari 3 jam = Pages tertinggal. Umur commit
+#   diambil dari API commits ber-path, bukan dari checkout: checkout bawaan
+#   hanya membawa satu commit, jadi `git log` di sana selalu memberi waktu HEAD.
+#
+# Email peringatan GitHub soal batas ukuran situs tidak bisa diotomasi; Johan
+# memantaunya sendiri. Ukuran pohon repo dicetak sebagai informasi — build
+# legacy menerbitkan seluruh repo, batas situs 1 GB.
+#
+# Alarm lewat ISSUE, bukan cuma job merah: email kegagalan workflow terjadwal
+# hanya sampai ke pembuat workflow. Dedup judul sama dengan pola job
+# `kesegaran-sumber` di `jaga-deploy.yml`.
+#
+# Tanpa checkout sama sekali: semua dibaca lewat API dan satu curl. Semua
+# hitungan ambang di shell, bukan di ekspresi `${{ }}` (ekspresi Actions tak
+# punya aritmetika).
+
+name: Jaga Pages
+
+on:
+  schedule:
+    - cron: '23 1 * * *'   # 08:23 WIB — sesudah panen malam dan build Pages-nya
+  workflow_dispatch:
+    inputs:
+      ambang_menit:
+        description: 'Ambang durasi build dalam menit (bawaan 8; isi 0 untuk menguji alarm)'
+        required: false
+        default: '8'
+
+permissions:
+  contents: read
+  # Tanpa `pages: read`, API build Pages menjawab 404 walau repo publik.
+  pages: read
+  issues: write
+
+concurrency:
+  group: jaga-pages
+  cancel-in-progress: false
+
+jobs:
+  periksa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      AMBANG_MENIT: ${{ github.event.inputs.ambang_menit || '8' }}
+      AMBANG_MENIT_KESEGARAN: '180'
+    steps:
+      - name: Periksa ambang Pages
+        run: |
+          set -euo pipefail
+          case "$AMBANG_MENIT" in
+            ''|*[!0-9]*) echo "::error::ambang_menit harus bilangan bulat, dapat '$AMBANG_MENIT'"; exit 1 ;;
+          esac
+          ALARM=""
+          tambah_alarm() { ALARM="${ALARM}- $1"$'\n'; }
+
+          # ── Informasi: alamat situs dan ukuran pohon repo ──────────────────
+          SITUS=$(gh api "repos/$GH_REPO/pages" --jq '.html_url')
+          SITUS=${SITUS%/}
+          read -r TERPOTONG BYTE < <(gh api "repos/$GH_REPO/git/trees/$GITHUB_SHA?recursive=1" \
+            --jq '"\(.truncated) \([.tree[] | select(.type == "blob") | .size] | add)"')
+          echo "situs Pages            : $SITUS"
+          echo "ukuran pohon repo      : $(( BYTE / 1048576 )) MB (batas situs 1 GB; pohon terpotong: $TERPOTONG)"
+
+          # ── Ambang durasi build ────────────────────────────────────────────
+          AMBANG_MS=$(( AMBANG_MENIT * 60000 ))
+          echo "build terakhir         : $(gh api "repos/$GH_REPO/pages/builds/latest" --jq '"\(.status), \(.duration) ms, \(.created_at)"')"
+          DURASI=$(gh api "repos/$GH_REPO/pages/builds?per_page=100" \
+            --jq '[.[] | select(.status == "built") | .duration] | .[0:3] | map(tostring) | join(" ")')
+          echo "3 build sukses terakhir: $DURASI ms (ambang $AMBANG_MS ms = $AMBANG_MENIT menit)"
+          N=0
+          LEWAT=0
+          for D in $DURASI; do
+            N=$(( N + 1 ))
+            if [ "$D" -gt "$AMBANG_MS" ]; then LEWAT=$(( LEWAT + 1 )); fi
+          done
+          if [ "$N" -lt 3 ]; then
+            echo "::warning::hanya $N build sukses di 100 build terakhir"
+          elif [ "$LEWAT" -eq 3 ]; then
+            tambah_alarm "Durasi build: tiga build sukses terakhir semuanya di atas $AMBANG_MENIT menit ($DURASI ms). Batas keras build Pages 10 menit."
+          fi
+
+          # ── Ambang kesegaran ───────────────────────────────────────────────
+          read -r SHA_UBAH WAKTU_UBAH < <(gh api "repos/$GH_REPO/commits?path=data-idx/json/index.json&sha=$GITHUB_SHA&per_page=1" \
+            --jq '.[0] | "\(.sha) \(.commit.committer.date)"')
+          if [ -z "${SHA_UBAH:-}" ]; then echo "::error::commit yang mengubah index.json tak terbaca"; exit 1; fi
+          UMUR_MENIT=$(( ( $(date -u +%s) - $(date -u -d "$WAKTU_UBAH" +%s) ) / 60 ))
+          echo "HEAD yang diperiksa    : ${GITHUB_SHA:0:9}"
+          echo "commit ubah index.json : ${SHA_UBAH:0:9} pada $WAKTU_UBAH ($UMUR_MENIT menit lalu)"
+          ISI_REPO=$(gh api "repos/$GH_REPO/contents/data-idx/json/index.json?ref=$GITHUB_SHA" \
+            -H "Accept: application/vnd.github.raw" | sha256sum | cut -d' ' -f1)
+          KODE=$(curl -sS -o "$RUNNER_TEMP/pages-index.json" -w '%{http_code}' "$SITUS/data-idx/json/index.json?cb=$RANDOM" || true)
+          if [ "$KODE" != "200" ]; then
+            tambah_alarm "Kesegaran: index.json di Pages menjawab HTTP ${KODE:-tanpa jawaban}."
+          else
+            # Lewat stdin, bukan nama berkas: sha256sum mengawali hasilnya dengan
+            # "\" kalau jalurnya memuat backslash, dan hash itu tak pernah sama
+            # dengan hash repo (tertangkap uji kering di Windows 13 Sep 2026).
+            ISI_PAGES=$(sha256sum < "$RUNNER_TEMP/pages-index.json" | cut -d' ' -f1)
+            echo "sha256 index.json      : repo ${ISI_REPO:0:16} · Pages ${ISI_PAGES:0:16}"
+            if [ "$ISI_REPO" = "$ISI_PAGES" ]; then
+              echo "kesegaran              : isi Pages sama dengan repo"
+            elif [ "$UMUR_MENIT" -gt "$AMBANG_MENIT_KESEGARAN" ]; then
+              tambah_alarm "Kesegaran: index.json di Pages berbeda dari repo, dan commit terakhir yang mengubahnya (${SHA_UBAH:0:9}) sudah $UMUR_MENIT menit."
+            else
+              echo "::notice::isi berbeda, tapi commit pengubahnya baru $UMUR_MENIT menit - Pages mungkin sedang membangun"
+            fi
+          fi
+
+          # ── Vonis ──────────────────────────────────────────────────────────
+          if [ -z "$ALARM" ]; then
+            echo "Semua ambang aman."
+            exit 0
+          fi
+          printf '%s' "$ALARM"
+          ADA=$(gh issue list --state open --search "Ambang Pages in:title" --json title \
+            --jq '[.[] | select(.title | startswith("Ambang Pages"))] | length')
+          if [ "$ADA" != "0" ]; then
+            echo "::warning::issue Ambang Pages sudah terbuka, tak dibuat lagi"
+          else
+            gh issue create --title "Ambang Pages tersentuh ($(date -u +%Y-%m-%d))" --body "$(printf '%s\n' \
+              "Pemantau Jaga Pages (#180) menemukan ambang yang tersentuh:" \
+              "" \
+              "$ALARM" \
+              "Arah yang sudah diputuskan Johan 13 Sep 2026: data disajikan dari GitHub Pages, dan pindah ke Cloudflare R2 kalau ambang tersentuh." \
+              "" \
+              "Issue ini dibuat otomatis dan tidak akan digandakan selama masih terbuka.")"
+          fi
+          echo "::error::Ambang Pages tersentuh"
+          exit 1
