@@ -52,6 +52,16 @@ REM `%JAM%` diperluas saat baris DIBACA - sebelum `set` sempat jalan - jadi
 REM perbandingannya memakai nilai kosong dan cmd menjawab "LSS was unexpected
 REM at this time". Di luar blok, tiap baris diperluas saat dieksekusi.
 if not "%1"=="auto" goto jam_ok
+REM -- GERBANG HARI KERJA (13 Sep 2026) - diperiksa sebelum jam: login
+REM akhir pekan keluar tanpa memanen, apa pun jamnya.
+REM Johan 13 Sep 2026, dikutip pengawas (sidik PGW-0913-HARIKERJA): "untuk panen itu
+REM maksimal jumat saja, sabtu minggu tidak perlu".
+for /f %%h in ('call "%PYEXE%" -c "import datetime;print(datetime.date.today().isoweekday())"') do set HARI=%%h
+REM PAPAN_UJI_HARI (1 = Senin ... 7 = Minggu) hanya untuk uji; menimpa hari dari jam laptop.
+if defined PAPAN_UJI_HARI set HARI=%PAPAN_UJI_HARI%
+if not defined HARI goto cek_jam
+if %HARI% GEQ 6 goto akhir_pekan
+:cek_jam
 for /f %%h in ('powershell -NoProfile -Command "(Get-Date).Hour"') do set JAM=%%h
 if not defined JAM goto jam_ok
 if %JAM% LSS 18 goto luar_jendela
@@ -60,6 +70,10 @@ goto jam_ok
 
 :luar_jendela
 echo Di luar jendela panen 18.00-20.00 ^(jam %JAM%^) - keluar tanpa memanen.
+exit /b 0
+
+:akhir_pekan
+echo Akhir pekan ^(hari %HARI%^) - panen terjadwal hanya Senin-Jumat, keluar tanpa memanen.
 exit /b 0
 
 :jam_ok

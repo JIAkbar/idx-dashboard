@@ -82,6 +82,24 @@ if %JAM% GEQ 22 (
   goto akhir
 )
 
+REM ---- Hari kerja saja (13 Sep 2026) ----------------------------------
+REM Johan 13 Sep 2026, dikutip pengawas (sidik PGW-0913-HARIKERJA): "untuk panen itu
+REM maksimal jumat saja, sabtu minggu tidak perlu".
+REM Hanya jalan terjadwal (argumen auto) yang digerbang: dijalankan tangan
+REM di akhir pekan tetap boleh. Diletakkan sebelum kunci diambil, jadi
+REM :akhir tak melepas kunci milik proses lain. Tanpa blok berkurung,
+REM supaya %HARI% diperluas saat baris dieksekusi (pola gerbang jam bat
+REM buka-laptop).
+if not "%1"=="auto" goto hari_ok
+for /f %%h in ('call "%PYEXE%" -c "import datetime;print(datetime.date.today().isoweekday())"') do set HARI=%%h
+REM PAPAN_UJI_HARI (1 = Senin ... 7 = Minggu) hanya untuk uji; menimpa hari dari jam laptop.
+if defined PAPAN_UJI_HARI set HARI=%PAPAN_UJI_HARI%
+if not defined HARI goto hari_ok
+if %HARI% LSS 6 goto hari_ok
+echo Akhir pekan ^(hari %HARI%^) - panen sore terjadwal hanya Senin-Jumat, dilewati.
+goto akhir
+:hari_ok
+
 if exist "%~dp0.panen.lock" (
   echo Pipeline lain sedang jalan - .panen.lock ada - keluar.
   REM Keluar TANPA melepas kunci: kuncinya milik proses lain. Sampai
