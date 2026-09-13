@@ -710,7 +710,7 @@ Enam rasio lain (P/E, EPS, ROE, DER kuartalan, P/FCF, F-Score) **tidak** ikut da
 memakai sumber lama: keduanya memakai laba TTM yang berbeda (satu emiten sampel berselisih
 2,26× di EPS) dan F-Score berselisih sistematis — itu perbedaan definisi, bukan perbedaan
 kesegaran, jadi menukarnya akan menggandakan laba di layar tanpa satu pun galat. Kelompok itu
-menunggu keputusan definisi tersendiri.
+menunggu keputusan definisi tersendiri. **Sejak 13 September 2026 P/E, EPS, ROE, dan earnings yield ikut dirotasi** sesudah definisi laba TTM diputuskan: lihat J17. DER kuartalan, P/FCF, dan F-Score tetap memakai sumber lama.
 
 ### Cakupan sesudah rotasi — 967 emiten
 
@@ -744,6 +744,97 @@ Nol dari sumber utama dihitung sebagai nilai yang sah — rasio memang bisa nol,
 akan diam-diam memilih sumber lama untuk emiten yang angkanya justru benar-benar nol. Sumber
 lama tidak dihapus dari berkas mana pun; ia tetap ada dan tetap dipakai untuk sepuluh ruas lain
 di halaman yang sama.
+
+## J17 · P/E, EPS, ROE, dan earnings yield dirotasi ke Stockbit, Yahoo jadi cadangan bertanda (13 September 2026)
+
+Asal: keputusan Johan 13 Sep 2026 atas antrean #36 opsi 1, dikutip pengawas (sidik
+PGW-0913-KERJAKAN-SEMUA): *"kerjakan semua sampai beres"*. Aturan 3c: sumber terlengkap jadi
+utama, yang lama jadi cadangan bertanda. Kode: commit `cbd3b3833`.
+
+### Kenapa keystats, dan wasitnya siapa
+
+Wasitnya laporan keuangan resmi bursa (XBRL IDX): laba yang diatribusikan ke induk dibagi jumlah
+saham tercatat di bursa. Diukur 13 Sep 2026 atas emiten yang TTM resminya lengkap (antrean #36):
+EPS TTM keystats berada dalam ±5% dari angka resmi di 636 dari 725 emiten (87,7%), sumber lama di
+479 dari 715 (67,0%). Beda keduanya soal definisi: keystats mengikuti laba yang diatribusikan,
+termasuk pos yang tak berulang. Contoh UNVR (TTM s.d. 30 Jun 2026): EPS keystats 221,63, resmi
+222,62, sumber lama 96,50. P/E UNVR karena itu 7,35 di keystats dan 16,89 di sumber lama. Risiko
+yang diterima: emiten dengan laba tak berulang tampil murah.
+
+### Nama rasio dan satuannya
+
+| Rasio di layar | Nama di berkas keystats | Satuan keystats | Ruas lama (cadangan) | Satuan ruas lama |
+|---|---|---|---|---|
+| P/E (TTM) | `Current PE Ratio (TTM)` | kali | `pe` | kali |
+| EPS (TTM) | `Current EPS (TTM)` | rupiah per saham | `eps` | rupiah per saham |
+| ROE (TTM) | `Return on Equity (TTM)` | persen | `roe` | **rasio** (0,218 = 21,8%) |
+| Earnings Yield | `Earnings Yield (TTM)` | persen | `earn_yield` | persen |
+
+### Sebaran nilai keystats ÷ nilai lama
+
+Diukur 13 Sep 2026 atas 968 emiten, hanya pasangan yang keduanya bukan nol dan bertanda sama:
+
+| Rasio | Median | p10 | p90 | Emiten dibanding |
+|---|---:|---:|---:|---:|
+| P/E | 1,0006 | 0,8976 | 1,1737 | 605 |
+| EPS | 1,0000 | 0,7696 | 1,3036 | 849 |
+| ROE (lama × 100) | 0,9836 | 0,8160 | 1,2198 | 880 |
+| Earnings Yield | 1,0000 | 0,8506 | 1,0808 | 601 |
+
+Sebaran EPS lebih lebar daripada lima rasio J16. Sebabnya beda definisi laba di atas, bukan panen
+yang rusak.
+
+### Tiga aturan khusus, diukur sebelum dipasang
+
+1. **ROE lama dikali 100** saat dipakai sebagai cadangan, di satu tempat (`pilihRasio`), supaya
+   satuannya sama dengan keystats.
+2. **ROE keystats 0,00% dibaca kosong.** Ada 49 emiten, semuanya tanpa EPS keystats dan ber-ROA
+   keystats 0; 48 di antaranya punya ROE lama bukan nol. Nol di sini berarti "tak dihitung", jadi
+   angka lama yang tayang, bertanda cadangan.
+3. **P/E keystats nol atau negatif tampil kosong, tanpa jatuh ke sumber lama.** Ada 290 emiten ber-P/E
+   keystats negatif: 289 ber-EPS negatif, satu (NASA) EPS keystats-nya kosong. Sumber lama tidak
+   dipakai sebagai gantinya karena 42
+   dari 290 masih memegang P/E positif yang basi (AKKU: P/E lama 336,28 padahal EPS keystats −4,07).
+   Sumber lama sendiri juga tak pernah mengisi P/E saat EPS negatif.
+
+### Cakupan sesudah rotasi — 968 emiten
+
+| Rasio | Dari sumber utama | Kosong karena P/E negatif | Dari cadangan | Kosong di dua-duanya | Terisi berkat rotasi |
+|---|---:|---:|---:|---:|---:|
+| P/E | 622 | 290 | 31 | 25 | 17 |
+| EPS | 910 | — | 53 | 5 | 5 |
+| ROE | 913 | — | 49 (48 karena ROE keystats 0,00%) | 6 | 5 |
+| Earnings Yield | 909 | — | 30 | 29 | 262 |
+
+### Pembaca yang dirotasi
+
+- **Stock Detail:** strip atas (P/E, Earnings Yield beserta EPS di bawahnya; P/S yang tertinggal dari
+  J16; warna Div Yield), panel Valuasi, Per Saham, dan Efektivitas Manajemen; tab Valuasi (EPS
+  bawaan kalkulator Graham, baris P/E dan ROE di Relative Valuation); Lima Langkah Uang (EPS dan
+  rasio payout); tab Banding (baris ROE dan pilar Profitabilitas).
+- **Tanya PAPAN:** jawaban valuasi (PER, ROE).
+- **Kartu Analisa:** PER dan ROE. Kartu menyalin angka keystats saat dibangun
+  (`scripts/riset/kartu_analisa.py`), jadi kartu yang dibangun sebelum 13 Sep 2026 menampilkan
+  angka lama bertanda cadangan sampai pembangunan berikutnya.
+
+Penandaan cadangan: lencana `c` (komponen `NilaiRotasi`), tanda `c` di Relative Valuation, penanda
+di Lima Langkah Uang dan tab Banding, dan kalimat *"(PER, PBV, ROE dari sumber cadangan …)"* di
+Tanya PAPAN. Gambar PNG tab Banding tidak ditandai.
+
+### Sengaja tidak dirotasi
+
+- **Median sektor dan P/E terhadap median sektor**: dihitung dari sumber lama atas seluruh emiten
+  sektor. Membandingkan P/E keystats emiten dengan median sumber lama adalah batas yang diketahui;
+  batas yang sama berlaku untuk P/B sejak J16.
+- **P/E per tahun buku** (Valuasi Historis, "P/E sekarang" di tab Banding): harga dibagi EPS dasar
+  tahun buku terakhir, definisi yang berbeda.
+- **EPS per kuartal dan per tahun** (Kuartalan, Laporan Keuangan): angka per periode, bukan TTM.
+- **P/E (Annualised), Forward P/E, EPS Forward**: masih sumber lama, dicatat antrean #185.
+
+### Temuan yang ikut diperbaiki
+
+`pb_keystats` di berkas kartu tersimpan sebagai teks (`"2.88"`), sehingga P/BV Kartu Analisa selalu
+jatuh ke cadangan sejak #143. Pembaca kini mengurai teks, dan pembangun kartu menulis angka.
 
 ## Inventaris ruas per berkas — jawaban untuk Johan 23 Agu 2026 (Stock Detail, OHLC/OHLCV, Broker Summary, metode panen)
 

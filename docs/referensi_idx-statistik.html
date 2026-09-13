@@ -413,6 +413,7 @@ hr { border: none; border-top: 1px solid var(--hairline); margin: 24px 0; }
 <li><a href="#j8-aliran-asing-rupiah-stockbit-utama-idx-lembar-dipertahankan-eksekusi-24-agu-2026" class="nav-link"><span class="nav-icon">📄</span><span class="nav-label">J8 · Aliran asing rupiah — Stockbit utama, IDX lembar dipertahankan (eksekusi 24 Agu 2026)</span></a></li>
 <li><a href="#j12-dua-konvensi-harga-volume-tersesuaikan-vs-apa-adanya-ketetapan-johan-23-agu-2026" class="nav-link"><span class="nav-icon">📄</span><span class="nav-label">J12 · Dua konvensi harga &amp; volume — tersesuaikan vs apa adanya (ketetapan Johan, 23 Agu 2026)</span></a></li>
 <li><a href="#j16-lima-rasio-stock-detail-dirotasi-ke-stockbit-yahoo-jadi-cadangan-bertanda-8-september-2026" class="nav-link"><span class="nav-icon">📄</span><span class="nav-label">J16 · Lima rasio Stock Detail dirotasi ke Stockbit, Yahoo jadi cadangan bertanda (8 September 2026)</span></a></li>
+<li><a href="#j17-p-e-eps-roe-dan-earnings-yield-dirotasi-ke-stockbit-yahoo-jadi-cadangan-bertanda-13-september-2026" class="nav-link"><span class="nav-icon">📄</span><span class="nav-label">J17 · P/E, EPS, ROE, dan earnings yield dirotasi ke Stockbit, Yahoo jadi cadangan bertanda (13 September 2026)</span></a></li>
 <li><a href="#inventaris-ruas-per-berkas-jawaban-untuk-johan-23-agu-2026-stock-detail-ohlc-ohlcv-broker-summary-metode-panen" class="nav-link"><span class="nav-icon">📄</span><span class="nav-label">Inventaris ruas per berkas — jawaban untuk Johan 23 Agu 2026 (Stock Detail, OHLC/OHLCV, Broker Summary, metode panen)</span></a></li>
 <li><a href="#matriks-sumber-stockbit-menang-di-mana-duplikasi-per-halaman-dan-usulan-kanonik-23-agu-2026" class="nav-link"><span class="nav-icon">📄</span><span class="nav-label">Matriks sumber — Stockbit menang di mana, duplikasi per halaman, dan usulan kanonik (23 Agu 2026)</span></a></li>
 <li><a href="#kamus-ruas-arti-tiap-ruas-dan-data-apa-yang-dihasilkannya-23-agu-2026" class="nav-link"><span class="nav-icon">📄</span><span class="nav-label">Kamus ruas — arti tiap ruas dan data apa yang dihasilkannya (23 Agu 2026)</span></a></li>
@@ -2885,7 +2886,7 @@ sumber terlengkap jadi utama, yang lama jadi cadangan bertanda, bukan dibuang).<
 memakai sumber lama: keduanya memakai laba TTM yang berbeda (satu emiten sampel berselisih<br />
 2,26× di EPS) dan F-Score berselisih sistematis — itu perbedaan definisi, bukan perbedaan<br />
 kesegaran, jadi menukarnya akan menggandakan laba di layar tanpa satu pun galat. Kelompok itu<br />
-menunggu keputusan definisi tersendiri.</p>
+menunggu keputusan definisi tersendiri. <strong>Sejak 13 September 2026 P/E, EPS, ROE, dan earnings yield ikut dirotasi</strong> sesudah definisi laba TTM diputuskan: lihat J17. DER kuartalan, P/FCF, dan F-Score tetap memakai sumber lama.</p>
 <h3>Cakupan sesudah rotasi — 967 emiten</h3>
 <table>
 <thead>
@@ -2952,6 +2953,203 @@ aturannya per panel akan melahirkan empat aturan yang bisa berbeda diam-diam.</p
 akan diam-diam memilih sumber lama untuk emiten yang angkanya justru benar-benar nol. Sumber<br />
 lama tidak dihapus dari berkas mana pun; ia tetap ada dan tetap dipakai untuk sepuluh ruas lain<br />
 di halaman yang sama.</p>
+
+</div>
+</div></div>
+</div>
+</section>
+
+<section id="j17-p-e-eps-roe-dan-earnings-yield-dirotasi-ke-stockbit-yahoo-jadi-cadangan-bertanda-13-september-2026" data-title="J17 · P/E, EPS, ROE, dan earnings yield dirotasi ke Stockbit, Yahoo jadi cadangan bertanda (13 September 2026)">
+<div class="section-toggle is-open">
+<button type="button" class="section-summary"><span class="chevron">▾</span><h2>J17 · P/E, EPS, ROE, dan earnings yield dirotasi ke Stockbit, Yahoo jadi cadangan bertanda (13 September 2026)</h2></button>
+<div class="section-panel"><div class="section-panel-inner">
+<div class="section-body">
+
+<p>Asal: keputusan Johan 13 Sep 2026 atas antrean #36 opsi 1, dikutip pengawas (sidik<br />
+PGW-0913-KERJAKAN-SEMUA): <em>"kerjakan semua sampai beres"</em>. Aturan 3c: sumber terlengkap jadi<br />
+utama, yang lama jadi cadangan bertanda. Kode: commit <code>cbd3b3833</code>.</p>
+<h3>Kenapa keystats, dan wasitnya siapa</h3>
+<p>Wasitnya laporan keuangan resmi bursa (XBRL IDX): laba yang diatribusikan ke induk dibagi jumlah<br />
+saham tercatat di bursa. Diukur 13 Sep 2026 atas emiten yang TTM resminya lengkap (antrean #36):<br />
+EPS TTM keystats berada dalam ±5% dari angka resmi di 636 dari 725 emiten (87,7%), sumber lama di<br />
+479 dari 715 (67,0%). Beda keduanya soal definisi: keystats mengikuti laba yang diatribusikan,<br />
+termasuk pos yang tak berulang. Contoh UNVR (TTM s.d. 30 Jun 2026): EPS keystats 221,63, resmi<br />
+222,62, sumber lama 96,50. P/E UNVR karena itu 7,35 di keystats dan 16,89 di sumber lama. Risiko<br />
+yang diterima: emiten dengan laba tak berulang tampil murah.</p>
+<h3>Nama rasio dan satuannya</h3>
+<table>
+<thead>
+<tr>
+<th>Rasio di layar</th>
+<th>Nama di berkas keystats</th>
+<th>Satuan keystats</th>
+<th>Ruas lama (cadangan)</th>
+<th>Satuan ruas lama</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>P/E (TTM)</td>
+<td><code>Current PE Ratio (TTM)</code></td>
+<td>kali</td>
+<td><code>pe</code></td>
+<td>kali</td>
+</tr>
+<tr>
+<td>EPS (TTM)</td>
+<td><code>Current EPS (TTM)</code></td>
+<td>rupiah per saham</td>
+<td><code>eps</code></td>
+<td>rupiah per saham</td>
+</tr>
+<tr>
+<td>ROE (TTM)</td>
+<td><code>Return on Equity (TTM)</code></td>
+<td>persen</td>
+<td><code>roe</code></td>
+<td><strong>rasio</strong> (0,218 = 21,8%)</td>
+</tr>
+<tr>
+<td>Earnings Yield</td>
+<td><code>Earnings Yield (TTM)</code></td>
+<td>persen</td>
+<td><code>earn_yield</code></td>
+<td>persen</td>
+</tr>
+</tbody>
+</table>
+<h3>Sebaran nilai keystats ÷ nilai lama</h3>
+<p>Diukur 13 Sep 2026 atas 968 emiten, hanya pasangan yang keduanya bukan nol dan bertanda sama:</p>
+<table>
+<thead>
+<tr>
+<th>Rasio</th>
+<th style="text-align: right;">Median</th>
+<th style="text-align: right;">p10</th>
+<th style="text-align: right;">p90</th>
+<th style="text-align: right;">Emiten dibanding</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>P/E</td>
+<td style="text-align: right;">1,0006</td>
+<td style="text-align: right;">0,8976</td>
+<td style="text-align: right;">1,1737</td>
+<td style="text-align: right;">605</td>
+</tr>
+<tr>
+<td>EPS</td>
+<td style="text-align: right;">1,0000</td>
+<td style="text-align: right;">0,7696</td>
+<td style="text-align: right;">1,3036</td>
+<td style="text-align: right;">849</td>
+</tr>
+<tr>
+<td>ROE (lama × 100)</td>
+<td style="text-align: right;">0,9836</td>
+<td style="text-align: right;">0,8160</td>
+<td style="text-align: right;">1,2198</td>
+<td style="text-align: right;">880</td>
+</tr>
+<tr>
+<td>Earnings Yield</td>
+<td style="text-align: right;">1,0000</td>
+<td style="text-align: right;">0,8506</td>
+<td style="text-align: right;">1,0808</td>
+<td style="text-align: right;">601</td>
+</tr>
+</tbody>
+</table>
+<p>Sebaran EPS lebih lebar daripada lima rasio J16. Sebabnya beda definisi laba di atas, bukan panen<br />
+yang rusak.</p>
+<h3>Tiga aturan khusus, diukur sebelum dipasang</h3>
+<ol>
+<li><strong>ROE lama dikali 100</strong> saat dipakai sebagai cadangan, di satu tempat (<code>pilihRasio</code>), supaya<br />
+   satuannya sama dengan keystats.</li>
+<li><strong>ROE keystats 0,00% dibaca kosong.</strong> Ada 49 emiten, semuanya tanpa EPS keystats dan ber-ROA<br />
+   keystats 0; 48 di antaranya punya ROE lama bukan nol. Nol di sini berarti "tak dihitung", jadi<br />
+   angka lama yang tayang, bertanda cadangan.</li>
+<li><strong>P/E keystats nol atau negatif tampil kosong, tanpa jatuh ke sumber lama.</strong> Ada 290 emiten ber-P/E<br />
+   keystats negatif: 289 ber-EPS negatif, satu (NASA) EPS keystats-nya kosong. Sumber lama tidak<br />
+   dipakai sebagai gantinya karena 42<br />
+   dari 290 masih memegang P/E positif yang basi (AKKU: P/E lama 336,28 padahal EPS keystats −4,07).<br />
+   Sumber lama sendiri juga tak pernah mengisi P/E saat EPS negatif.</li>
+</ol>
+<h3>Cakupan sesudah rotasi — 968 emiten</h3>
+<table>
+<thead>
+<tr>
+<th>Rasio</th>
+<th style="text-align: right;">Dari sumber utama</th>
+<th style="text-align: right;">Kosong karena P/E negatif</th>
+<th style="text-align: right;">Dari cadangan</th>
+<th style="text-align: right;">Kosong di dua-duanya</th>
+<th style="text-align: right;">Terisi berkat rotasi</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>P/E</td>
+<td style="text-align: right;">622</td>
+<td style="text-align: right;">290</td>
+<td style="text-align: right;">31</td>
+<td style="text-align: right;">25</td>
+<td style="text-align: right;">17</td>
+</tr>
+<tr>
+<td>EPS</td>
+<td style="text-align: right;">910</td>
+<td style="text-align: right;">—</td>
+<td style="text-align: right;">53</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">5</td>
+</tr>
+<tr>
+<td>ROE</td>
+<td style="text-align: right;">913</td>
+<td style="text-align: right;">—</td>
+<td style="text-align: right;">49 (48 karena ROE keystats 0,00%)</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">5</td>
+</tr>
+<tr>
+<td>Earnings Yield</td>
+<td style="text-align: right;">909</td>
+<td style="text-align: right;">—</td>
+<td style="text-align: right;">30</td>
+<td style="text-align: right;">29</td>
+<td style="text-align: right;">262</td>
+</tr>
+</tbody>
+</table>
+<h3>Pembaca yang dirotasi</h3>
+<ul>
+<li><strong>Stock Detail:</strong> strip atas (P/E, Earnings Yield beserta EPS di bawahnya; P/S yang tertinggal dari<br />
+  J16; warna Div Yield), panel Valuasi, Per Saham, dan Efektivitas Manajemen; tab Valuasi (EPS<br />
+  bawaan kalkulator Graham, baris P/E dan ROE di Relative Valuation); Lima Langkah Uang (EPS dan<br />
+  rasio payout); tab Banding (baris ROE dan pilar Profitabilitas).</li>
+<li><strong>Tanya PAPAN:</strong> jawaban valuasi (PER, ROE).</li>
+<li><strong>Kartu Analisa:</strong> PER dan ROE. Kartu menyalin angka keystats saat dibangun<br />
+  (<code>scripts/riset/kartu_analisa.py</code>), jadi kartu yang dibangun sebelum 13 Sep 2026 menampilkan<br />
+  angka lama bertanda cadangan sampai pembangunan berikutnya.</li>
+</ul>
+<p>Penandaan cadangan: lencana <code>c</code> (komponen <code>NilaiRotasi</code>), tanda <code>c</code> di Relative Valuation, penanda<br />
+di Lima Langkah Uang dan tab Banding, dan kalimat <em>"(PER, PBV, ROE dari sumber cadangan …)"</em> di<br />
+Tanya PAPAN. Gambar PNG tab Banding tidak ditandai.</p>
+<h3>Sengaja tidak dirotasi</h3>
+<ul>
+<li><strong>Median sektor dan P/E terhadap median sektor</strong>: dihitung dari sumber lama atas seluruh emiten<br />
+  sektor. Membandingkan P/E keystats emiten dengan median sumber lama adalah batas yang diketahui;<br />
+  batas yang sama berlaku untuk P/B sejak J16.</li>
+<li><strong>P/E per tahun buku</strong> (Valuasi Historis, "P/E sekarang" di tab Banding): harga dibagi EPS dasar<br />
+  tahun buku terakhir, definisi yang berbeda.</li>
+<li><strong>EPS per kuartal dan per tahun</strong> (Kuartalan, Laporan Keuangan): angka per periode, bukan TTM.</li>
+<li><strong>P/E (Annualised), Forward P/E, EPS Forward</strong>: masih sumber lama, dicatat antrean #185.</li>
+</ul>
+<h3>Temuan yang ikut diperbaiki</h3>
+<p><code>pb_keystats</code> di berkas kartu tersimpan sebagai teks (<code>"2.88"</code>), sehingga P/BV Kartu Analisa selalu<br />
+jatuh ke cadangan sejak #143. Pembaca kini mengurai teks, dan pembangun kartu menulis angka.</p>
 
 </div>
 </div></div>
