@@ -24,7 +24,7 @@ import { usePengendali, pengendaliEmiten, labelPengendali } from '../../lib/dasb
 import { tanggalPendek } from '../../lib/dasbor/statistikBerkala'
 import { muatTambahanKeystats, type TambahanKeystats } from '../../lib/dasbor/rasioTambahanKeystats'
 import { NilaiRotasi } from '../../components/dasbor/NilaiRotasi'
-import { pilihRasio } from '../../lib/dasbor/rasioUtamaKeystats'
+import { JUDUL_ASAL, pilihRasio } from '../../lib/dasbor/rasioUtamaKeystats'
 import { useKabar, kabarEmiten, waktuKabar } from '../../lib/dasbor/kabar'
 import './StockDetail.css'
 // Baris kabar (.kbr-*) hidup di Kabar.css dan dipakai juga di sini —
@@ -289,7 +289,11 @@ export function StockDetail() {
   // rasio, satu angka di satu layar.
   const rasioUtama = tambahan?.rasio ?? null
   const eyTampil = pilihRasio('earn_yield', earningsYield, rasioUtama).nilai
-  const epsTampil = pilihRasio('eps', fd?.eps, rasioUtama).nilai
+  // EPS di bawah Earnings Yield ikut ditandai kalau datang dari cadangan: sumber
+  // EPS dan earnings yield dipilih terpisah, jadi tanda c pada nilai di atasnya
+  // tidak mewakili EPS (temuan verifikasi #36, AEGS di telepon 412).
+  const epsPilih = pilihRasio('eps', fd?.eps, rasioUtama)
+  const epsTampil = epsPilih.nilai
   const dyTampil = pilihRasio('dividend_yield', fd?.dividend_yield, rasioUtama).nilai
 
   return (
@@ -471,7 +475,11 @@ export function StockDetail() {
                 render={(v) => (v != null ? (v >= 0 ? '+' : '') + persen(v, 2) : '—')}
               />}
               cls={eyTampil != null ? (eyTampil >= 0 ? 'up' : 'dn') : undefined}
-              sub={epsTampil != null ? `EPS Rp ${fv(epsTampil)}` : null}
+              sub={epsTampil != null
+                ? <>EPS Rp {fv(epsTampil)}{epsPilih.asal === 'cadangan-lama' && (
+                    <sup title={JUDUL_ASAL['cadangan-lama']} style={{ color: 'var(--text3)' }}>c</sup>
+                  )}</>
+                : null}
             />
             <RasioCell
               lbl="Div Yield"
