@@ -1,6 +1,6 @@
 {
   "buildCommand": "cd app && npm install && npm run build",
-  "ignoreCommand": "[ -n \"$VERCEL_GIT_PREVIOUS_SHA\" ] && git cat-file -e \"$VERCEL_GIT_PREVIOUS_SHA^{commit}\" 2>/dev/null && git diff --quiet \"$VERCEL_GIT_PREVIOUS_SHA\" HEAD -- . ':(exclude)data-idx' ':(exclude)arus-pasar' ':(exclude)docs' && exit 0 || exit 1",
+  "ignoreCommand": "sh \"$(git rev-parse --show-toplevel)/scripts/vercel_lewati_build.sh\"",
   "outputDirectory": "app/dist",
   "crons": [
     { "path": "/api/live-refresh", "schedule": "0 0 * * *" }
