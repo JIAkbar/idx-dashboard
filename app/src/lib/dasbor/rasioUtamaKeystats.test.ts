@@ -31,12 +31,14 @@ describe('rotasi rasio ke keystats (#36 A)', () => {
       .toEqual({ nilai: null, asal: null })
   })
 
-  it('sembilan ruas dirotasi — tiga yang ditahan tidak boleh ikut', () => {
-    // #36 A (8 Sep) lima rasio, #36 opsi 1 (13 Sep 2026) kelompok laba TTM.
+  it('sebelas ruas dirotasi — tiga yang ditahan tidak boleh ikut', () => {
+    // #36 A (8 Sep) lima rasio, #36 opsi 1 (13 Sep 2026) kelompok laba TTM,
+    // #189 (14 Sep 2026) P/E annualised dan forward.
     // der_q/price_fcf/f_score tetap TIDAK di peta ini: skala, definisi arus
     // kas, dan implementasi Piotroski yang berbeda.
     expect(Object.keys(PETA_KEYSTATS).sort()).toEqual([
-      'altman_z', 'asset_turnover', 'dividend_yield', 'earn_yield', 'eps', 'pb', 'pe', 'ps', 'roe',
+      'altman_z', 'asset_turnover', 'dividend_yield', 'earn_yield', 'eps', 'forward_pe', 'pb', 'pe', 'pe_annualised',
+      'ps', 'roe',
     ])
   })
 
@@ -62,6 +64,29 @@ describe('rotasi rasio ke keystats (#36 A)', () => {
     // AKKU 13 Sep 2026: keystats -9,34, sumber lama masih 336,28.
     expect(pilihRasio('pe', 336.28, ks({ [PETA_KEYSTATS.pe]: -9.34 }))).toEqual({ nilai: null, asal: 'keystats' })
     expect(pilihRasio('pe', 13.4, ks({ [PETA_KEYSTATS.pe]: 13.43 }))).toEqual({ nilai: 13.43, asal: 'keystats' })
+  })
+
+  it('P/E annualised dari keystats, tanpa cadangan karena angka lamanya P/E TTM (#189)', () => {
+    // UNVR 14 Sep 2026: keystats 10,47; ruas lama 16,89 identik dengan P/E TTM lama.
+    // Pemanggil memberi `lama` null, jadi emiten tanpa keystats tampil kosong.
+    expect(pilihRasio('pe_annualised', null, ks({ ['Current PE Ratio (Annualised)']: 10.47 })))
+      .toEqual({ nilai: 10.47, asal: 'keystats' })
+    expect(pilihRasio('pe_annualised', null, ks({}))).toEqual({ nilai: null, asal: null })
+    expect(pilihRasio('pe_annualised', null, ks({ ['Current PE Ratio (Annualised)']: -4.2 })))
+      .toEqual({ nilai: null, asal: 'keystats' })
+  })
+
+  it('Forward P/E dari keystats, sumber lama jadi cadangan bertanda (#189)', () => {
+    // ANTM 14 Sep 2026: keystats 7,13, sumber lama 23,08.
+    expect(pilihRasio('forward_pe', 23.08, ks({ ['Forward PE Ratio']: 7.13 })))
+      .toEqual({ nilai: 7.13, asal: 'keystats' })
+    expect(pilihRasio('forward_pe', 11.5, ks({}))).toEqual({ nilai: 11.5, asal: 'cadangan-lama' })
+  })
+
+  it('P/E cadangan yang negatif tampil kosong tanpa tanda, karena tak ada angka yang ditandai (#189)', () => {
+    // Forward P/E sumber lama negatif di 4 emiten (14 Sep 2026).
+    expect(pilihRasio('forward_pe', -3.1, ks({}))).toEqual({ nilai: null, asal: null })
+    expect(pilihRasio('pe', -5, null)).toEqual({ nilai: null, asal: null })
   })
 
   it('EPS dan earnings yield negatif tetap tayang — rugi itu informasi', () => {

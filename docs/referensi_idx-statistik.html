@@ -414,6 +414,7 @@ hr { border: none; border-top: 1px solid var(--hairline); margin: 24px 0; }
 <li><a href="#j12-dua-konvensi-harga-volume-tersesuaikan-vs-apa-adanya-ketetapan-johan-23-agu-2026" class="nav-link"><span class="nav-icon">📄</span><span class="nav-label">J12 · Dua konvensi harga &amp; volume — tersesuaikan vs apa adanya (ketetapan Johan, 23 Agu 2026)</span></a></li>
 <li><a href="#j16-lima-rasio-stock-detail-dirotasi-ke-stockbit-yahoo-jadi-cadangan-bertanda-8-september-2026" class="nav-link"><span class="nav-icon">📄</span><span class="nav-label">J16 · Lima rasio Stock Detail dirotasi ke Stockbit, Yahoo jadi cadangan bertanda (8 September 2026)</span></a></li>
 <li><a href="#j17-p-e-eps-roe-dan-earnings-yield-dirotasi-ke-stockbit-yahoo-jadi-cadangan-bertanda-13-september-2026" class="nav-link"><span class="nav-icon">📄</span><span class="nav-label">J17 · P/E, EPS, ROE, dan earnings yield dirotasi ke Stockbit, Yahoo jadi cadangan bertanda (13 September 2026)</span></a></li>
+<li><a href="#j18-p-e-annualised-dan-forward-p-e-dirotasi-ke-stockbit-eps-forward-tetap-sumber-lama-14-september-2026" class="nav-link"><span class="nav-icon">📄</span><span class="nav-label">J18 · P/E (Annualised) dan Forward P/E dirotasi ke Stockbit; EPS Forward tetap sumber lama (14 September 2026)</span></a></li>
 <li><a href="#inventaris-ruas-per-berkas-jawaban-untuk-johan-23-agu-2026-stock-detail-ohlc-ohlcv-broker-summary-metode-panen" class="nav-link"><span class="nav-icon">📄</span><span class="nav-label">Inventaris ruas per berkas — jawaban untuk Johan 23 Agu 2026 (Stock Detail, OHLC/OHLCV, Broker Summary, metode panen)</span></a></li>
 <li><a href="#matriks-sumber-stockbit-menang-di-mana-duplikasi-per-halaman-dan-usulan-kanonik-23-agu-2026" class="nav-link"><span class="nav-icon">📄</span><span class="nav-label">Matriks sumber — Stockbit menang di mana, duplikasi per halaman, dan usulan kanonik (23 Agu 2026)</span></a></li>
 <li><a href="#kamus-ruas-arti-tiap-ruas-dan-data-apa-yang-dihasilkannya-23-agu-2026" class="nav-link"><span class="nav-icon">📄</span><span class="nav-label">Kamus ruas — arti tiap ruas dan data apa yang dihasilkannya (23 Agu 2026)</span></a></li>
@@ -3145,11 +3146,152 @@ Tanya PAPAN. Gambar PNG tab Banding tidak ditandai.</p>
 <li><strong>P/E per tahun buku</strong> (Valuasi Historis, "P/E sekarang" di tab Banding): harga dibagi EPS dasar<br />
   tahun buku terakhir, definisi yang berbeda.</li>
 <li><strong>EPS per kuartal dan per tahun</strong> (Kuartalan, Laporan Keuangan): angka per periode, bukan TTM.</li>
-<li><strong>P/E (Annualised), Forward P/E, EPS Forward</strong>: masih sumber lama, dicatat antrean #185.</li>
+<li><strong>P/E (Annualised), Forward P/E, EPS Forward</strong>: bertanda sumber lama sejak #185; dua P/E dirotasi di J18<br />
+  (#189), EPS Forward tetap sumber lama.</li>
 </ul>
 <h3>Temuan yang ikut diperbaiki</h3>
 <p><code>pb_keystats</code> di berkas kartu tersimpan sebagai teks (<code>"2.88"</code>), sehingga P/BV Kartu Analisa selalu<br />
 jatuh ke cadangan sejak #143. Pembaca kini mengurai teks, dan pembangun kartu menulis angka.</p>
+
+</div>
+</div></div>
+</div>
+</section>
+
+<section id="j18-p-e-annualised-dan-forward-p-e-dirotasi-ke-stockbit-eps-forward-tetap-sumber-lama-14-september-2026" data-title="J18 · P/E (Annualised) dan Forward P/E dirotasi ke Stockbit; EPS Forward tetap sumber lama (14 September 2026)">
+<div class="section-toggle is-open">
+<button type="button" class="section-summary"><span class="chevron">▾</span><h2>J18 · P/E (Annualised) dan Forward P/E dirotasi ke Stockbit; EPS Forward tetap sumber lama (14 September 2026)</h2></button>
+<div class="section-panel"><div class="section-panel-inner">
+<div class="section-body">
+
+<p>Asal: keputusan Johan 14 Sep 2026 di sesi Papan atas antrean #189 opsi A: <em>"kerjakan semuanya"</em>. Aturan<br />
+3b dan 3c: tabel pembanding dulu (antrean #189), lalu sumber terlengkap jadi utama. Commit kodenya<br />
+dicatat di Papan Pekerjaan.</p>
+<h3>Temuan yang menentukan bentuk rotasinya</h3>
+<p>Ruas lama <code>pe_annualised</code> bukan P/E annualised: nilainya identik dengan P/E TTM sumber lama di 596 dari<br />
+600 emiten (diukur 13 Sep 2026). Karena itu ruas ini dirotasi <strong>tanpa cadangan</strong>. Memakai angka lama<br />
+sebagai cadangan akan menampilkan P/E TTM di bawah label annualised. Forward P/E sumber lama memang<br />
+angka forward (yfinance <code>forwardPE</code>), jadi ia tetap dipakai sebagai cadangan bertanda. Keystats tidak<br />
+memuat EPS forward; yang ada <code>Current EPS (Annualised)</code>, konsep lain. EPS Forward karena itu tetap<br />
+sumber lama untuk semua emiten, bertanda <code>c</code> dengan keterangan "penyedia utama tidak memuat rasio ini".</p>
+<h3>Nama rasio dan peran ruas lama</h3>
+<table>
+<thead>
+<tr>
+<th>Rasio di layar</th>
+<th>Nama di berkas keystats</th>
+<th>Satuan</th>
+<th>Ruas lama</th>
+<th>Peran ruas lama</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>P/E (Annualised)</td>
+<td><code>Current PE Ratio (Annualised)</code></td>
+<td>kali</td>
+<td><code>pe_annualised</code></td>
+<td>tidak dipakai (isinya P/E TTM)</td>
+</tr>
+<tr>
+<td>Forward P/E</td>
+<td><code>Forward PE Ratio</code></td>
+<td>kali</td>
+<td><code>forward_pe</code></td>
+<td>cadangan bertanda</td>
+</tr>
+<tr>
+<td>EPS Forward</td>
+<td>tidak ada padanan</td>
+<td>rupiah per saham</td>
+<td><code>eps_fwd</code></td>
+<td>satu-satunya sumber, bertanda</td>
+</tr>
+</tbody>
+</table>
+<h3>Sebaran nilai keystats ÷ nilai lama (13 Sep 2026)</h3>
+<table>
+<thead>
+<tr>
+<th>Rasio</th>
+<th style="text-align: right;">Median</th>
+<th style="text-align: right;">p10</th>
+<th style="text-align: right;">p90</th>
+<th style="text-align: right;">Emiten dibanding</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>P/E (Annualised)</td>
+<td style="text-align: right;">0,9635</td>
+<td style="text-align: right;">0,4722</td>
+<td style="text-align: right;">2,1053</td>
+<td style="text-align: right;">532</td>
+</tr>
+<tr>
+<td>Forward P/E</td>
+<td style="text-align: right;">0,9814</td>
+<td style="text-align: right;">0,3805</td>
+<td style="text-align: right;">1,4301</td>
+<td style="text-align: right;">106</td>
+</tr>
+</tbody>
+</table>
+<p>Contoh: UNVR annualised keystats 10,47 lawan 16,89 (sama dengan P/E TTM lama); ANTM Forward P/E<br />
+keystats 7,13 lawan 23,08; SMGR 16,34 lawan 5,27.</p>
+<h3>Aturan P/E negatif diperluas</h3>
+<p>P/E dari laba negatif tidak bermakna (J17 aturan 3). Sejak J18 aturan itu berlaku untuk ketiga P/E,<br />
+termasuk angka cadangan:</p>
+<ul>
+<li>P/E (Annualised) keystats nol atau negatif di 290 emiten: tampil kosong.</li>
+<li>Forward P/E sumber lama negatif di 4 emiten: BANK −216,67; GOTO −9,40; SMCB −33,33; WIKA −1,52. GOTO<br />
+  punya angka keystats, jadi angka itu yang tayang. Tiga lainnya kini tampil kosong tanpa tanda.</li>
+<li>Efek samping di P/E (TTM): CNTB, satu-satunya emiten ber-P/E lama ≤ 0 tanpa P/E keystats, kini tampil<br />
+  kosong, bukan angka cadangan.</li>
+</ul>
+<h3>Cakupan sesudah rotasi — 966 emiten (14 Sep 2026)</h3>
+<table>
+<thead>
+<tr>
+<th>Rasio</th>
+<th style="text-align: right;">Dari sumber utama</th>
+<th style="text-align: right;">Kosong karena P/E negatif</th>
+<th style="text-align: right;">Dari cadangan</th>
+<th style="text-align: right;">Kosong di dua-duanya</th>
+<th style="text-align: right;">Emiten yang menampilkan angka, sebelum → sesudah</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>P/E (Annualised)</td>
+<td style="text-align: right;">671</td>
+<td style="text-align: right;">290</td>
+<td style="text-align: right;">—</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">600 → 671</td>
+</tr>
+<tr>
+<td>Forward P/E</td>
+<td style="text-align: right;">110</td>
+<td style="text-align: right;">3 (angka cadangan)</td>
+<td style="text-align: right;">67</td>
+<td style="text-align: right;">786</td>
+<td style="text-align: right;">177 → 177</td>
+</tr>
+</tbody>
+</table>
+<p>P/E (Annualised) hilang di 68 emiten yang dulu menampilkan angka lama: yang rugi menurut keystats,<br />
+ditambah TRAM dan CNTB yang tak punya angka keystats. Ruas itu muncul di 139 emiten yang dulu kosong.<br />
+Forward P/E hilang di 3 emiten (cadangan negatif) dan muncul di 3 (ALII, INET, MARK, hanya punya<br />
+keystats).</p>
+<h3>Pembaca yang dirotasi</h3>
+<ul>
+<li><strong>Stock Detail:</strong> panel Valuasi, baris P/E (Annualised) dan Forward P/E (komponen <code>NilaiRotasi</code>).<br />
+  Baris EPS Forward di panel Per Saham tetap sumber lama bertanda <code>c</code>.</li>
+</ul>
+<p>Tidak ada pembaca lain. Sapuan <code>git grep -n -E "pe_annualised|forward_pe|eps_fwd" -- app/src api scripts</code><br />
+di luar berkas uji hanya menemukan tipe di <code>stockDetailData.ts</code>, tiga baris <code>KolomValuasi.tsx</code>, dan<br />
+pemanen <code>scripts/fetch_fundamental.py</code>.</p>
 
 </div>
 </div></div>

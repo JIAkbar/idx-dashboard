@@ -5,7 +5,7 @@ import { fB, fMC, fv, fvx } from '../../../lib/dasbor/stockDetailFormat'
 import { FdPercent } from '../../../components/dasbor/FdPercent'
 import { LencanaTurunan } from '../../../components/dasbor/LencanaTurunan'
 import { NilaiRotasi, type PetaRasio } from '../../../components/dasbor/NilaiRotasi'
-import { JUDUL_BELUM_DIROTASI } from '../../../lib/dasbor/rasioUtamaKeystats'
+import { JUDUL_TANPA_PADANAN } from '../../../lib/dasbor/rasioUtamaKeystats'
 import { zonaAltman } from '../../../lib/dasbor/bedahEmiten'
 
 /** Baris <tr> label + nilai rata-kanan — port TR() index_live.html baris 4044. */
@@ -18,9 +18,9 @@ function TR(lbl: string, val: ReactNode) {
   )
 }
 
-/** Tanda untuk rasio yang belum dirotasi ke penyedia utama (#185 tahap sementara). */
+/** Tanda untuk rasio yang penyedia utamanya tak punya padanan (EPS Forward, #189). */
 function TandaLama({ v }: { v: number | null | undefined }) {
-  return v != null ? <sup title={JUDUL_BELUM_DIROTASI} style={{ color: 'var(--text3)' }}>c</sup> : null
+  return v != null ? <sup title={JUDUL_TANPA_PADANAN} style={{ color: 'var(--text3)' }}>c</sup> : null
 }
 
 /** "N hari" 1 desimal, null → "—". */
@@ -38,10 +38,11 @@ export function PanelValuasi({ fd, rasio = null }: { fd: StockFundamental; rasio
       <div className="panel-b">
         <table>
           <tbody>
-            {TR('P/E (Annualised)', <>{fvx(fd.pe_annualised)}<TandaLama v={fd.pe_annualised} /></>)}
+            {/* Tanpa cadangan (#189): ruas lama pe_annualised isinya P/E TTM, bukan annualised. */}
+            {TR('P/E (Annualised)', <NilaiRotasi ruas="pe_annualised" lama={null} rasio={rasio} render={fvx} />)}
             {TR('P/E (TTM)', <NilaiRotasi ruas="pe" lama={fd.pe} rasio={rasio}
               lencanaLama={<LencanaTurunan fd={fd} ruas="pe" />} render={fvx} />)}
-            {TR('Forward P/E', <>{fvx(fd.forward_pe)}<TandaLama v={fd.forward_pe} /></>)}
+            {TR('Forward P/E', <NilaiRotasi ruas="forward_pe" lama={fd.forward_pe} rasio={rasio} render={fvx} />)}
             {TR('Earnings Yield', <NilaiRotasi ruas="earn_yield" lama={fd.earn_yield} rasio={rasio}
               render={(v) => <FdPercent v={v} />} />)}
             {TR('P/S (TTM)', <NilaiRotasi ruas="ps" lama={fd.ps} rasio={rasio} render={fvx} />)}

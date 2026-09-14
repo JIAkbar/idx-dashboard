@@ -10,6 +10,11 @@
  *   lama 479 dari 715. Titik belahnya definisi, bukan kesegaran: keystats
  *   memakai laba yang diatribusikan termasuk pos tak berulang, jadi emiten
  *   seperti UNVR tampil lebih murah (P/E 7,35 lawan 16,89 di sumber lama).
+ * * #189 A, 14 Sep 2026 — P/E (Annualised) dan Forward P/E. Ruas lama
+ *   `pe_annualised` ternyata P/E TTM berlabel lain (identik di 596 dari 600
+ *   emiten), jadi ruas itu dirotasi TANPA cadangan: pemanggilnya memberi
+ *   `lama` null. Forward P/E punya cadangan bertanda (70 emiten hanya punya
+ *   angka lama). EPS Forward tak punya padanan di keystats dan tetap sumber lama.
  *
  * `der_q`, `price_fcf`, dan `f_score` tetap DITAHAN: skalanya, definisi arus
  * kasnya, dan implementasi Piotroski-nya berbeda — bukan soal laba TTM.
@@ -35,6 +40,8 @@ export const PETA_KEYSTATS = {
   eps: 'Current EPS (TTM)',
   roe: 'Return on Equity (TTM)',
   earn_yield: 'Earnings Yield (TTM)',
+  pe_annualised: 'Current PE Ratio (Annualised)',
+  forward_pe: 'Forward PE Ratio',
 } as const
 
 export type RuasRotasi = keyof typeof PETA_KEYSTATS
@@ -73,9 +80,12 @@ function kosongDiKeystats(ruas: RuasRotasi, v: number): boolean {
  * negatif untuk 290 emiten rugi (13 Sep 2026). Sumber lama TIDAK dipakai
  * sebagai gantinya: 42 dari 290 emiten itu masih memegang P/E positif yang
  * basi di sana, padahal sumber utama sudah menyatakan rugi.
+ *
+ * Berlaku untuk ketiga P/E sejak #189: P/E annualised keystats juga negatif
+ * untuk 290 emiten (14 Sep 2026), dan Forward P/E sumber lama negatif di 4.
  */
 function takBermakna(ruas: RuasRotasi, v: number): boolean {
-  return ruas === 'pe' && v <= 0
+  return (ruas === 'pe' || ruas === 'pe_annualised' || ruas === 'forward_pe') && v <= 0
 }
 
 /**
@@ -88,7 +98,8 @@ function takBermakna(ruas: RuasRotasi, v: number): boolean {
  * emiten yang rasionya memang nol.
  *
  * P/E dari laba negatif dikembalikan `null` bertanda sumber utama, TANPA jatuh
- * ke cadangan (lihat `takBermakna`).
+ * ke cadangan (lihat `takBermakna`). P/E cadangan yang negatif dikembalikan
+ * kosong tanpa asal: tak ada angka yang tayang, jadi tak ada yang ditandai.
  */
 export function pilihRasio(
   ruas: RuasRotasi,
@@ -99,7 +110,10 @@ export function pilihRasio(
   if (baru != null && Number.isFinite(baru) && !kosongDiKeystats(ruas, baru)) {
     return { nilai: takBermakna(ruas, baru) ? null : baru, asal: 'keystats' }
   }
-  if (lama != null && Number.isFinite(lama)) return { nilai: lama * (SKALA_LAMA[ruas] ?? 1), asal: 'cadangan-lama' }
+  if (lama != null && Number.isFinite(lama)) {
+    const v = lama * (SKALA_LAMA[ruas] ?? 1)
+    return takBermakna(ruas, v) ? { nilai: null, asal: null } : { nilai: v, asal: 'cadangan-lama' }
+  }
   return { nilai: null, asal: null }
 }
 
@@ -136,12 +150,12 @@ export function petaRasio(
 /** Keterangan hover per asal — dipakai lencana di layar. */
 export const JUDUL_ASAL: Record<AsalRasio, string> = {
   keystats:
-    'Rasio resmi dari penyedia data pasar — sumber utama (lima rasio sejak 8 September 2026, kelompok laba TTM sejak 13 September 2026)',
+    'Rasio resmi dari penyedia data pasar — sumber utama (lima rasio sejak 8 September 2026, kelompok laba TTM sejak 13 September 2026, P/E annualised dan forward sejak 14 September 2026)',
   'cadangan-lama':
     'Angka cadangan: penyedia utama tidak memuat rasio ini untuk emiten ini, jadi dipakai sumber lama',
 }
 
-/** Keterangan hover untuk rasio yang BELUM dirotasi sama sekali (#185 tahap sementara): angkanya
- *  memang dari sumber lama untuk semua emiten, bukan karena penyedia utama kosong. */
-export const JUDUL_BELUM_DIROTASI =
-  'Angka sumber lama: rasio ini belum dirotasi ke penyedia utama, menunggu tabel pembanding'
+/** Keterangan hover untuk rasio yang penyedia utamanya tak punya padanan sama sekali: angkanya dari
+ *  sumber lama untuk semua emiten. Sejak #189 tinggal EPS Forward (keystats hanya memuat EPS annualised). */
+export const JUDUL_TANPA_PADANAN =
+  'Angka sumber lama: penyedia utama tidak memuat rasio ini, jadi dipakai sumber lama untuk semua emiten'

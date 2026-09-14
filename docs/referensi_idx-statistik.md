@@ -829,12 +829,78 @@ Tanya PAPAN. Gambar PNG tab Banding tidak ditandai.
 - **P/E per tahun buku** (Valuasi Historis, "P/E sekarang" di tab Banding): harga dibagi EPS dasar
   tahun buku terakhir, definisi yang berbeda.
 - **EPS per kuartal dan per tahun** (Kuartalan, Laporan Keuangan): angka per periode, bukan TTM.
-- **P/E (Annualised), Forward P/E, EPS Forward**: masih sumber lama, dicatat antrean #185.
+- **P/E (Annualised), Forward P/E, EPS Forward**: bertanda sumber lama sejak #185; dua P/E dirotasi di J18
+  (#189), EPS Forward tetap sumber lama.
 
 ### Temuan yang ikut diperbaiki
 
 `pb_keystats` di berkas kartu tersimpan sebagai teks (`"2.88"`), sehingga P/BV Kartu Analisa selalu
 jatuh ke cadangan sejak #143. Pembaca kini mengurai teks, dan pembangun kartu menulis angka.
+
+## J18 · P/E (Annualised) dan Forward P/E dirotasi ke Stockbit; EPS Forward tetap sumber lama (14 September 2026)
+
+Asal: keputusan Johan 14 Sep 2026 di sesi Papan atas antrean #189 opsi A: *"kerjakan semuanya"*. Aturan
+3b dan 3c: tabel pembanding dulu (antrean #189), lalu sumber terlengkap jadi utama. Commit kodenya
+dicatat di Papan Pekerjaan.
+
+### Temuan yang menentukan bentuk rotasinya
+
+Ruas lama `pe_annualised` bukan P/E annualised: nilainya identik dengan P/E TTM sumber lama di 596 dari
+600 emiten (diukur 13 Sep 2026). Karena itu ruas ini dirotasi **tanpa cadangan**. Memakai angka lama
+sebagai cadangan akan menampilkan P/E TTM di bawah label annualised. Forward P/E sumber lama memang
+angka forward (yfinance `forwardPE`), jadi ia tetap dipakai sebagai cadangan bertanda. Keystats tidak
+memuat EPS forward; yang ada `Current EPS (Annualised)`, konsep lain. EPS Forward karena itu tetap
+sumber lama untuk semua emiten, bertanda `c` dengan keterangan "penyedia utama tidak memuat rasio ini".
+
+### Nama rasio dan peran ruas lama
+
+| Rasio di layar | Nama di berkas keystats | Satuan | Ruas lama | Peran ruas lama |
+|---|---|---|---|---|
+| P/E (Annualised) | `Current PE Ratio (Annualised)` | kali | `pe_annualised` | tidak dipakai (isinya P/E TTM) |
+| Forward P/E | `Forward PE Ratio` | kali | `forward_pe` | cadangan bertanda |
+| EPS Forward | tidak ada padanan | rupiah per saham | `eps_fwd` | satu-satunya sumber, bertanda |
+
+### Sebaran nilai keystats ÷ nilai lama (13 Sep 2026)
+
+| Rasio | Median | p10 | p90 | Emiten dibanding |
+|---|---:|---:|---:|---:|
+| P/E (Annualised) | 0,9635 | 0,4722 | 2,1053 | 532 |
+| Forward P/E | 0,9814 | 0,3805 | 1,4301 | 106 |
+
+Contoh: UNVR annualised keystats 10,47 lawan 16,89 (sama dengan P/E TTM lama); ANTM Forward P/E
+keystats 7,13 lawan 23,08; SMGR 16,34 lawan 5,27.
+
+### Aturan P/E negatif diperluas
+
+P/E dari laba negatif tidak bermakna (J17 aturan 3). Sejak J18 aturan itu berlaku untuk ketiga P/E,
+termasuk angka cadangan:
+
+- P/E (Annualised) keystats nol atau negatif di 290 emiten: tampil kosong.
+- Forward P/E sumber lama negatif di 4 emiten: BANK −216,67; GOTO −9,40; SMCB −33,33; WIKA −1,52. GOTO
+  punya angka keystats, jadi angka itu yang tayang. Tiga lainnya kini tampil kosong tanpa tanda.
+- Efek samping di P/E (TTM): CNTB, satu-satunya emiten ber-P/E lama ≤ 0 tanpa P/E keystats, kini tampil
+  kosong, bukan angka cadangan.
+
+### Cakupan sesudah rotasi — 966 emiten (14 Sep 2026)
+
+| Rasio | Dari sumber utama | Kosong karena P/E negatif | Dari cadangan | Kosong di dua-duanya | Emiten yang menampilkan angka, sebelum → sesudah |
+|---|---:|---:|---:|---:|---:|
+| P/E (Annualised) | 671 | 290 | — | 5 | 600 → 671 |
+| Forward P/E | 110 | 3 (angka cadangan) | 67 | 786 | 177 → 177 |
+
+P/E (Annualised) hilang di 68 emiten yang dulu menampilkan angka lama: yang rugi menurut keystats,
+ditambah TRAM dan CNTB yang tak punya angka keystats. Ruas itu muncul di 139 emiten yang dulu kosong.
+Forward P/E hilang di 3 emiten (cadangan negatif) dan muncul di 3 (ALII, INET, MARK, hanya punya
+keystats).
+
+### Pembaca yang dirotasi
+
+- **Stock Detail:** panel Valuasi, baris P/E (Annualised) dan Forward P/E (komponen `NilaiRotasi`).
+  Baris EPS Forward di panel Per Saham tetap sumber lama bertanda `c`.
+
+Tidak ada pembaca lain. Sapuan `git grep -n -E "pe_annualised|forward_pe|eps_fwd" -- app/src api scripts`
+di luar berkas uji hanya menemukan tipe di `stockDetailData.ts`, tiga baris `KolomValuasi.tsx`, dan
+pemanen `scripts/fetch_fundamental.py`.
 
 ## Inventaris ruas per berkas — jawaban untuk Johan 23 Agu 2026 (Stock Detail, OHLC/OHLCV, Broker Summary, metode panen)
 
