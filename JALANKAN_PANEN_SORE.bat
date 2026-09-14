@@ -81,7 +81,7 @@ set JAM=%TIME:~0,2%
 set JAM=%JAM: =%
 if %JAM% GEQ 22 (
   echo Sudah lewat 22:00 - panen sore dilewati hari ini.
-  echo Panen manual: jalankan bat ini lagi, atau tunggu jadwal besok.
+  echo Jalan manual juga ditolak sesudah 22:00; jadwal berikutnya pukul 18:00, Senin-Jumat.
   goto akhir
 )
 
