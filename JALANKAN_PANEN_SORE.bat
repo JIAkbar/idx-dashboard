@@ -3,7 +3,7 @@ REM ============================================================
 REM  PAPAN - Panen SORE otomatis (perintah Johan 27 Agu 2026:
 REM  "lain kali tidak perlu dibuat otomatis saja atau masuk buka laptop
 REM   panen itu sekitar jam 6 malam sudah tersedia itu termasuk OLCHV dari SB")
-REM  Terjadwal Task Scheduler PAPAN-PanenSore, harian 18:00.
+REM  Terjadwal Task Scheduler PAPAN-PanenSore, Senin-Jumat 18:00 (sejak 14 Sep 2026, #187).
 REM
 REM  --paksa WAJIB di OHLCV (pelajaran 27 Agu): arsip bulan berjalan "sudah
 REM  ada" membuat bar HARI INI dilewati diam-diam tanpa galat.
@@ -74,6 +74,9 @@ REM
 REM Jam dibaca dari %TIME%, dan jam satu digit datang dengan SPASI di depan
 REM (" 9:05") — itu sebabnya dipakai substring %TIME:~0,2% lalu spasi
 REM dibuang, pola yang sama dengan pembaca jam di bat buka-laptop.
+REM :cek_gerbang - putaran tunggu kunci (#190) kembali ke sini, jadi gerbang
+REM jam dan hari diperiksa ulang tiap kali selesai menunggu.
+:cek_gerbang
 set JAM=%TIME:~0,2%
 set JAM=%JAM: =%
 if %JAM% GEQ 22 (
@@ -100,14 +103,30 @@ echo Akhir pekan ^(hari %HARI%^) - panen sore terjadwal hanya Senin-Jumat, dilew
 goto akhir
 :hari_ok
 
-if exist "%~dp0.panen.lock" (
-  echo Pipeline lain sedang jalan - .panen.lock ada - keluar.
-  REM Keluar TANPA melepas kunci: kuncinya milik proses lain. Sampai
-  REM 9 Sep 2026 baris ini melompat ke :akhir yang menghapusnya, jadi
-  REM pipa yang mengalah justru membuka pintu untuk pipa ketiga - dan
-  REM dua panen yang jalan bersamaan persis yang memutus rantai token.
-  goto keluar_tanpa_kunci
-)
+REM ---- Kunci dipegang pipeline lain: tunggu, jangan langsung keluar (#190) ----
+REM 14 Sep 2026 PAPAN-BukaLaptop mulai 18:32 dan memegang kunci sekitar 4 menit.
+REM Task sore yang telat ke 18:34 keluar begitu melihat kunci, dan panen hari
+REM itu tidak jalan sama sekali karena task tidak mengulang. Sekarang bat
+REM menunggu: periksa tiap 30 detik, paling lama 20 menit (40 kali). Tiap
+REM putaran kembali ke :cek_gerbang, jadi menunggu tak pernah membuat panen
+REM mulai sesudah 22:00. Tidur lewat Python, bukan `timeout`: `timeout`
+REM langsung gagal kalau masukan dialihkan, seperti di bawah Task Scheduler.
+if not exist "%~dp0.panen.lock" goto kunci_bebas
+if not defined PAPAN_TUNGGU_KUNCI set PAPAN_TUNGGU_KUNCI=0
+if %PAPAN_TUNGGU_KUNCI% GEQ 40 goto kunci_tetap_dipegang
+if %PAPAN_TUNGGU_KUNCI%==0 echo Pipeline lain sedang jalan - .panen.lock ada - menunggu sampai 20 menit.
+set /a PAPAN_TUNGGU_KUNCI+=1
+"%PYEXE%" -c "import time;time.sleep(30)"
+goto cek_gerbang
+:kunci_tetap_dipegang
+echo Pipeline lain masih memegang .panen.lock sesudah 20 menit - keluar.
+REM Keluar TANPA melepas kunci: kuncinya milik proses lain. Sampai
+REM 9 Sep 2026 baris ini melompat ke :akhir yang menghapusnya, jadi
+REM pipa yang mengalah justru membuka pintu untuk pipa ketiga - dan
+REM dua panen yang jalan bersamaan persis yang memutus rantai token.
+goto keluar_tanpa_kunci
+:kunci_bebas
+if defined PAPAN_TUNGGU_KUNCI echo Kunci dilepas sesudah menunggu %PAPAN_TUNGGU_KUNCI% x 30 detik - lanjut.
 mkdir "%~dp0.panen.lock" 2>nul
 REM Sejak titik ini kunci MILIK proses ini, jadi :akhir boleh melepasnya.
 set PAPAN_KUNCI_MILIK=1
