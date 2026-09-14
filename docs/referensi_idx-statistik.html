@@ -3286,12 +3286,14 @@ Forward P/E hilang di 3 emiten (cadangan negatif) dan muncul di 3 (ALII, INET, M
 keystats).</p>
 <h3>Pembaca yang dirotasi</h3>
 <ul>
-<li><strong>Stock Detail:</strong> panel Valuasi, baris P/E (Annualised) dan Forward P/E (komponen <code>NilaiRotasi</code>).<br />
-  Baris EPS Forward di panel Per Saham tetap sumber lama bertanda <code>c</code>.</li>
+<li><strong>Stock Detail:</strong> panel Valuasi, baris P/E (Annualised) dan Forward P/E (komponen <code>NilaiRotasi</code>),<br />
+  dan sub-baris <em>fwd</em> di sel P/E (TTM) strip atas. Baris EPS Forward di panel Per Saham tetap sumber<br />
+  lama bertanda <code>c</code>.</li>
 </ul>
-<p>Tidak ada pembaca lain. Sapuan <code>git grep -n -E "pe_annualised|forward_pe|eps_fwd" -- app/src api scripts</code><br />
-di luar berkas uji hanya menemukan tipe di <code>stockDetailData.ts</code>, tiga baris <code>KolomValuasi.tsx</code>, dan<br />
-pemanen <code>scripts/fetch_fundamental.py</code>.</p>
+<p>Sapuan <code>git grep -n -o -E ".{0,60}(forward_pe|pe_annualised|eps_fwd).{0,40}" -- app/src api</code> di luar<br />
+berkas uji menemukan tipe di <code>stockDetailData.ts</code>, tiga baris <code>KolomValuasi.tsx</code>, dan satu baris<br />
+<code>StockDetail.tsx</code> (strip atas). Sapuan pertama melewatkan baris strip itu karena keluarannya dipotong<br />
+170 karakter dan <code>forward_pe</code> ada di ujung baris; Pemeriksa Akhir yang menemukannya.</p>
 
 </div>
 </div></div>

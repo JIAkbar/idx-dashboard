@@ -295,6 +295,9 @@ export function StockDetail() {
   const epsPilih = pilihRasio('eps', fd?.eps, rasioUtama)
   const epsTampil = epsPilih.nilai
   const dyTampil = pilihRasio('dividend_yield', fd?.dividend_yield, rasioUtama).nilai
+  // Sub-baris fwd di sel P/E ikut Forward P/E yang dirotasi di panel Valuasi (#189). Sebelumnya
+  // strip ini membaca ruas lama: ANTM memajang fwd 23,08x di atas dan 7,13x di panel.
+  const fwdPilih = pilihRasio('forward_pe', fd?.forward_pe, rasioUtama)
 
   return (
     <div className="lantai">
@@ -456,7 +459,11 @@ export function StockDetail() {
 
           {/* Strip rasio full-width 6 sel */}
           <div className="rasio">
-            <RasioCell lbl="P/E (TTM)" v={<NilaiRotasi ruas="pe" lama={fd.pe} rasio={rasioUtama} lencanaLama={<LencanaTurunan fd={fd} ruas="pe" />} render={fvx} />} sub={fd.forward_pe != null ? `fwd ${fvx(fd.forward_pe)}` : null} />
+            <RasioCell lbl="P/E (TTM)" v={<NilaiRotasi ruas="pe" lama={fd.pe} rasio={rasioUtama} lencanaLama={<LencanaTurunan fd={fd} ruas="pe" />} render={fvx} />} sub={fwdPilih.nilai != null
+              ? <>fwd {fvx(fwdPilih.nilai)}{fwdPilih.asal === 'cadangan-lama' && (
+                  <sup title={JUDUL_ASAL['cadangan-lama']} style={{ color: 'var(--text3)' }}>c</sup>
+                )}</>
+              : null} />
             {/* P/B dan Div Yield di strip ini dulu memakai angka lama apa adanya,
                 sementara panel Valuasi di halaman YANG SAMA sudah memakai sumber
                 yang dirotasi — BBRI memajang 1,45× di atas dan 1,61× di bawah,

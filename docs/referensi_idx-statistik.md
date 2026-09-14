@@ -895,12 +895,14 @@ keystats).
 
 ### Pembaca yang dirotasi
 
-- **Stock Detail:** panel Valuasi, baris P/E (Annualised) dan Forward P/E (komponen `NilaiRotasi`).
-  Baris EPS Forward di panel Per Saham tetap sumber lama bertanda `c`.
+- **Stock Detail:** panel Valuasi, baris P/E (Annualised) dan Forward P/E (komponen `NilaiRotasi`),
+  dan sub-baris *fwd* di sel P/E (TTM) strip atas. Baris EPS Forward di panel Per Saham tetap sumber
+  lama bertanda `c`.
 
-Tidak ada pembaca lain. Sapuan `git grep -n -E "pe_annualised|forward_pe|eps_fwd" -- app/src api scripts`
-di luar berkas uji hanya menemukan tipe di `stockDetailData.ts`, tiga baris `KolomValuasi.tsx`, dan
-pemanen `scripts/fetch_fundamental.py`.
+Sapuan `git grep -n -o -E ".{0,60}(forward_pe|pe_annualised|eps_fwd).{0,40}" -- app/src api` di luar
+berkas uji menemukan tipe di `stockDetailData.ts`, tiga baris `KolomValuasi.tsx`, dan satu baris
+`StockDetail.tsx` (strip atas). Sapuan pertama melewatkan baris strip itu karena keluarannya dipotong
+170 karakter dan `forward_pe` ada di ujung baris; Pemeriksa Akhir yang menemukannya.
 
 ## Inventaris ruas per berkas — jawaban untuk Johan 23 Agu 2026 (Stock Detail, OHLC/OHLCV, Broker Summary, metode panen)
 
