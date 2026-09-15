@@ -9,11 +9,12 @@ import {
   type MouseEventParams, type SeriesMarker, type SeriesType, type Time,
 } from 'lightweight-charts'
 import { useKamusEmiten } from '../../lib/dasbor/kamusEmiten'
+import { jendelaBaku, type KunciBaku } from '../../lib/dasbor/periode'
 import {
   LABEL_POLA_KLASIK, LABEL_STATUS_POLA, cariPolaKlasik, type ParamPolaKlasik, type PolaKlasik,
 } from '../../lib/dasbor/polaKlasik'
 import {
-  keDataLilinVolume, batasBawahHari, RENTANG_KAKI, RENTANG_KAKI_BAWAAN,
+  keDataLilinVolume, RENTANG_KAKI, RENTANG_KAKI_BAWAAN,
   keSeriGaris, SPEK_INDIKATOR, SPEK_POLA, labelInstansIndikator, labelInstansPola,
   spekJenis, idPustaka,
   hitungInstans, cariDoubleBottom, cariLonjakanVolume, cariMusiman,
@@ -1564,9 +1565,11 @@ export function GrafikEmiten() {
   const awalRentang = useMemo(() => {
     const n = penuh.lilin.length
     if (n === 0) return 0
-    const akhir = penuh.lilin[n - 1].time.slice(0, 10)
-    const [, hari] = RENTANG_KAKI.find(([l]) => l === rentangLabel) ?? RENTANG_KAKI[RENTANG_KAKI.length - 1]
-    const batas = batasBawahHari(akhir, hari)
+    const tgl = penuh.lilin.map((b) => b.time.slice(0, 10))
+    const akhir = tgl[n - 1]
+    // rentangLabel selalu id RENTANG_KAKI valid — dijaga guard template #3281
+    // dan bawaan/opsi klik, jadi cast ke KunciBaku di sini aman.
+    const batas = rentangLabel === 'semua' ? '' : (jendelaBaku(tgl, akhir, rentangLabel as KunciBaku)?.mulai ?? '')
     if (!batas) return 0
     const i = penuh.lilin.findIndex((b) => b.time >= batas)
     return i === -1 ? 0 : i
@@ -1729,23 +1732,22 @@ export function GrafikEmiten() {
    * bukan disembunyikan, dengan alasannya di `title` (pola yang sama dengan
    * `title` batas riwayat di tombol kerangka).
    *
-   * Yang dimatikan: setiap chip yang batas bawahnya sudah jatuh sebelum lilin
-   * pertama SETELAH chip terkecil yang begitu — chip pertama yang mencakup
-   * seluruh riwayat tetap bisa ditekan, yang di atasnya cuma menggambar
-   * gambar yang sama persis. "Semua" tak pernah dimatikan: ia jujur apa
+   * Yang dimatikan: tiap chip yang `jendelaBaku` (periode.ts, #209) tak
+   * sanggup isi dari tanggal riwayat NYATA — bukan lagi indeks pertama yang
+   * "cukup" lalu segalanya sesudahnya dimatikan; tiap opsi diuji sendiri
+   * lewat jendela barunya. "Semua" tak pernah dimatikan: ia jujur apa
    * adanya, berapa pun riwayatnya. Tanpa ini, 5m/15m/30m menerima klik pada
-   * 1Y/5Y lalu menggambar satu bulan tanpa satu kata pun.
+   * 1Y/2Y lalu menggambar satu bulan tanpa satu kata pun.
    */
   const rentangOpsi = useMemo(() => {
     const n = penuh.lilin.length
-    const akhir = n ? penuh.lilin[n - 1].time.slice(0, 10) : ''
-    const awal = n ? penuh.lilin[0].time.slice(0, 10) : ''
-    const cukup = (hari: number | null) => hari === null || batasBawahHari(akhir, hari) <= awal
-    const iCukup = n ? RENTANG_KAKI.findIndex(([, hari]) => cukup(hari)) : -1
-    return RENTANG_KAKI.map(([label, hari], i) => {
-      const mati = iCukup !== -1 && hari !== null && i > iCukup
+    const tgl = n ? penuh.lilin.map((b) => b.time.slice(0, 10)) : []
+    const akhir = n ? tgl[n - 1] : ''
+    const awal = n ? tgl[0] : ''
+    return RENTANG_KAKI.map(([id, label]) => {
+      const mati = n > 0 && id !== 'semua' && !jendelaBaku(tgl, akhir, id as KunciBaku)
       return {
-        id: label,
+        id,
         label,
         nonaktif: mati,
         judul: mati
@@ -3278,7 +3280,7 @@ export function GrafikEmiten() {
     // chip yang tak cocok apa pun akan membuat seluruh pemilih rentang tampak
     // mati. Termasuk label lama berbahasa Indonesia ("1 Tahun") dari template
     // yang disimpan sebelum kaki kanvas memakai label pendek gaya chart.
-    if (t.rentang && RENTANG_KAKI.some(([label]) => label === t.rentang)) setRentangLabel(t.rentang)
+    if (t.rentang && RENTANG_KAKI.some(([id]) => id === t.rentang)) setRentangLabel(t.rentang)
     // Template lama tak punya ruas `grid` — `gridDariTemplate` mengembalikan
     // bawaannya, bukan menolak templatenya.
     setGrid(gridDariTemplate(t.grid))
@@ -4475,10 +4477,11 @@ export function GrafikEmiten() {
               kanvas, yang mengubah APA yang digambar ada di atasnya. */}
           <div className="grf-kaki">
             <PemilihRentang
-              // Kaki kanvas memakai label chart pendek (1D/5D/1M…) yang justru
-              // dipilih supaya muat di 412 px, dan ini kendali yang paling
-              // sering ditekan — satu klik ekstra lewat menu mahal di sini.
-              tampil="pil"
+              // #209: pil di layar lebar (sepuluh label kamus terukur 623 px,
+              // sebaris di laptop 1536, dan bilah kaki sudah berisi pil lain);
+              // dropdown di ponsel, karena di 412 px deret yang sama membungkus
+              // jadi tiga baris (terukur 102 px tinggi).
+              tampil="auto"
               className="grf-kaki-rentang"
               opsi={rentangOpsi}
               nilai={rentangLabel}

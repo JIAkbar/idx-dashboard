@@ -9,6 +9,7 @@ import type { Katalog, LilinMentah, PenandaMentah, SegmenMentah } from './katalo
 import type { BarisOhlc } from './ihsgOhlc'
 import type { RentangSumber } from './sumberBar'
 import { HARI, ringkasHarian, vonisUji, type RingkasHari } from '../seasonality'
+import { LABEL_RENTANG, RENTANG_BAKU } from './periode'
 import { keEpoch } from './kerangkaWaktu'
 
 export interface BerkasOhlcEmiten {
@@ -150,35 +151,44 @@ function hariTanpaPerdagangan(
 }
 
 /**
- * Rentang di BILAH BAWAH kanvas — `1D 5D 1M 3M 6M 1Y 5Y All`, persis deretan
- * yang ada di kaki chart Stockbit/TradingView.
+ * Rentang di BILAH BAWAH kanvas — id + label PERSIS `RENTANG_BAKU` (#209,
+ * periode.ts) + Semua, dieja lewat `LABEL_RENTANG` (kamus) seperti seluruh
+ * pemilih rentang lain — bukan singkatan chart (`1D`/`1W`/`1M`…) lagi.
+ * Koreksi Johan 15 Sep 2026 (relay pengawas): "kata rentang dieja hanya di
+ * kamus" berlaku juga di sini, walau kaki kanvas sempit — kalau label 10
+ * kata penuh ternyata tak muat di laptop 1536px, keputusan bentuknya (pil vs
+ * dropdown, atau spek baru) ada di tangan Johan sesudah mengukur devtools,
+ * BUKAN tebakan menyingkat balik ke kode chart. `tampil="pil"` di
+ * GrafikEmiten.tsx SENGAJA tidak diubah sesi ini.
  *
- * Satuannya HARI. Daftar sebelumnya (1T/3T/5T/Semua) memakai satuan TAHUN dan
- * dibuang bersama chip-nya: separuh isi kaki baru (1D, 5D, 1M) mustahil
- * dinyatakan sebagai bilangan tahun bulat, dan menyimpan dua daftar rentang
- * berdampingan berarti dua tempat yang bisa berselisih soal rentang mana yang
- * sedang aktif.
+ * Sebelum #209 daftar ini punya id/hitungan SENDIRI (`1D 5D 1M 3M 6M 1Y 5Y
+ * All`, hari kalender mentah lewat `batasBawahHari` di bawah) — beda dari
+ * kosakata baku dipakai pemilih rentang lain. Sekarang id DAN label-nya
+ * langsung dari `RENTANG_BAKU`/`LABEL_RENTANG`; hitungannya dites lewat
+ * `jendelaBaku` di GrafikEmiten.tsx (snap ke hari berdata NYATA, bukan hitung
+ * mundur kalender polos). "5 Hari" lama melebur ke `w1` (1 Minggu) dan
+ * "5 Tahun" dibuang — di luar jangkauan baku (maksimal `y2`, 2 tahun).
  *
- * Labelnya sengaja PENDEK dan berbahasa chart (1D/1M/1Y), bukan `LABEL_RENTANG`
- * yang berbahasa Indonesia panjang: delapan chip "1 Bulan"/"3 Bulan"/"1 Tahun"
- * tak muat di kaki kanvas 412px, dan justru kaki inilah yang paling sering
- * ditekan.
+ * `id`-nya bertipe `string` polos (bukan `KunciBaku | 'semua'` literal),
+ * sengaja disamakan dengan `rentangLabel` (`useState<string>` di
+ * GrafikEmiten.tsx) yang juga menyimpan id ini di template tersimpan
+ * (localStorage) — menyempitkan tipenya di sini cuma memindahkan galat ke
+ * pemanggil tanpa manfaat nyata.
  */
-export const RENTANG_KAKI: Array<[label: string, hari: number | null]> = [
-  ['1D', 1],
-  ['5D', 5],
-  ['1M', 31],
-  ['3M', 92],
-  ['6M', 183],
-  ['1Y', 365],
-  ['5Y', 1826],
-  ['Semua', null],
-]
+export const RENTANG_KAKI: Array<[id: string, label: string]> =
+  ([...RENTANG_BAKU, 'semua'] as const).map((k) => [k, LABEL_RENTANG[k]])
 
-/** Tanggal ISO batas bawah sebuah rentang berbasis HARI, dihitung mundur dari
- *  tanggal TERAKHIR data — bukan dari hari ini. Data OHLC berhenti beberapa
- *  hari sebelum "sekarang" kalau panen belum jalan, dan menghitung dari hari
- *  ini memotong lilin terbaru yang sebenarnya masih ada. */
+/**
+ * Tanggal ISO batas bawah sebuah rentang berbasis HARI, dihitung mundur dari
+ * tanggal TERAKHIR data — bukan dari hari ini. Data OHLC berhenti beberapa
+ * hari sebelum "sekarang" kalau panen belum jalan, dan menghitung dari hari
+ * ini memotong lilin terbaru yang sebenarnya masih ada.
+ *
+ * TIDAK lagi dipakai kaki kanvas (#209 — lihat `RENTANG_KAKI` di atas, yang
+ * sekarang memakai `jendelaBaku` langsung di GrafikEmiten.tsx). Dipertahankan
+ * apa adanya untuk `GrupKonglomerat.tsx` (preset Deret b1/b3/ytd, hari
+ * kalender mentah — di luar lingkup #209).
+ */
 export function batasBawahHari(akhirData: string, hari: number | null): string {
   if (hari === null || !akhirData) return ''
   const d = new Date(`${akhirData.slice(0, 10)}T00:00:00Z`)
@@ -188,8 +198,9 @@ export function batasBawahHari(akhirData: string, hari: number | null): string {
 
 /** Rentang yang aktif saat halaman pertama dibuka. Johan 17 Agu 2026: "buat
  *  default nya semua". Ditulis sebagai konstanta (bukan angka indeks) supaya
- *  chip yang tersorot dan data yang tergambar mustahil berbeda. */
-export const RENTANG_KAKI_BAWAAN = 'Semua'
+ *  chip yang tersorot dan data yang tergambar mustahil berbeda. Id, bukan
+ *  label — dieja `'semua'` (kunci baku), tetap sama sesudah #209. */
+export const RENTANG_KAKI_BAWAAN = 'semua'
 
 /**
  * Harga tutup pada waktu `t`, atau tutup terakhir SEBELUM `t` kalau waktu itu

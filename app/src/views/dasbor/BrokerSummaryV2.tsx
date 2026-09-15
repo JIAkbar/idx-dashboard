@@ -8,7 +8,7 @@ import { StockAutocomplete } from '../../components/dasbor/StockAutocomplete'
 import { IkonMenu, IKON_ULANG, IKON_PERINGATAN } from '../../components/dasbor/IkonMenu'
 import { useStockIndex } from '../../lib/dasbor/stockDetailData'
 import { agregatBroker, type ModeTransaksi } from '../../lib/dasbor/brokerEmiten'
-import { TAHUN_AWAL, PRESET_BROKER, mulaiPreset, presetBerlaku, type PresetId, useArusBrokerEmiten, useOhlcvEmiten, irisOhlcv, vwapRentang } from '../../lib/dasbor/brokerEmitenV2'
+import { TAHUN_AWAL, opsiPresetBroker, mulaiPreset, presetBerlaku, type PresetId, useArusBrokerEmiten, useOhlcvEmiten, irisOhlcv, vwapRentang } from '../../lib/dasbor/brokerEmitenV2'
 import { keFraksi } from '../../lib/fraksiHarga'
 import { Overview } from './broker-summary-v2/Overview'
 import { Inventory } from './broker-summary-v2/Inventory'
@@ -146,7 +146,7 @@ export function BrokerSummaryV2() {
   useEffect(() => {
     if (tanggalTersedia.length === 0 || dari) return
     const akhirData = tanggalTersedia[tanggalTersedia.length - 1]
-    setDari(mulaiPreset('hariini', akhirData, tanggalTersedia))
+    setDari(mulaiPreset('h1', akhirData, tanggalTersedia))
     setAkhir(akhirData)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tanggalTersedia, dari])
@@ -241,7 +241,7 @@ export function BrokerSummaryV2() {
               <div className="bs-preset">
                 <PemilihRentang
                   tampil="dropdown"
-                  opsi={PRESET_BROKER}
+                  opsi={opsiPresetBroker(tanggalTersedia, tanggalTersedia[tanggalTersedia.length - 1] ?? '')}
                   // Kosong = rentangnya tak sama dengan preset mana pun (hasil
                   // panah geser atau kalender). Tombol menampilkan placeholder,
                   // bukan preset yang kebetulan jadi bawaan.

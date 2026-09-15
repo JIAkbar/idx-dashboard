@@ -178,9 +178,14 @@ export function SektorIndeks() {
    * 1 Bulan / 3 Bulan dulu lewat `cariTanggalPembanding` 30/91 hari; preset
    * bilah atas memakai fungsi yang sama, jadi tanggal pembandingnya identik. */
   const periode: PeriodeId = rentang ? 'rentang' : 'd'
+  // Sejak #209 (J20) `rentang.mulai` = hari PERTAMA jendela, dan pembandingnya
+  // hari berdata terakhir SEBELUM itu — sama dengan Top Stocks ("penutupan
+  // sebelum rentang") dan dengan rentang kustom dari kalender.
   const tanggalPembanding = useMemo(() => {
     if (!rentang) return null
-    return tanggalTersedia.find((t) => t.date_iso === rentang.mulai) ?? null
+    let hasil: (typeof tanggalTersedia)[number] | null = null
+    for (const t of tanggalTersedia) if (t.date_iso < rentang.mulai && (!hasil || t.date_iso > hasil.date_iso)) hasil = t
+    return hasil
   }, [rentang, tanggalTersedia])
 
   // Hooks dipanggil tanpa syarat sebelum return dini loading/error (Rules of
@@ -238,11 +243,10 @@ export function SektorIndeks() {
   const board = hari.board ?? []
 
   const labelRentang = rentang ? `Perf ${fmtTanggalPendek(rentang.mulai)} – ${fmtTanggalPendek(rentang.akhir)}` : null
-  // Performa = akhir vs awal; hari mulai cuma titik pembanding, jadi yang
-  // dilaporkan jumlah hari PERGERAKAN (inklusif − 1). Preset 1 Minggu 5–12 Agu
-  // berisi 6 hari bursa tapi pergerakannya 5 hari, sesuai konvensi "1 minggu".
+  // Jumlah hari PERGERAKAN = hari berdata di jendela (pembandingnya di luar
+  // jendela sejak #209). Preset 1 Minggu dari Selasa: Rabu–Selasa, 5 hari.
   const nHariRentang = rentang
-    ? Math.max(1, tanggalTersedia.filter((t) => t.date_iso >= rentang.mulai && t.date_iso <= rentang.akhir).length - 1)
+    ? Math.max(1, tanggalTersedia.filter((t) => t.date_iso >= rentang.mulai && t.date_iso <= rentang.akhir).length)
     : 0
   /** % perubahan untuk periode/rentang terpilih dari daftar `sumber` di
    * berkas pembanding — null = pembanding belum ada/tidak ketemu, tampilkan

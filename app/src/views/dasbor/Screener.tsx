@@ -6,7 +6,7 @@ import { UjiAturan } from '../../components/dasbor/UjiAturan'
 import { DropdownMulti, type OpsiMulti } from '../../components/dasbor/DropdownMulti'
 import { Dropdown } from '../../components/dasbor/Dropdown'
 import { PemilihRentang } from '../../components/dasbor/PemilihRentang'
-import { LABEL_RENTANG } from '../../lib/dasbor/periode'
+import { jendelaBaku, opsiRentangBaku, RENTANG_BAKU, type KunciBaku } from '../../lib/dasbor/periode'
 import { TINGKAT_LIKUIDITAS, kodePeringkatTeratas, ujiLikuiditas } from '../../lib/dasbor/likuiditas'
 import { useUrut } from '../../lib/dasbor/useUrut'
 import { useLayarSempit } from '../../lib/dasbor/useLayarSempit'
@@ -565,14 +565,45 @@ function PanelPresetWhale({ presetAktif, presetId, setPresetId, hasil, petaBaris
 
 // ── Tab "Riwayat & Win Rate" (Tugas C, spek_preset_winrate_rekap.md) ───────
 
-type JendelaId = 'w1' | 'b1' | 'b3'
-/** w1/b1/b3 dipilih APA ADANYA dari `rentangPreset`/`PemilihRentang` (7/30/91
- *  hari) — bukan kosakata baru, cuma dibaca sebagai "berapa hari TERAKHIR
- *  dari daftar tanggal rekomendasi" (bukan snap kalender ke tanggal bursa,
- *  beda pemakaian dari `rentangPreset`, jadi dipetakan manual di sini). */
-const JENDELA_OPSI: { id: JendelaId; label: string }[] = (['w1', 'b1', 'b3'] as const)
-  .map((id) => ({ id, label: LABEL_RENTANG[id] }))
-const JENDELA_HARI: Record<JendelaId, number> = { w1: 7, b1: 30, b3: 90 }
+type JendelaId = 'h1' | 'w1' | 'w2' | 'b1' | 'b3' | 'b6' | 'ytd' | 'y1' | 'y2' | 'semua'
+const KUNCI_JENDELA: Record<JendelaId, KunciBaku | 'semua'> =
+  { h1: 'h1', w1: 'w1', w2: 'w2', b1: 'b1', b3: 'b3', b6: 'b6', ytd: 'sejakJan', y1: 'y1', y2: 'y2', semua: 'semua' }
+/** Dipakai HANYA sebelum daftar tanggal rekomendasi termuat (bootstrap) —
+ *  begitu ada datanya, jumlah hari yang sebenarnya dipakai datang dari
+ *  `hitungJendela` (jendelaBaku atas tanggal rekomendasi yang benar-benar
+ *  ada), bukan angka tetap ini. SEPULUH baku (#209 koreksi pengawas 15 Sep
+ *  2026): `tanggalPreset`/`useJendelaRekomendasi` (nilaiJejak.ts:121,
+ *  rekomendasi.ts:124) menerima HITUNGAN sembarang, tak dibatasi struktur
+ *  apa pun — jadi tak ada alasan membatasi jendela ke w1/b1/b3 saja. */
+const JENDELA_HARI_BOOT: Record<JendelaId, number> = {
+  h1: 1, w1: 7, w2: 14, b1: 30, b3: 90, b6: 180, ytd: 30, y1: 365, y2: 730, semua: 9999,
+}
+
+/** Opsi pil: SEPULUH baku, nonaktif HANYA kalau `jendelaBaku` bilang daftar
+ *  tanggal rekomendasi tak cukup untuk jendela itu (#209, periode.ts). */
+function opsiJendela(tanggal: readonly string[]) {
+  const akhir = tanggal[tanggal.length - 1]
+  const peta: Partial<Record<KunciBaku | 'semua', JendelaId>> = {}
+  if (akhir) {
+    ;([...RENTANG_BAKU, 'semua'] as const).forEach((k) => {
+      if (jendelaBaku(tanggal, akhir, k)) peta[k] = k === 'sejakJan' ? 'ytd' : k
+    })
+  }
+  return opsiRentangBaku(peta)
+}
+
+/** Berapa tanggal rekomendasi TERAKHIR yang masuk jendela `id` — `jendelaBaku`
+ *  atas daftar tanggal rekomendasi yang benar-benar ada (bukan lagi angka
+ *  tetap 7/30/90 hari kalender, itu dulu cuma tebakan kasar #hariBursa ≈
+ *  #hariKalender). Hasilnya tetap berupa HITUNGAN (bukan tanggal) karena
+ *  `tanggalPreset`/`useJendelaRekomendasi` (nilaiJejak.ts, rekomendasi.ts)
+ *  memotong N tanggal TERAKHIR, bukan menyaring rentang tanggal. */
+function hitungJendela(tanggal: readonly string[], id: JendelaId): number {
+  const akhir = tanggal[tanggal.length - 1]
+  if (!akhir) return 0
+  const j = jendelaBaku(tanggal, akhir, KUNCI_JENDELA[id])
+  return j ? tanggal.length - tanggal.indexOf(j.mulai) : tanggal.length
+}
 
 const DEFINISI_OPSI: { id: DefinisiId; label: string; kalimat: string }[] = [
   {
@@ -600,7 +631,12 @@ function PanelRiwayatWinRate({ presetId, setPresetId, jendela, setJendela, defin
   // (skor, target, batas rugi) yang dipajang di kolom — bukan untuk menilai.
   const [jejak, setJejak] = useState<BerkasJejak | null | undefined>(undefined)
   useEffect(() => { void ambilJejak().then(setJejak) }, [])
-  const hariDimuat = useJendelaRekomendasi(JENDELA_HARI[jendela])
+  const tanggalJejak = useMemo(
+    () => (jejak ? [...new Set(jejak.perTanggal.map((t) => t.tanggal))].sort() : []),
+    [jejak],
+  )
+  const nHari = tanggalJejak.length ? hitungJendela(tanggalJejak, jendela) : JENDELA_HARI_BOOT[jendela]
+  const hariDimuat = useJendelaRekomendasi(nHari)
 
   const keteranganPerTanggal = useMemo(() => {
     const peta = new Map<string, Map<string, { skor: number | null; tp1: number | null; sl: number | null }>>()
@@ -614,7 +650,7 @@ function PanelRiwayatWinRate({ presetId, setPresetId, jendela, setJendela, defin
 
   const perHari = useMemo(() => {
     if (!jejak) return []
-    return tanggalPreset(jejak, presetId, JENDELA_HARI[jendela]).map((t) => ({
+    return tanggalPreset(jejak, presetId, nHari).map((t) => ({
       tanggal: t.tanggal,
       backtest: t.kelasBukti === 'REKONSTRUKSI',
       jendelaTutup: t.jendelaTutup,
@@ -624,7 +660,7 @@ function PanelRiwayatWinRate({ presetId, setPresetId, jendela, setJendela, defin
       def: t.p.definisi,
       baris: barisSahamDariHakim(t.tanggal, t.p, keteranganPerTanggal.get(t.tanggal) ?? new Map()),
     }))
-  }, [jejak, presetId, jendela, keteranganPerTanggal])
+  }, [jejak, presetId, jendela, nHari, keteranganPerTanggal])
 
   const live = perHari.filter((h) => !h.backtest)
   const backtest = perHari.filter((h) => h.backtest)
@@ -706,7 +742,7 @@ function PanelRiwayatWinRate({ presetId, setPresetId, jendela, setJendela, defin
           <span className="pemisah-v" aria-hidden="true" />
           <div className="grup-k">
             <span className="grup-lbl">Jendela</span>
-            <PemilihRentang opsi={JENDELA_OPSI} nilai={jendela} onGanti={setJendela} ariaLabel="Jendela hari rekomendasi" />
+            <PemilihRentang opsi={opsiJendela(tanggalJejak)} nilai={jendela} onGanti={setJendela} ariaLabel="Jendela hari rekomendasi" />
           </div>
           <span className="pemisah-v" aria-hidden="true" />
           <div className="grup-k grup-kanan">

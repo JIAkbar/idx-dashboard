@@ -5,26 +5,39 @@ import { useTheme } from '../../../context/ThemeContext'
 import { PemilihRentang } from '../../../components/dasbor/PemilihRentang'
 import type { BarisOhlcv } from '../../../lib/dasbor/brokerEmitenV2'
 import { regresiVsIhsg } from '../../../lib/dasbor/brokerEmitenV2'
-import { LABEL_RENTANG } from '../../../lib/dasbor/periode'
+import { jendelaBaku, opsiRentangBaku, RENTANG_BAKU, type KunciBaku } from '../../../lib/dasbor/periode'
 import { labelTanggal } from '../../../lib/dasbor/brokerHarian'
 import { EmptyState } from './Overview'
 import { persen } from '../../../lib/dasbor/format'
 
-type RentangVs = 'b3' | 'b6' | 'ytd'
-const OPSI_RENTANG: { id: RentangVs; label: string }[] = [
-  { id: 'b3', label: LABEL_RENTANG.b3 },
-  { id: 'b6', label: LABEL_RENTANG.b6 },
-  { id: 'ytd', label: LABEL_RENTANG.sejakJan },
-]
+type RentangVs = 'h1' | 'w1' | 'w2' | 'b1' | 'b3' | 'b6' | 'ytd' | 'y1' | 'y2' | 'semua'
+const KUNCI_RENTANG: Record<RentangVs, KunciBaku | 'semua'> =
+  { h1: 'h1', w1: 'w1', w2: 'w2', b1: 'b1', b3: 'b3', b6: 'b6', ytd: 'sejakJan', y1: 'y1', y2: 'y2', semua: 'semua' }
 
-/** Jumlah hari bursa yang diminta rentang — YTD dihitung dari 1 Jan tahun bar TERAKHIR (bukan angka tetap). */
+/** Opsi pil: SEPULUH baku (#209 koreksi pengawas), nonaktif HANYA kalau
+ *  `jendelaBaku` bilang riwayat bar-nya tak cukup untuk rentang itu. */
+function opsiRentang(bars: BarisOhlcv[]) {
+  const tanggal = bars.map((b) => b.tanggal)
+  const akhir = tanggal[tanggal.length - 1]
+  const peta: Partial<Record<KunciBaku | 'semua', RentangVs>> = {}
+  if (akhir) {
+    ;([...RENTANG_BAKU, 'semua'] as const).forEach((k) => {
+      if (jendelaBaku(tanggal, akhir, k)) peta[k] = k === 'sejakJan' ? 'ytd' : k
+    })
+  }
+  return opsiRentangBaku(peta)
+}
+
+/** Jumlah hari bursa yang diminta rentang — `jendelaBaku` atas tanggal bar
+ *  (bukan angka tetap 63/126/252 seperti sebelumnya); YTD tetap dari 1 Jan
+ *  tahun bar TERAKHIR. Jatuh ke seluruh riwayat kalau presetnya tak valid. */
 function hariUntukRentang(r: RentangVs, bars: BarisOhlcv[]): number {
-  if (r === 'b3') return 63
-  if (r === 'b6') return 126
-  const akhir = bars[bars.length - 1]?.tanggal
-  if (!akhir) return 252
-  const awalTahun = `${akhir.slice(0, 4)}-01-01`
-  return bars.filter((b) => b.tanggal >= awalTahun).length || 252
+  const tanggal = bars.map((b) => b.tanggal)
+  const akhir = tanggal[tanggal.length - 1]
+  if (!akhir) return 0
+  const j = jendelaBaku(tanggal, akhir, KUNCI_RENTANG[r])
+  if (!j) return tanggal.length
+  return tanggal.length - tanggal.indexOf(j.mulai)
 }
 
 function Metrik({ k, ket, v, warna }: { k: string; ket?: string; v: string; warna?: string }) {
@@ -106,7 +119,7 @@ export function VsIhsg({ kode, saham, ihsg }: VsIhsgProps) {
   return (
     <>
       <div className="kendali" style={{ marginBottom: 12, display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
-        <PemilihRentang opsi={OPSI_RENTANG} nilai={rentang} onGanti={setRentang} ariaLabel="Rentang vs IHSG" />
+        <PemilihRentang opsi={opsiRentang(saham)} nilai={rentang} onGanti={setRentang} ariaLabel="Rentang vs IHSG" />
         {r && <span className="lbl">{labelTanggal(r.tgl[0])} – {labelTanggal(r.tgl[r.tgl.length - 1])} · {r.n} hari bursa</span>}
       </div>
       {!r ? (

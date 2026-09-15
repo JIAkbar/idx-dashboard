@@ -1,5 +1,5 @@
 import { PemilihRentang } from '../../components/dasbor/PemilihRentang'
-import { LABEL_RENTANG } from '../../lib/dasbor/periode'
+import { jendelaBaku, opsiRentangBaku, RENTANG_BAKU, type KunciBaku } from '../../lib/dasbor/periode'
 import { useMemo, useState, type ReactNode } from 'react'
 import { useBrokerHarian, labelTanggal } from '../../lib/dasbor/brokerHarian'
 import { useDsIso } from '../../lib/dasbor/flowNego'
@@ -27,33 +27,30 @@ const TABS: { id: Tab; label: ReactNode }[] = [
 const TAB_HARIAN: Record<Tab, boolean> = { inventory: true, quadrant: true, nego: false, flow: false }
 
 /** Preset mode Rentang (#79C — data 750 hari bursa, rentang tak dibatasi):
- * mundur hari kalender dari tanggal berdata terakhir; YTD = 1 Januari tahun
- * berjalan. pilihRentang otomatis snap ke hari berdata di dalamnya. */
-type PresetId = 'w1' | 'b1' | 'b3' | 'b6' | 'ytd' | 'y1'
-/* Labelnya dari LABEL_RENTANG (#170): daftar ini dulu mengeja sendiri empat
-   kata yang sudah dieja PRESET_RENTANG, jadi keduanya bisa menyimpang tanpa
-   ada yang menyadarinya. Yang khas di sini cuma jumlah harinya. */
-const PRESET_BROKER: { id: PresetId; label: string; hari: number }[] = [
-  { id: 'w1', label: LABEL_RENTANG.w1, hari: 7 },
-  { id: 'b1', label: LABEL_RENTANG.b1, hari: 30 },
-  { id: 'b3', label: LABEL_RENTANG.b3, hari: 91 },
-  { id: 'b6', label: LABEL_RENTANG.b6, hari: 182 },
-  // `sejakJan`: berkas ini juga merender PRESET_RENTANG, yang mengeja
-  // preset yang sama sebagai "Sejak 1 Jan". Dua kata untuk satu hitungan
-  // di satu berkas.
-  { id: 'ytd', label: LABEL_RENTANG.sejakJan, hari: 0 },
-  { id: 'y1', label: LABEL_RENTANG.y1, hari: 365 },
-]
+ * `jendelaBaku` (#209, satu definisi untuk seluruh app) atas hari-bursa
+ * ber-data broker (`tanggalTersedia`). pilihRentang otomatis snap ke hari
+ * berdata di dalamnya. */
+type PresetId = 'h1' | 'w1' | 'w2' | 'b1' | 'b3' | 'b6' | 'ytd' | 'y1' | 'y2' | 'semua'
 
-function mundurIso(iso: string, hari: number): string {
-  const d = new Date(`${iso}T12:00:00`)
-  d.setDate(d.getDate() - hari)
-  return d.toISOString().slice(0, 10)
+const KUNCI_PRESET: Record<PresetId, KunciBaku | 'semua'> =
+  { h1: 'h1', w1: 'w1', w2: 'w2', b1: 'b1', b3: 'b3', b6: 'b6', ytd: 'sejakJan', y1: 'y1', y2: 'y2', semua: 'semua' }
+
+/** Opsi pil: SEPULUH baku (#209 koreksi pengawas). "Semua" berarti seluruh
+ *  riwayat yang DIMUAT `useBrokerHarian` (~750 hari bursa, bukan riwayat
+ *  broker tanpa batas) dan tetap aktif selama `jendelaBaku(…,'semua')`
+ *  tidak null; `y2` aktif hanya kalau riwayat 750 harinya memang ≥ 2
+ *  tahun kalender. Nonaktif HANYA kalau `jendelaBaku` bilang riwayat yang
+ *  tersedia tak cukup untuk rentang itu. */
+function opsiPreset(tanggal: readonly string[], akhir: string) {
+  const peta: Partial<Record<KunciBaku | 'semua', PresetId>> = {}
+  ;([...RENTANG_BAKU, 'semua'] as const).forEach((k) => {
+    if (jendelaBaku(tanggal, akhir, k)) peta[k] = k === 'sejakJan' ? 'ytd' : k
+  })
+  return opsiRentangBaku(peta)
 }
 
-function mulaiPreset(id: PresetId, akhir: string): string {
-  if (id === 'ytd') return `${akhir.slice(0, 4)}-01-01`
-  return mundurIso(akhir, PRESET_BROKER.find((x) => x.id === id)!.hari)
+function mulaiPreset(tanggal: readonly string[], akhir: string, id: PresetId): string {
+  return jendelaBaku(tanggal, akhir, KUNCI_PRESET[id])?.mulai ?? akhir
 }
 
 /**
@@ -85,7 +82,7 @@ export function BrokerSummary() {
     if (!akhir) return
     setModeRentang(true)
     setPreset(p)
-    const mulai = mulaiPreset(p, akhir)
+    const mulai = mulaiPreset(tanggalTersedia, akhir, p)
     setMulaiIso(mulai)
     setAkhirIso(akhir)
     pilihRentang(mulai, akhir)
@@ -197,7 +194,7 @@ export function BrokerSummary() {
               {modeRentang && (
                 <PemilihRentang
                   className="bs-preset"
-                  opsi={PRESET_BROKER}
+                  opsi={opsiPreset(tanggalTersedia, tanggalTersedia[tanggalTersedia.length - 1] ?? '')}
                   nilai={preset ?? 'w1'}
                   onGanti={keRentang}
                 />

@@ -24,7 +24,7 @@ import { useScreener } from '../../lib/dasbor/screener'
 import { useChartCanvas, bacaTokenTema } from '../../lib/dasbor/useChartJs'
 import { useTheme } from '../../context/ThemeContext'
 import { labelTanggal } from '../../lib/dasbor/brokerHarian'
-import { opsiRentang, potongRentang, captionRentang, type IdRentang } from '../../lib/dasbor/rentang'
+import { opsiRentang, potongDenganPembanding, captionRentang, type IdRentang } from '../../lib/dasbor/rentang'
 import { TOKEN_SERI } from './neo-papan/bersama'
 import { warnaBroker, namaBroker } from '../../lib/dasbor/kelompokBroker'
 import {
@@ -584,8 +584,6 @@ function Metrik({ k, ket, v, warna }: { k: string; ket?: string; v: string; warn
   )
 }
 
-const PILIHAN_RENTANG_KINERJA: IdRentang[] = ['w1', 'b1', 'b3', 'b6', 'ytd', 'y1', 'y3', 'y5', 'semua']
-
 /**
  * Tab "Kinerja" (§E.2-E.4) — anggota watchlist digabung jadi satu indeks
  * harian, dua bobot. Fetch bars per anggota lewat `fetchDeret` (cache modul
@@ -629,8 +627,13 @@ function TabKinerja({ items }: { items: WatchlistItem[] }) {
     () => (ihsgBars ? tanggalUmumWatchlist(anggota, ihsgBars) : []),
     [anggota, ihsgBars],
   )
-  const opsi = useMemo(() => opsiRentang(tanggalUmum.length, PILIHAN_RENTANG_KINERJA), [tanggalUmum.length])
-  const tanggalPotong = useMemo(() => potongRentang(tanggalUmum, rentang, (t) => t), [tanggalUmum, rentang])
+  const opsi = useMemo(
+    () => opsiRentang(tanggalUmum, tanggalUmum[tanggalUmum.length - 1] ?? ''),
+    [tanggalUmum],
+  )
+  // Berpangkal di hari pembanding (J20): indeks 100 = tutup pembanding, jadi
+  // "Total return" = tutup terakhir lawan tutup sebelum jendela.
+  const tanggalPotong = useMemo(() => potongDenganPembanding(tanggalUmum, rentang, (t) => t), [tanggalUmum, rentang])
   const hasil = useMemo(
     () => (ihsgBars ? hitungIndeksWatchlist(anggota, ihsgBars, tanggalPotong) : null),
     [anggota, ihsgBars, tanggalPotong],

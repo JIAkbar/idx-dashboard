@@ -35,12 +35,12 @@ describe('mulaiPreset', () => {
     expect(mulaiPreset('y2', '2026-09-08', HARI_2026)).toBe(HARI_2026[0])
   })
 
-  it('Hari Ini berarti satu hari: mulai = akhir', () => {
-    expect(mulaiPreset('hariini', '2026-09-08', HARI_2026)).toBe('2026-09-08')
+  it('1 Hari berarti satu hari: mulai = akhir', () => {
+    expect(mulaiPreset('h1', '2026-09-08', HARI_2026)).toBe('2026-09-08')
   })
 
-  it('tanpa daftar hari berdata, tanggal kalender mentah dikembalikan apa adanya', () => {
-    expect(mulaiPreset('ytd', '2026-09-08')).toBe('2026-01-01')
+  it('tanpa daftar hari berdata, jatuh ke akhir itu sendiri (#209, jendelaBaku tak punya apa pun untuk dipijak)', () => {
+    expect(mulaiPreset('ytd', '2026-09-08')).toBe('2026-09-08')
   })
 })
 

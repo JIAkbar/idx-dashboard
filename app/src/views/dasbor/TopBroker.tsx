@@ -7,7 +7,7 @@ import { fN } from '../../lib/dasbor/format'
 import type { StockRankRow, BrokerRankRow } from '../../lib/dasbor/dataHarian'
 import { IkonMenu, IKON_PERINGATAN } from '../../components/dasbor/IkonMenu'
 import { PemilihRentang } from '../../components/dasbor/PemilihRentang'
-import { LABEL_RENTANG, pilRentang } from '../../lib/dasbor/periode'
+import { LABEL_RENTANG, opsiRentangBaku } from '../../lib/dasbor/periode'
 import { useBrokerRentang, type PresetBroker } from '../../lib/dasbor/brokerRentang'
 import { useTopBrokerHari } from '../../lib/dasbor/brokerHarian'
 import { Dropdown } from '../../components/dasbor/Dropdown'
@@ -165,26 +165,19 @@ export function TopBroker() {
           <PemilihRentang
             ariaLabel="Rentang Top Broker"
             nilai={rentang ?? 'hari'}
-            onGanti={(id) => setRentang(id === 'hari' ? null : (id as PresetBroker))}
-            // Disusun `pilRentang` (#70): kata DAN urutannya milik kamus
-            // rentang, halaman cuma menyebut kunci mana yang berlaku.
-            // `id` sengaja tetap seperti semula - ia kunci rollup yang
-            // tersimpan, dan menyamakannya dengan kunci kata berarti
-            // memindahkan state orang demi kerapian nama.
-            //
-            // `sejakJan`, bukan `ytd`: halaman ini memajang DUA kelompok
-            // pintasan - bilah tanggal di atas dan pil rollup ini - jadi
-            // dengan `ytd` keduanya berdiri bersebelahan menghitung hal yang
-            // SAMA dengan dua nama berbeda. Kata "YTD" disisakan untuk
-            // kolom resmi bursa (keputusan Johan 5 Sep 2026).
-            opsi={pilRentang([
-              { id: 'hari', kunci: 'hariIni', judul: 'Rekap satu hari bursa' },
-              { id: 'h5', kunci: 'h5' },
-              { id: 'w1', kunci: 'w1' },
-              { id: 'b1', kunci: 'b1' },
-              { id: 'b3', kunci: 'b3' },
-              { id: 'ytd', kunci: 'sejakJan' },
-            ])}
+            onGanti={(id) => setRentang(id === 'hari' ? null : id)}
+            // Daftar baku (#209 tahap 2) — tapi rollupnya PRA-DIHITUNG
+            // (`useBrokerRentang`), jadi hanya kunci baku yang punya rollup
+            // di `PresetBroker` yang dipetakan. Mode HARI (`rentang=null`)
+            // dipetakan ke "1 Hari" (Johan 15 Sep 2026: "Hari Ini" dieja
+            // "1 Hari"), lewat id lokal `'hari'` — bukan `PresetBroker`,
+            // supaya state `null` (bukan salah satu rollup) tetap terpisah.
+            // `h5` DIBUANG dari daftar baku (bersama MTD/WTD/3-5-10-20 Tahun)
+            // walau rollupnya masih dipanen; `b6`/`y1`/`y2`/`w2`/"Semua" tak
+            // punya rollup sama sekali — keduanya tampil nonaktif.
+            opsi={opsiRentangBaku<PresetBroker | 'hari'>({
+              h1: 'hari', w1: 'w1', b1: 'b1', b3: 'b3', sejakJan: 'ytd',
+            }, { h1: 'Rekap satu hari bursa' })}
           />
         </div>
         {/* Pintu ke Rincian Broker. Halaman itu lahir sebagai drill-down dan

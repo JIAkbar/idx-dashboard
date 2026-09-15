@@ -15,7 +15,7 @@ import { pesanGalat } from '../pesanGalat'
 import { kelompokBroker, LABEL_KELOMPOK, KETERANGAN_KELOMPOK, type KelompokBroker } from './kelompokBroker'
 import { LABEL_KATEGORI, type DaftarKategoriBroker, type KategoriBroker } from './kategoriBroker'
 import { urlData } from './baseData'
-import { LABEL_RENTANG } from './periode'
+import { LABEL_RENTANG, jendelaBaku, opsiRentangBaku, type KunciBaku } from './periode'
 
 export interface BarisOhlcv {
   tanggal: string
@@ -181,47 +181,53 @@ export function pilihTopInventaris(
  *  2016 terukur 100,00% hari, uji manual cocok arsip mentah). */
 export const TAHUN_AWAL = 2016
 
-export type PresetId = 'hariini' | 'w1' | 'b1' | 'b3' | 'b6' | 'ytd' | 'y1' | 'y2'
+export type PresetId = 'h1' | 'w1' | 'w2' | 'b1' | 'b3' | 'b6' | 'ytd' | 'y1' | 'y2' | 'semua'
 
-/** Pintasan rentang bilah Arus Broker. `hari` dihitung mundur dari hari
- *  berdata TERAKHIR, bukan dari jam dinding — arsip bisa berhenti beberapa
- *  hari sebelum hari ini dan menghitung dari 'sekarang' memotong data yang
- *  sebenarnya ada. */
-export const PRESET_BROKER: { id: PresetId; label: string; hari: number }[] = [
-  { id: 'hariini', label: LABEL_RENTANG.hariIni, hari: 0 },
-  { id: 'w1', label: LABEL_RENTANG.w1, hari: 7 },
-  { id: 'b1', label: LABEL_RENTANG.b1, hari: 30 },
-  { id: 'b3', label: LABEL_RENTANG.b3, hari: 91 },
-  { id: 'b6', label: LABEL_RENTANG.b6, hari: 182 },
-  { id: 'ytd', label: LABEL_RENTANG.sejakJan, hari: 0 },
-  { id: 'y1', label: LABEL_RENTANG.y1, hari: 365 },
+/** Kunci baku (`periode.ts`) tiap id — `hariini` diganti `h1`/"1 Hari" (#209,
+ *  Johan 15 Sep 2026: satu daftar baku untuk seluruh pemilih rentang). `w2`
+ *  dan `semua` ditambahkan (#209 koreksi pengawas 15 Sep — sepuluh opsi di
+ *  SEMUA pemilih, nonaktif hanya kalau datanya sungguh tak cukup; "semua"
+ *  berarti seluruh arsip broker yang termuat, dari `TAHUN_AWAL`). */
+const KUNCI_PRESET: Record<PresetId, KunciBaku | 'semua'> =
+  { h1: 'h1', w1: 'w1', w2: 'w2', b1: 'b1', b3: 'b3', b6: 'b6', ytd: 'sejakJan', y1: 'y1', y2: 'y2', semua: 'semua' }
+
+/** Pintasan rentang bilah Arus Broker (#209: kata & hitungan baku, satu
+ *  definisi untuk seluruh app — `jendelaBaku`, `periode.ts`). */
+export const PRESET_BROKER: { id: PresetId; label: string }[] = [
+  { id: 'h1', label: LABEL_RENTANG.h1 },
+  { id: 'w1', label: LABEL_RENTANG.w1 },
+  { id: 'w2', label: LABEL_RENTANG.w2 },
+  { id: 'b1', label: LABEL_RENTANG.b1 },
+  { id: 'b3', label: LABEL_RENTANG.b3 },
+  { id: 'b6', label: LABEL_RENTANG.b6 },
+  { id: 'ytd', label: LABEL_RENTANG.sejakJan },
+  { id: 'y1', label: LABEL_RENTANG.y1 },
   // Johan 8 Sep 2026: "ada 1 tahun ada 2 tahun dan rentang". Arsip broker
   // per emiten memang mundur sampai 2016, jadi dua tahun bukan janji kosong.
-  { id: 'y2', label: LABEL_RENTANG.y2, hari: 730 },
+  { id: 'y2', label: LABEL_RENTANG.y2 },
+  { id: 'semua', label: LABEL_RENTANG.semua },
 ]
 
-function mundurIso(iso: string, hari: number): string {
-  const d = new Date(`${iso}T12:00:00`)
-  d.setDate(d.getDate() - hari)
-  return d.toISOString().slice(0, 10)
+/** Opsi pil siap-pakai untuk `PemilihRentang` — 10 opsi baku (#209), nonaktif
+ *  HANYA kalau `jendelaBaku` bilang arsip yang tersedia tak cukup untuk
+ *  rentang itu. "Semua" = seluruh arsip broker yang termuat (dari
+ *  `TAHUN_AWAL`), tetap aktif selama `jendelaBaku(…,'semua')` tidak null. */
+export function opsiPresetBroker(tersedia: readonly string[], akhir: string) {
+  const peta: Partial<Record<KunciBaku | 'semua', PresetId>> = {}
+  PRESET_BROKER.forEach(({ id }) => {
+    if (jendelaBaku(tersedia, akhir, KUNCI_PRESET[id])) peta[KUNCI_PRESET[id]] = id
+  })
+  return opsiRentangBaku(peta)
 }
 
 /**
- * Tanggal mulai sebuah preset — SELALU hari yang benar-benar berdata.
- *
- * Dulu mengembalikan tanggal kalender mentah: `ytd` jatuh di 1 Januari yang
- * tak pernah hari bursa, `b1` bisa jatuh di akhir pekan. Rentangnya sendiri
- * tetap benar (penyaringnya `t >= dari`), tapi panah geser mencari tanggal
- * itu di daftar hari berdata, tak menemukannya, lalu diam — tombol hidup
- * yang tak melakukan apa pun. Disnap di sini, sekali.
+ * Tanggal mulai sebuah preset — `jendelaBaku` (#209), SELALU hari yang
+ * benar-benar berdata. Jatuh ke hari berdata pertama (atau `akhir` kalau
+ * arsipnya kosong) waktu presetnya kebetulan tak valid untuk `tersedia` ini
+ * — mis. dipilih di halaman lain sebelum arsip emiten ini termuat.
  */
 export function mulaiPreset(id: PresetId, akhir: string, tersedia: readonly string[] = []): string {
-  const mentah = id === 'ytd' ? `${akhir.slice(0, 4)}-01-01`
-    : id === 'hariini' ? akhir
-      : mundurIso(akhir, PRESET_BROKER.find((x) => x.id === id)!.hari)
-  // Hari berdata PERTAMA sejak tanggal itu; kalau seluruh arsip lebih muda
-  // (preset lebih panjang daripada riwayatnya), pakai hari terawal yang ada.
-  return tersedia.find((t) => t >= mentah) ?? (tersedia.length ? tersedia[0] : mentah)
+  return jendelaBaku(tersedia, akhir, KUNCI_PRESET[id])?.mulai ?? (tersedia[0] ?? akhir)
 }
 
 /**

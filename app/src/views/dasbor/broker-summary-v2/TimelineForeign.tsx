@@ -5,24 +5,39 @@ import { useTheme } from '../../../context/ThemeContext'
 import { PemilihRentang } from '../../../components/dasbor/PemilihRentang'
 import type { BarisOhlcv } from '../../../lib/dasbor/brokerEmitenV2'
 import { timelineForeign } from '../../../lib/dasbor/brokerEmitenV2'
-import { LABEL_RENTANG } from '../../../lib/dasbor/periode'
+import { LABEL_RENTANG, jendelaBaku, opsiRentangBaku, RENTANG_BAKU, type KunciBaku } from '../../../lib/dasbor/periode'
 import { labelTanggal } from '../../../lib/dasbor/brokerHarian'
 import { fmtB } from '../../../lib/dasbor/brokerSummaryFormat'
 import { EmptyState } from './Overview'
 
-type RentangFr = 'b3' | 'b6' | 'ytd'
-const OPSI_RENTANG: { id: RentangFr; label: string }[] = [
-  { id: 'b3', label: LABEL_RENTANG.b3 },
-  { id: 'b6', label: LABEL_RENTANG.b6 },
-  { id: 'ytd', label: LABEL_RENTANG.sejakJan },
-]
+type RentangFr = 'h1' | 'w1' | 'w2' | 'b1' | 'b3' | 'b6' | 'ytd' | 'y1' | 'y2' | 'semua'
+const KUNCI_RENTANG: Record<RentangFr, KunciBaku | 'semua'> =
+  { h1: 'h1', w1: 'w1', w2: 'w2', b1: 'b1', b3: 'b3', b6: 'b6', ytd: 'sejakJan', y1: 'y1', y2: 'y2', semua: 'semua' }
 
+/** Opsi pil: SEPULUH baku (#209 koreksi pengawas), nonaktif HANYA kalau
+ *  `jendelaBaku` bilang riwayat bar-nya tak cukup untuk rentang itu. */
+function opsiRentang(bars: BarisOhlcv[]) {
+  const tanggal = bars.map((b) => b.tanggal)
+  const akhir = tanggal[tanggal.length - 1]
+  const peta: Partial<Record<KunciBaku | 'semua', RentangFr>> = {}
+  if (akhir) {
+    ;([...RENTANG_BAKU, 'semua'] as const).forEach((k) => {
+      if (jendelaBaku(tanggal, akhir, k)) peta[k] = k === 'sejakJan' ? 'ytd' : k
+    })
+  }
+  return opsiRentangBaku(peta)
+}
+
+/** Berapa bar terakhir yang dipakai — `jendelaBaku` atas tanggal bar,
+ *  bukan jumlah bar tetap (63/126/252) seperti sebelumnya. Jatuh ke seluruh
+ *  riwayat bar kalau presetnya tak valid untuk deret ini. */
 function hariUntukRentang(r: RentangFr, bars: BarisOhlcv[]): number {
-  if (r === 'b3') return 63
-  if (r === 'b6') return 126
-  const akhir = bars[bars.length - 1]?.tanggal
-  if (!akhir) return 252
-  return bars.filter((b) => b.tanggal >= `${akhir.slice(0, 4)}-01-01`).length || 252
+  const tanggal = bars.map((b) => b.tanggal)
+  const akhir = tanggal[tanggal.length - 1]
+  if (!akhir) return 0
+  const j = jendelaBaku(tanggal, akhir, KUNCI_RENTANG[r])
+  if (!j) return tanggal.length
+  return tanggal.length - tanggal.indexOf(j.mulai)
 }
 
 interface TimelineForeignProps {
@@ -74,7 +89,7 @@ export function TimelineForeign({ bars }: TimelineForeignProps) {
   return (
     <>
       <div className="kendali" style={{ marginBottom: 12, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-        <PemilihRentang opsi={OPSI_RENTANG} nilai={rentang} onGanti={setRentang} ariaLabel="Rentang asing" />
+        <PemilihRentang opsi={opsiRentang(bars)} nilai={rentang} onGanti={setRentang} ariaLabel="Rentang asing" />
         {f && (
           <span className="bs2-chipstat">Net {LABEL_RENTANG[rentang]} <b className="num" style={{ color: f.netRentang >= 0 ? 'var(--green)' : 'var(--red)' }}>Rp {fmtB(f.netRentang)}</b></span>
         )}

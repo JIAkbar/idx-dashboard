@@ -2,7 +2,7 @@ import { DatePicker } from './DatePicker'
 import { useState } from 'react'
 import { PemilihRentang } from './PemilihRentang'
 import type { TanggalIndex } from '../../lib/dasbor/dataHarian'
-import { PRESET_RENTANG, rentangPreset, type PresetRentang, type RentangTanggal } from '../../lib/dasbor/periode'
+import { opsiRentangBaku, rentangBaku, RENTANG_BAKU, type KunciBaku, type RentangTanggal } from '../../lib/dasbor/periode'
 
 /**
  * Bilah tanggal untuk halaman harian — pengganti hero `Kalender` (861 baris)
@@ -13,8 +13,9 @@ import { PRESET_RENTANG, rentangPreset, type PresetRentang, type RentangTanggal 
  * Ini KOMPOSISI, bukan kendali baru: stepper `LangkahTanggal`, kalender
  * `DatePicker` (mode rentang menyala hanya bila `onRentang` diberikan — klik
  * pertama memilih hari, klik kedua menaikkannya jadi rentang), dan pil
- * `PemilihRentang` berisi `PRESET_RENTANG` yang sudah ada dan sudah snap ke
- * hari berdata. Tak satu pun bentuk didefinisikan di sini.
+ * `PemilihRentang` berisi daftar baku (`RENTANG_BAKU`, #209 tahap 2) yang
+ * sudah snap ke hari berdata lewat `rentangBaku`. Tak satu pun bentuk
+ * didefinisikan di sini.
  *
  * Prop-nya sengaja SAMA dengan `Kalender` supaya 11 titik panggil di empat
  * halaman cuma berganti nama. Yang tidak ikut: `varian` (hero tak punya
@@ -42,32 +43,41 @@ export function BilahTanggal({ tanggalTersedia, tanggalAktif, onPilih, onRentang
   const terbaru = tanggalTersedia[tanggalTersedia.length - 1]?.date_iso
   // Jangkar stepper & preset: ujung akhir rentang kalau ada, kalau tidak hari aktif.
   const jangkar = rentangAktif?.akhir ?? tanggalAktif ?? terbaru ?? ''
+  const isoTersedia = tanggalTersedia.map((t) => t.date_iso)
 
   function keHari(iso: string) {
     onRentang?.(null)
     onPilih(iso)
   }
 
-  // Pil yang menyala = preset yang persis menghasilkan rentang aktif; rentang
-  // hasil dua klik di kalender tak cocok dengan preset mana pun → "Kustom",
-  // yang hanya muncul saat itu supaya daftar pil tak menyusut/melar diam-diam.
+  // Pil yang menyala = kunci baku yang persis menghasilkan rentang aktif;
+  // rentang hasil dua klik di kalender tak cocok dengan preset mana pun →
+  // "Kustom", yang hanya muncul saat itu supaya daftar pil tak menyusut/
+  // melar diam-diam.
   //
-  // TIDAK ADA pil "1 Hari" (keputusan Johan 5 Sep 2026, artifact "Empat Bilah
-  // Kendali PAPAN", opsi A: *"kalender jadi penentu, pil jadi pintasan"*).
-  // Keadaan satu-hari itu keadaan bawaan, dan kalender di sebelahnya sudah
-  // menyatakannya; pil itu juga berdiri persis di samping tombol "Hari ini"
-  // milik DatePicker, dua kata nyaris sama untuk dua hal berbeda.
+  // SEMUA sembilan kunci baku + "Semua" ditawarkan di sini (#209 tahap 2,
+  // Johan 15 Sep 2026: "semua pemilih rentang waktu memakai daftar yang
+  // sama"), termasuk "1 Hari" — pembalikan dari keputusan 5 Sep 2026 yang
+  // dulu sengaja membuangnya karena berdiri persis di samping tombol
+  // "Hari ini" milik kalender. Keputusan yang lebih baru menang; jalan
+  // KEMBALI ke satu hari lewat kalender/tombol "Hari ini" tetap ada, tak
+  // tercabut oleh ini.
   //
-  // Jalan KEMBALI dari rentang ke satu hari tetap ada dua, dan keduanya lewat
-  // kalender: klik satu tanggal di dalamnya (`keHari` membuang rentangnya),
-  // atau tombol "Hari ini" — yang oleh DatePicker memang selalu dirender
-  // selagi rentang aktif, persis supaya jalan keluar itu tak pernah hilang.
-  type Pil = PresetRentang | 'kustom' | 'tak-ada'
-  const sama = (id: PresetRentang) => {
-    if (!rentangAktif) return false
-    const r = rentangPreset(tanggalTersedia, rentangAktif.akhir, id)
-    return r?.mulai === rentangAktif.mulai && r?.akhir === rentangAktif.akhir
-  }
+  // Kunci yang datanya tak cukup (riwayat lebih pendek dari jendelanya)
+  // TIDAK dipetakan → `opsiRentangBaku` menampilkannya nonaktif, bukan
+  // disembunyikan (aturan yang sama). Tanpa penyaringan ini, mengklik pil
+  // yang datanya kurang akan memanggil `onRentang(null)` — rentangnya diam-
+  // diam batal dan pil yang menyala malah hilang, gagal tanpa kelihatan.
+  type Pil = KunciBaku | 'semua' | 'kustom' | 'tak-ada'
+  const aktifKah = (k: KunciBaku | 'semua') => rentangBaku(isoTersedia, jangkar, k) !== null
+  const petaBaku: Partial<Record<KunciBaku | 'semua', Pil>> = {}
+  for (const k of RENTANG_BAKU) if (aktifKah(k)) petaBaku[k] = k
+  // "Semua" aktif hanya kalau riwayatnya minimal 2 tahun — sama syarat
+  // dengan opsi "2 Tahun" sendiri (halaman ini tak punya cara lain
+  // membedakan "riwayat pendek" dari "riwayat memang cuma segini").
+  if (aktifKah('semua')) petaBaku.semua = 'semua'
+  const opsiBaku = opsiRentangBaku<Pil>(petaBaku)
+
   // Dua preset bisa menghasilkan rentang yang SAMA PERSIS — pada 8 September,
   // "1 Minggu" (7 hari mundur) dan "MTD" (sejak tanggal 1) sama-sama
   // 1–8 Sep. Tanpa mengingat mana yang barusan ditekan, pencocokan selalu
@@ -75,16 +85,21 @@ export function BilahTanggal({ tanggalTersedia, tanggalAktif, onPilih, onRentang
   // dan kliknya terbaca seperti ditolak. Ingatan ini BUKAN sumber kebenaran
   // kedua: rentangnya tetap yang menentukan, dan ingatan dibuang begitu ia
   // tak lagi cocok dengan rentang yang sedang berlaku.
-  const [pilihanTerakhir, setPilihanTerakhir] = useState<PresetRentang | null>(null)
+  const [pilihanTerakhir, setPilihanTerakhir] = useState<KunciBaku | 'semua' | null>(null)
+  const sama = (k: KunciBaku | 'semua') => {
+    if (!rentangAktif) return false
+    const r = rentangBaku(isoTersedia, rentangAktif.akhir, k)
+    return r?.mulai === rentangAktif.mulai && r?.akhir === rentangAktif.akhir
+  }
   const cocok = rentangAktif
-    ? (pilihanTerakhir && sama(pilihanTerakhir) ? pilihanTerakhir : PRESET_RENTANG.find((p) => sama(p.id))?.id)
+    ? (pilihanTerakhir && sama(pilihanTerakhir) ? pilihanTerakhir : [...RENTANG_BAKU, 'semua' as const].find(sama))
     : undefined
   // 'tak-ada' sengaja BUKAN salah satu opsi: tanpa rentang, tak ada pil yang
   // menyala sama sekali — itu yang benar, karena yang berlaku saat itu tanggal
   // di kalender, bukan durasi.
   const pilAktif: Pil = !rentangAktif ? 'tak-ada' : (cocok ?? 'kustom')
-  const opsiPil: { id: Pil; label: string }[] = [
-    ...PRESET_RENTANG,
+  const opsiPil: { id: Pil; label: string; judul?: string; nonaktif?: boolean }[] = [
+    ...opsiBaku,
     ...(pilAktif === 'kustom' ? [{ id: 'kustom' as const, label: 'Kustom' }] : []),
   ]
 
@@ -92,7 +107,7 @@ export function BilahTanggal({ tanggalTersedia, tanggalAktif, onPilih, onRentang
     if (!onRentang) return
     if (id === 'kustom' || id === 'tak-ada') return
     setPilihanTerakhir(id)
-    onRentang(rentangPreset(tanggalTersedia, jangkar, id))
+    onRentang(rentangBaku(isoTersedia, jangkar, id))
   }
 
   // Jumlah hari BURSA di rentang, bukan selisih kalender: rentang 3 bulan
@@ -101,20 +116,6 @@ export function BilahTanggal({ tanggalTersedia, tanggalAktif, onPilih, onRentang
   const hariBursa = rentangAktif
     ? tanggalTersedia.filter((t) => t.date_iso >= rentangAktif.mulai && t.date_iso <= rentangAktif.akhir).length
     : 0
-
-  // Pintasan yang MENTOK di awal arsip. `rentangPreset` menjepit diam-diam
-  // ke tanggal berdata pertama, jadi "1 Tahun" hari ini menghasilkan 155 hari
-  // sejak 7 Jan 2026 - benar sebagai data, tapi tanpa keterangan ia terbaca
-  // seolah bursa memang cuma buka 155 hari setahun. Rentangnya sendiri sudah
-  // tercetak di kalender sebelah; yang ditambahkan cuma SEBABNYA.
-  const awalArsip = tanggalTersedia[0]?.date_iso
-  // TIDAK mengecualikan 'ytd'. Di 2026 "1 Tahun" dan "Sejak 1 Jan" menjepit
-  // ke tanggal yang SAMA (7 Jan, hari berdata pertama), jadi rentangnya tak
-  // bisa dibedakan - klik "1 Tahun" bahkan menyalakan pil "Sejak 1 Jan",
-  // karena pil aktif disimpulkan dari rentang, bukan dari yang diklik.
-  // Keterangan ini benar untuk keduanya, jadi ia dicetak untuk keduanya.
-  // Ambiguitasnya hilang sendiri Januari 2027 saat arsip melewati setahun.
-  const terjepit = !!rentangAktif && !!cocok && rentangAktif.mulai === awalArsip
 
   const bilah = (
     <div className="bilah-kendali bt-bilah">
@@ -173,8 +174,7 @@ export function BilahTanggal({ tanggalTersedia, tanggalAktif, onPilih, onRentang
           diasumsikan. */}
       <p className="bt-catatan">
         {hariBursa} hari bursa
-        {terjepit && ' · arsip statistik harian baru mulai di tanggal itu, jadi rentangnya berhenti di sana'}
-        {cocok === 'ytd' && ' · kolom YTD di tabel tetap angka resmi bursa, dihitung terpisah'}
+        {cocok === 'sejakJan' && ' · kolom YTD di tabel tetap angka resmi bursa, dihitung terpisah'}
       </p>
     </div>
   )

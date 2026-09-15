@@ -6,7 +6,7 @@ import { PemilihRentang } from '../../components/dasbor/PemilihRentang'
 import { useStockIndex } from '../../lib/dasbor/stockDetailData'
 import { useBrokerTahunan } from '../../lib/dasbor/brokerTahunanData'
 import { warnaBrokerCanvas, kelompokBroker } from '../../lib/dasbor/kelompokBroker'
-import { LABEL_RENTANG } from '../../lib/dasbor/periode'
+import { jendelaBaku, opsiRentangBaku, RENTANG_BAKU, type KunciBaku } from '../../lib/dasbor/periode'
 import { useUrut } from '../../lib/dasbor/useUrut'
 import {
   hariRentang, posisiBroker, TEKS_STATUS,
@@ -28,14 +28,23 @@ import './TraderPapan.css'
  * saling menimpa dan tak ada yang terbaca jelas.
  */
 
-const RENTANG = [
-  { id: 'b1', label: LABEL_RENTANG.b1 },
-  { id: 'b3', label: LABEL_RENTANG.b3 },
-  { id: 'b6', label: LABEL_RENTANG.b6 },
-  { id: 'y1', label: LABEL_RENTANG.y1 },
-  { id: 'semua', label: LABEL_RENTANG.semua },
-] as const
-type IdRentang = (typeof RENTANG)[number]['id']
+type IdRentang = 'h1' | 'w1' | 'w2' | 'b1' | 'b3' | 'b6' | 'ytd' | 'y1' | 'y2' | 'semua'
+const KUNCI_RENTANG: Record<Exclude<IdRentang, 'semua'>, KunciBaku> =
+  { h1: 'h1', w1: 'w1', w2: 'w2', b1: 'b1', b3: 'b3', b6: 'b6', ytd: 'sejakJan', y1: 'y1', y2: 'y2' }
+
+/** Opsi pil: SEPULUH baku (#209 koreksi pengawas), nonaktif HANYA kalau
+ *  `jendelaBaku` bilang arsip broker emiten ini tak cukup untuk rentang itu. */
+function opsiRentang(hari: { tanggal: string }[]) {
+  const tanggal = hari.map((h) => h.tanggal)
+  const akhir = tanggal[tanggal.length - 1]
+  const peta: Partial<Record<KunciBaku | 'semua', IdRentang>> = {}
+  if (akhir) {
+    ;([...RENTANG_BAKU, 'semua'] as const).forEach((k) => {
+      if (jendelaBaku(tanggal, akhir, k)) peta[k] = k === 'sejakJan' ? 'ytd' : k
+    })
+  }
+  return opsiRentangBaku(peta)
+}
 
 /** Saring identitas broker — 'asing' persis kelompok `kelompokBroker.ts`,
  *  'domestik' semua kelompok lain (bumn/smart/ritel/afiliasi/lain digabung —
@@ -46,10 +55,6 @@ const FILTER_KELOMPOK = [
   { id: 'domestik', label: 'Domestik' },
 ] as const
 type IdFilterKelompok = (typeof FILTER_KELOMPOK)[number]['id']
-
-const HARI_MUNDUR: Record<Exclude<IdRentang, 'semua'>, number> = {
-  b1: 30, b3: 91, b6: 182, y1: 365,
-}
 
 /** Modal "i" — penjelasan kendali & kolom tabel halaman ini (permintaan Johan
  *  27 Agu 2026: "sweep semua page setiap ada indikator seperti ini berikan
@@ -151,9 +156,9 @@ export default function TraderPapan() {
     if (hari.length === 0) return null
     const akhir = hari[hari.length - 1].tanggal
     if (rentang === 'semua') return posisiBroker(hari)
-    const d = new Date(`${akhir}T00:00:00Z`)
-    d.setUTCDate(d.getUTCDate() - HARI_MUNDUR[rentang])
-    return posisiBroker(hariRentang(hari, d.toISOString().slice(0, 10), akhir))
+    const tanggal = hari.map((h) => h.tanggal)
+    const mulai = jendelaBaku(tanggal, akhir, KUNCI_RENTANG[rentang])?.mulai ?? tanggal[0]
+    return posisiBroker(hariRentang(hari, mulai, akhir))
   }, [hari, rentang])
 
   const barisSaring = useMemo(() => {
@@ -210,7 +215,7 @@ export default function TraderPapan() {
         </div>
         <span className="pemisah-v" aria-hidden="true" />
         <div className="grup-k">
-          <PemilihRentang opsi={RENTANG} nilai={rentang} onGanti={setRentang} />
+          <PemilihRentang opsi={opsiRentang(hari)} nilai={rentang} onGanti={setRentang} />
         </div>
         <span className="pemisah-v" aria-hidden="true" />
         <div className="grup-k">

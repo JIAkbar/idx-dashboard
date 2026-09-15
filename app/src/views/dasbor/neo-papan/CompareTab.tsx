@@ -8,7 +8,8 @@ import { muatCandle, type DataCandle } from '../../../lib/dasbor/candleStockbit'
 import { muatRentang, type HariBroker as HariTahunan } from '../../../lib/dasbor/brokerEmiten'
 import { SeleksiRentangChart } from '../../../lib/dasbor/seleksiRentangChart'
 import { agregasiBroker, avgHarga, type AgregatBroker } from '../../../lib/dasbor/neoPapan'
-import { LABEL_RENTANG } from '../../../lib/dasbor/periode'
+import { jendelaBaku } from '../../../lib/dasbor/periode'
+import { opsiRentang, type IdRentang } from '../../../lib/dasbor/rentang'
 import { PemilihRentang } from '../../../components/dasbor/PemilihRentang'
 import { DatePicker } from '../../../components/dasbor/DatePicker'
 import { useTheme } from '../../../context/ThemeContext'
@@ -35,28 +36,24 @@ const INFO_COMPARE: ItemInfoIndikator[] = [
  * sebagai angka raksasa (+2773% ala NeoBDM) — diganti "≫" berketerangan.
  */
 
-const LEBAR = [
-  { id: 'b1', label: LABEL_RENTANG.b1 },
-  { id: 'b3', label: LABEL_RENTANG.b3 },
-  { id: 'b6', label: LABEL_RENTANG.b6 },
-  { id: 'y1', label: LABEL_RENTANG.y1 },
-] as const
-type IdLebar = (typeof LEBAR)[number]['id']
-const HARI_LEBAR: Record<IdLebar, number> = { b1: 31, b3: 92, b6: 183, y1: 366 }
+// KOREKSI 15 Sep 2026 (Johan lewat pengawas): daftar `LEBAR` (dulu 4 opsi
+// tetap b1/b3/b6/y1) DIBUANG — "boleh nonaktif HANYA kalau datanya tidak
+// cukup, bukan karena dulu tidak ada di daftar halaman itu". Opsi sisi A/B
+// sekarang SELURUH 10 kunci baku lewat `opsiRentang` (rentang.ts), dihitung
+// per sisi dari tanggal candle NYATA + `sisi.akhir` masing-masing — h1/w1/w2/
+// sejakJan/y2/semua ikut aktif begitu `jendelaBaku` mengembalikan sesuatu,
+// bukan cuma empat yang dulu ditulis tangan.
+// HARI_LEBAR (kalender mundur ad hoc) sudah dibuang lebih dulu — dari/sampai
+// lewat `jendelaBaku` (periode.ts), SATU definisi dengan pemilih lain.
 
 /** |Net A| di bawah ini → CHANGE% tak bermakna, tampilkan "≫". */
 const AMBANG_BASIS = 50_000_000
 
 interface Sisi {
   akhir: string
-  lebar: IdLebar
+  lebar: IdRentang
   /** Sub-rentang brush; null = seluruh jendela. */
   brush: { t0: string; t1: string } | null
-}
-
-function mundur(iso: string, hari: number): string {
-  const [y, m, d] = iso.split('-').map(Number)
-  return new Date(Date.UTC(y, m - 1, d - hari)).toISOString().slice(0, 10)
 }
 
 /** Chart candle mini ber-brush untuk satu sisi. */
@@ -73,7 +70,8 @@ function ChartSisi({ candle, sisi, warna, onBrush }: {
   const bandRef = useRef<SeleksiRentangChart | null>(null)
   const seretRef = useRef<{ x0: number } | null>(null)
 
-  const dari = mundur(sisi.akhir, HARI_LEBAR[sisi.lebar])
+  const tglSisi = useMemo(() => candle.lilin.map((bar) => String(bar.time)), [candle])
+  const dari = jendelaBaku(tglSisi, sisi.akhir, sisi.lebar)?.mulai ?? tglSisi[0] ?? sisi.akhir
   const lilinJendela = useMemo(
     () => candle.lilin.filter((b) => String(b.time) >= dari && String(b.time) <= sisi.akhir),
     [candle, dari, sisi.akhir],
@@ -205,9 +203,10 @@ export function CompareTab({ kode }: { kode: string }) {
     return () => { batal = true }
   }, [kode])
 
+  const tgl = useMemo(() => (candle ? candle.lilin.map((bar) => String(bar.time)) : []), [candle])
   const rentangEfektif = (s: Sisi | null) => {
     if (!s) return null
-    const dari = s.brush?.t0 ?? mundur(s.akhir, HARI_LEBAR[s.lebar])
+    const dari = s.brush?.t0 ?? jendelaBaku(tgl, s.akhir, s.lebar)?.mulai ?? tgl[0] ?? s.akhir
     const sampai = s.brush?.t1 ?? s.akhir
     return { dari, sampai }
   }
@@ -292,8 +291,10 @@ export function CompareTab({ kode }: { kode: string }) {
       <span className="np-lbl">{label}</span>
       <DatePicker value={sisi.akhir} onChange={(iso) => set({ ...sisi, akhir: iso, brush: null })}
         maks={String(candle.lilin[candle.lilin.length - 1].time)} ariaLabel={`Tanggal akhir ${label}`} />
-      <PemilihRentang opsi={LEBAR.map((l) => ({ id: l.id, label: l.label }))} nilai={sisi.lebar}
-        onGanti={(id) => set({ ...sisi, lebar: id as IdLebar, brush: null })} />
+      {/* Opsi baku (#209) dari tanggal candle NYATA per sisi — sisi A dan B
+          bisa punya set nonaktif berbeda karena `sisi.akhir` beda. */}
+      <PemilihRentang opsi={opsiRentang(tgl, sisi.akhir)} nilai={sisi.lebar}
+        onGanti={(id) => set({ ...sisi, lebar: id, brush: null })} />
     </div>
   )
 

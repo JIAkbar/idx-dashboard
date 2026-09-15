@@ -5,7 +5,7 @@ import { PemilihRentang } from '../../components/dasbor/PemilihRentang'
 import { Dropdown } from '../../components/dasbor/Dropdown'
 import { useBrokerBerhalaman } from '../../components/dasbor/TautanBroker'
 import { IkonMenu, IKON_PERINGATAN } from '../../components/dasbor/IkonMenu'
-import { pilRentang } from '../../lib/dasbor/periode'
+import { opsiRentangBaku } from '../../lib/dasbor/periode'
 import { fN, tanggalRingkas } from '../../lib/dasbor/format'
 import { hargaRata } from '../../lib/dasbor/brokerEmiten'
 import { kelasBroker, namaBroker } from '../../lib/dasbor/kelompokBroker'
@@ -52,19 +52,18 @@ function miliar(v: number): string {
   return dua(Math.abs(v) / 1e9)
 }
 
-/** Kata dan urutannya dari kamus rentang (#70) - halaman cuma menyebut
- *  kunci mana yang punya rollup. */
-const PRESET = pilRentang<PresetPivot>([
-  { id: 'hariini', kunci: 'hariIni' },
-  { id: 'h5', kunci: 'h5' },
-  { id: 'w1', kunci: 'w1' },
-  { id: 'b1', kunci: 'b1' },
-  { id: 'b3', kunci: 'b3' },
-  { id: 'b6', kunci: 'b6' },
-  { id: 'mtd', kunci: 'mtd' },
-  { id: 'ytd', kunci: 'sejakJan' },
-  { id: 'y1', kunci: 'y1' },
-])
+/**
+ * Daftar baku (#209 tahap 2) — tapi datanya PRA-DIHITUNG skrip Python
+ * (`bangun_broker_pivot.py`, di luar cakupan sunting ini) per bucket TETAP,
+ * jadi rentangnya tak bisa dihitung ulang di peramban seperti pemilih lain.
+ * Hanya kunci baku yang punya rollup di `PresetPivot` yang dipetakan;
+ * `h5` dan `mtd` DIBUANG (Johan 15 Sep 2026), dan `w2`/`y2`/"Semua" tak
+ * dipetakan karena skripnya tak menghasilkan bucket itu — keduanya tampil
+ * nonaktif, bukan disembunyikan.
+ */
+const PRESET = opsiRentangBaku<PresetPivot>({
+  h1: 'hariini', w1: 'w1', b1: 'b1', b3: 'b3', b6: 'b6', sejakJan: 'ytd', y1: 'y1',
+})
 
 function Tabel({ baris, sisi }: { baris: BarisPivot[]; sisi: 'beli' | 'jual' }) {
   if (baris.length === 0) {
@@ -190,7 +189,7 @@ export function BrokerDetail() {
           <PemilihRentang
             ariaLabel="Periode rincian broker"
             nilai={preset}
-            onGanti={(id) => setPreset(id as PresetPivot)}
+            onGanti={setPreset}
             opsi={PRESET}
           />
         </div>

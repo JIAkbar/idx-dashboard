@@ -91,7 +91,7 @@ describe('net resmi vs taksiran', () => {
   })
 })
 
-describe('irisPeriode', () => {
+describe('irisPeriode (#209, jendelaBaku — h5/y3/y5 dibuang, lihat aliranInvestor.ts)', () => {
   const deret: BarisAliran[] = []
   for (let i = 0; i < 400; i++) {
     const d = new Date(Date.UTC(2025, 6, 1))
@@ -100,21 +100,21 @@ describe('irisPeriode', () => {
   }
   const akhir = deret[deret.length - 1][0]
 
-  it('1D & 5D dihitung dalam hari BURSA', () => {
+  it('h1 = satu hari bursa terakhir', () => {
     expect(irisPeriode(deret, 'h1')).toHaveLength(1)
-    expect(irisPeriode(deret, 'h5')).toHaveLength(5)
     expect(irisPeriode(deret, 'h1')[0][0]).toBe(akhir)
   })
 
-  it('periode bulanan dihitung dalam bulan KALENDER', () => {
+  it('b3 mundur 91 hari KALENDER dari hari terakhir (baku #209, bukan lagi bulan kalender)', () => {
     const t = new Date(`${akhir}T00:00:00Z`)
-    t.setUTCMonth(t.getUTCMonth() - 3)
+    t.setUTCDate(t.getUTCDate() - 91)
     const batas = t.toISOString().slice(0, 10)
     const iris = irisPeriode(deret, 'b3')
-    expect(iris[0][0] >= batas).toBe(true)
-    // Baris tepat sebelum batas TIDAK ikut.
+    // mulai selalu SETELAH batas (jendelaBaku.mulai = tanggal[iPemb+1]) —
+    // baris tepat sebelum batas (pembanding) TIDAK ikut, boleh persis == batas.
+    expect(iris[0][0] > batas).toBe(true)
     const sebelum = deret[deret.indexOf(iris[0]) - 1]
-    expect(sebelum[0] < batas).toBe(true)
+    expect(sebelum[0] <= batas).toBe(true)
   })
 
   it('YTD berjangkar ke 1 Januari tahun baris terakhir', () => {
@@ -122,8 +122,12 @@ describe('irisPeriode', () => {
     expect(iris.every((r) => r[0].slice(0, 4) === akhir.slice(0, 4))).toBe(true)
   })
 
-  it('periode yang melampaui panjang deret memakai apa yang ada', () => {
-    expect(irisPeriode(deret, 'y5')).toHaveLength(deret.length)
+  it('semua = seluruh deret tanpa syarat pembanding', () => {
+    expect(irisPeriode(deret, 'semua')).toHaveLength(deret.length)
+  })
+
+  it('periode yang melampaui panjang deret (data tak cukup) → kosong, bukan dipotong ke yang ada (#209: opsi begini nonaktif, bukan dipetakan ke riwayat pendek)', () => {
+    expect(irisPeriode(deret, 'y2')).toEqual([])
   })
 
   it('deret kosong tak melempar', () => {

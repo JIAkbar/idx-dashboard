@@ -416,6 +416,7 @@ hr { border: none; border-top: 1px solid var(--hairline); margin: 24px 0; }
 <li><a href="#j17-p-e-eps-roe-dan-earnings-yield-dirotasi-ke-stockbit-yahoo-jadi-cadangan-bertanda-13-september-2026" class="nav-link"><span class="nav-icon">📄</span><span class="nav-label">J17 · P/E, EPS, ROE, dan earnings yield dirotasi ke Stockbit, Yahoo jadi cadangan bertanda (13 September 2026)</span></a></li>
 <li><a href="#j18-p-e-annualised-dan-forward-p-e-dirotasi-ke-stockbit-eps-forward-tetap-sumber-lama-14-september-2026" class="nav-link"><span class="nav-icon">📄</span><span class="nav-label">J18 · P/E (Annualised) dan Forward P/E dirotasi ke Stockbit; EPS Forward tetap sumber lama (14 September 2026)</span></a></li>
 <li><a href="#j19-kalender-bursa-dan-dua-pembaca-ihsg-pindah-ke-arsip-harga-ihsg-15-september-2026" class="nav-link"><span class="nav-icon">📄</span><span class="nav-label">J19 · Kalender bursa dan dua pembaca IHSG pindah ke arsip harga IHSG (15 September 2026)</span></a></li>
+<li><a href="#j20-satu-definisi-rentang-waktu-untuk-semua-pemilih-15-september-2026" class="nav-link"><span class="nav-icon">📄</span><span class="nav-label">J20 · Satu definisi rentang waktu untuk semua pemilih (15 September 2026)</span></a></li>
 <li><a href="#inventaris-ruas-per-berkas-jawaban-untuk-johan-23-agu-2026-stock-detail-ohlc-ohlcv-broker-summary-metode-panen" class="nav-link"><span class="nav-icon">📄</span><span class="nav-label">Inventaris ruas per berkas — jawaban untuk Johan 23 Agu 2026 (Stock Detail, OHLC/OHLCV, Broker Summary, metode panen)</span></a></li>
 <li><a href="#matriks-sumber-stockbit-menang-di-mana-duplikasi-per-halaman-dan-usulan-kanonik-23-agu-2026" class="nav-link"><span class="nav-icon">📄</span><span class="nav-label">Matriks sumber — Stockbit menang di mana, duplikasi per halaman, dan usulan kanonik (23 Agu 2026)</span></a></li>
 <li><a href="#kamus-ruas-arti-tiap-ruas-dan-data-apa-yang-dihasilkannya-23-agu-2026" class="nav-link"><span class="nav-icon">📄</span><span class="nav-label">Kamus ruas — arti tiap ruas dan data apa yang dihasilkannya (23 Agu 2026)</span></a></li>
@@ -2642,6 +2643,14 @@ satu tempat penyimpanan antar-jalan yang bisa hilang.</p>
 <td>15 Sep 2026</td>
 </tr>
 <tr>
+<td>Semua pemilih rentang waktu · satu definisi hitungan dan satu daftar (J20)</td>
+<td><strong>definisi tunggal</strong></td>
+<td>kata yang sama dihitung enam cara berbeda di 23 pemilih</td>
+<td>enumerasi <code>scratchpad/u209/enumerasi.md</code>; tabel angka lama → baru di jejak #569</td>
+<td><strong>Johan</strong> (<em>"sesuai rekomendasimu saja, jika 5 hari di anggap 1 minggu ya 1 minggu saja"</em>, 15 Sep 2026 ~22:3x WIB, sesi Papan)</td>
+<td>15 Sep 2026</td>
+</tr>
+<tr>
 <td>Aliran asing rupiah · taksiran vs chartbit (J8)</td>
 <td><strong>diganti 24 Agu 2026</strong></td>
 <td>angka resmi sudah ada di <code>ohlcv_stockbit/</code></td>
@@ -3367,6 +3376,72 @@ berkas uji menemukan tipe di <code>stockDetailData.ts</code>, tiga baris <code>K
 </table>
 <p><code>ohlc/IHSG.json</code> memuat satu hari lebih (15 Sep). Keduanya deret yang sama: Stockbit dengan kerangka Yahoo untuk tanggal yang tidak dimiliki Stockbit. Ukuran 486 KB lawan 362 KB; berkas yang sama sudah diunduh Panel Diary di Beranda.</p>
 <p><strong>Yang berubah.</strong> <code>tanggalBursa.ts</code> <code>muatDaftarHariBursa()</code> mengambil tanggal dari larik <code>d</code>; <code>SeasonalityHarian.tsx</code> membaca <code>ohlc/&lt;KODE&gt;.json</code> untuk IHSG juga; <code>IndeksDunia.tsx</code> riwayat panjang dari kolom tutup larik <code>d</code>. <code>ihsg_harian.json</code> <strong>tidak dihapus</strong> dan tetap ditulis <code>panen_ihsg.py</code> sebagai cadangan; pembacanya di skrip Python (mis. Kartu Analisa) tidak diubah.</p>
+
+</div>
+</div></div>
+</div>
+</section>
+
+<section id="j20-satu-definisi-rentang-waktu-untuk-semua-pemilih-15-september-2026" data-title="J20 · Satu definisi rentang waktu untuk semua pemilih (15 September 2026)">
+<div class="section-toggle is-open">
+<button type="button" class="section-summary"><span class="chevron">▾</span><h2>J20 · Satu definisi rentang waktu untuk semua pemilih (15 September 2026)</h2></button>
+<div class="section-panel"><div class="section-panel-inner">
+<div class="section-body">
+
+<p><strong>Keputusan Johan</strong>, 15 Sep 2026 sekitar 22:3x WIB di sesi Papan: <em>"sesuai rekomendasimu saja, jika 5 hari di anggap 1 minggu ya 1 minggu saja"</em>, menjawab lima pertanyaan antrean #209. Permintaan asalnya (sesi pengawas, ~21:50): <em>"sweep semua rentang waktu itu pakai dropdown, samakan semua mulai dari 1 hari, 5 hari, 2 minggu, 1 bulan, 3 bulan, 6 bulan, Year to Date, 1 tahun, 2 tahun"</em> dan (~21:55) <em>"beri opsi ekstra Semua"</em>.</p>
+<p><strong>Sebab.</strong> Enumerasi 15 Sep 2026 menemukan 23 pemilih rentang mundur dengan enam cara menghitung kata yang sama. "1 Bulan" berarti: 30 hari kalender lalu digeser ke hari bursa terakhir (<code>periode.ts</code>: Sektor, Top Stocks, Broker Dominan); 21 hari bursa terakhir (<code>rentang.ts</code>: Neo, Pantau); 30 hari kalender mentah (Aliran Asing, Broker Summary, Aliran Dana); 31 hari kalender dari bar terakhir (Grafik, Compare); satu bulan kalender (Aliran Investor); dan "3 Bulan" 90 hari di Screener lawan 91 di tempat lain.</p>
+<p><strong>Daftar baku:</strong> 1 Hari, 1 Minggu, 2 Minggu, 1 Bulan, 3 Bulan, 6 Bulan, YTD, 1 Tahun, 2 Tahun, ditambah Semua. "Hari Ini" dieja "1 Hari". MTD, WTD, 5 Hari, dan 3/5/10/20 Tahun dibuang. Opsi yang datanya tidak cukup tampil nonaktif. Kata dieja hanya di <code>LABEL_RENTANG</code>; daftar dan penyusunnya <code>RENTANG_BAKU</code> dan <code>opsiRentangBaku()</code>.</p>
+<p><strong>Definisi tunggal</strong> (<code>jendelaBaku()</code> di <code>app/src/lib/dasbor/periode.ts</code>):</p>
+<table>
+<thead>
+<tr>
+<th>Label</th>
+<th>Batas</th>
+<th>Pembanding</th>
+<th>Jendela</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1 Hari</td>
+<td>sehari sebelum hari aktif</td>
+<td>hari berdata sebelumnya</td>
+<td>hari aktif saja</td>
+</tr>
+<tr>
+<td>1 Minggu · 2 Minggu</td>
+<td>7 · 14 hari kalender mundur</td>
+<td>hari berdata terakhir pada atau sebelum batas</td>
+<td>hari berdata sesudah pembanding sampai hari aktif</td>
+</tr>
+<tr>
+<td>1 · 3 · 6 Bulan</td>
+<td>30 · 91 · 182 hari kalender mundur</td>
+<td>sama</td>
+<td>sama</td>
+</tr>
+<tr>
+<td>1 · 2 Tahun</td>
+<td>365 · 730 hari kalender mundur</td>
+<td>sama</td>
+<td>sama</td>
+</tr>
+<tr>
+<td>YTD</td>
+<td>31 Desember tahun lalu</td>
+<td>hari berdata terakhir tahun lalu</td>
+<td>sejak hari berdata pertama tahun berjalan</td>
+</tr>
+<tr>
+<td>Semua</td>
+<td>tidak ada</td>
+<td>tidak ada</td>
+<td>sejak hari berdata pertama</td>
+</tr>
+</tbody>
+</table>
+<p>Return dan perubahan persen memakai harga tutup <strong>pembanding</strong>. Penjumlahan (aliran asing, net broker), rata-rata, dan grafik memakai hari di <strong>jendela</strong>. Contoh: "1 Minggu" dari Selasa 15 Sep 2026 → pembanding Selasa 8 Sep, jendela Rabu 9 s.d. Selasa 15 Sep (lima hari bursa pergerakan).</p>
+<p><strong>Pengecualian yang tidak disamakan</strong> (bukan rentang mundur, keputusan yang sama butir 5): tahun awal Musiman, jenis edisi Statistik Berkala, jendela pekan Rotasi, tahun histori Neo Seasonality, jendela 2/3/10/20 hari Broker Stalker, dan Panel Diary pasar di Beranda (sembilan baris performa 1D sampai 5Y ditampilkan sekaligus dari ruas sumbernya, bukan pemilih yang bisa diklik; labelnya dari <code>LABEL_RENTANG</code>). <strong>Batas yang tersisa:</strong> Top Broker dan Rincian Broker membaca rentang yang dihitung skrip panen (<code>bangun_broker_rentang.py</code>, <code>bangun_broker_pivot.py</code>), jadi hanya daftar dan katanya yang baku; angkanya masih definisi skrip lama dan presetnya lebih sedikit (usulan antrean #211). Broker Stalker adalah pemilih rentang mundur yang dikecualikan keputusan butir 5; usulan penyamaannya antrean #210.</p>
 
 </div>
 </div></div>
@@ -6238,6 +6313,7 @@ section ini saat pertama dipakai</strong>, bukan hanya sumber data. Tanpa itu, j
 <li>28 Agustus 2026 — <strong>B45 Jejak Rekomendasi + tab "Riwayat &amp; Win Rate"</strong> (Screener) selesai — Tugas C penuh + generator C.1, spek <code>docs/spek-dev-papan/spek_preset_winrate_rekap.md</code>. <code>scripts/riset/rekap_preset.py</code> (port <code>PRESET_DEFS</code> dari <code>presetScreener.ts</code>, swauji <code>--uji</code> 9 kasus tangan-hitung lolos) dijalankan sekali untuk tanggal data terakhir yang BENAR-BENAR terisi (2026-08-27 — auto-deteksi via ambang <code>freq&gt;0</code> melewati 2026-08-28 yang masih 0/962 baris berfrekuensi, konfirmasi lapangan atas temuan 24 Agu 14:33 "fetch pertengahan sesi"): 80 baris saham lintas 5 preset (<code>whale-akdis</code> 0 — <code>label_accdist</code> kosong seluruhnya di arsip 27 Agu, jujur ditulis apa adanya, bukan dipaksa terisi). <code>app/src/lib/dasbor/winRate.ts</code> (3 definisi menang, 19 uji vitest termasuk kasus "tak tentu" TP&amp;SL sehari) + <code>rekomendasi.ts</code> (fetch/gabung, 6 uji) + tab ke-4 Screener.tsx. Sumber TP/SL: fallback ATR14 SELALU dipakai (bukan Target Realistis papan-terdorong <code>kuliPapan.ts</code> — itu butuh antrean penutupan yang cuma ada dari setoran kontributor, bukan data cakram 962 emiten). <code>npm run build</code> + <code>npx vitest run</code> (1597 lolos) + <code>tsc --noEmit</code> hijau; leak-sweep bersih (grep endpoint/<code>.json</code> di string ter-render). Verifikasi visual SELESAI dua viewport (laptop 1536×960×1.25, mobile 412×915×2.625) lewat tab chrome-devtools yang sudah login admin dari sesi sebelumnya (Screener tier <code>login</code> di <code>akses_halaman</code>, dicek Supabase — sesi ini sendiri tak pernah isi sandi); tabel Menang/Kalah "Tak ada baris" jujur untuk 2026-08-27 karena H+1-nya (28 Agu) belum berdata nyata, difilter <code>volume=0</code>.</li>
 <li>5 September 2026 — <strong>J14 akhirnya berlaku juga di CI.</strong> Ralat Johan: <em>"ralat dulu setiap hari itu harusnya panen 6 varian karena gross, sedangkan yang net bisa di hitung"</em>. Sejak J14 diputuskan (23 Agu) bat buka-laptop sudah 6 varian GROSS, tapi langkah 3d <code>panen-harian-rumah.yml</code> masih memanggil 12 atas ketetapan 23 Agu pagi ("CI harus ke lengkap Varian") — dua kebenaran hidup berdampingan selama 13 hari, dan tiap jalan CI membuang 962 × 6 panggilan untuk menulis berkas yang tak dibaca siapa pun. Sekarang keduanya <code>reguler,asing,nego,nego-asing,tunai,tunai-asing</code>; beban langkah itu turun dari ±11.500 jadi ±5.800 permintaan (≈1,3 jam → ≈40 menit). Diperiksa sebelum diubah, bukan diingat: grep <code>net-asing|net-nego|net-tunai|\.net\.</code> di <code>app/src</code> dan <code>scripts</code> tak menemukan satu pun pembaca berkas varian NET — yang muncul semuanya ruas aliran asing (<code>net_asing*</code>) atau mode tampilan "Net" yang dihitung di layar dari GROSS (<code>tabelDuaSisi</code>, <code>lib/dasbor/brokerEmiten.ts:164</code>). Berkas NET yang telanjur ada di arsip <strong>tidak dihapus</strong> (ketetapan J14: dibuang saat konsolidasi).</li>
 <li>15 September 2026 — <strong>J19</strong>: kalender bursa, Seasonality Harian IHSG, dan riwayat IHSG Indeks Dunia pindah dari <code>ihsg_harian.json</code> ke <code>ohlc/IHSG.json</code> atas keputusan Johan (#203 A); tabel pembanding 8.876 tanggal identik.</li>
+<li>15 September 2026 — <strong>J20</strong>: satu definisi dan satu daftar untuk semua pemilih rentang waktu atas keputusan Johan (#209).</li>
 </ul>
 <hr />
 

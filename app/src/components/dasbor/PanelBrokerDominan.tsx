@@ -4,13 +4,13 @@ import { PemilihRentang } from './PemilihRentang'
 import { DatePicker } from './DatePicker'
 import { tanggalRingkas } from '../../lib/dasbor/format'
 import {
-  RENTANG_DOMINAN,
   hitungDominan,
   type RentangKustom,
   type BarisDominan,
   type HariRingkas,
   type RentangDominan,
 } from '../../lib/dasbor/brokerDominan'
+import { opsiRentangBaku, rentangBaku, RENTANG_BAKU, type KunciBaku } from '../../lib/dasbor/periode'
 import './PanelBrokerDominan.css'
 
 /**
@@ -108,6 +108,17 @@ export function PanelBrokerDominan({ hari, hargaAkhir }: {
   const [kustom, setKustom] = useState<RentangKustom | null>(null)
   const tersedia = useMemo(() => new Set(hari.map((h) => h.tanggal)), [hari])
   const akhirData = hari.length ? hari[hari.length - 1].tanggal : ''
+  const isoHari = useMemo(() => hari.map((h) => h.tanggal), [hari])
+  // Daftar baku (#209 tahap 2) — kunci yang datanya cukup (jendela penuh
+  // ADA, bukan dijepit) dipetakan identitas; sisanya nonaktif lewat
+  // `opsiRentangBaku`. 'Semua' aktif hanya kalau riwayatnya minimal 2 tahun
+  // (dites lewat 'y2', sama syaratnya dengan opsi '2 Tahun' sendiri).
+  const opsiRentang = useMemo(() => {
+    const peta: Partial<Record<KunciBaku | 'semua', RentangDominan>> = {}
+    for (const k of RENTANG_BAKU) if (rentangBaku(isoHari, akhirData, k)) peta[k] = k
+    if (rentangBaku(isoHari, akhirData, 'semua')) peta.semua = 'semua'
+    return opsiRentangBaku<RentangDominan>(peta)
+  }, [isoHari, akhirData])
   const hasil = useMemo(
     () => hitungDominan(hari, rentang, hargaAkhir, 7, kustom),
     [hari, rentang, hargaAkhir, kustom],
@@ -122,8 +133,8 @@ export function PanelBrokerDominan({ hari, hargaAkhir }: {
             className="pbd-rentang"
             ariaLabel="Rentang broker dominan"
             nilai={kustom ? '' : rentang}
-            onGanti={(id) => { setKustom(null); setRentang(id as RentangDominan) }}
-            opsi={RENTANG_DOMINAN}
+            onGanti={(id) => { setKustom(null); setRentang(id) }}
+            opsi={opsiRentang}
           />
           {/* Kalender pakai komponen kanonis yang sama dengan 21 halaman
               lain (#170): satu klik memilih tanggal, klik kedua menutup

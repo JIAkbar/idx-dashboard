@@ -21,6 +21,7 @@ import {
   INTI, pilahMenu, ID_RUSAK,
 } from './katalogIndikator'
 import type { BarisOhlc } from './ihsgOhlc'
+import { LABEL_RENTANG, RENTANG_BAKU } from './periode'
 
 const baris: BarisOhlc[] = [
   ['2024-01-02', 100, 110, 95, 105, 1000], // tutup >= buka -> naik
@@ -192,14 +193,26 @@ describe('keSeriGaris', () => {
   })
 })
 
-describe('RENTANG_KAKI_BAWAAN', () => {
-  it('bawaannya "Semua" dan label itu benar-benar ada di RENTANG_KAKI', () => {
-    expect(RENTANG_KAKI_BAWAAN).toBe('Semua')
-    const cocok = RENTANG_KAKI.find(([label]) => label === RENTANG_KAKI_BAWAAN)
+describe('RENTANG_KAKI ids & label (#209, koreksi kamus)', () => {
+  it('id-nya persis RENTANG_BAKU (periode.ts) + semua — SATU daftar, tanpa 5D/5Y lama', () => {
+    expect(RENTANG_KAKI.map(([id]) => id)).toEqual([...RENTANG_BAKU, 'semua'])
+  })
+  it('label-nya persis LABEL_RENTANG — kata rentang cuma dieja di kamus, bukan singkatan chart 1D/1W/1M lagi', () => {
+    expect(RENTANG_KAKI.map(([, label]) => label))
+      .toEqual([...RENTANG_BAKU, 'semua'].map((k) => LABEL_RENTANG[k]))
+    expect(RENTANG_KAKI.map(([, label]) => label))
+      .toEqual(['1 Hari', '1 Minggu', '2 Minggu', '1 Bulan', '3 Bulan', '6 Bulan', 'YTD', '1 Tahun', '2 Tahun', 'Semua'])
+  })
+})
+
+describe('RENTANG_KAKI_BAWAAN (#209 id kunci baku)', () => {
+  it('bawaannya id "semua" dan benar-benar ada di RENTANG_KAKI', () => {
+    expect(RENTANG_KAKI_BAWAAN).toBe('semua')
+    const cocok = RENTANG_KAKI.find(([id]) => id === RENTANG_KAKI_BAWAAN)
     expect(cocok).toBeDefined()
-    // Bawaan harus yang TIDAK memotong data — kalau ini berubah jadi angka,
-    // chip yang tersorot dan data yang tergambar mulai bercerita beda.
-    expect(cocok?.[1]).toBeNull()
+    // Bawaan harus yang TIDAK memotong data — label "Semua" tetap konsisten
+    // dengan id-nya, tak ada dua tempat yang bisa berselisih.
+    expect(cocok?.[1]).toBe('Semua')
   })
 })
 

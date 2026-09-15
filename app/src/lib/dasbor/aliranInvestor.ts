@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { LABEL_RENTANG } from './periode'
+import { jendelaBaku, opsiRentangBaku, type KunciBaku } from './periode'
 import { urlData } from './baseData'
 
 /**
@@ -70,35 +70,42 @@ export function useAliranInvestor(): BerkasAliran | null {
   return data
 }
 
-/** Kunci rentang KANONIS (`LABEL_RENTANG`), bukan ejaan sendiri — aturan
- *  #170, yang lahir setelah satu kendali yang sama tumbuh sembilan bentuk. */
-export type IdPeriodeAliran = 'h1' | 'h5' | 'b1' | 'b3' | 'b6' | 'ytd' | 'y1' | 'y3' | 'y5'
+/** Kunci rentang BAKU (#209, `periode.ts`) — daftar & hitungan yang sama
+ *  dengan seluruh pemilih rentang di app. `h5` DIBUANG (Johan 15 Sep 2026:
+ *  "jika 5 hari di anggap 1 minggu ya 1 minggu saja" — dilebur ke `w1`);
+ *  `y3`/`y5` juga dibuang, tak ada di daftar baku (berhenti di `y2`). */
+export type IdPeriodeAliran = 'h1' | 'w1' | 'w2' | 'b1' | 'b3' | 'b6' | 'ytd' | 'y1' | 'y2' | 'semua'
 
-export const PERIODE_ALIRAN: Array<{ id: IdPeriodeAliran; label: string }> =
-  (['h1', 'h5', 'b1', 'b3', 'b6', 'ytd', 'y1', 'y3', 'y5'] as const)
-    .map((id) => ({ id, label: LABEL_RENTANG[id] }))
+const KUNCI_PERIODE: Record<IdPeriodeAliran, KunciBaku | 'semua'> =
+  { h1: 'h1', w1: 'w1', w2: 'w2', b1: 'b1', b3: 'b3', b6: 'b6', ytd: 'sejakJan', y1: 'y1', y2: 'y2', semua: 'semua' }
 
-/** Baris yang masuk periode `id`, dihitung mundur dari baris TERAKHIR.
- *
- *  `1D`/`5D` dihitung dalam hari BURSA (sepekan perdagangan memang lima hari
- *  bursa); sisanya dalam bulan KALENDER, karena pembaca yang membaca
- *  "3 Bulan" berharap tiga bulan kalender dan jumlah hari bursa per bulan tak
- *  pernah tetap. Pemisahan yang sama dipakai `diaryPasar.ts`. */
+/** Opsi pil: nonaktif kalau `jendelaBaku` bilang riwayat pasar tak cukup
+ *  untuk periode itu. */
+export function opsiPeriodeAliran(d: BarisAliran[]) {
+  const tanggal = d.map((r) => r[0])
+  const akhir = tanggal[tanggal.length - 1]
+  const peta: Partial<Record<KunciBaku | 'semua', IdPeriodeAliran>> = {}
+  if (akhir) {
+    (Object.keys(KUNCI_PERIODE) as IdPeriodeAliran[]).forEach((id) => {
+      const k = KUNCI_PERIODE[id]
+      if (jendelaBaku(tanggal, akhir, k)) peta[k] = id
+    })
+  }
+  return opsiRentangBaku(peta)
+}
+
+/** Baris yang masuk periode `id` — `jendelaBaku` (#209, satu definisi untuk
+ *  seluruh app) atas tanggal, dihitung mundur dari baris TERAKHIR. Dulu
+ *  `1D`/`5D` hari BURSA dan sisanya bulan KALENDER (`setUTCMonth`); sekarang
+ *  seluruhnya lewat `jendelaBaku` (hari kalender mundur + snap ke hari
+ *  berdata, kecuali `h1` yang tetap satu hari bursa terakhir). */
 export function irisPeriode(d: BarisAliran[], id: IdPeriodeAliran): BarisAliran[] {
   if (d.length === 0) return []
-  if (id === 'h1') return d.slice(-1)
-  if (id === 'h5') return d.slice(-5)
-  const akhir = d[d.length - 1][0]
-  let batas: string
-  if (id === 'ytd') {
-    batas = `${akhir.slice(0, 4)}-01-01`
-  } else {
-    const bulan = { b1: 1, b3: 3, b6: 6, y1: 12, y3: 36, y5: 60 }[id]
-    const t = new Date(`${akhir}T00:00:00Z`)
-    t.setUTCMonth(t.getUTCMonth() - bulan)
-    batas = t.toISOString().slice(0, 10)
-  }
-  return d.filter((r) => r[0] >= batas)
+  const tanggal = d.map((r) => r[0])
+  const akhir = tanggal[tanggal.length - 1]
+  const j = jendelaBaku(tanggal, akhir, KUNCI_PERIODE[id])
+  if (!j) return []
+  return d.filter((r) => r[0] >= j.mulai)
 }
 
 /** Satu sisi (beli atau jual) satu kelompok investor. */

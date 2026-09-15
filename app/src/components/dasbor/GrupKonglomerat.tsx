@@ -3,10 +3,9 @@ import { Link } from 'react-router-dom'
 import type { ChartConfiguration } from 'chart.js/auto'
 import { fN, fp, persen } from '../../lib/dasbor/format'
 import { PemilihRentang } from './PemilihRentang'
-import { LABEL_RENTANG } from '../../lib/dasbor/periode'
+import { opsiRentangBaku, rentangBaku, RENTANG_BAKU, type KunciBaku } from '../../lib/dasbor/periode'
 import { ambilScreener } from '../../lib/dasbor/screener'
 import { fetchDeret } from '../../lib/dasbor/watchlist'
-import { batasBawahHari } from '../../lib/dasbor/grafikEmiten'
 import type { BarisOhlc } from '../../lib/dasbor/ihsgOhlc'
 import { deretIndeksGrup } from '../../lib/dasbor/grupKinerja'
 import { useChartCanvas } from '../../lib/dasbor/useChartJs'
@@ -71,11 +70,15 @@ interface BerkasGrup {
  *  satu fetch ber-TTL 30 mnt) — bukan ohlc per anggota (ratusan berkas).
  *  Kalau kelak arsip KSEI berderet bulan, (a) layak dibangun terpisah. */
 type RentangGrup = 'h1' | 'wtd' | 'mtd'
-const OPSI_RENTANG_GRUP: { id: RentangGrup; label: string }[] = [
-  { id: 'h1', label: LABEL_RENTANG.h1 },
-  { id: 'wtd', label: LABEL_RENTANG.wtd },
-  { id: 'mtd', label: LABEL_RENTANG.mtd },
-]
+/**
+ * Daftar baku (#209 tahap 2) — tapi sumbernya `screener.json` (`chg_1d`/
+ * `chg_wtd`/`chg_mtd`, ruas PRA-HITUNG) cuma punya TIGA angka per emiten,
+ * dan `wtd`/`mtd` sendiri sudah dibuang dari daftar baku (Johan 15 Sep 2026:
+ * "MTD, WTD, ... dibuang"). Yang tersisa dari ruas itu cuma `h1` — seluruh
+ * kunci baku lain (`w1`..`y2`, "Semua") tak punya ruas sama sekali di
+ * `screener.json`, jadi tampil nonaktif, bukan disembunyikan.
+ */
+const OPSI_RENTANG_GRUP = opsiRentangBaku<RentangGrup>({ h1: 'h1' })
 
 /** K4 lanjutan (Paket J, 27 Agu): mode Deret — grafik garis kumulatif per
  *  grup vs IHSG, melengkapi chip snapshot yang cuma satu titik waktu. */
@@ -86,17 +89,7 @@ const OPSI_MODE: { id: Mode; label: string }[] = [
   { id: 'deret', label: 'Deret' },
 ]
 
-type RentangDeret = 'b1' | 'b3' | 'ytd'
-const OPSI_RENTANG_DERET: { id: RentangDeret; label: string }[] = [
-  { id: 'b1', label: LABEL_RENTANG.b1 },
-  { id: 'b3', label: LABEL_RENTANG.b3 },
-  { id: 'ytd', label: LABEL_RENTANG.sejakJan },
-]
-
-function tanggalMulaiDeret(rentang: RentangDeret, akhir: string): string {
-  if (rentang === 'ytd') return `${akhir.slice(0, 4)}-01-01`
-  return batasBawahHari(akhir, rentang === 'b1' ? 30 : 91)
-}
+type RentangDeret = KunciBaku | 'semua'
 
 /** Satu grafik garis grup vs IHSG. Komponen terpisah (bukan di-map dalam
  *  loop) supaya `useChartCanvas` tak dipanggil jumlah kali yang berubah-ubah
@@ -114,11 +107,16 @@ function GrupDeretChart({ kodeAnggota, ihsg, rentang }: {
     let batal = false
     setSeri(null)
     if (!ihsg || !ihsg.length) return
-    const akhir = ihsg[ihsg.length - 1][0]
-    const mulai = tanggalMulaiDeret(rentang, akhir)
+    // `rentangBaku` (#209 tahap 2) atas tanggal deret IHSG — SATU definisi
+    // hitungan, sama dengan seluruh pemilih rentang lain, bukan pembulatan
+    // "30/91 hari kalender" ketikan sendiri (`tanggalMulaiDeret` lama).
+    const isoIhsg = ihsg.map((b) => b[0])
+    const akhirBar = isoIhsg[isoIhsg.length - 1]
+    const r = rentangBaku(isoIhsg, akhirBar, rentang)
+    if (!r) return
     Promise.all(kodeAnggota.map((k) => fetchDeret(k))).then((hasil) => {
       if (batal) return
-      setSeri(deretIndeksGrup(hasil, ihsg, mulai, akhir))
+      setSeri(deretIndeksGrup(hasil, ihsg, r.mulai, r.akhir))
     })
     return () => { batal = true }
   }, [kodeAnggota, ihsg, rentang])
@@ -184,6 +182,19 @@ export function GrupKonglomerat() {
   /** kode -> {h1,wtd,mtd} dari screener; null = belum termuat (chip pakai
    *  pct1d bawaan berkas grup, perilaku lama). */
   const [chg, setChg] = useState<Map<string, { h1: number | null; wtd: number | null; mtd: number | null }> | null>(null)
+  // Opsi baku (#209 tahap 2), aktif hanya untuk jendela yang riwayat IHSG-nya
+  // cukup — sama pola BilahTanggal.tsx/PanelBreadth.tsx. Kosong (nonaktif
+  // semua) sebelum `ihsg` termuat, bukan daftar tiga opsi tetap seperti dulu.
+  const opsiRentangDeret = useMemo(() => {
+    const peta: Partial<Record<KunciBaku | 'semua', RentangDeret>> = {}
+    if (ihsg && ihsg.length) {
+      const isoIhsg = ihsg.map((b) => b[0])
+      const akhirBar = isoIhsg[isoIhsg.length - 1]
+      for (const k of RENTANG_BAKU) if (rentangBaku(isoIhsg, akhirBar, k)) peta[k] = k
+      if (rentangBaku(isoIhsg, akhirBar, 'semua')) peta.semua = 'semua'
+    }
+    return opsiRentangBaku<RentangDeret>(peta)
+  }, [ihsg])
 
   useEffect(() => {
     if (mode !== 'deret' || ihsg) return
@@ -244,7 +255,7 @@ export function GrupKonglomerat() {
           <div className="grup-k">
             {mode !== 'deret'
               ? <PemilihRentang opsi={OPSI_RENTANG_GRUP} nilai={rentang} onGanti={setRentang} ariaLabel="Rentang kinerja harga anggota grup" />
-              : <PemilihRentang opsi={OPSI_RENTANG_DERET} nilai={rentangDeret} onGanti={setRentangDeret} ariaLabel="Rentang deret kinerja grup" />}
+              : <PemilihRentang opsi={opsiRentangDeret} nilai={rentangDeret} onGanti={setRentangDeret} ariaLabel="Rentang deret kinerja grup" />}
           </div>
           {mode === 'kartu' && (
             <div className="grup-k grup-kanan">
