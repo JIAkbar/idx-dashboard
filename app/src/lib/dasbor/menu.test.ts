@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { MENU_GRUP, MENU_ITEMS, MENU_KELOMPOK, MENU_UTAMA, judulHalaman, tabHalaman } from './menu'
+import { MENU_GRUP, MENU_ITEMS, MENU_KELOMPOK, MENU_UTAMA, judulHalaman, pintuDari, tabHalaman } from './menu'
 
 /**
  * Rail desktop kini menggambar KELOMPOK, bukan menu satuan (#175). Menu yang
@@ -25,6 +25,26 @@ describe('pengelompokan menu', () => {
     // dilanggar diam-diam oleh halaman baru: menambah menu ke-11 memerahkan
     // uji, dan yang menambahnya harus memutuskan halaman mana yang jadi tab.
     expect(MENU_UTAMA.length).toBeLessThanOrEqual(10)
+  })
+
+  it('lima pintu, tepat satu menu utama per pintu (#200 A)', () => {
+    expect(MENU_GRUP).toHaveLength(5)
+    expect(MENU_UTAMA).toHaveLength(5)
+    for (const g of MENU_GRUP) expect(MENU_UTAMA.filter((m) => m.grup === g.id), g.id).toHaveLength(1)
+    for (const m of MENU_UTAMA) expect(pintuDari(m).id).toBe(m.grup)
+    // Rail dan laci mengikuti urutan pintu, bukan urutan penulisan menu.
+    expect(MENU_UTAMA.map((m) => m.grup)).toEqual(MENU_GRUP.map((g) => g.id))
+  })
+
+  it('tab bergrup sama dengan pintu induknya — grup tak boleh menyimpang dari tempat tampilnya', () => {
+    for (const m of MENU_ITEMS.filter((x) => x.induk)) {
+      const induk = MENU_ITEMS.find((x) => x.path === m.induk)!
+      expect(m.grup, `${m.id} di pintu ${induk.id}`).toBe(induk.grup)
+    }
+  })
+
+  it('pintu Alat & baca berinduk halaman tanpa kunci, supaya Kabar dan Metodologi tetap terbuka', () => {
+    expect(MENU_UTAMA.find((m) => m.grup === 'alat')!.path).toBe('/kabar')
   })
 
   it('tiap halaman ber-induk menunjuk induk yang BENAR-BENAR ada dan bukan dirinya', () => {

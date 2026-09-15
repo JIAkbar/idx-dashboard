@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
-import { MENU_UTAMA } from '../../lib/dasbor/menu'
+import { MENU_UTAMA, pintuDari } from '../../lib/dasbor/menu'
 
 /** Rumah — pintu Beranda di laci telepon. */
 const IKON_RUMAH_LACI = 'M4 11.5 12 4l8 7.5M6.5 10v9h11v-9'
@@ -93,8 +93,8 @@ export function LaciMobile({ buka, onTutup, onMasuk }: {
                     onClick={onTutup}
                     title={terkunci ? alasanRingkas(kunci!) : undefined}
                   >
-                    <IkonMenu d={item.ikon} size={19} />
-                    <span>{item.label}</span>
+                    <IkonMenu d={pintuDari(item).ikon} size={19} />
+                    <span>{pintuDari(item).label}</span>
                     {terkunci ? (
                       <IkonMenu d={IKON_KUNCI} size={14} />
                     ) : (

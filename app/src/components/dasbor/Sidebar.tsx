@@ -1,6 +1,6 @@
 import { MarkPapan } from './MarkPapan'
 import { Link, NavLink } from 'react-router-dom'
-import { MENU_UTAMA, type MenuItem } from '../../lib/dasbor/menu'
+import { MENU_UTAMA, pintuDari, type MenuItem } from '../../lib/dasbor/menu'
 import { IkonMenu, IKON_KUNCI } from './IkonMenu'
 
 /** Rumah — hanya dipakai pintu Beranda di rail & laci. */
@@ -82,19 +82,20 @@ export function Sidebar({ onMasuk }: { onMasuk: () => void }) {
             `.dasbor-rail-list` memang sudah `overflow-y: auto` sejak awal. */}
         {MENU_UTAMA.map((item) => {
           const kunci = kunciMengganjal(item, boleh)
+          const pintu = pintuDari(item)
           return (
             <NavLink
               key={item.id}
               to={item.path}
               end={item.path === '/'}
               className={({ isActive }) => 'dasbor-rail-item' + (isActive ? ' active' : '')}
-              title={kunci ? `${item.label} — ${alasanRingkas(kunci)}` : item.label}
+              title={kunci ? `${pintu.label} — ${alasanRingkas(kunci)}` : pintu.label}
               onClick={(e) => klik(e, item.path)}
               // Chunk halaman diunduh saat penunjuk mampir, bukan saat diklik.
               onPointerEnter={() => prefetchRute(item.path)}
             >
-              <IkonMenu d={item.ikon} size={22} />
-              <span className="dasbor-rail-kode">{item.kode}</span>
+              <IkonMenu d={pintu.ikon} size={22} />
+              <span className="dasbor-rail-kode">{pintu.kode}</span>
               {kunci ? (
                 <span className="dasbor-kunci-badge" aria-hidden="true">
                   <IkonMenu d={IKON_KUNCI} size={8} />
