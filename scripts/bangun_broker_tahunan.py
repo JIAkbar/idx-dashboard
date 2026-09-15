@@ -32,6 +32,7 @@ Pakai:
 from __future__ import annotations
 
 import json
+import os
 import re
 import sys
 from collections import defaultdict
@@ -208,6 +209,15 @@ def uji_bawaan() -> int:
             assert b["hari"]["2026-01-05"]["asing"]["broker"][0][0] == "AK"
             idx = json.loads((KELUARAN / "UJI" / "index.json").read_text(encoding="utf-8"))
             assert idx["tahun"] == [2025, 2026] and idx["n_hari"] == 3
+            # --inkremental (#204): baru dibangun = tak perlu; folder arsip
+            # berubah sesudahnya = perlu; tahun yang berkasnya hilang = perlu.
+            assert not perlu_bangun("UJI", ("2026",))
+            import time
+            nanti = time.time() + 5
+            os.utime(f, (nanti, nanti))
+            assert perlu_bangun("UJI", ("2026",))
+            (KELUARAN / "UJI" / "2025.json").unlink()
+            assert perlu_bangun("UJI", ("2025",))
     finally:
         ph.ARSIP, KELUARAN = asli_arsip, asli_out
 
@@ -225,6 +235,34 @@ def uji_bawaan() -> int:
             raise AssertionError(f"kode {buruk!r} mestinya ditolak")
     print("8/8 lulus")
     return 0
+
+
+def perlu_bangun(kode: str, tahun: tuple[str, ...]) -> bool:
+    """`--inkremental` (#204): True kalau berkas tahunannya belum ada, atau
+    folder arsip emiten berubah (berkas hari/varian baru) sesudah stempel
+    `dibangun` di DALAM berkas. Bukan mtime berkas keluaran: checkout CI
+    menyetel mtime baru, jadi jalan yang terpotong sebelum 3e akan terbaca
+    "sudah dibangun" selamanya. Mtime FOLDER, bukan per berkas: memindai
+    25 ribu berkas per emiten butuh lebih dari 2 menit (terukur 16 Sep 2026).
+
+    ponytail: menimpa berkas hari yang sudah ada tanpa menambah berkas baru tak
+    mengubah mtime folder; bat sore tetap membangun penuh tiap hari, jadi hanya
+    CI yang memakai jalan pintas ini.
+    """
+    folder = ph.ARSIP / kode
+    if not folder.is_dir():
+        return False
+    ubah = folder.stat().st_mtime
+    for t in tahun:
+        out = KELUARAN / kode / f"{t}.json"
+        if not out.exists():
+            return True
+        with open(out, encoding="utf-8") as f:
+            m = re.search(r'"dibangun":"([^"]+)"', f.read(4096))
+        # +1 detik: `dibangun` dibulatkan ke detik.
+        if not m or ubah > datetime.fromisoformat(m.group(1)).timestamp() + 1:
+            return True
+    return False
 
 
 def _kerja(pasang: tuple[str, tuple[str, ...]]) -> str:
@@ -269,7 +307,7 @@ def main() -> int:
             if i >= len(argv) or argv[i].startswith("-"):
                 raise SystemExit("--paralel butuh nilai, mis. --paralel 8")
             paralel = max(1, int(argv[i]))
-        elif a == "--lanjut":
+        elif a in ("--lanjut", "--inkremental"):
             pass  # ditangani setelah daftar kode tersusun
         elif a.startswith("-"):
             # Flag tak dikenal DULU diabaikan diam-diam, dan itu mahal:
@@ -279,7 +317,7 @@ def main() -> int:
             # penuh 963 emiten x 11 tahun, ±30 jam serial, tanpa satu pun
             # kata peringatan. Salah ketik flag akan melakukan hal yang sama.
             raise SystemExit(
-                f"flag tak dikenal: {a}. Yang ada: --tahun, --paralel, --lanjut, --uji. "
+                f"flag tak dikenal: {a}. Yang ada: --tahun, --paralel, --lanjut, --inkremental, --uji. "
                 "Tanpa flag = seluruh tahun, seluruh emiten."
             )
         else:
@@ -310,6 +348,10 @@ def main() -> int:
         sisa = [k for k in kode_semua
                 if not any((KELUARAN / k / f"{t}.json").exists() for t in tahun)]
         print(f"--lanjut: {len(kode_semua) - len(sisa)} dilewati, {len(sisa)} tersisa", flush=True)
+        kode_semua = sisa
+    if "--inkremental" in argv:
+        sisa = [k for k in kode_semua if perlu_bangun(k, tahun)]
+        print(f"--inkremental: {len(kode_semua) - len(sisa)} tak berubah, {len(sisa)} dibangun", flush=True)
         kode_semua = sisa
     tugas = [(k, tahun) for k in kode_semua]
     if paralel == 1:

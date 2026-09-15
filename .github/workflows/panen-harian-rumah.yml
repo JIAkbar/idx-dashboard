@@ -116,8 +116,10 @@ concurrency:
 jobs:
   panen:
     runs-on: self-hosted
-    # OHLC 960-an emiten memakan ±23 menit pada jalan penuh.
-    timeout-minutes: 90
+    # OHLC 960-an emiten memakan ±23 menit pada jalan penuh. 90 menit habis
+    # 12-15 Sep 2026 (#204: job terukur 81-95 menit, data 14 Sep tak
+    # tercommit); 150 memberi ruang, 3e dibuat inkremental.
+    timeout-minutes: 150
     defaults:
       run:
         # PowerShell, bukan bash — `shell: bash` di runner Windows menunjuk
@@ -322,7 +324,9 @@ jobs:
         continue-on-error: true
         run: |
           $tahun = (Get-Date).Year
-          & "${{ steps.py.outputs.exe }}" scripts/bangun_broker_tahunan.py --tahun $tahun --paralel 16
+          # --inkremental (#204): hanya emiten yang arsipnya ditulis sesudah
+          # berkas tahunannya dibangun (±30 menit kalau penuh). Bat sore tetap penuh.
+          & "${{ steps.py.outputs.exe }}" scripts/bangun_broker_tahunan.py --tahun $tahun --paralel 16 --inkremental
           if ($LASTEXITCODE -ne 0) { Write-Host "::warning::bangun_broker_tahunan gagal" }
 
       # Intraday 1 jam (Whales). Stockbit, jadi ia butuh rantai token yang
