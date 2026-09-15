@@ -48,6 +48,12 @@ describe('pengelompokan menu', () => {
     expect(judulHalaman('/broker')).toBe('Broker Pasar')
   })
 
+  it('gelombang 3 dan 4: Kuli Papan jadi bagian Kalkulator, Neo jadi Inventory Broker, 30 halaman (#200 A)', () => {
+    expect(MENU_ITEMS.some((m) => m.path === '/kuli-papan')).toBe(false)
+    expect(judulHalaman('/neo-papan')).toBe('Inventory Broker')
+    expect(MENU_ITEMS).toHaveLength(30)
+  })
+
   it('pintu Alat & baca berinduk halaman tanpa kunci, supaya Kabar dan Metodologi tetap terbuka', () => {
     expect(MENU_UTAMA.find((m) => m.grup === 'alat')!.path).toBe('/kabar')
   })

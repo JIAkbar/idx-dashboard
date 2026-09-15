@@ -12,8 +12,8 @@ import { IndeksDunia } from './views/dasbor/IndeksDunia'
 import { TopStocks } from './views/dasbor/TopStocks'
 import { BrokerPasar } from './views/dasbor/BrokerPasar'
 import { BrokerDetail } from './views/dasbor/BrokerDetail'
-import { SektorIndeks } from './views/dasbor/SektorIndeks'
-import { KalkulatorJia } from './views/dasbor/KalkulatorJia'
+import { SektorPasar } from './views/dasbor/SektorPasar'
+import { AlatKalkulator } from './views/dasbor/AlatKalkulator'
 import { Feedback } from './views/dasbor/Feedback'
 import { Login } from './views/Login'
 import './App.css'
@@ -28,7 +28,6 @@ const ChartIndeks = lazy(() => import('./views/dasbor/ChartIndeks').then((m) => 
 // Broker Summary v2 (22 Agu 2026) — arus broker PER EMITEN, berkas terpisah
 // dari BrokerSummary lama (broker level pasar) yang sengaja tidak disentuh.
 const BrokerSummaryV2 = lazy(() => import('./views/dasbor/BrokerSummaryV2').then((m) => ({ default: m.BrokerSummaryV2 })))
-const KuliPapan = lazy(() => import('./views/dasbor/KuliPapan').then((m) => ({ default: m.KuliPapan })))
 // Neo Papan (23 Agu 2026) — delapan tab analisis, sibling Kuli Papan di grup Dev.
 const NeoPapan = lazy(() => import('./views/dasbor/NeoPapan').then((m) => ({ default: m.NeoPapan })))
 const BerkasEmiten = lazy(() => import('./views/dasbor/BerkasEmiten'))
@@ -121,7 +120,7 @@ function App() {
                   membuat rincian bisa terbuka saat induknya terkunci -
                   gerbang yang bocor lewat satu klik. */}
               <Route path="/broker/:kode" element={<PenjagaHalaman kunci="topbroker"><BrokerDetail /></PenjagaHalaman>} />
-              <Route path="/sector" element={<PenjagaHalaman kunci="sektor"><SektorIndeks /></PenjagaHalaman>} />
+              <Route path="/sector" element={<PenjagaHalaman kunci="sektor"><SektorPasar /></PenjagaHalaman>} />
               {/* Statistik Berkala — rekap pekan bursa dari terbitan resmi IDX
                   (arsipnya sudah lama dipanen tapi belum pernah punya layar).
                   Kunci 'statistik' belum ada barisnya di `akses_halaman`, dan
@@ -149,7 +148,8 @@ function App() {
                   disentuh). Kunci 'broker-v2' terdaftar di PETA_MENU_KUNCI
                   DAN akses_halaman sejak rute ini dibuat (aturan wajib). */}
               <Route path="/broker-summary-v2" element={<PenjagaHalaman kunci="broker-v2"><BrokerSummaryV2 /></PenjagaHalaman>} />
-              <Route path="/kuli-papan" element={<PenjagaHalaman kunci="kuli-papan"><KuliPapan /></PenjagaHalaman>} />
+              {/* Kuli Papan jadi bagian Kalkulator (#200 A gelombang 4); alamat lama tetap terbuka. */}
+              <Route path="/kuli-papan" element={<Navigate to="/kalkulator?bagian=kuli-papan" replace />} />
               {/* Neo Papan (23 Agu 2026) — kunci 'neo-papan' terdaftar di
                   PETA_MENU_KUNCI di sini; baris `akses_halaman` di Supabase
                   MENYUSUL (aturan wajib #170, dikerjakan Johan). */}
@@ -178,7 +178,7 @@ function App() {
                   terdaftar di PETA_MENU_KUNCI DAN akses_halaman sejak rute
                   ini dibuat (aturan wajib 21 Agu 2026). */}
               <Route path="/aliran-asing" element={<PenjagaHalaman kunci="aliran-asing"><AliranAsing /></PenjagaHalaman>} />
-              <Route path="/kalkulator" element={<PenjagaHalaman kunci="kalkulator"><KalkulatorJia /></PenjagaHalaman>} />
+              <Route path="/kalkulator" element={<PenjagaHalaman kunci="kalkulator"><AlatKalkulator /></PenjagaHalaman>} />
               <Route path="/kabar" element={<Kabar />} />
               <Route path="/bulletin" element={<PenjagaHalaman kunci="bulletin"><Bulletin /></PenjagaHalaman>} />
               {/* Kunci 'radar' (label "Radar WDWL") menunjuk HALAMAN PUBLIK ini,

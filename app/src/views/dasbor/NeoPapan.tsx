@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { PemilihRentang } from '../../components/dasbor/PemilihRentang'
 import { StockAutocomplete } from '../../components/dasbor/StockAutocomplete'
 import { useStockIndex } from '../../lib/dasbor/stockDetailData'
@@ -25,6 +26,13 @@ const TABS: { id: Tab; label: string }[] = [
   { id: 'activity', label: 'Sector/Index Activity' },
 ]
 
+/** Tab yang tampil di baris tab sejak #200 A gelombang 3 (halaman ini jadi
+ *  Inventory Broker). Rotasi & Aktivitas pindah ke Sektor & Indeks; Balance
+ *  Position (dobel tab Shareholders Aliran Dana, T6) dan Seasonality (dobel
+ *  Musiman) tidak ditampilkan. Keempatnya TIDAK dihapus: masih terbuka lewat
+ *  `?tab=balance|season|rotasi|activity` sampai Johan menyetujui penghapusan. */
+const TAB_TAMPIL: Tab[] = ['transaksi', 'inventory', 'compare', 'stalker']
+
 /**
  * Neo Papan — delapan tab analisis di atas arsip PAPAN (candle/broker/KSEI/
  * sektor), diadaptasi dari prototipe komunitas `dev-kuli-neo-papan`. Lot
@@ -39,7 +47,9 @@ const TABS: { id: Tab; label: string }[] = [
  */
 export function NeoPapan() {
   const { index: indeks } = useStockIndex()
-  const [tab, setTab] = useState<Tab>('transaksi')
+  const [sp] = useSearchParams()
+  const tabUrl = sp.get('tab')
+  const [tab, setTab] = useState<Tab>(TABS.some((t) => t.id === tabUrl) ? (tabUrl as Tab) : 'transaksi')
   const [kode, setKode] = useState('BBCA')
   const [ketik, setKetik] = useState('BBCA')
   const [rentang, setRentang] = useState<RentangNp>('b3')
@@ -47,7 +57,7 @@ export function NeoPapan() {
   return (
     <div className="lantai neo-papan">
       <div className="vhead">
-        <h1>Neo Papan</h1>
+        <h1>Inventory Broker</h1>
       </div>
 
       {/* Bilah kendali berkelompok — sistem tata C+A (keputusan Johan 28
@@ -74,7 +84,7 @@ export function NeoPapan() {
       </div>
 
       <div className="tabs" role="tablist">
-        {TABS.map((t) => (
+        {TABS.filter((t) => TAB_TAMPIL.includes(t.id) || t.id === tab).map((t) => (
           <button key={t.id} role="tab" aria-selected={tab === t.id}
             className={'tab' + (tab === t.id ? ' on' : '')}
             onClick={() => setTab(t.id)}>{t.label}</button>

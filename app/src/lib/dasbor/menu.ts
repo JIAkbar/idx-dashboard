@@ -106,7 +106,7 @@ export const MENU_ITEMS: MenuItem[] = [
   },
   {
     id: 'sector', path: '/sector', label: 'Sektor & Indeks', kode: 'SEK', tabLabel: 'Sektor', induk: '/indeks', grup: 'pasar',
-    ringkas: 'Sebelas sektor IDX dan indeks tematik, diurut kinerja.',
+    ringkas: 'Sebelas sektor IDX dan indeks tematik diurut kinerja, plus rotasi sektor dan aktivitas sektor/indeks.',
     ikon: 'M4 4h7v7H4zM13 4h7v4h-7zM13 10h7v10h-7zM4 13h7v7H4z',
   },
   {
@@ -203,7 +203,7 @@ export const MENU_ITEMS: MenuItem[] = [
   },
   {
     id: 'kalkulator', path: '/kalkulator', label: 'Kalkulator', kode: 'KAL', tabLabel: 'Kalkulator', induk: '/kabar', grup: 'alat',
-    ringkas: 'Hitung average down, target ARA, risk-reward, dividen, dan titik pulih.',
+    ringkas: 'Hitung average down, target ARA, risk-reward, dividen, dan titik pulih — plus Kuli Papan: target dari antrean bid/offer dan pita PBV.',
     ikon: 'M6 3h12a1 1 0 011 1v16a1 1 0 01-1 1H6a1 1 0 01-1-1V4a1 1 0 011-1zM8 7h8M8.5 12h.01M12 12h.01M15.5 12h.01M8.5 16h.01M12 16h.01M15.5 16h.01',
   },
   {
@@ -270,15 +270,10 @@ export const MENU_ITEMS: MenuItem[] = [
   },
   // ── Dev ────────────────────────────────────────────────────────────────
   {
-    id: 'kuli-papan', path: '/kuli-papan', label: 'Kuli Papan', kode: 'KUL', tabLabel: 'Kuli Papan', induk: '/kabar', grup: 'alat',
-    ringkas: 'Dua kalkulator papan: target realistis dari antrean bid/offer, dan pita PBV terhadap rata-rata P/B tahunan.',
-    ikon: 'M4 19h16M6 15V9M10 15V6M14 15v-4M18 15V8',
-  },
-  {
     // Neo Papan (23 Agu 2026) — delapan tab analisis, sibling Kuli Papan.
     // Kode 'NEO' — 'KUL' sudah dipakai Kuli Papan.
-    id: 'neo-papan', path: '/neo-papan', label: 'Neo Papan', kode: 'NEO', tabLabel: 'Neo', induk: '/whales-papan', grup: 'bandar',
-    ringkas: 'Delapan tab analisis: transaksi, inventory broker, broker stalker, kepemilikan KSEI, musiman, dan rotasi sektor.',
+    id: 'neo-papan', path: '/neo-papan', label: 'Inventory Broker', kode: 'NEO', tabLabel: 'Inventory Broker', induk: '/whales-papan', grup: 'bandar',
+    ringkas: 'Inventory broker satu emiten: grafik transaksi, inventory, perbandingan antar broker, dan pelacak broker lintas emiten.',
     ikon: 'M12 3a9 9 0 100 18 9 9 0 000-18zM12 3a9 9 0 019 9h-9z M12 12l4-2',
   },
   {
