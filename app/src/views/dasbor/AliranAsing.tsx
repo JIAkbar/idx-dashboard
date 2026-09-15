@@ -162,7 +162,7 @@ export function AliranAsing() {
 
       <div className="asal">
         Data <b>{data.tanggal}</b> · <b>{data.n}</b> emiten · diperbarui {data.diperbarui}. Kolom{' '}
-        <b>Net Asing 20H</b> dalam <b>lembar</b> adalah jumlah 20 hari bursa terakhir (dari <code>screener.json</code>),
+        <b>Net Asing 20H</b> dalam <b>lembar</b> adalah jumlah 20 hari bursa terakhir (dari rekap harian seluruh emiten),
         bukan net 1 hari — ruas net 1/5 hari per emiten belum dihitung di berkas ini, jadi belum ada kolomnya di
         tabel. Pilih satu baris untuk membuka net 1/5/20 hari sungguhan per emiten di panel bawah.
       </div>

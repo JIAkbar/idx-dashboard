@@ -71,8 +71,8 @@ export function PanelAktivitasTransaksi({ ticker, fd }: { ticker: string; fd: St
               </div>
             </div>
             <p style={{ fontSize: 10, color: 'var(--text3)', marginTop: 8, lineHeight: 1.6 }}>
-              Volume, nilai, dan frekuensi hari bursa terakhir yang terpanen. Jumlah saham beredar dari
-              ruas <b>ListedShares</b> bursa, bukan dari agregator.
+              Volume, nilai, dan frekuensi hari bursa terakhir yang terpanen. Jumlah saham beredar adalah
+              jumlah saham tercatat menurut bursa, bukan dari agregator.
             </p>
           </>
         )}

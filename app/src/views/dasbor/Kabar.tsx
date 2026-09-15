@@ -144,7 +144,7 @@ export function Kabar() {
               <p style={{ marginBottom: 8 }}><IkonMenu d={IKON_KOTAK_ARSIP} size={26} /></p>
               <p>Kabar belum tersedia.</p>
               <p style={{ fontSize: 10, marginTop: 6 }}>
-                Berkas <code>kabar.json</code> belum ada — pembaruan belum pernah dijalankan.
+                Kabar belum pernah dipanen.
               </p>
             </div>
           )}

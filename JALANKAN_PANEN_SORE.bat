@@ -135,6 +135,9 @@ REM Keluar TANPA melepas kunci: kuncinya milik proses lain. Sampai
 REM 9 Sep 2026 baris ini melompat ke :akhir yang menghapusnya, jadi
 REM pipa yang mengalah justru membuka pintu untuk pipa ketiga - dan
 REM dua panen yang jalan bersamaan persis yang memutus rantai token.
+REM Kode 1 = panen sore tidak memanen (#197 A), apa pun yang dikerjakan pipa
+REM pemegang kunci; data hari itu dibaca dari pemeriksaan sesudah panen.
+set PAPAN_RC=1
 goto keluar_tanpa_kunci
 :kunci_bebas
 if defined PAPAN_TUNGGU_KUNCI echo Kunci dilepas sesudah menunggu %PAPAN_TUNGGU_KUNCI% x 30 detik - lanjut.
