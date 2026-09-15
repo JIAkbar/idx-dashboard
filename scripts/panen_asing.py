@@ -95,6 +95,16 @@ AWAL_SUMBER = date(2020, 1, 2)
 SUMBER_ARSIP = "asing"
 
 
+def akhir_tuntas(kini) -> date:
+    """Tanggal akhir bawaan: hari ini hanya kalau sudah lewat 16:30 WIB, selain itu kemarin (#199 A).
+
+    Sama dengan aturan hari tuntas `tgl_broker_aman.py`. Run CI 34871985403 baru mulai 14 Sep 2026
+    23:59 WIB, langkah asing jalan 15 Sep 00:27, dan `date.today()` membuatnya meminta hari yang
+    belum terjadi: arsip `20260915.json.gz` tertulis 0 baris dan `asing/` tertinggal sehari.
+    `kini` = datetime waktu lokal mesin (WIB)."""
+    return kini.date() if (kini.hour, kini.minute) >= (16, 30) else kini.date() - timedelta(days=1)
+
+
 def hari_bursa(mulai: date, akhir: date):
     """Semua hari kerja dalam rentang. Libur nasional tak disaring — endpoint
     membalas 0 baris dan tanggalnya dilewati, jadi tak perlu kalender libur
@@ -367,6 +377,12 @@ def demo() -> None:
     assert json.loads(petik({"StockCode": "X", "Date": "2026-08-18T00:00:00",
                              "ForeignSell": -5})[1])[2] == 0
 
+    import datetime as _dt
+    assert akhir_tuntas(_dt.datetime(2026, 9, 15, 0, 27)) == date(2026, 9, 14), "tengah malam = kemarin"
+    assert akhir_tuntas(_dt.datetime(2026, 9, 15, 16, 29)) == date(2026, 9, 14)
+    assert akhir_tuntas(_dt.datetime(2026, 9, 15, 16, 30)) == date(2026, 9, 15)
+    assert akhir_tuntas(_dt.datetime(2026, 9, 15, 22, 5)) == date(2026, 9, 15)
+
     hk = list(hari_bursa(date(2026, 8, 14), date(2026, 8, 18)))
     assert hk == [date(2026, 8, 14), date(2026, 8, 17), date(2026, 8, 18)], hk
 
@@ -436,7 +452,8 @@ def main() -> None:
     p.add_argument("--penuh", action="store_true",
                    help="paksa dari %s — untuk pembangunan ulang, bukan panen harian"
                         % AWAL_SUMBER)
-    p.add_argument("--akhir", default=str(date.today()))
+    p.add_argument("--akhir", default=None,
+                   help="bawaan: hari tuntas - hari ini sesudah 16:30 WIB, selain itu kemarin (#199 A)")
     p.add_argument("--jeda", type=float, default=0.35, help="detik antar unduhan baru")
     p.add_argument("--dari-arsip", action="store_true", help="bangun ulang tanpa jaringan")
     p.add_argument("--timpa", action="store_true",
@@ -462,7 +479,9 @@ def main() -> None:
             "--mulai yang dipersempit, ia menulis ulang tiap berkas dengan beberapa "
             "baris saja dan riwayat lamanya hilang — persis kejadian 20 Agu 2026."
             % AWAL_SUMBER)
-    panen(mulai, date.fromisoformat(a.akhir), jeda=a.jeda, dari_arsip=a.dari_arsip, timpa=a.timpa)
+    import datetime as _dt
+    akhir = date.fromisoformat(a.akhir) if a.akhir else akhir_tuntas(_dt.datetime.now())
+    panen(mulai, akhir, jeda=a.jeda, dari_arsip=a.dari_arsip, timpa=a.timpa)
 
 
 if __name__ == "__main__":

@@ -434,8 +434,54 @@ REM tak bisa membawa kerja agen lain yang kebetulan ter-stage - pelajaran
 REM 18 Agu 2026, ketika commit mengambil seluruh index dan 13 berkas
 REM halaman lain terbawa ke commit berjudul lain.
 if not "%COMMIT_RC%"=="0" goto lewati_push
+set PUSH_GAGAL=
+set DORONG_KONFLIK=
+REM ---- Dorong data (#198 A, keputusan Johan 15 Sep 2026) ----------------
+REM Dulu satu `git push` saja. 15 Sep 2026 CI panen kabar mendorong lebih dulu,
+REM push bat buka-laptop ditolak, bat tetap keluar 0, dan data hari itu tidak
+REM tayang tanpa satu pun tanda. Sekarang: tarik dengan rebase (autostash,
+REM karena pohon kerja bisa berisi suntingan lain), dorong, ulangi sampai 3
+REM kali; tetap gagal = PERINGATAN dan kode keluar 1. Commit di atas memakai
+REM pathspec, jadi yang terdorong hanya data milik bat ini.
+REM PAPAN_JEDA_DORONG (detik antar percobaan) hanya untuk uji.
+set DORONG_COBA=0
+if not defined PAPAN_JEDA_DORONG set PAPAN_JEDA_DORONG=20
+:dorong_ulang
+set /a DORONG_COBA+=1
+git pull --rebase --autostash origin main
+if errorlevel 1 goto dorong_rebase_gagal
+REM Autostash yang bentrok TIDAK membuat pull gagal: git keluar 0, menyimpan
+REM suntingan di stash, dan meninggalkan berkas berstatus UU berisi penanda
+REM konflik (dibuktikan Pemeriksa Akhir #198 dengan git sungguhan). Berkas itu
+REM dikembalikan ke versi HEAD; suntingannya tetap ada di `git stash list`.
+set DORONG_ADA_KONFLIK=
+for /f "delims=" %%f in ('git diff --name-only --diff-filter=U') do set DORONG_ADA_KONFLIK=1
+if not defined DORONG_ADA_KONFLIK goto dorong_tanpa_konflik
+echo   PERINGATAN: suntingan belum di-commit bentrok dengan commit dari GitHub. Berkas dikembalikan ke versi HEAD,
+echo   suntingannya tersimpan di git stash - periksa dengan: git stash list
+for /f "delims=" %%f in ('git diff --name-only --diff-filter=U') do (
+  echo      %%f
+  git checkout HEAD -- "%%f"
+)
+set DORONG_KONFLIK=1
+:dorong_tanpa_konflik
 git push origin HEAD:main
-if errorlevel 1 echo   (push gagal - periksa jaringan atau konflik; data tetap aman di commit lokal)
+if not errorlevel 1 goto dorong_ok
+goto dorong_coba_lagi
+:dorong_rebase_gagal
+echo   Rebase gagal pada percobaan %DORONG_COBA% - dibatalkan.
+git rebase --abort 2>nul
+:dorong_coba_lagi
+if %DORONG_COBA% GEQ 3 goto dorong_menyerah
+"%PYEXE%" -c "import time;time.sleep(%PAPAN_JEDA_DORONG%)"
+goto dorong_ulang
+:dorong_menyerah
+echo   PERINGATAN: push data gagal 3 kali - data sudah di-commit di laptop tapi BELUM tayang.
+set PUSH_GAGAL=1
+goto dorong_selesai
+:dorong_ok
+echo   Data ter-push ke GitHub pada percobaan %DORONG_COBA%.
+:dorong_selesai
 goto sesudah_push
 :lewati_push
 echo   (tak ada commit baru - push dilewati)
@@ -466,3 +512,6 @@ goto :eof
 :akhir
 rmdir "%~dp0.panen.lock" 2>nul
 if not "%1"=="auto" pause
+REM Push yang gagal 3 kali (#198 A) wajib terlihat di Task Scheduler.
+if defined PUSH_GAGAL exit /b 1
+if defined DORONG_KONFLIK exit /b 1

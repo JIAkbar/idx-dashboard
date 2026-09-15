@@ -375,7 +375,52 @@ REM sebelumnya pada gudang broker tahunan.
 set "DATA_JALUR=data-idx/json/ohlc data-idx/json/ohlcv_stockbit data-idx/json/asing data-idx/json/intraday_1h data-idx/json/kartu data-idx/json/nilai_jejak.json data-idx/json/penilaian data-idx/json/selisih_terkunci.json data-idx/json/rencana_saham.json data-idx/json/winrate data-idx/json/prob data-idx/json/screener.json data-idx/json/pola_screener.json data-idx/json/daftar_emiten.json data-idx/json/broker_harian data-idx/json/broker_tahunan data-idx/json/broker_pivot data-idx/json/broker_rentang data-idx/json/bt data-idx/json/rbs_kandidat.json data-idx/json/harian_papan data-idx/json/jago_papan data-idx/json/ipo.json data-idx/json/pola_screener.json data-idx/json/kategori_broker.json data-idx/json/ihsg_ohlc_ringkas.json data-idx/json/aliran_investor.json data-idx/json/bidoffer.json data-idx/json/harga_terakhir.json data-idx/json/grup_konglomerat.json data-idx/json/keystats_stockbit data-idx/json/info_stockbit data-idx/json/rekomendasi data-idx/json/seasonality data-idx/json/tinjauan_deepdive.json data-idx/json/rezim_pasar.json data-idx/json/bandarmologi.json"
 git add %DATA_JALUR% 2>nul
 git commit -m "data: panen sore otomatis (%date%)" -- %DATA_JALUR%
-git push origin main
+REM ---- Dorong data (#198 A, keputusan Johan 15 Sep 2026) ----------------
+REM Dulu satu `git push` saja. 15 Sep 2026 CI panen kabar mendorong lebih dulu,
+REM push bat buka-laptop ditolak, bat tetap keluar 0, dan data hari itu tidak
+REM tayang tanpa satu pun tanda. Sekarang: tarik dengan rebase (autostash,
+REM karena pohon kerja bisa berisi suntingan lain), dorong, ulangi sampai 3
+REM kali; tetap gagal = PERINGATAN dan kode keluar 1. Commit di atas memakai
+REM pathspec, jadi yang terdorong hanya data milik bat ini.
+REM PAPAN_JEDA_DORONG (detik antar percobaan) hanya untuk uji.
+set DORONG_COBA=0
+if not defined PAPAN_JEDA_DORONG set PAPAN_JEDA_DORONG=20
+:dorong_ulang
+set /a DORONG_COBA+=1
+git pull --rebase --autostash origin main
+if errorlevel 1 goto dorong_rebase_gagal
+REM Autostash yang bentrok TIDAK membuat pull gagal: git keluar 0, menyimpan
+REM suntingan di stash, dan meninggalkan berkas berstatus UU berisi penanda
+REM konflik (dibuktikan Pemeriksa Akhir #198 dengan git sungguhan). Berkas itu
+REM dikembalikan ke versi HEAD; suntingannya tetap ada di `git stash list`.
+set DORONG_ADA_KONFLIK=
+for /f "delims=" %%f in ('git diff --name-only --diff-filter=U') do set DORONG_ADA_KONFLIK=1
+if not defined DORONG_ADA_KONFLIK goto dorong_tanpa_konflik
+echo   PERINGATAN: suntingan belum di-commit bentrok dengan commit dari GitHub. Berkas dikembalikan ke versi HEAD,
+echo   suntingannya tersimpan di git stash - periksa dengan: git stash list
+for /f "delims=" %%f in ('git diff --name-only --diff-filter=U') do (
+  echo      %%f
+  git checkout HEAD -- "%%f"
+)
+set PAPAN_RC=1
+:dorong_tanpa_konflik
+git push origin HEAD:main
+if not errorlevel 1 goto dorong_ok
+goto dorong_coba_lagi
+:dorong_rebase_gagal
+echo   Rebase gagal pada percobaan %DORONG_COBA% - dibatalkan.
+git rebase --abort 2>nul
+:dorong_coba_lagi
+if %DORONG_COBA% GEQ 3 goto dorong_menyerah
+"%PYEXE%" -c "import time;time.sleep(%PAPAN_JEDA_DORONG%)"
+goto dorong_ulang
+:dorong_menyerah
+echo   PERINGATAN: push data gagal 3 kali - data sudah di-commit di laptop tapi BELUM tayang.
+set PAPAN_RC=1
+goto dorong_selesai
+:dorong_ok
+echo   Data ter-push ke GitHub pada percobaan %DORONG_COBA%.
+:dorong_selesai
 
 :akhir
 if defined PAPAN_KUNCI_MILIK rmdir "%~dp0.panen.lock" 2>nul
