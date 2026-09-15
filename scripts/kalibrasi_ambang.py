@@ -3,7 +3,8 @@
 MASALAH YANG DIPERBAIKI: ambang di `app/src/lib/dasbor/ringkasHarian.ts`
 awalnya ditebak — "menguat kuat" dipatok ≥1,0% karena angka itu terdengar
 wajar, bukan karena dihitung. Padahal kita menyimpan penutupan IHSG harian
-sejak 1990 (`data-idx/json/ihsg_harian.json`), jadi pertanyaannya bisa
+sejak 1990 (`data-idx/json/ohlc/IHSG.json`; dulu `ihsg_harian.json`, satu
+deret sejak referensi J19/#203 A, #208), jadi pertanyaannya bisa
 dijawab dengan data sendiri: kenaikan 1,59% itu masuk persentil berapa dari
 seluruh hari bursa yang pernah ada?
 
@@ -27,7 +28,7 @@ from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 
 AKAR = Path(__file__).resolve().parent.parent
-SUMBER = AKAR / "data-idx" / "json" / "ihsg_harian.json"
+SUMBER = AKAR / "data-idx" / "json" / "ohlc" / "IHSG.json"
 KELUARAN = AKAR / "app" / "src" / "lib" / "dasbor" / "ambangPasar.json"
 WIB = timezone(timedelta(hours=7))
 
@@ -51,7 +52,8 @@ def main() -> int:
 
     if not SUMBER.exists():
         raise SystemExit(f"Tidak ada {SUMBER} — jalankan panen IHSG dulu.")
-    tutup: dict[str, float] = json.loads(SUMBER.read_text(encoding="utf-8"))["tutup"]
+    # Larik `d`: [tanggal, buka, tinggi, rendah, tutup, volume].
+    tutup: dict[str, float] = {b[0]: b[4] for b in json.loads(SUMBER.read_text(encoding="utf-8"))["d"] if b[4]}
 
     tanggal = sorted(tutup)
     if args.tahun:
@@ -73,7 +75,7 @@ def main() -> int:
 
     ambang = {
         "dihitung": datetime.now(WIB).isoformat(timespec="seconds"),
-        "sumber": "data-idx/json/ihsg_harian.json",
+        "sumber": "data-idx/json/ohlc/IHSG.json",
         "jendela_tahun": args.tahun or None,
         "hari_bursa": len(gerak),
         "mulai": tanggal[0],
