@@ -5842,6 +5842,30 @@ tersangkanya IHSG di preset scalping, vonisnya jatuh tepat di hari segel dibuat)
 bar hari terakhirnya memang sudah lengkap, dan mengoreksi angka yang sudah benar cuma menambah riwayat tanpa<br />
 menambah kebenaran. Uji <code>app/src/lib/dasbor/nilaiJejak.test.ts</code> membaca catatan yang <strong>berlaku</strong> (koreksi<br />
 menang atas segel asli) dan merah kalau ada catatan terbit yang angkanya sudah tak berlaku dan tak dikoreksi.</p>
+<h3>Harga rata-rata beli broker — satu definisi untuk tiga halaman (keputusan Johan, 15 Sep 2026)</h3>
+<table>
+<thead>
+<tr>
+<th>Istilah di layar</th>
+<th>Rumus</th>
+<th>Sumber data</th>
+<th>Jendela per halaman</th>
+<th>Dipakai di</th>
+<th>Keputusan</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Harga rata-rata beli broker ("Rata-rata beli, N hari")</td>
+<td>Σ nilai beli ÷ (Σ lot beli × 100) seluruh hari dalam jendela, fungsi <code>hargaRata</code></td>
+<td>arsip broker per emiten Stockbit, gudang <code>broker_tahunan/</code></td>
+<td>Aliran Dana: rentang aktif; Neo Inventory: 126 hari bursa terakhir; Trader Papan: rentang pilihan</td>
+<td>Aliran Dana tab Overview, Neo Papan tab Inventory (Posisi 6 Bulan), Trader Papan</td>
+<td>Johan 15 Sep 2026 <em>"R2 saja, jendela ditulis di samping angkanya"</em> (#202); tabel pembanding <code>docs/pembanding-rumus-floor-broker.md</code></td>
+</tr>
+</tbody>
+</table>
+<p>"Floor" tidak lagi dipakai di layar: dua arti lamanya (beli termurah satu hari; harga pasar terendah saat broker net beli) tidak ditampilkan.</p>
 
 </div>
 </div></div>

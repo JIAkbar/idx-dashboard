@@ -4,7 +4,12 @@
  * + tren 10 hari, badge TRAPPED. Rumus KITA, sengaja terpisah dari
  * `floorPriceBroker` (brokerEmiten.ts) — itu harga TERENDAH satu hari,
  * bukan rata-rata tertimbang seluruh jendela seperti diminta di sini.
+ *
+ * Ruas `floor` di sini = harga rata-rata beli broker (keputusan Johan #202,
+ * 15 Sep 2026: "R2 saja"), dihitung oleh `hargaRata` yang sama dengan Aliran
+ * Dana dan Trader Papan. Nama ruasnya lama; di layar ia tak lagi disebut floor.
  */
+import { hargaRata } from './brokerEmiten'
 
 export interface BarisPosisiHari {
   kode: string
@@ -68,7 +73,7 @@ export function hitungPosisiBroker(
       kum.push(run)
     }
     const net = beliNilai - jualNilai
-    const floor = beliLot ? beliNilai / (beliLot * 100) : null
+    const floor = hargaRata(beliNilai, beliLot)
     const pnlPersen = net > 0 && floor != null && hargaKini != null ? (hargaKini - floor) / floor : null
     const status: PosisiBroker['status'] = net > 0 ? 'AKUM' : net < 0 ? 'DIST' : 'NETRAL'
     const ekor = seriHarian.slice(-TREN_N)

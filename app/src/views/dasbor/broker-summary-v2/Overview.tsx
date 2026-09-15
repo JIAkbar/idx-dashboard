@@ -1,12 +1,11 @@
 import type { ReactNode } from 'react'
 import type { AgregatBroker, HariBroker, ModeTransaksi } from '../../../lib/dasbor/brokerEmiten'
-import { arusHarian, floorPriceBroker, tabelDuaSisi } from '../../../lib/dasbor/brokerEmiten'
+import { arusHarian, tabelDuaSisi } from '../../../lib/dasbor/brokerEmiten'
 import { ringkasSB, analisaKelompok, konsensusKategori } from '../../../lib/dasbor/brokerEmitenV2'
 import { KETERANGAN_KATEGORI, useKategoriBroker } from '../../../lib/dasbor/kategoriBroker'
 import { warnaBroker, warnaKelompok, namaBroker, LABEL_KELOMPOK, KETERANGAN_KELOMPOK } from '../../../lib/dasbor/kelompokBroker'
 import { fmtB, fmtLot } from '../../../lib/dasbor/brokerSummaryFormat'
 import { labelTanggal } from '../../../lib/dasbor/brokerHarian'
-import { keFraksi } from '../../../lib/fraksiHarga'
 import { Sparkline } from './Sparkline'
 import { TautanBroker, useBrokerBerhalaman } from '../../../components/dasbor/TautanBroker'
 
@@ -79,7 +78,14 @@ export function Overview({ hari, agg, mode, ukuran }: OverviewProps) {
   const hariTerakhir = hari[hari.length - 1]?.[1]
 
   const kelompok = analisaKelompok(hari, agg, ukuran)
-  const floor = floorPriceBroker(hari, 1000).slice(0, 12)
+  // Harga rata-rata beli broker (#202, keputusan Johan 15 Sep 2026: "R2 saja,
+  // jendela ditulis di samping angkanya"): Σ nilai beli ÷ (Σ lot beli × 100)
+  // sepanjang rentang aktif, rumus yang sama dengan Neo Inventory dan Trader
+  // Papan. Dulu panel ini memakai beli termurah SATU hari (`floorPriceBroker`).
+  const rataBeli = agg.filter((a) => a.beliAvg != null).sort((x, y) => y.beliNilai - x.beliNilai).slice(0, 12)
+  const jendelaTeks = hari.length
+    ? `${labelTanggal(hari[0][0])}–${labelTanggal(hari[hari.length - 1][0])} · ${hari.length} hari bursa`
+    : ''
 
   const daftarKategori = useKategoriBroker()
   const konsensus = konsensusKategori(hari, agg, daftarKategori)
@@ -244,20 +250,19 @@ export function Overview({ hari, agg, mode, ukuran }: OverviewProps) {
         </section>
 
         <section className="panel">
-          <div className="panel-h"><h2>Floor price per broker</h2><span className="lbl">beli rata-rata terendah, ≥ 1.000 lot/hari</span></div>
+          <div className="panel-h"><h2>Harga rata-rata beli broker</h2><span className="lbl">{jendelaTeks}</span></div>
           <div className="panel-b">
-            {floor.length === 0 ? (
-              <EmptyState>Tak ada broker dengan ≥1.000 lot dalam satu hari pada rentang ini.</EmptyState>
+            {rataBeli.length === 0 ? (
+              <EmptyState>Tak ada pembelian broker pada rentang ini.</EmptyState>
             ) : (
               <div className="board-tbl-wrap">
                 <table className="tbl">
-                  <thead><tr><th>Broker</th><th className="r">Floor</th><th className="r">Tanggal</th><th className="r">Lot hari itu</th></tr></thead>
-                  <tbody>{floor.map((f) => (
-                    <tr key={f.broker}>
-                      <td><KodeBroker kode={f.broker} punya={brokerAda} /></td>
-                      <td className="r num">Rp {keFraksi(f.floor).toLocaleString('id-ID')}</td>
-                      <td className="r num">{labelTanggal(f.tanggal)}</td>
-                      <td className="r num">{fmtLot(f.lot)}</td>
+                  <thead><tr><th>Broker</th><th className="r">Rata-rata beli, {hari.length} hari bursa</th><th className="r">Lot beli</th></tr></thead>
+                  <tbody>{rataBeli.map((a) => (
+                    <tr key={a.broker}>
+                      <td><KodeBroker kode={a.broker} punya={brokerAda} /></td>
+                      <td className="r num">Rp {Math.round(a.beliAvg!).toLocaleString('id-ID')}</td>
+                      <td className="r num">{fmtLot(a.beliLot)}</td>
                     </tr>
                   ))}</tbody>
                 </table>

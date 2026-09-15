@@ -30,7 +30,7 @@ const INFO_INVENTORY: ItemInfoIndikator[] = [
   { nama: 'Grid', isi: 'Garis bantu chart, dengan slider keburaman di sampingnya.' },
   { nama: 'Broker', isi: 'Preset garis kumulatif: AK BK (dua broker asing acuan), Top 5 NB/NS (net beli/jual terbesar pada rentang ini — definisi PAPAN sendiri), kelompok Asing aktif besar/Institusi Lokal/Ritel (kurasi PAPAN, bukan penggolongan resmi bursa, diambil dari anggota yang aktif di rentang ini, maksimal 8 garis), atau Pilih sendiri secara manual.' },
   { nama: 'Group Score', isi: 'Skor harian 10 hari terakhir per kategori perilaku broker: tanda net kategori (naik/turun) dikalikan jumlah broker kategori itu yang net searah hari itu — penjumlahan tanda, bukan skor komposit.' },
-  { nama: 'Posisi 6 Bulan per Broker', isi: 'Posisi tiap broker dari 126 hari bursa terakhir yang tersedia di arsip: Floor = rata-rata tertimbang harga beli sepanjang jendela, PnL% hanya dihitung untuk broker net-beli, dan badge TRAPPED menghitung berapa dari net-buyer terbesar yang posisinya kini di bawah floor.' },
+  { nama: 'Posisi 6 Bulan per Broker', isi: 'Posisi tiap broker dari 126 hari bursa terakhir yang tersedia di arsip: Rata-rata beli = harga rata-rata beli broker sepanjang jendela (total nilai beli dibagi total lembar beli, rumus yang sama dengan Aliran Dana dan Trader Papan), PnL% hanya dihitung untuk broker net-beli, dan badge TRAPPED menghitung berapa dari net-buyer terbesar yang harga sekarang di bawah rata-rata belinya.' },
 ]
 
 /** Sparkline net harian — batang mini (pola sama `Spark` di StalkerTab.tsx;
@@ -582,14 +582,14 @@ export function InventoryTab({ kode }: { kode: string }) {
         <h3 style={{ margin: '0 0 6px' }}>Posisi 6 Bulan per Broker</h3>
         <p className="np-sub">
           Posisi dihitung dari {posisiData ? posisiData.tanggal.length : JENDELA_POSISI} hari bursa terakhir yang tersedia di arsip
-          {rentangPosisi ? ` (${rentangPosisi.dari} → ${rentangPosisi.sampai})` : ''}. Floor = rata-rata tertimbang harga beli seluruh
+          {rentangPosisi ? ` (${rentangPosisi.dari} → ${rentangPosisi.sampai})` : ''}. Rata-rata beli = harga rata-rata beli broker seluruh
           jendela; PnL% hanya dihitung untuk broker net-beli.
           {rentangPosisi && praBroker(rentangPosisi.dari) && <span className="np-parsial"> · {PERINGATAN_PRA_BROKER}</span>}
         </p>
         {trapped.total > 0 && (
           <p className="np-sub">
             <span className="badge">TRAPPED {trapped.trapped}/{trapped.total}</span>{' '}
-            dari {trapped.total} net-buyer terbesar jendela ini posisinya di bawah floor pada harga sekarang.
+            dari {trapped.total} net-buyer terbesar jendela ini harga sekarang di bawah rata-rata belinya.
           </p>
         )}
         {!posisiData && <Kosong>Memuat arsip broker {kode}…</Kosong>}
@@ -598,7 +598,7 @@ export function InventoryTab({ kode }: { kode: string }) {
           <table>
             <thead>
               <tr>
-                <th>Broker</th><th className="r">Net</th><th className="r">Floor</th><th className="r">PnL%</th>
+                <th>Broker</th><th className="r">Net</th><th className="r">Rata-rata beli, {posisiData ? posisiData.tanggal.length : JENDELA_POSISI} hari</th><th className="r">PnL%</th>
                 <th className="r">Hari</th><th>Status</th>
                 <th title="RE-AKUM = status Distribusi tapi 10 hari terakhir net positif · MELEPAS = status Akumulasi tapi 10 hari terakhir net negatif">Tren 10H</th>
                 <th>10 Hari</th>

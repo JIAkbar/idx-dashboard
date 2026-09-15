@@ -163,8 +163,8 @@ export function agregatBroker(hari: Array<[string, HariBroker]>): AgregatBroker[
   for (const a of keluar) {
     a.netLot = a.beliLot - a.jualLot
     a.netNilai = a.beliNilai - a.jualNilai
-    a.beliAvg = a.beliLot ? a.beliNilai / (a.beliLot * 100) : null
-    a.jualAvg = a.jualLot ? a.jualNilai / (a.jualLot * 100) : null
+    a.beliAvg = hargaRata(a.beliNilai, a.beliLot)
+    a.jualAvg = hargaRata(a.jualNilai, a.jualLot)
   }
   keluar.sort((x, y) => y.netNilai - x.netNilai)
   return keluar

@@ -36,6 +36,7 @@
  */
 
 import type { HariBroker } from './whalesPapan'
+import { hargaRata } from './brokerEmiten'
 
 /** Ambang lot: di bawah ini broker dianggap tak berposisi, cuma menyentuh.
  *  Bukan ambang kualitas — hanya penjaga supaya baris 1-2 lot tak memenuhi
@@ -187,7 +188,8 @@ export function posisiBroker(hariTerpilih: HariBroker[]): HasilPosisi {
     // Ekor 0 (rentang < 2 hari) berarti tak ada "sebelum" untuk dibandingkan;
     // labelnya jatuh ke arah keseluruhan saja, bukan ditebak.
     const netEkor = nEkor > 0 ? a.netHarian.slice(-nEkor).reduce((s, x) => s + x, 0) : netLot
-    const avgBeli = a.beliLot > 0 ? a.beliNilai / a.beliLot / 100 : null
+    // Satu rumus harga rata-rata beli untuk tiga halaman (#202, keputusan Johan).
+    const avgBeli = hargaRata(a.beliNilai, a.beliLot)
     baris.push({
       kode,
       beliLot: a.beliLot,
@@ -196,7 +198,7 @@ export function posisiBroker(hariTerpilih: HariBroker[]): HasilPosisi {
       netNilai: a.beliNilai - a.jualNilai,
       nilaiTotal: a.beliNilai + a.jualNilai,
       avgBeli,
-      avgJual: a.jualLot > 0 ? a.jualNilai / a.jualLot / 100 : null,
+      avgJual: hargaRata(a.jualNilai, a.jualLot),
       floor: a.floor,
       hariAktif: a.hariAktif,
       hariNetBeli: a.hariNetBeli,

@@ -1521,6 +1521,14 @@ bar hari terakhirnya memang sudah lengkap, dan mengoreksi angka yang sudah benar
 menambah kebenaran. Uji `app/src/lib/dasbor/nilaiJejak.test.ts` membaca catatan yang **berlaku** (koreksi
 menang atas segel asli) dan merah kalau ada catatan terbit yang angkanya sudah tak berlaku dan tak dikoreksi.
 
+### Harga rata-rata beli broker — satu definisi untuk tiga halaman (keputusan Johan, 15 Sep 2026)
+
+| Istilah di layar | Rumus | Sumber data | Jendela per halaman | Dipakai di | Keputusan |
+|---|---|---|---|---|---|
+| Harga rata-rata beli broker ("Rata-rata beli, N hari") | Σ nilai beli ÷ (Σ lot beli × 100) seluruh hari dalam jendela, fungsi `hargaRata` | arsip broker per emiten Stockbit, gudang `broker_tahunan/` | Aliran Dana: rentang aktif; Neo Inventory: 126 hari bursa terakhir; Trader Papan: rentang pilihan | Aliran Dana tab Overview, Neo Papan tab Inventory (Posisi 6 Bulan), Trader Papan | Johan 15 Sep 2026 *"R2 saja, jendela ditulis di samping angkanya"* (#202); tabel pembanding `docs/pembanding-rumus-floor-broker.md` |
+
+"Floor" tidak lagi dipakai di layar: dua arti lamanya (beli termurah satu hari; harga pasar terendah saat broker net beli) tidak ditampilkan.
+
 ## Prototipe Dev — Kuli Papan & Neo Papan (artifact, 23 Agu 2026)
 
 Asal: Johan 23 Agu 2026 — *"bantu saya buatan artifact dari 2 page baru untuk Papan Trading, dimana buat menu Baru dengan nama Dev dimana 2 ada page baru, pertama Kuli Papan, kedua Neo Papan, bahan nya ada di … data ide, coba pelajari buat artifactnya, analisa kebutuhan data nya baru bangun dari data stockbit"*. Bahan: `data ide/Kuli Papan.pdf` (kalkulator Target Realistis — formula adimollogy & buruhIHSG — dan PBV Band), `data ide/Neo Papan.pdf` (12 halaman referensi NeoBDM). Hasil: `data ide/dev-kuli-neo-papan.html` (mandiri, 7,2 MB, data tertanam; dibuka langsung di browser) + artifact privat `https://claude.ai/code/artifact/b5234bdd-0a64-459f-b024-d5015258d20c`. Pemadat data: `data ide/bangun_data_dev.py` (membaca arsip proyek, ±195 detik, 962 berkas OHLCV) + `data ide/dev-kuli-neo-papan.template.html` (placeholder `__DATA_JSON__`). Cakupan prototipe (keputusan Johan): 8 emiten likuid (BBCA, BBRI, BMRI, TLKM, ASII, ANTM, BUMI, TPIA), OHLCV sejak Okt 2025, broker 2026 YTD; Broker Stalker memakai semua emiten yang arsip 2026-nya sudah ada saat dibuat (155; arsip terus bertambah). Uji tampilan: desktop 1920×1080 (terang & gelap) dan ponsel 412×915 — dua viewport, sesuai arahan Johan untuk proyek ini (aturan global menyebut tiga; konflik dilaporkan, keputusan di Johan).

@@ -2,6 +2,15 @@
 
 Diukur 15 Sep 2026 malam oleh agen tanpa mengubah kode; dijalankan ulang Papan, hasil identik. Skrip pengukur di scratchpad sesi, bukan di repo.
 
+## Keputusan Johan — satu rumus (15 September 2026)
+
+Johan, 15 Sep 2026 sekitar 21:22 WIB di sesi pengawas, diteruskan dengan sidik PGW-0915-JOHAN-202-R2: *"R2 saja, jendela ditulis di samping angkanya"*.
+
+- **Rumus tunggal:** harga rata-rata beli broker = Σ nilai beli ÷ (Σ lot beli × 100) atas seluruh hari dalam jendela. Dihitung satu fungsi bersama `hargaRata` (`app/src/lib/dasbor/brokerEmiten.ts:53`), dipakai `agregatBroker` (Aliran Dana), `hitungPosisiBroker` (Neo Inventory), dan `posisiBroker` (Trader Papan).
+- **Alasan:** R2 satu-satunya yang merangkum seluruh pembelian di jendela. R1 (beli termurah satu hari ≥1.000 lot) dan R3 (harga pasar terendah pada hari broker net beli) sama-sama nilai satu hari, dan dengan jendela bawaan Aliran Dana *Hari Ini* R1 praktis sama dengan harga beli hari itu.
+- **Yang tidak ditampilkan lagi:** panel "Floor price per broker" di Aliran Dana (R1) dan kolom "Termurah" di Trader Papan (R3). Fungsinya tetap di kode (`floorPriceBroker`, ruas `floor` di `traderPapan.ts`); menghapusnya butuh baris antrean terpisah.
+- **Jendela tetap per halaman, ditulis di samping angka:** Aliran Dana = rentang aktif (tanggal dan jumlah hari bursa), Neo Inventory = 126 hari bursa terakhir, Trader Papan = rentang pilihan (jumlah hari di kepala kolom, tanggal di baris ringkas atasnya). Menyamakan jendela bukan bagian keputusan ini.
+
 # Ukur tiga rumus "harga rata-rata/floor broker" — PAPAN
 
 Perintah menjalankan ulang (dari folder `app/`):
