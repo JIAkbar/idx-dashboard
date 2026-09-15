@@ -199,8 +199,6 @@ REM Penjaga HARI TUNTAS lewat scripts\tgl_broker_aman.py - JANGAN ditulis
 REM inline di sini: versi satu-baris pernah membuat task keluar 0xFF karena
 REM cmd menelan karakter "kurang-dari" di for /f sebagai redirection
 REM ("- was unexpected at this time", uji sadar 27 Agu).
-for /f %%d in ('"%PYEXE%" scripts\tgl_broker_aman.py') do set TGL_BROKER=%%d
-echo      target: %TGL_BROKER%
 REM -- ENAM varian, bukan dua belas. Ketetapan Johan 1 Sep 2026: "tidak
 REM -- perlu harvest 12 varian cukup 6 varian saja ... net dihitung dari
 REM -- gross dan sudah ada SOP nya" (docs/desain-broker-summary.md:26 --
@@ -214,8 +212,15 @@ REM -- justru tak konsisten dengan dirinya sendiri di situ.
 REM --
 REM -- Memanen keduanya menggandakan permintaan untuk nol angka baru --
 REM -- dan kuota permintaan itu yang dibutuhkan panen harga.
-"%PYEXE%" scripts\panen_broker_harian.py --tanggal %TGL_BROKER% --jeda 0.4 --paralel 48 --varian reguler,asing,nego,nego-asing,tunai,tunai-asing
-if errorlevel 1 echo   (broker gagal - lanjut; jangan ulangi manual saat token dipakai proses lain)
+REM Semua hari bursa 7 hari terakhir yang arsip BBCA-nya belum lengkap enam
+REM varian, lalu hari tuntas terakhir (#194 A, keputusan Johan 15 Sep 2026).
+REM `tgl_broker_lubang.py` memakai aturan hari tuntas yang sama dengan
+REM `tgl_broker_aman.py`. Pemanen melewati berkas yang sudah ada.
+for /f %%d in ('"%PYEXE%" scripts\tgl_broker_lubang.py') do (
+  echo      target: %%d
+  "%PYEXE%" scripts\panen_broker_harian.py --tanggal %%d --jeda 0.4 --paralel 48 --varian reguler,asing,nego,nego-asing,tunai,tunai-asing
+  if errorlevel 1 echo   broker %%d gagal - lanjut; jangan ulangi manual saat token dipakai proses lain
+)
 
 echo.
 echo [B3] Bangun arsip broker tahunan TAHUN BERJALAN (pembaca: Trader Papan,

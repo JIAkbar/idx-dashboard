@@ -84,6 +84,17 @@ if %JAM% GEQ 22 (
   echo Jalan manual juga ditolak sesudah 22:00; jadwal berikutnya pukul 18:00, Senin-Jumat.
   goto akhir
 )
+REM Dini hari 00:00-05:59 (#194 A, keputusan Johan 15 Sep 2026). Jalan terjadwal
+REM yang terlewat lalu dijalankan StartWhenAvailable sesudah tengah malam tidak
+REM memanen. Aman karena hari yang terlewat kini dikejar: harga, asing, dan
+REM intraday memang menarik mundur, dan broker memanen semua hari bursa 7 hari
+REM terakhir yang belum lengkap (langkah B2). Jalan tangan tetap boleh.
+if not "%1"=="auto" goto jam_pagi_ok
+if %JAM% GEQ 6 goto jam_pagi_ok
+echo Jalan terjadwal yang terlewat baru mulai pukul %JAM% dini hari - panen sore dilewati.
+echo Jadwal berikutnya pukul 18:00, Senin-Jumat; jalan manual tetap boleh.
+goto akhir
+:jam_pagi_ok
 
 REM ---- Hari kerja saja (13 Sep 2026) ----------------------------------
 REM Johan 13 Sep 2026, dikutip pengawas (sidik PGW-0913-HARIKERJA): "untuk panen itu
@@ -152,10 +163,23 @@ call "%~dp0JALANKAN_OTOMATIS.bat" auto
 set LEWATI_OHLC_YAHOO=
 
 echo.
+echo [0] Uji token Stockbit sebelum langkah Stockbit (#195 C)
+REM Uji hidup token yang dipakai panen tanpa memutar apa pun - gerbang yang sama
+REM dengan bat buka-laptop. 13 Sep 2026 panen jalan dengan token yang ditolak
+REM server: harga saja menghabiskan 13.296 detik untuk 962 emiten gagal. Kalau
+REM ditolak, langkah Stockbit dilewati dan kode keluar bat jadi 1; jalur IDX,
+REM asing, dan turunan tetap jalan dari data yang ada.
+set TOKEN_MATI=
+"%PYEXE%" scripts\cek_token.py
+if errorlevel 1 set TOKEN_MATI=1
+if defined TOKEN_MATI set PAPAN_RC=1
+if defined TOKEN_MATI echo   TOKEN DITOLAK - harga Stockbit, broker, intraday, keystats, dan info dilewati hari ini.
+
+echo.
 echo [B] OHLCV Stockbit --paksa (bar hari ini) + IHSG + gabung + jahit
-"%PYEXE%" scripts\panen_ohlcv_stockbit.py --semua --paksa
-if errorlevel 1 echo   (OHLCV gagal - lanjut)
-"%PYEXE%" scripts\panen_ohlcv_stockbit.py IHSG --paksa
+if not defined TOKEN_MATI "%PYEXE%" scripts\panen_ohlcv_stockbit.py --semua --paksa
+if not defined TOKEN_MATI if errorlevel 1 echo   (OHLCV gagal - lanjut)
+if not defined TOKEN_MATI "%PYEXE%" scripts\panen_ohlcv_stockbit.py IHSG --paksa
 "%PYEXE%" scripts\gabung_ohlc_stockbit.py
 "%PYEXE%" scripts\jahit_ihsg.py
 REM Gerbang #102 A: emiten yang arsip gabungannya sudah sampai hari bursa
@@ -172,8 +196,6 @@ if errorlevel 1 echo   [B] PERINGATAN: ada emiten tertinggal - lihat logs\panen_
 
 echo.
 echo [B2] Broker hari-tuntas - 6 varian bentuk PERSIS CI, 8 utas
-for /f %%d in ('"%PYEXE%" scripts\tgl_broker_aman.py') do set TGL_BROKER=%%d
-echo      target: %TGL_BROKER%
 REM -- ENAM varian, bukan dua belas. Ketetapan Johan 1 Sep 2026: "tidak
 REM -- perlu harvest 12 varian cukup 6 varian saja ... net dihitung dari
 REM -- gross dan sudah ada SOP nya" (docs/desain-broker-summary.md:26 --
@@ -187,8 +209,17 @@ REM -- justru tak konsisten dengan dirinya sendiri di situ.
 REM --
 REM -- Memanen keduanya menggandakan permintaan untuk nol angka baru --
 REM -- dan kuota permintaan itu yang dibutuhkan panen harga.
-"%PYEXE%" scripts\panen_broker_harian.py --tanggal %TGL_BROKER% --jeda 0.4 --paralel 48 --varian reguler,asing,nego,nego-asing,tunai,tunai-asing
-if errorlevel 1 echo   (broker gagal - lanjut)
+REM Semua hari bursa 7 hari terakhir yang arsip BBCA-nya belum lengkap enam
+REM varian, lalu hari tuntas terakhir (#194 A, keputusan Johan 15 Sep 2026).
+REM Dulu satu tanggal saja, jadi jalan yang terlewat meninggalkan lubang broker
+REM untuk selamanya (14 Sep 2026). Pemanen melewati berkas yang sudah ada.
+if defined TOKEN_MATI goto broker_lewat
+for /f %%d in ('"%PYEXE%" scripts\tgl_broker_lubang.py') do (
+  echo      target: %%d
+  "%PYEXE%" scripts\panen_broker_harian.py --tanggal %%d --jeda 0.4 --paralel 48 --varian reguler,asing,nego,nego-asing,tunai,tunai-asing
+  if errorlevel 1 echo   broker %%d gagal - lanjut
+)
+:broker_lewat
 
 echo.
 echo [C] Aliran asing
@@ -197,8 +228,8 @@ if errorlevel 1 echo   (asing gagal - lanjut)
 
 echo.
 echo [D] Intraday 1 menit + bangun 1H
-"%PYEXE%" scripts\panen_intraday_stockbit.py
-if errorlevel 1 echo   (intraday gagal - lanjut)
+if not defined TOKEN_MATI "%PYEXE%" scripts\panen_intraday_stockbit.py
+if not defined TOKEN_MATI if errorlevel 1 echo   (intraday gagal - lanjut)
 "%PYEXE%" scripts\bangun_intraday_1h.py
 
 echo.
@@ -321,10 +352,10 @@ REM hilirnya berhenti di 19 Agustus - nol galat, angkanya salah di layar.
 if errorlevel 1 echo   (ihsg bulanan gagal - lanjut)
 "%PYEXE%" scripts\siapkan_seasonality.py
 if errorlevel 1 echo   (siapkan seasonality gagal - lanjut)
-"%PYEXE%" scripts\panen_keystats_stockbit.py --semua --jeda 0.4
-if errorlevel 1 echo   (keystats gagal - lanjut)
-"%PYEXE%" scripts\panen_info_stockbit.py --semua --jeda 0.4
-if errorlevel 1 echo   (info stockbit gagal - lanjut)
+if not defined TOKEN_MATI "%PYEXE%" scripts\panen_keystats_stockbit.py --semua --jeda 0.4
+if not defined TOKEN_MATI if errorlevel 1 echo   (keystats gagal - lanjut)
+if not defined TOKEN_MATI "%PYEXE%" scripts\panen_info_stockbit.py --semua --jeda 0.4
+if not defined TOKEN_MATI if errorlevel 1 echo   (info stockbit gagal - lanjut)
 "%PYEXE%" scripts\cek_radar_basi.py
 
 echo.

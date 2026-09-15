@@ -175,7 +175,27 @@ jobs:
       #
       # `gabung` dijalankan DI SINI, bukan nanti: ia yang menaikkan penanda
       # bar ke `sb`, dan langkah 4 (Kartu) sudah membaca `ohlc/` hasilnya.
+      # Uji token SEBELUM langkah Stockbit (#195 C, keputusan Johan 15 Sep 2026). 13 Sep 2026
+      # panen dengan token yang ditolak server menghabiskan 13.296 detik untuk 962 emiten
+      # gagal. Kalau token ditolak, 2b, 3d, dan 3f dilewati dan langkah ini merah.
+      # Langkah ini juga merah bila tabel token tidak diputar lebih dari 26 jam (#195 D),
+      # walau langkah Stockbit tetap jalan karena tokennya masih hidup.
+      - name: 0 · Uji token Stockbit
+        id: token
+        continue-on-error: true
+        run: |
+          $keluaran = & "${{ steps.py.outputs.exe }}" scripts/cek_token.py 2>&1
+          $kode = $LASTEXITCODE
+          $keluaran | ForEach-Object { Write-Host $_ }
+          if ($kode -eq 0) { "hidup=1" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8 }
+          else {
+            "hidup=0" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+            Write-Host "::error::Token Stockbit ditolak - langkah 2b, 3d, dan 3f dilewati"
+          }
+          if ($kode -ne 0 -or ($keluaran -match 'PERINGATAN:')) { exit 1 }
+
       - name: 2b · OHLCV Stockbit + gabung ke arsip harga
+        if: steps.token.outputs.hidup == '1'
         continue-on-error: true
         run: |
           & "${{ steps.py.outputs.exe }}" scripts/panen_ohlcv_stockbit.py --semua --paksa
@@ -273,13 +293,27 @@ jobs:
       # Berkas net-* yang TELANJUR ada di arsip dibiarkan sampai konsolidasi
       # (ketetapan J14) — berhenti memanennya bukan alasan menghapus yang
       # sudah terlanjur dibayar.
+      # Semua hari bursa 7 hari terakhir yang arsip BBCA-nya belum lengkap enam varian,
+      # bukan satu tanggal (#194 A, keputusan Johan 15 Sep 2026). Dulu jalan yang
+      # terlewat meninggalkan satu hari broker kosong untuk selamanya (14 Sep 2026).
+      # Pemanen melewati berkas yang sudah ada, jadi hari normal tetap satu tarikan.
       - name: 3d · Broker summary per emiten (Stockbit, 6 varian GROSS)
+        if: steps.token.outputs.hidup == '1'
         continue-on-error: true
         run: |
           & "${{ steps.py.outputs.exe }}" scripts/stockbit_token.py --status
-          & "${{ steps.py.outputs.exe }}" scripts/panen_broker_harian.py --jeda 0.4 --paralel 48 `
-            --varian reguler,asing,nego,nego-asing,tunai,tunai-asing
-          if ($LASTEXITCODE -ne 0) { Write-Host "::warning::panen_broker_harian gagal" }
+          $tanggal = @(& "${{ steps.py.outputs.exe }}" scripts/tgl_broker_lubang.py)
+          if ($LASTEXITCODE -ne 0 -or $tanggal.Count -eq 0) {
+            Write-Host "::warning::tgl_broker_lubang gagal - memakai tanggal bawaan pemanen"
+            $tanggal = @('')
+          }
+          foreach ($t in $tanggal) {
+            $argTgl = @()
+            if ($t) { $argTgl = @('--tanggal', $t); Write-Host "broker harian: $t" }
+            & "${{ steps.py.outputs.exe }}" scripts/panen_broker_harian.py @argTgl --jeda 0.4 --paralel 48 `
+              --varian reguler,asing,nego,nego-asing,tunai,tunai-asing
+            if ($LASTEXITCODE -ne 0) { Write-Host "::warning::panen_broker_harian $t gagal" }
+          }
 
       # Gudang broker tahunan (#160 B) — dibaca Whales, Arus Broker, dan
       # Bandarmologi. Sumbernya arsip broker per emiten yang baru saja
@@ -296,6 +330,7 @@ jobs:
       # alur kerja ini (#160 B), runner sudah bisa membacanya. Pemanen dulu,
       # pembangun sesudahnya: yang kedua memadatkan hasil yang pertama.
       - name: 3f · Intraday 1 jam (Stockbit)
+        if: steps.token.outputs.hidup == '1'
         continue-on-error: true
         run: |
           & "${{ steps.py.outputs.exe }}" scripts/panen_intraday_stockbit.py

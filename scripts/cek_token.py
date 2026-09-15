@@ -35,7 +35,11 @@ Pakai:
     python scripts/cek_token.py --semai      # SYARAT: TUTUP semua tab Stockbit dulu (reuse rotasi = keluarga sesi dicabut)      # ambil pasangan baru dari app/.env.local (hasil
                                              # cek_token_console.js), cadangkan berkas lama,
                                              # tulis ke ~/.papan, lalu uji hidup
-Kode keluar: 0 token hidup · 1 token mati/kedaluwarsa · 2 berkas tidak ada/rusak
+Kode keluar: 0 token hidup · 1 token mati/kedaluwarsa.
+Sejak 15 Sep 2026 (#195 C) salinan lokal yang hilang atau rusak TIDAK lagi keluar 2: yang diuji token
+dari tabel, dan runner CI (LocalSystem) memang tak punya salinan di profilnya.
+Umur putaran terakhir tabel ikut dicetak (#195 D); lewat AMBANG_PUTARAN_JAM jam = baris PERINGATAN,
+kode keluar tetap mengikuti uji hidup.
 """
 from __future__ import annotations
 
@@ -52,6 +56,10 @@ WIB = timezone(timedelta(hours=7))
 BERKAS = Path(os.environ.get("PAPAN_STOCKBIT_TOKEN_FILE") or (Path.home() / ".papan" / "stockbit-token.json"))
 JEJAK = BERKAS.with_name("cek-token-terakhir.json")
 URL = "https://exodus.stockbit.com/marketdetectors/BBCA"
+# Cron /api/live-refresh berjadwal harian dan access berumur 24 jam. Putaran yang lebih tua
+# dari 26 jam berarti cron terakhir tidak jalan; 14 dan 15 Sep 2026 gagal dua kali berturut
+# tanpa satu pun tanda sampai panen sore ditolak (#195 D).
+AMBANG_PUTARAN_JAM = 26
 
 
 def klaim(token: str | None) -> dict:
@@ -92,19 +100,59 @@ def uji_hidup(access: str) -> tuple[int, str]:
     return r.status_code, f"HTTP {r.status_code}: {r.text[:120]}"
 
 
+def diputar_pada_tabel() -> datetime | None:
+    """Waktu putaran terakhir di tabel `live_token` (#195 D). Hanya kolom waktu yang dibaca,
+    bukan isi token. `None` kalau tabel tak terjangkau - itu bukan alasan menahan panen."""
+    try:
+        import requests
+        from stockbit_token import _kunci_supabase
+        url, kunci = _kunci_supabase()
+        if not (url and kunci):
+            return None
+        r = requests.get(f"{url}/rest/v1/live_token", params={"id": "eq.1", "select": "diputar_pada"},
+                         headers={"apikey": kunci, "Authorization": f"Bearer {kunci}"}, timeout=20)
+        baris = r.json() if r.status_code == 200 else []
+        nilai = baris[0].get("diputar_pada") if baris else None
+        return datetime.fromisoformat(nilai.replace("Z", "+00:00")) if nilai else None
+    except Exception:  # noqa: BLE001 - jaringan/paket apa pun
+        return None
+
+
+def pesan_putaran(diputar: datetime | None, kini: datetime) -> tuple[float | None, str | None]:
+    """(umur jam, teks peringatan atau None). Tanpa jaringan, supaya bisa diuji."""
+    if diputar is None:
+        return None, None
+    jam = (kini - diputar).total_seconds() / 3600
+    if jam <= AMBANG_PUTARAN_JAM:
+        return jam, None
+    return jam, (f"token Stockbit tidak diputar {jam:.0f} jam (ambang {AMBANG_PUTARAN_JAM} jam) - cron "
+                 "/api/live-refresh kemungkinan gagal; jalankan Run di Cron Jobs Vercel sebelum access habis")
+
+
+def lapor_putaran(kini: datetime) -> None:
+    jam, peringatan = pesan_putaran(diputar_pada_tabel(), kini)
+    if jam is not None:
+        print(f"  tabel terakhir diputar {jam:.1f} jam lalu")
+    if peringatan:
+        print(f"  PERINGATAN: {peringatan}")
+        if os.environ.get("GITHUB_ACTIONS"):
+            print(f"::error::{peringatan}")
+
+
 def cek() -> int:
     kini = datetime.now(WIB)
     print(f"[{kini:%H:%M:%S}] berkas: {BERKAS}")
+    s: dict = {}
     if not BERKAS.exists():
-        print("  TIDAK ADA — semai dulu (lihat stockbit_token.py)")
-        return 2
-    try:
-        s = json.loads(BERKAS.read_text(encoding="utf-8"))
-    except Exception as e:  # noqa: BLE001
-        print(f"  RUSAK: {e}")
-        return 2
-    mtime = datetime.fromtimestamp(BERKAS.stat().st_mtime, WIB)
-    print(f"  ditulis: {s.get('ditulis', '?')} | mtime {mtime:%d %b %H:%M:%S}")
+        print("  salinan lokal TIDAK ADA - token tetap diuji dari tabel")
+    else:
+        try:
+            s = json.loads(BERKAS.read_text(encoding="utf-8"))
+            mtime = datetime.fromtimestamp(BERKAS.stat().st_mtime, WIB)
+            print(f"  ditulis: {s.get('ditulis', '?')} | mtime {mtime:%d %b %H:%M:%S}")
+        except Exception as e:  # noqa: BLE001
+            print(f"  salinan lokal RUSAK ({e}) - token tetap diuji dari tabel")
+            s = {}
     a, r = klaim(s.get("access")), klaim(s.get("refresh"))
     for nama, k in (("access", a), ("refresh", r)):
         if not k:
@@ -144,20 +192,30 @@ def cek() -> int:
             tabel = None
         dipakai = token_segar()
         asal = "TABEL live_token" if (tabel and dipakai == tabel) else "berkas cadangan"
-    except Exception as e:  # noqa: BLE001
+    except (Exception, SystemExit) as e:  # noqa: BLE001
+        # token_segar() berhenti dengan SystemExit bila tabel dan cadangan sama-sama tak layak.
+        # SystemExit bukan turunan Exception; tanpa tangkapan ini vonis dan peringatan umur
+        # putaran di bawah tak pernah tercetak tepat saat paling dibutuhkan (Pemeriksa Akhir #195).
         print(f"  [rantai] tak bisa membaca token yang dipakai panen: {e}")
 
     if not dipakai:
         dipakai, asal = s.get("access"), "berkas cadangan"
     if not dipakai:
+        lapor_putaran(kini)
+        print("  ==> TOKEN TAK TERBACA - langkah Stockbit tidak boleh jalan")
         return 1
 
     lokal_usang = bool(s.get("access") and dipakai != s.get("access"))
     print(f"  diuji: {asal}" + ("  (salinan lokal BEDA — sudah tertinggal)" if lokal_usang else ""))
     kode, ket = uji_hidup(dipakai)
     print(f"  uji hidup: {ket}")
-    JEJAK.write_text(json.dumps({"iat_access": iat, "dicek": kini.isoformat(),
-                                 "hasil": kode, "asal": asal}), encoding="utf-8")
+    try:
+        JEJAK.parent.mkdir(parents=True, exist_ok=True)
+        JEJAK.write_text(json.dumps({"iat_access": iat, "dicek": kini.isoformat(),
+                                     "hasil": kode, "asal": asal}), encoding="utf-8")
+    except OSError as e:
+        print(f"  jejak cek tak tertulis ({e}) - vonis tetap berlaku")
+    lapor_putaran(kini)
     # Tiga vonis, bukan dua. Yang di tengah persis keadaan yang membuat
     # laporan lama menyesatkan: rantainya sehat, salinannya yang tertinggal.
     if kode == 200 and lokal_usang:
@@ -207,7 +265,55 @@ def semai() -> int:
     return cek()
 
 
+def uji() -> int:
+    kini = datetime(2026, 9, 15, 18, 0, tzinfo=WIB)
+    assert pesan_putaran(None, kini) == (None, None)
+    jam, teks = pesan_putaran(kini - timedelta(hours=10), kini)
+    assert round(jam) == 10 and teks is None
+    jam, teks = pesan_putaran(kini - timedelta(hours=26), kini)
+    assert teks is None, "tepat di ambang belum peringatan"
+    # Keadaan 15 Sep 2026 07:45 WIB: diputar 13 Sep 07:02 WIB.
+    jam, teks = pesan_putaran(datetime(2026, 9, 13, 0, 2, 21, tzinfo=timezone.utc),
+                              datetime(2026, 9, 15, 0, 45, tzinfo=timezone.utc))
+    assert 48 < jam < 49 and teks and "49 jam" in teks, (jam, teks)
+    # Tabel dan cadangan tak layak: token_segar() melempar SystemExit. cek() wajib keluar 1
+    # dengan vonis dan PERINGATAN umur putaran, bukan mati tanpa keduanya (Pemeriksa Akhir #195).
+    import io as _io
+    import tempfile
+    import types
+    from contextlib import redirect_stdout
+    global BERKAS, JEJAK, diputar_pada_tabel
+    palsu = types.ModuleType("stockbit_token")
+    palsu.access_dari_tabel = lambda: None
+    def _mati():
+        raise SystemExit("Token tak layak (palsu)")
+    palsu.token_segar = _mati
+    asli = (BERKAS, JEJAK, diputar_pada_tabel, sys.modules.get("stockbit_token"))
+    try:
+        with tempfile.TemporaryDirectory() as d:
+            BERKAS = Path(d) / "tak-ada.json"
+            JEJAK = Path(d) / "jejak.json"
+            sys.modules["stockbit_token"] = palsu
+            diputar_pada_tabel = lambda: datetime.now(WIB) - timedelta(hours=49)
+            keluar = _io.StringIO()
+            with redirect_stdout(keluar):
+                kode = cek()
+            teks = keluar.getvalue()
+            assert kode == 1, (kode, teks)
+            assert "PERINGATAN:" in teks and "TOKEN TAK TERBACA" in teks, teks
+    finally:
+        BERKAS, JEJAK, diputar_pada_tabel = asli[0], asli[1], asli[2]
+        if asli[3] is None:
+            sys.modules.pop("stockbit_token", None)
+        else:
+            sys.modules["stockbit_token"] = asli[3]
+    print("uji cek_token: LOLOS 5 kasus")
+    return 0
+
+
 def main() -> int:
+    if "--uji" in sys.argv:
+        return uji()
     if "--semai" in sys.argv:
         return semai()
     if "--tunggu" in sys.argv:
