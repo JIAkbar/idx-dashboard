@@ -1,4 +1,6 @@
-import { LABEL_RENTANG } from '../../lib/dasbor/periode'
+import {
+  LABEL_RENTANG, RENTANG_BAKU, jendelaBaku, opsiRentangBaku, type KunciBaku,
+} from '../../lib/dasbor/periode'
 import { PemilihRentang } from '../../components/dasbor/PemilihRentang'
 import { useEffect, useMemo, useState, type CSSProperties, type ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
@@ -48,19 +50,44 @@ function tglSingkatTahun(iso: string) {
   return new Date(`${iso}T12:00:00`).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
 }
 
-/** Pilihan rentang chart IHSG. `tahun: 0` = seluruh riwayat. */
-const RENTANG = [
-  // `sejakJan`: bilah tanggal halaman ini sudah memakai kosakata preset
-  // bersama, jadi `ytd` di sini membuat dua pintasan bernama beda untuk
-  // hitungan yang sama berdiri di satu layar.
-  { id: 'ytd', label: LABEL_RENTANG.sejakJan, judul: 'Tahun Berjalan', tahun: null },
-  { id: 'y1', label: LABEL_RENTANG.y1, judul: '1 Tahun', tahun: 1 },
-  { id: 'y5', label: LABEL_RENTANG.y5, judul: '5 Tahun', tahun: 5 },
-  { id: 'y10', label: LABEL_RENTANG.y10, judul: '10 Tahun', tahun: 10 },
-  { id: 'semua', label: LABEL_RENTANG.semua, judul: 'Sejak 1990', tahun: 0 },
-] as const
+/**
+ * Pilihan rentang chart IHSG — SELURUH `RENTANG_BAKU` + Semua (#209 koreksi
+ * 15 Sep 2026, Johan lewat pengawas: "Buang y5 dan y10" + "id lama `ytd`
+ * boleh dipertahankan lewat peta `sejakJan → 'ytd'`"). Dulu daftar TETAP
+ * lima butir (`ytd/y1/y5/y10/semua`) di luar `RENTANG_BAKU` — sekarang
+ * `PETA_RENTANG` cuma mengganti KATA id `sejakJan` jadi `ytd` (state lokal
+ * lama, dan `pilRentang()`-style pemisahan id/kunci sudah lazim di proyek
+ * ini), kunci lain id-nya sama dengan `KunciBaku`.
+ */
+type RentangId = 'h1' | 'w1' | 'w2' | 'b1' | 'b3' | 'b6' | 'ytd' | 'y1' | 'y2' | 'semua'
 
-type RentangId = (typeof RENTANG)[number]['id']
+const PETA_RENTANG: Record<KunciBaku | 'semua', RentangId> = {
+  h1: 'h1', w1: 'w1', w2: 'w2', b1: 'b1', b3: 'b3', b6: 'b6',
+  sejakJan: 'ytd', y1: 'y1', y2: 'y2', semua: 'semua',
+}
+
+/** id kunci baku, dari id state lokal (satu-satunya yang beda: `ytd`→`sejakJan`). */
+function kunciDariId(id: RentangId): KunciBaku | 'semua' {
+  return id === 'ytd' ? 'sejakJan' : id
+}
+
+/** Heading widget "IHSG — {…}" di atas chart — BUKAN tooltip nonaktif
+ *  `PemilihRentang` (itu bawaan `opsiRentangBaku`, dieja sendiri). Dua kunci
+ *  pakai frasa deskriptif yang sudah ada sebelum #209 (`ytd`, `semua`); sisanya
+ *  langsung `LABEL_RENTANG` — tak ada alasan mengarang kata baru untuk yang
+ *  baru muncul di widget ini (h1/w1/w2/b1/b3/b6/y2). */
+const JUDUL_HEADING: Record<RentangId, string> = {
+  h1: LABEL_RENTANG.h1, w1: LABEL_RENTANG.w1, w2: LABEL_RENTANG.w2,
+  b1: LABEL_RENTANG.b1, b3: LABEL_RENTANG.b3, b6: LABEL_RENTANG.b6,
+  ytd: 'Tahun Berjalan', y1: LABEL_RENTANG.y1, y2: LABEL_RENTANG.y2,
+  semua: 'Sejak 1990',
+}
+
+/** Kunci yang candle `useIhsgOhlc` (≤1 tahun, 250 bar terakhir) sanggup
+ *  gambar — semua baku KECUALI `y2` (2 tahun) dan `semua` (seluruh riwayat). */
+function rentangPendek(kunci: KunciBaku | 'semua'): boolean {
+  return kunci !== 'y2' && kunci !== 'semua'
+}
 
 function IhsgYtdChart({ dates }: { dates: TanggalIndex[] }) {
   const { theme } = useTheme()
@@ -74,8 +101,14 @@ function IhsgYtdChart({ dates }: { dates: TanggalIndex[] }) {
    *  dan "Semua" menggambar bagian yang berasal dari cadangan. Tanpa penanda,
    *  bagian itu tampil sama meyakinkannya dengan sisanya. */
   const [sumberBar, setSumberBar] = useState<RentangSumber[] | undefined>(undefined)
+  // KOREKSI #209 (15 Sep 2026): dulu HANYA diunduh saat rentang selain YTD
+  // dipilih (354 KB dihemat untuk pengunjung yang cuma lihat tahun berjalan).
+  // Sekarang diunduh SEKALI di awal, tanpa syarat — opsi w2/b1/b3/b6/y1/y2
+  // butuh tahu riwayat NYATA (`jendelaBaku`) untuk memutuskan aktif/nonaktif
+  // SEBELUM diklik; menahan unduhannya sampai salah satu diklik jadi jalan
+  // buntu (opsi itu nonaktif, jadi tak pernah bisa diklik untuk memicunya).
   useEffect(() => {
-    if (rentang === 'ytd' || riwayat) return
+    if (riwayat) return
     let batal = false
     // Arsip harga IHSG, bukan ihsg_harian.json, sejak #203 A (15 Sep 2026):
     // penutupannya identik, arsip harga sehari lebih segar.
@@ -90,28 +123,35 @@ function IhsgYtdChart({ dates }: { dates: TanggalIndex[] }) {
       })
       .catch(() => {})
     return () => { batal = true }
-  }, [rentang, riwayat])
+  }, [riwayat])
 
-  const pilih = RENTANG.find((r) => r.id === rentang) ?? RENTANG[0]
+  const kunciPilih = kunciDariId(rentang)
+  const candleCocok = rentangPendek(kunciPilih)
   // Lilin hanya untuk rentang yang datanya memang punya buka/tinggi/rendah.
-  // `ihsg_ohlc_ringkas.json` memuat 250 hari bursa terakhir — cukup untuk YTD
-  // dan 1 tahun. Rentang lebih panjang jatuh ke garis, bukan karena malas
-  // tapi karena riwayat panjang kita cuma menyimpan PENUTUPAN; menggambar
-  // lilin dari satu angka berarti mengarang tiga angka lainnya.
+  // `ihsg_ohlc_ringkas.json` memuat 250 hari bursa terakhir — cukup untuk
+  // seluruh rentang <=1 tahun (`rentangPendek`). Rentang lebih panjang jatuh
+  // ke garis, bukan karena malas tapi karena riwayat panjang kita cuma
+  // menyimpan PENUTUPAN; menggambar lilin dari satu angka berarti mengarang
+  // tiga angka lainnya.
   const ohlcSemua = useIhsgOhlc()
   const lilin: BarisOhlc[] | null = useMemo(() => {
-    if (!ohlcSemua || (pilih.id !== 'ytd' && pilih.id !== 'y1')) return null
-    if (pilih.id === 'ytd') {
-      const awalTahun = `${new Date().getFullYear()}-01-01`
-      return ohlcSemua.filter((b) => b[0] >= awalTahun)
-    }
-    const batas = new Date()
-    batas.setFullYear(batas.getFullYear() - 1)
-    const iso = batas.toISOString().slice(0, 10)
-    return ohlcSemua.filter((b) => b[0] >= iso)
-  }, [ohlcSemua, pilih])
-  // Selagi riwayat masih diunduh, seri YTD tetap ditampilkan — grafik yang
-  // berkedip kosong lebih buruk daripada grafik yang sebentar lebih pendek.
+    if (!ohlcSemua || !candleCocok) return null
+    const tglCandle = ohlcSemua.map((b) => b[0])
+    const akhirCandle = tglCandle[tglCandle.length - 1]
+    // Batas SATU definisi (#209 Q1) lewat `jendelaBaku` — termasuk YTD (kunci
+    // `sejakJan`, snap ke 31 Des tahun lalu), bukan lagi kalender mentah.
+    // Seri dimulai di hari PEMBANDING (J20): titik pertama = dasar persen.
+    const jl = jendelaBaku(tglCandle, akhirCandle, kunciPilih)
+    const batas = jl ? (jl.pembanding ?? jl.mulai) : null
+    if (!batas) return null
+    return ohlcSemua.filter((b) => b[0] >= batas)
+  }, [ohlcSemua, kunciPilih, candleCocok])
+  // Selagi riwayat masih diunduh, seri jalur `dates` (tahun berjalan) tetap
+  // ditampilkan — grafik yang berkedip kosong lebih buruk daripada grafik
+  // yang sebentar lebih pendek. `riwayat ?? dates`: begitu riwayat penuh
+  // termuat ia menang; sebelum itu `dates` (index.json, sudah termuat) cukup
+  // untuk kunci pendek TERMASUK YTD (jalur "dates hari ini" tetap dipakai,
+  // batasnya sekarang SAMA dengan `jendelaBaku`, bukan kalender terpisah).
   const seri = useMemo(() => {
     // Satu sumber angka: kalau lilin tersedia, ringkasan hi/lo/terkini dibaca
     // dari PENUTUPAN lilin yang sama — bukan dari seri lain yang kebetulan
@@ -119,13 +159,18 @@ function IhsgYtdChart({ dates }: { dates: TanggalIndex[] }) {
     if (lilin) {
       return lilin.map((b) => ({ date_iso: b[0], date_id: tglSingkat(b[0]), ihsg: b[4] } as TanggalIndex))
     }
-    if (pilih.tahun === null || !riwayat) return dates
-    if (pilih.tahun === 0) return riwayat
-    const batas = new Date()
-    batas.setFullYear(batas.getFullYear() - pilih.tahun)
-    const iso = batas.toISOString().slice(0, 10)
-    return riwayat.filter((d) => d.date_iso >= iso)
-  }, [pilih, riwayat, dates, lilin])
+    const sumber = riwayat ?? dates
+    if (sumber.length === 0) return dates
+    const tgl = sumber.map((d) => d.date_iso)
+    const akhir = tgl[tgl.length - 1]
+    const j = jendelaBaku(tgl, akhir, kunciPilih)
+    // `semua`: jendelaBaku sudah mengembalikan mulai = tanggal[0] — filter
+    // di bawah jadi no-op, sama seperti mengembalikan `sumber` apa adanya.
+    if (!j) return sumber
+    // Mulai di hari pembanding (J20), supaya persen dari titik pertama = tutup
+    // terakhir lawan tutup pembanding; tanpa ini "1 Hari" selalu 0%.
+    return sumber.filter((d) => d.date_iso >= (j.pembanding ?? j.mulai))
+  }, [lilin, riwayat, dates, kunciPilih])
 
   // High/low/terkini dari seri yang sama dengan chart.
   const info = useMemo(() => {
@@ -145,11 +190,26 @@ function IhsgYtdChart({ dates }: { dates: TanggalIndex[] }) {
     // YTD resmi diukur dari PENUTUPAN TAHUN LALU. Sempat meleset ke -26,82%
     // di sini padahal chip di papan yang sama menyebut -28,43% — dua angka
     // berbeda untuk hal yang sama di satu kartu.
-    const pct = pilih.tahun === null
+    const pct = rentang === 'ytd'
       ? hitungYtdPct(last.ihsg, dates)
       : ((last.ihsg - seri[0].ihsg) * 100) / seri[0].ihsg
     return { hi, lo, last, ytdPct: pct }
-  }, [seri, pilih, dates])
+  }, [seri, rentang, dates])
+
+  // Opsi baku (#209) — SELURUH RENTANG_BAKU + Semua, nonaktif kalau
+  // `jendelaBaku` atas riwayat yang SUDAH TERMUAT (`riwayat ?? dates`) belum
+  // sanggup mengisinya. "Semua" aktif begitu ada data sama sekali (uniform,
+  // sama seperti pemilih rentang lain — tak ada ambang tahun tersendiri).
+  const opsi = useMemo(() => {
+    const sumber = riwayat ?? dates
+    const tgl = sumber.map((d) => d.date_iso)
+    const akhir = tgl[tgl.length - 1] ?? ''
+    const peta: Partial<Record<KunciBaku | 'semua', RentangId>> = {}
+    for (const kunci of [...RENTANG_BAKU, 'semua'] as const) {
+      if (jendelaBaku(tgl, akhir, kunci)) peta[kunci] = PETA_RENTANG[kunci]
+    }
+    return opsiRentangBaku(peta)
+  }, [riwayat, dates])
 
   const config = useMemo<ChartConfiguration<'line' | 'bar', (number | [number, number])[], string> | null>(() => {
     if (seri.length === 0 || !info) return null
@@ -275,7 +335,7 @@ function IhsgYtdChart({ dates }: { dates: TanggalIndex[] }) {
   return (
     <div className="board-side">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 8, marginBottom: 6, flexWrap: 'wrap' }}>
-        <span className="lbl">IHSG — {pilih.judul}</span>
+        <span className="lbl">IHSG — {JUDUL_HEADING[rentang]}</span>
         {info && (
           <span className="num" style={{ fontSize: 12, fontWeight: 700 }}>
             {fN(info.last.ihsg)}{' '}
@@ -285,14 +345,11 @@ function IhsgYtdChart({ dates }: { dates: TanggalIndex[] }) {
           </span>
         )}
       </div>
-      {/* Pemilih rentang — chip, bukan dropdown: lima pilihan yang semuanya
-          pendek lebih cepat dibaca berjajar daripada disembunyikan di balik
-          satu klik. */}
+      {/* Dropdown sejak #209 (bawaan PemilihRentang): 10 opsi baku tak muat
+          sebaris di widget sisi sesempit ini. */}
       <PemilihRentang
-        // Dropdown sejak #209 (bawaan PemilihRentang): widget sisi tidak
-        // memuat seluruh daftar rentang sebaris, jadi syarat pil tak terpenuhi.
         className="ihsg-rentang"
-        opsi={RENTANG}
+        opsi={opsi}
         nilai={rentang}
         onGanti={setRentang}
         ariaLabel="Rentang chart IHSG"
@@ -311,8 +368,8 @@ function IhsgYtdChart({ dates }: { dates: TanggalIndex[] }) {
       </div>
       {info && (
         <div className="num" style={{ display: 'flex', justifyContent: 'space-between', gap: 8, marginTop: 6, fontSize: 10, color: 'var(--text3)', flexWrap: 'wrap' }}>
-          <span>Tertinggi <span className="up">{fN(info.hi.ihsg)}</span> · {(pilih.tahun === null ? tglSingkat : tglSingkatTahun)(info.hi.date_iso)}</span>
-          <span>Terendah <span className="dn">{fN(info.lo.ihsg)}</span> · {(pilih.tahun === null ? tglSingkat : tglSingkatTahun)(info.lo.date_iso)}</span>
+          <span>Tertinggi <span className="up">{fN(info.hi.ihsg)}</span> · {(candleCocok ? tglSingkat : tglSingkatTahun)(info.hi.date_iso)}</span>
+          <span>Terendah <span className="dn">{fN(info.lo.ihsg)}</span> · {(candleCocok ? tglSingkat : tglSingkatTahun)(info.lo.date_iso)}</span>
         </div>
       )}
       {seri.length >= 1 && (

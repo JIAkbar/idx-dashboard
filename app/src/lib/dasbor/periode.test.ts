@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { cariTanggalPembanding, hitungPeriodePct, opsiRentangBaku, rentangPreset } from './periode'
+import { cariTanggalPembanding, hitungPeriodePct, jendelaBaku, opsiRentangBaku, rentangBaku } from './periode'
 import { agregatBrokerRows } from './brokerHarian'
 
 const tanggal = [
@@ -51,34 +51,34 @@ describe('hitungPeriodePct', () => {
   })
 })
 
-describe('rentangPreset (#75)', () => {
-  it('1 Bulan mundur 30 hari kalender, snap ke hari berdata terakhir <= target', () => {
-    // target = 2026-02-12 - 30 = 2026-01-13 → snap ke 2026-01-09
-    expect(rentangPreset(tanggal, '2026-02-12', 'b1')).toEqual({ mulai: '2026-01-09', akhir: '2026-02-12' })
+describe('rentangBaku (#209 tahap 2, pengganti rentangPreset #75)', () => {
+  // Fikstur SAMA dengan `jendelaBaku` di bawah (bukan larik `tanggal` di
+  // atas, yang sengaja renggang untuk menguji fencepost `cariTanggalPembanding`
+  // — renggangnya membuat "1 Bulan" di situ kebetulan jatuh ke satu hari
+  // saja, membingungkan untuk contoh). Jendelanya sudah diverifikasi lewat
+  // `jendelaBaku`; yang diuji di sini cukup `rentangBaku` MEMBUANG
+  // `pembanding` dengan benar — itu satu-satunya beda keduanya.
+  const T = ['2025-12-30', '2025-12-31', '2026-01-02', '2026-09-07', '2026-09-08', '2026-09-09', '2026-09-10', '2026-09-11', '2026-09-14', '2026-09-15']
+
+  it('1 Minggu (w1)', () => {
+    expect(rentangBaku(T, '2026-09-15', 'w1')).toEqual({ mulai: '2026-09-09', akhir: '2026-09-15' })
   })
 
-  it('riwayat lebih pendek dari preset → mulai jatuh ke tanggal berdata pertama', () => {
-    expect(rentangPreset(tanggal, '2026-01-09', 'b3')).toEqual({ mulai: '2026-01-07', akhir: '2026-01-09' })
+  it('1 Hari (h1)', () => {
+    expect(rentangBaku(T, '2026-09-15', 'h1')).toEqual({ mulai: '2026-09-15', akhir: '2026-09-15' })
   })
 
-  it('YTD = tanggal berdata pertama di tahun yang sama', () => {
-    expect(rentangPreset(tanggal, '2026-04-09', 'ytd')).toEqual({ mulai: '2026-01-07', akhir: '2026-04-09' })
+  it('Sejak 1 Jan (kunci sejakJan, dieja "YTD" sebagai pil)', () => {
+    expect(rentangBaku(T, '2026-09-15', 'sejakJan')).toEqual({ mulai: '2026-01-02', akhir: '2026-09-15' })
   })
 
-  it('MTD = hari berdata pertama di BULAN yang sama, bukan 30 hari mundur (#120 4A)', () => {
-    // 12 Feb: MTD berpangkal di 1 Februari, jadi hari berdata pertama sejak itu.
-    // Fikstur ini cuma punya satu hari Februari, jadi rentangnya nol hari dan
-    // rentangPreset menolaknya — persis seperti preset lain yang tak cukup data.
-    expect(rentangPreset(tanggal, '2026-02-12', 'mtd')).toBeNull()
-    // 9 Januari: tiga hari berdata sejak 1 Jan, jadi rentangnya 7 Jan - 9 Jan.
-    // Bandingkan dengan b1 pada tanggal yang sama, yang mundur 30 hari kalender
-    // dan karena itu juga berhenti di 7 Jan — dua jalan, satu jawaban di sini.
-    expect(rentangPreset(tanggal, '2026-01-09', 'mtd')).toEqual({ mulai: '2026-01-07', akhir: '2026-01-09' })
+  it('Semua = seluruh riwayat, tanpa syarat panjang', () => {
+    expect(rentangBaku(T, '2026-09-15', 'semua')).toEqual({ mulai: '2025-12-30', akhir: '2026-09-15' })
   })
 
-  it('null kalau rentang tidak valid (akhir = tanggal berdata pertama)', () => {
-    expect(rentangPreset(tanggal, '2026-01-07', 'w1')).toBeNull()
-    expect(rentangPreset([], '2026-01-07', 'ytd')).toBeNull()
+  it('data tidak cukup (riwayat lebih pendek dari preset) → null, BUKAN dijepit ke hari berdata pertama seperti rentangPreset lama', () => {
+    expect(rentangBaku(T, '2026-09-15', 'y2')).toBeNull()
+    expect(rentangBaku([], '2026-01-07', 'sejakJan')).toBeNull()
   })
 })
 
@@ -116,7 +116,7 @@ describe('agregatBrokerRows (#75)', () => {
 describe('opsiRentangBaku (#209)', () => {
   it('sepuluh opsi, urutan Johan, Semua di ujung', () => {
     const o = opsiRentangBaku({ b1: 'bulan', y1: 'tahun' })
-    expect(o.map((x) => x.label)).toEqual(['1 Hari', '5 Hari', '2 Minggu', '1 Bulan', '3 Bulan', '6 Bulan', 'YTD', '1 Tahun', '2 Tahun', 'Semua'])
+    expect(o.map((x) => x.label)).toEqual(['1 Hari', '1 Minggu', '2 Minggu', '1 Bulan', '3 Bulan', '6 Bulan', 'YTD', '1 Tahun', '2 Tahun', 'Semua'])
   })
   it('kunci yang dipetakan aktif dengan id halaman, sisanya nonaktif', () => {
     const o = opsiRentangBaku({ b1: 'bulan', semua: 'max' })
@@ -128,4 +128,56 @@ describe('opsiRentangBaku (#209)', () => {
   it('Semua nonaktif kalau halaman tak memetakannya', () => {
     expect(opsiRentangBaku({ b1: 'b1' }).at(-1)?.nonaktif).toBe(true)
   })
+})
+
+describe('jendelaBaku (#209 satu definisi)', () => {
+  // Hari bursa contoh: akhir Des 2025, lalu 7-15 Sep 2026 tanpa akhir pekan.
+  const T = ['2025-12-30', '2025-12-31', '2026-01-02', '2026-09-07', '2026-09-08', '2026-09-09', '2026-09-10', '2026-09-11', '2026-09-14', '2026-09-15']
+  it('1 Minggu dari Selasa: pembanding Selasa lalu, jendela Rabu-Selasa', () => {
+    expect(jendelaBaku(T, '2026-09-15', 'w1')).toEqual({ pembanding: '2026-09-08', mulai: '2026-09-09', akhir: '2026-09-15' })
+  })
+  it('1 Hari: pembanding hari berdata sebelumnya, jendela hari aktif', () => {
+    expect(jendelaBaku(T, '2026-09-15', 'h1')).toEqual({ pembanding: '2026-09-14', mulai: '2026-09-15', akhir: '2026-09-15' })
+  })
+  it('akhir di akhir pekan jatuh ke hari berdata terakhir', () => {
+    expect(jendelaBaku(T, '2026-09-13', 'h1')).toEqual({ pembanding: '2026-09-10', mulai: '2026-09-11', akhir: '2026-09-11' })
+  })
+  it('YTD: pembanding hari berdata terakhir tahun lalu', () => {
+    expect(jendelaBaku(T, '2026-09-15', 'sejakJan')).toEqual({ pembanding: '2025-12-31', mulai: '2026-01-02', akhir: '2026-09-15' })
+  })
+  it('Semua: tanpa pembanding, sejak hari berdata pertama', () => {
+    expect(jendelaBaku(T, '2026-09-15', 'semua')).toEqual({ pembanding: null, mulai: '2025-12-30', akhir: '2026-09-15' })
+  })
+  it('data tidak cukup: null, bukan dipotong ke riwayat yang ada', () => {
+    expect(jendelaBaku(T, '2026-09-15', 'y2')).toBeNull()
+    expect(jendelaBaku(['2026-09-15'], '2026-09-15', 'h1')).toBeNull()
+  })
+})
+
+describe('jendelaBaku: tanggal batas per label baku (#209, J20)', () => {
+  // Hari kerja Senin-Jumat 2 Jan 2024 s.d. 15 Sep 2026 (libur bursa diabaikan: yang diuji aritmetika batasnya).
+  const HARI: string[] = []
+  for (let d = new Date('2024-01-02T00:00:00Z'); d <= new Date('2026-09-15T00:00:00Z'); d.setUTCDate(d.getUTCDate() + 1)) {
+    const w = d.getUTCDay()
+    if (w !== 0 && w !== 6) HARI.push(d.toISOString().slice(0, 10))
+  }
+  const AKHIR = '2026-09-15' // Selasa
+  const kasus: Array<[Parameters<typeof jendelaBaku>[2], string, string | null, string]> = [
+    // kunci, label, pembanding, mulai
+    ['h1', '1 Hari: pembanding Senin 14 Sep', '2026-09-14', '2026-09-15'],
+    ['w1', '1 Minggu: batas Selasa 8 Sep', '2026-09-08', '2026-09-09'],
+    ['w2', '2 Minggu: batas Selasa 1 Sep', '2026-09-01', '2026-09-02'],
+    ['b1', '1 Bulan: batas Minggu 16 Agu, pembanding Jumat 14 Agu', '2026-08-14', '2026-08-17'],
+    ['b3', '3 Bulan: batas Selasa 16 Jun', '2026-06-16', '2026-06-17'],
+    ['b6', '6 Bulan: batas Selasa 17 Mar', '2026-03-17', '2026-03-18'],
+    ['sejakJan', 'YTD: pembanding Kamis 31 Des 2025', '2025-12-31', '2026-01-01'],
+    ['y1', '1 Tahun: batas Senin 15 Sep 2025', '2025-09-15', '2025-09-16'],
+    ['y2', '2 Tahun: batas Minggu 15 Sep 2024, pembanding Jumat 13 Sep 2024', '2024-09-13', '2024-09-16'],
+    ['semua', 'Semua: sejak hari pertama', null, '2024-01-02'],
+  ]
+  for (const [kunci, judul, pembanding, mulai] of kasus) {
+    it(judul, () => {
+      expect(jendelaBaku(HARI, AKHIR, kunci)).toEqual({ pembanding, mulai, akhir: AKHIR })
+    })
+  }
 })

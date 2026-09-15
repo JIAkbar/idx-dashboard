@@ -3,7 +3,7 @@ import { useMemo, useRef, useState } from 'react'
 import type { ChartConfiguration } from 'chart.js/auto'
 import { useDataHarian, useDataRentang } from '../../lib/dasbor/dataHarian'
 import { hitungBreadth, susunHistoriBreadth, type Breadth } from '../../lib/dasbor/breadth'
-import { PRESET_RENTANG, rentangPreset, type PresetRentang } from '../../lib/dasbor/periode'
+import { opsiRentangBaku, rentangBaku, RENTANG_BAKU, type KunciBaku } from '../../lib/dasbor/periode'
 import { useChartCanvas } from '../../lib/dasbor/useChartJs'
 import { useTheme } from '../../context/ThemeContext'
 import { PemilihRentang } from './PemilihRentang'
@@ -50,7 +50,7 @@ function BarSebaran({ b }: { b: Breadth }) {
 
 export function PanelBreadth() {
   const { hari, tanggalTersedia, tanggalAktif, loading } = useDataHarian()
-  const [preset, setPreset] = useState<PresetRentang>('b1')
+  const [preset, setPreset] = useState<KunciBaku | 'semua'>('b1')
   // Rentang BEBAS dari kalender, di samping preset (Johan 30 Agu 2026:
   // "sediakan komponen kalender rentang seperti di harian Papan"). Bukan
   // pengganti preset: pintasan tetap yang paling sering dipakai, kalender
@@ -67,11 +67,23 @@ export function PanelBreadth() {
     () => new Set(tanggalTersedia.map((t) => t.date_iso)),
     [tanggalTersedia],
   )
+  // Larik ISO urut (bukan Set) untuk `rentangBaku`/`jendelaBaku`.
+  const isoArr = useMemo(() => tanggalTersedia.map((t) => t.date_iso), [tanggalTersedia])
+  // Daftar baku (#209 tahap 2) — kunci yang datanya cukup dipetakan
+  // identitas, sisanya nonaktif lewat `opsiRentangBaku`. 'Semua' aktif
+  // hanya kalau riwayatnya minimal 2 tahun (sama syarat dengan '2 Tahun').
+  const opsiPreset = useMemo(() => {
+    const peta: Partial<Record<KunciBaku | 'semua', KunciBaku | 'semua'>> = {}
+    for (const k of RENTANG_BAKU) if (tanggalAktif && rentangBaku(isoArr, tanggalAktif, k)) peta[k] = k
+    if (tanggalAktif && rentangBaku(isoArr, tanggalAktif, 'semua')) peta.semua = 'semua'
+    return opsiRentangBaku<KunciBaku | 'semua'>(peta)
+  }, [isoArr, tanggalAktif])
   const { theme } = useTheme()
   const wrapRef = useRef<HTMLDivElement>(null)
 
-  // PRESET_RENTANG (w1/b1/b3/ytd) snap ke hari BERDATA lewat rentangPreset —
-  // pola sama Kalender.tsx/SektorIndeks.tsx, bukan preset ketikan sendiri.
+  // Daftar baku (#209 tahap 2) snap ke hari BERDATA lewat `rentangBaku` —
+  // pola sama BilahTanggal.tsx/SektorIndeks.tsx, satu definisi hitungan
+  // untuk seluruh halaman, bukan preset ketikan sendiri.
   const rentangTanggal = useMemo(() => {
     if (rentangBebas) {
       return tanggalTersedia.filter(
@@ -79,10 +91,10 @@ export function PanelBreadth() {
       )
     }
     if (!tanggalAktif) return []
-    const r = rentangPreset(tanggalTersedia, tanggalAktif, preset)
+    const r = rentangBaku(isoArr, tanggalAktif, preset)
     if (!r) return []
     return tanggalTersedia.filter((t) => t.date_iso >= r.mulai && t.date_iso <= r.akhir)
-  }, [tanggalTersedia, tanggalAktif, preset, rentangBebas])
+  }, [tanggalTersedia, tanggalAktif, preset, rentangBebas, isoArr])
 
   const { days, error: errorRentang } = useDataRentang(rentangTanggal)
 
@@ -188,7 +200,7 @@ export function PanelBreadth() {
               // membuat seluruh panel kosong tanpa penjelasan. Lebar jendela
               // diambil dari preset yang sedang aktif, jadi kalender menjawab
               // "geser periode ini ke sana" — pola sama Broker Summary v2.
-              const r = rentangPreset(tanggalTersedia, iso, preset)
+              const r = rentangBaku(isoArr, iso, preset)
               setRentangBebas(r ? { dari: r.mulai, sampai: r.akhir } : { dari: iso, sampai: iso })
             }}
             tersedia={isoTersedia}
@@ -197,8 +209,8 @@ export function PanelBreadth() {
             onGantiRentang={(dari, sampai) => setRentangBebas({ dari, sampai })}
           />
           <PemilihRentang
-            opsi={PRESET_RENTANG}
-            nilai={rentangBebas ? ('' as PresetRentang) : preset}
+            opsi={opsiPreset}
+            nilai={rentangBebas ? '' : preset}
             onGanti={(p) => { setRentangBebas(null); setPreset(p) }}
             ariaLabel="Rentang Market Breadth"
           />

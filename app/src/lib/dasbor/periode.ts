@@ -122,12 +122,71 @@ export type KunciRentang = keyof typeof LABEL_RENTANG
 /**
  * Daftar rentang BAKU untuk seluruh pemilih rentang (#209, Johan 15 Sep 2026:
  * "samakan semua mulai dari 1 hari, 5 hari, 2 minggu, 1 bulan, 3 bulan,
- * 6 bulan, Year to Date, 1 tahun, 2 tahun" · "beri opsi ekstra Semua").
+ * 6 bulan, Year to Date, 1 tahun, 2 tahun" · "beri opsi ekstra Semua" ·
+ * "jika 5 hari di anggap 1 minggu ya 1 minggu saja").
  * Tiap pemilih menampilkan daftar yang SAMA; yang datanya tak cukup di halaman
  * itu tampil nonaktif, bukan disembunyikan.
  */
-export const RENTANG_BAKU = ['h1', 'h5', 'w2', 'b1', 'b3', 'b6', 'sejakJan', 'y1', 'y2'] as const
+export const RENTANG_BAKU = ['h1', 'w1', 'w2', 'b1', 'b3', 'b6', 'sejakJan', 'y1', 'y2'] as const
 export type KunciBaku = (typeof RENTANG_BAKU)[number]
+
+/** Hari KALENDER mundur untuk kunci baku berpanjang tetap. */
+export const HARI_KALENDER_BAKU: Record<Exclude<KunciBaku, 'h1' | 'sejakJan'>, number> =
+  { w1: 7, w2: 14, b1: 30, b3: 91, b6: 182, y1: 365, y2: 730 }
+
+export interface JendelaBaku {
+  /** Hari berdata terakhir SEBELUM jendela — dasar return (tutup hari ini ÷ tutup pembanding). null untuk "Semua". */
+  pembanding: string | null
+  /** Hari berdata pertama DI DALAM jendela — awal penjumlahan dan grafik. */
+  mulai: string
+  /** Hari berdata terakhir yang ≤ `akhir` yang diminta. */
+  akhir: string
+}
+
+/**
+ * SATU definisi rentang untuk semua halaman (#209 Q1, keputusan Johan 15 Sep
+ * 2026: "sesuai rekomendasimu saja"). Mundur N hari KALENDER dari hari aktif;
+ * `pembanding` = hari berdata terakhir yang jatuh pada atau sebelum batas itu;
+ * jendela = hari berdata sesudah pembanding sampai hari aktif. Jadi "1 Minggu"
+ * dari Selasa = pembanding Selasa pekan lalu, jendela Rabu–Selasa (lima hari
+ * bursa bila tanpa libur): return memakai tutup pembanding, jumlah dan grafik
+ * memakai jendela — keduanya mengukur lima hari pergerakan yang sama.
+ *
+ * `1 Hari`: pembanding = hari berdata sebelumnya, jendela = hari aktif saja.
+ * `YTD`: pembanding = hari berdata terakhir tahun lalu, jendela sejak hari
+ * berdata pertama tahun berjalan. `Semua`: tanpa pembanding, sejak hari
+ * berdata pertama.
+ *
+ * `null` = data tidak cukup (tak ada hari berdata pada atau sebelum batas);
+ * opsinya ditampilkan nonaktif, bukan dihitung dari riwayat yang lebih pendek.
+ *
+ * `tanggal` wajib urut naik, format `YYYY-MM-DD`.
+ */
+export function jendelaBaku(tanggal: readonly string[], akhir: string, kunci: KunciBaku | 'semua'): JendelaBaku | null {
+  let iAkhir = -1
+  for (let i = tanggal.length - 1; i >= 0; i--) if (tanggal[i] <= akhir) { iAkhir = i; break }
+  if (iAkhir < 0) return null
+  const akhirEf = tanggal[iAkhir]
+  if (kunci === 'semua') return { pembanding: null, mulai: tanggal[0], akhir: akhirEf }
+  let batas: string
+  if (kunci === 'h1') {
+    batas = geserHari(akhirEf, -1)
+  } else if (kunci === 'sejakJan') {
+    batas = `${Number(akhirEf.slice(0, 4)) - 1}-12-31`
+  } else {
+    batas = geserHari(akhirEf, -HARI_KALENDER_BAKU[kunci])
+  }
+  let iPemb = -1
+  for (let i = iAkhir - 1; i >= 0; i--) if (tanggal[i] <= batas) { iPemb = i; break }
+  if (iPemb < 0) return null
+  return { pembanding: tanggal[iPemb], mulai: tanggal[iPemb + 1], akhir: akhirEf }
+}
+
+function geserHari(iso: string, hari: number): string {
+  const d = new Date(`${iso}T00:00:00Z`)
+  d.setUTCDate(d.getUTCDate() + hari)
+  return d.toISOString().slice(0, 10)
+}
 
 /**
  * Susun opsi `PemilihRentang` dari daftar baku. `peta` memetakan kunci baku ke
@@ -224,74 +283,28 @@ export const LABEL_RENTANG_RINGKAS: Partial<Record<KunciRentang, string>> = {
 }
 
 /**
- * Pintasan durasi yang dipakai bersama seluruh halaman berentang.
+ * Rentang mulai/akhir dari daftar baku (#209 tahap 2) — bungkus tipis atas
+ * `jendelaBaku` yang membuang `pembanding`, untuk pemanggil yang cuma butuh
+ * batas tampilan (BilahTanggal, PanelBreadth). Definisi hitungan & syarat
+ * null PERSIS `jendelaBaku` — lihat komentarnya di atas.
  *
- * Diperluas 7 Sep 2026 atas permintaan Johan (#34): *"rentang waktu sendiri
- * umum nya hari ini, 1 minggu, 1 bulan, 6 bulan, YTD, 1 tahun dan pilihan
- * rentang waktu"*. Yang ditambahkan `b6` dan `y1`.
+ * Menggantikan `rentangPreset`/`PRESET_RENTANG`/`HARI_PRESET`/`PresetRentang`
+ * lama (#75/#34): tujuh preset ketikan sendiri per halaman, kata & hitungan
+ * bisa menyimpang tanpa ada yang menyadarinya. Sekarang satu daftar
+ * (`RENTANG_BAKU`), satu fungsi hitung (`jendelaBaku`), satu pembungkus
+ * bentuk tampilan (fungsi ini).
  *
- * DUA hal di daftar itu SENGAJA tidak jadi pil, dan keduanya karena sudah ada:
- *  - "hari ini" itu keadaan BAWAAN (tanpa rentang, tak ada pil menyala), dan
- *    pilnya sudah pernah dibuang 5 Sep 2026 justru karena berdiri persis di
- *    samping tombol "Hari ini" milik kalender - dua kata nyaris sama untuk dua
- *    hal berbeda. Menghidupkannya lagi membatalkan keputusan itu.
- *  - "pilihan rentang waktu" sudah dijawab kalender mode rentang (#75), yang
- *    memunculkan pil "Kustom" begitu rentangnya bukan salah satu pintasan.
- *
- * `b3` DIPERTAHANKAN walau tak disebut di daftar Johan: tiga halaman sudah
- * memakainya (Sektor, Top Stocks, Kalender) dan membuangnya berarti mencabut
- * pintasan yang bekerja untuk permintaan yang isinya menambah, bukan mengurangi.
+ * Bedanya dari `rentangPreset`: TIDAK menjepit ke tanggal berdata pertama
+ * saat riwayat lebih pendek dari preset — `jendelaBaku` mengembalikan `null`,
+ * dan pemanggil (lewat `opsiRentangBaku`) menampilkannya nonaktif, bukan
+ * mendiam-diamkan potongan riwayat sebagai rentang penuh (#209 Q1, Johan 15
+ * Sep 2026: "opsi yang datanya tidak cukup tampil nonaktif").
  */
-export type PresetRentang = 'w1' | 'b1' | 'b3' | 'b6' | 'mtd' | 'ytd' | 'y1'
-
-/** Id-nya tetap `ytd` — yang berganti kata layarnya, bukan hitungannya, jadi
- *  tak ada state tersimpan atau tes yang perlu ikut berpindah. */
-const KATA_PRESET: Record<PresetRentang, KunciRentang> =
-  { w1: 'w1', b1: 'b1', b3: 'b3', b6: 'b6', mtd: 'mtd', ytd: 'sejakJan', y1: 'y1' }
-
-// Urutannya dari `URUTAN_PIL` di atas, bukan dipilih di sini: `mtd` duduk
-// sesudah `b6` dan sebelum tahun-berjalan, sekelompok dengan rentang
-// ber-pangkal-tanggal lainnya. Menaruhnya di tempat lain berarti dua urutan
-// kanonis yang berbeda — persis yang kamus ini dibuat untuk mencegah.
-export const PRESET_RENTANG: { id: PresetRentang; label: string }[] =
-  (['w1', 'b1', 'b3', 'b6', 'mtd', 'ytd', 'y1'] as const)
-    .map((id) => ({ id, label: LABEL_RENTANG[KATA_PRESET[id]] }))
-
-
-// Hari KALENDER mundur, lalu di-snap ke hari bursa terakhir yang <= target.
-// 182 dan 365, bukan 180 dan 360: yang dihitung kalender, dan pembulatan
-// "kira-kira setengah tahun" akan menggeser batas rentang sampai tiga hari
-// bursa - cukup untuk membuat jumlah nilai transaksi berbeda tanpa sebab.
-// `ytd` dan `mtd` TIDAK ada di sini dan itu disengaja: keduanya berpangkal
-// pada tanggal kalender (1 Januari / tanggal 1 bulan berjalan), bukan pada
-// jumlah hari mundur. Memberi mereka angka tetap berarti mengarang panjang
-// yang berubah-ubah tiap tanggal.
-export const HARI_PRESET: Record<Exclude<PresetRentang, 'ytd' | 'mtd'>, number> =
-  { w1: 7, b1: 30, b3: 91, b6: 182, y1: 365 }
-
-/**
- * Rentang preset mundur dari `akhir` (tanggal aktif), snap ke hari berdata:
- * w1/b1/b3 pakai cariTanggalPembanding (hari bursa terakhir ≤ target); kalau
- * riwayat lebih pendek dari preset, mulai jatuh ke tanggal berdata pertama.
- * ytd = tanggal berdata pertama di tahun yang sama dengan `akhir`. null kalau
- * rentang tidak valid (mulai ≥ akhir — riwayat cuma satu hari).
- */
-export function rentangPreset(
-  tanggal: TanggalIndex[],
+export function rentangBaku(
+  tanggal: readonly string[],
   akhir: string,
-  preset: PresetRentang,
+  kunci: KunciBaku | 'semua',
 ): RentangTanggal | null {
-  let mulai: string | undefined
-  if (preset === 'ytd') {
-    mulai = tanggal.find((t) => t.date_iso >= `${akhir.slice(0, 4)}-01-01`)?.date_iso
-  } else if (preset === 'mtd') {
-    // Hari berdata pertama di BULAN yang sama dengan `akhir` — bukan 30 hari
-    // mundur. Tanggal 3 memberi rentang tiga hari, dan itu memang jawabannya.
-    mulai = tanggal.find((t) => t.date_iso >= `${akhir.slice(0, 7)}-01`)?.date_iso
-  } else {
-    mulai = cariTanggalPembanding(tanggal, akhir, HARI_PRESET[preset])?.date_iso
-      ?? tanggal[0]?.date_iso
-  }
-  if (!mulai || mulai >= akhir) return null
-  return { mulai, akhir }
+  const j = jendelaBaku(tanggal, akhir, kunci)
+  return j ? { mulai: j.mulai, akhir: j.akhir } : null
 }

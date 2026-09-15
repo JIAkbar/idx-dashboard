@@ -20,6 +20,7 @@ import { KETERANGAN_KATEGORI, LABEL_KATEGORI, useKategoriBroker, type KategoriBr
 import { bacaTokenTema } from '../../../lib/dasbor/useChartJs'
 import { warnaGrid, gridDariTemplate, GRID_BAWAAN, type SetelanGrid } from '../../../lib/dasbor/grafikEmiten'
 import { fmtB, num, pct, TOKEN_SERI, OPSI_RENTANG_NP, potongRentang, Kosong, Sumber, type RentangNp } from './bersama'
+import { opsiRentang } from '../../../lib/dasbor/rentang'
 import { InfoIndikator, type ItemInfoIndikator } from '../../../components/dasbor/InfoIndikator'
 
 /** Modal "i" — penjelasan baris kendali & panel bawah (sweep Johan 27 Agu). */
@@ -131,6 +132,13 @@ export function InventoryTab({ kode }: { kode: string }) {
   }, [candle, rentang])
   const dari = lilinRentang[0]?.t ?? ''
   const sampai = lilinRentang[lilinRentang.length - 1]?.t ?? ''
+  // Opsi baku (#209) dari riwayat NYATA candle — bukan daftar statis:
+  // opsi yang datanya tak cukup tampil nonaktif, bukan disembunyikan.
+  const opsiChart = useMemo(() => {
+    if (!candle || candle.lilin.length === 0) return OPSI_RENTANG_NP
+    const tgl = candle.lilin.map((b) => String(b.time))
+    return opsiRentang(tgl, tgl[tgl.length - 1])
+  }, [candle])
 
   // Routing sumber broker (pola Stalker, versi satu-emiten): jendela di dalam
   // cakupan broker_harian & investor ALL → harian; selain itu → tahunan.
@@ -400,7 +408,7 @@ export function InventoryTab({ kode }: { kode: string }) {
       </p>
       <div className="np-baris">
         <span className="np-lbl">Rentang</span>
-        <PemilihRentang opsi={OPSI_RENTANG_NP} nilai={rentang} onGanti={(id) => setRentang(id as RentangNp)} />
+        <PemilihRentang opsi={opsiChart} nilai={rentang} onGanti={(id) => setRentang(id as RentangNp)} />
         <span className="np-lbl">Ukuran</span>
         {(['nilai', 'lot'] as const).map((u) => (
           <button key={u} type="button" className={'chip-t' + (ukuran === u ? ' on' : '')}

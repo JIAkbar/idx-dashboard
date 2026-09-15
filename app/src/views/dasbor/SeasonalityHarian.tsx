@@ -1,5 +1,7 @@
 import { persen } from '../../lib/dasbor/format'
-import { LABEL_RENTANG } from '../../lib/dasbor/periode'
+import {
+  RENTANG_BAKU, jendelaBaku, opsiRentangBaku, type KunciBaku,
+} from '../../lib/dasbor/periode'
 import { useEffect, useMemo, useState, type PointerEvent as ReactPointerEvent } from 'react'
 import { HARI, ringkasHarian, hariBursaDiRentang, vonisUji, rentangSumbuBalapan, type RingkasHarian } from '../../lib/seasonality'
 import { pesanGalat } from '../../lib/pesanGalat'
@@ -18,21 +20,20 @@ import { urlData } from '../../lib/dasbor/baseData'
  *  untuk orang yang sedang MENGUJI, bukan sekadar percaya tombol praset. */
 const AMBANG_BEBAS = 5
 
-/** Tiap pilihan menghitung batas bawahnya sendiri saat diklik — bukan disimpan
- *  sebagai tanggal tetap, supaya MTD/YTD tetap benar kalau halaman dibiarkan
- *  terbuka melewati tengah malam atau pergantian bulan. */
-const RENTANG: Array<[string, () => string]> = [
-  [LABEL_RENTANG.semua, () => ''],
-  [LABEL_RENTANG.mtd, () => new Date().toISOString().slice(0, 8) + '01'],
-  [LABEL_RENTANG.sejakJan, () => new Date().getUTCFullYear() + '-01-01'],
-  [LABEL_RENTANG.y1, () => geser(1)],
-  [LABEL_RENTANG.y2, () => geser(2)],
-  [LABEL_RENTANG.y3, () => geser(3)],
-  [LABEL_RENTANG.y5, () => geser(5)],
-  [LABEL_RENTANG.y10, () => geser(10)],
-  [LABEL_RENTANG.y20, () => geser(20)],
-]
-
+/**
+ * KOREKSI #209 (15 Sep 2026, Johan lewat pengawas): daftar `RENTANG` (dulu
+ * Semua/MTD/YTD/1..20 Tahun, kosakata SENDIRI) DIBUANG. Sekarang SELURUH
+ * `RENTANG_BAKU` + Semua (10 opsi persis sama dengan pemilih rentang lain),
+ * dibangun `opsiRentangBaku` dari tanggal DERET nyata. MTD dan 3/5/10/20
+ * Tahun hilang — di luar daftar baku.
+ *
+ * Batas bawah SEMUA kunci (termasuk YTD dan Semua) lewat `jendelaBaku` atas
+ * tanggal deret — BUKAN lagi kalender real-time `new Date()`. Kekhawatiran
+ * lama ("basi kalau halaman dibiarkan terbuka lewat tengah malam") tidak
+ * berlaku di sini: deretnya berakhir di hari BERDATA TERAKHIR (`akhirData`),
+ * bukan jam dinding — YTD/Semua ikut definisi yang sama dengan seluruh
+ * pemilih rentang lain, snap ke hari berdata sungguhan.
+ */
 function geser(tahun: number): string {
   const d = new Date()
   d.setUTCFullYear(d.getUTCFullYear() - tahun)
@@ -66,7 +67,7 @@ export function SeasonalityHarian() {
   // relevan buat pembaca hari ini. Satu tahun terakhir itu jendela yang bisa
   // dinilai orang dari ingatannya sendiri — sejalan dengan alasan utama tab
   // ini: hasilnya harus bisa DIBUKTIKAN, bukan dipercaya begitu saja.
-  const [pilih, setPilih] = useState<string>(LABEL_RENTANG.y1)
+  const [pilih, setPilih] = useState<KunciBaku | 'semua'>('y1')
   // Praset ATAU rentang bebas — praset tetap jalan pintas bawaan, rentang
   // bebas (#170 K9) mengundang pembaca membuktikan sendiri lewat jendela
   // yang ia pilih, bukan yang disodorkan.
@@ -141,6 +142,17 @@ export function SeasonalityHarian() {
   const tglTersedia = useMemo(() => [...tersediaSet].sort(), [tersediaSet])
   const akhirData = tglTersedia[tglTersedia.length - 1] ?? ''
 
+  // Opsi baku (#209) dari tanggal deret NYATA — nonaktif kalau `jendelaBaku`
+  // tak sanggup mengisinya (emiten muda: riwayat kurang). IHSG selalu panjang
+  // (8.877 hari sejak 1990) jadi seluruh 10 opsi praktis selalu aktif.
+  const opsi = useMemo(() => {
+    const peta: Partial<Record<KunciBaku | 'semua', KunciBaku | 'semua'>> = {}
+    for (const k of [...RENTANG_BAKU, 'semua'] as const) {
+      if (jendelaBaku(tglTersedia, akhirData, k)) peta[k] = k
+    }
+    return opsiRentangBaku(peta)
+  }, [tglTersedia, akhirData])
+
   /** Ganti mode ke rentang bebas; kalau belum pernah diisi, mulai dari
    *  jendela yang sama dengan praset bawaan (1 tahun terakhir) supaya kedua
    *  pemilih tak muncul kosong. */
@@ -160,7 +172,8 @@ export function SeasonalityHarian() {
     else { setDariBebas(dari); setSampaiBebas(sampai) }
   }
 
-  const sejak = modeBebas ? dariBebas : (RENTANG.find(([n]) => n === pilih)?.[1] ?? (() => ''))()
+  const sejak = modeBebas ? dariBebas
+    : (jendelaBaku(tglTersedia, akhirData, pilih)?.mulai ?? '')
   const sampai = modeBebas ? sampaiBebas : ''
 
   const r: RingkasHarian | null = useMemo(
@@ -256,7 +269,7 @@ export function SeasonalityHarian() {
                 (#116); dulu deret ini membungkus sampai tiga baris. */}
             {!modeBebas && (
               <PemilihRentang
-                opsi={RENTANG.map(([label]) => ({ id: label, label }))}
+                opsi={opsi}
                 nilai={pilih}
                 onGanti={setPilih}
                 ariaLabel="Rentang tahun"

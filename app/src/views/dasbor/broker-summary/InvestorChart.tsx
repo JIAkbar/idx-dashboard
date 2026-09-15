@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import {
-  PERIODE_ALIRAN, irisPeriode, ringkasAliran, useAliranInvestor,
+  opsiPeriodeAliran, irisPeriode, ringkasAliran, useAliranInvestor,
   type IdPeriodeAliran, type KelompokAliran,
 } from '../../../lib/dasbor/aliranInvestor'
 import { PemilihRentang } from '../../../components/dasbor/PemilihRentang'
@@ -96,7 +96,7 @@ export function InvestorChart() {
       <div className="panel-h">
         <span className="lbl"><IkonMenu d={IKON_OMBAK} size={13} /> Aliran Investor — Asing vs Domestik</span>
         <PemilihRentang
-          opsi={PERIODE_ALIRAN}
+          opsi={opsiPeriodeAliran(data.d)}
           nilai={periode}
           onGanti={setPeriode}
           ariaLabel="Periode aliran investor"

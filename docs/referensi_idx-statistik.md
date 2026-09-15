@@ -601,6 +601,7 @@ satu tempat penyimpanan antar-jalan yang bisa hilang.
 | Stock Detail · gabung `keuangan_idx` + `keuangan` (J5) | jahit saat baca | — | tidak ada tabel pembanding | agen | — **perlu keputusan Johan** |
 | `ihsg_harian` · cadangan Yahoo sementara (J6) | timpa sementara | PDF terbit sore | — | tercatat status-panen | 21 Agu 2026 — sah kalau ditandai di antarmuka |
 | Kalender bursa + IHSG Seasonality Harian + riwayat IHSG Indeks Dunia · `ihsg_harian.json` → `ohlc/IHSG.json` (J19) | **rotasi pembaca** | `ihsg_harian.json` tertinggal sehari dari arsip harga IHSG | 8.876 lawan 8.876 tanggal identik 1990-04-06 s.d. 2026-09-14, selisih tutup maks 0,000046% | **Johan** (*"setujui #203 A dan ya #200 A susunan lima pintu"*, 15 Sep 2026 21:12 WIB, diteruskan pengawas) | 15 Sep 2026 |
+| Semua pemilih rentang waktu · satu definisi hitungan dan satu daftar (J20) | **definisi tunggal** | kata yang sama dihitung enam cara berbeda di 23 pemilih | enumerasi `scratchpad/u209/enumerasi.md`; tabel angka lama → baru di jejak #569 | **Johan** (*"sesuai rekomendasimu saja, jika 5 hari di anggap 1 minggu ya 1 minggu saja"*, 15 Sep 2026 ~22:3x WIB, sesi Papan) | 15 Sep 2026 |
 | Aliran asing rupiah · taksiran vs chartbit (J8) | **diganti 24 Agu 2026** | angka resmi sudah ada di `ohlcv_stockbit/` | taksiran meleset 1,33× kumulatif | Johan ("ok setuju") | selesai |
 | Konvensi harga & volume · tersesuaikan vs apa adanya (J12) | **batas ditetapkan** | dua konvensi, dua-duanya benar; yang salah menyilangkannya | 936 emiten: 129.723/1.173.805 bar beda (11,05%), 167 emiten >5%; rasio pembeda BULAT (250·25·5·4·2); DSSA volume ×25 & harga ÷25 sampai Mar 2026 lalu 1,00 (pecah saham 1:25) | **Johan** (*"ok tulis"*) | 23 Agu 2026 |
 
@@ -924,6 +925,30 @@ berkas uji menemukan tipe di `stockDetailData.ts`, tiga baris `KolomValuasi.tsx`
 `ohlc/IHSG.json` memuat satu hari lebih (15 Sep). Keduanya deret yang sama: Stockbit dengan kerangka Yahoo untuk tanggal yang tidak dimiliki Stockbit. Ukuran 486 KB lawan 362 KB; berkas yang sama sudah diunduh Panel Diary di Beranda.
 
 **Yang berubah.** `tanggalBursa.ts` `muatDaftarHariBursa()` mengambil tanggal dari larik `d`; `SeasonalityHarian.tsx` membaca `ohlc/<KODE>.json` untuk IHSG juga; `IndeksDunia.tsx` riwayat panjang dari kolom tutup larik `d`. `ihsg_harian.json` **tidak dihapus** dan tetap ditulis `panen_ihsg.py` sebagai cadangan; pembacanya di skrip Python (mis. Kartu Analisa) tidak diubah.
+
+
+## J20 · Satu definisi rentang waktu untuk semua pemilih (15 September 2026)
+
+**Keputusan Johan**, 15 Sep 2026 sekitar 22:3x WIB di sesi Papan: *"sesuai rekomendasimu saja, jika 5 hari di anggap 1 minggu ya 1 minggu saja"*, menjawab lima pertanyaan antrean #209. Permintaan asalnya (sesi pengawas, ~21:50): *"sweep semua rentang waktu itu pakai dropdown, samakan semua mulai dari 1 hari, 5 hari, 2 minggu, 1 bulan, 3 bulan, 6 bulan, Year to Date, 1 tahun, 2 tahun"* dan (~21:55) *"beri opsi ekstra Semua"*.
+
+**Sebab.** Enumerasi 15 Sep 2026 menemukan 23 pemilih rentang mundur dengan enam cara menghitung kata yang sama. "1 Bulan" berarti: 30 hari kalender lalu digeser ke hari bursa terakhir (`periode.ts`: Sektor, Top Stocks, Broker Dominan); 21 hari bursa terakhir (`rentang.ts`: Neo, Pantau); 30 hari kalender mentah (Aliran Asing, Broker Summary, Aliran Dana); 31 hari kalender dari bar terakhir (Grafik, Compare); satu bulan kalender (Aliran Investor); dan "3 Bulan" 90 hari di Screener lawan 91 di tempat lain.
+
+**Daftar baku:** 1 Hari, 1 Minggu, 2 Minggu, 1 Bulan, 3 Bulan, 6 Bulan, YTD, 1 Tahun, 2 Tahun, ditambah Semua. "Hari Ini" dieja "1 Hari". MTD, WTD, 5 Hari, dan 3/5/10/20 Tahun dibuang. Opsi yang datanya tidak cukup tampil nonaktif. Kata dieja hanya di `LABEL_RENTANG`; daftar dan penyusunnya `RENTANG_BAKU` dan `opsiRentangBaku()`.
+
+**Definisi tunggal** (`jendelaBaku()` di `app/src/lib/dasbor/periode.ts`):
+
+| Label | Batas | Pembanding | Jendela |
+|---|---|---|---|
+| 1 Hari | sehari sebelum hari aktif | hari berdata sebelumnya | hari aktif saja |
+| 1 Minggu · 2 Minggu | 7 · 14 hari kalender mundur | hari berdata terakhir pada atau sebelum batas | hari berdata sesudah pembanding sampai hari aktif |
+| 1 · 3 · 6 Bulan | 30 · 91 · 182 hari kalender mundur | sama | sama |
+| 1 · 2 Tahun | 365 · 730 hari kalender mundur | sama | sama |
+| YTD | 31 Desember tahun lalu | hari berdata terakhir tahun lalu | sejak hari berdata pertama tahun berjalan |
+| Semua | tidak ada | tidak ada | sejak hari berdata pertama |
+
+Return dan perubahan persen memakai harga tutup **pembanding**. Penjumlahan (aliran asing, net broker), rata-rata, dan grafik memakai hari di **jendela**. Contoh: "1 Minggu" dari Selasa 15 Sep 2026 → pembanding Selasa 8 Sep, jendela Rabu 9 s.d. Selasa 15 Sep (lima hari bursa pergerakan).
+
+**Pengecualian yang tidak disamakan** (bukan rentang mundur, keputusan yang sama butir 5): tahun awal Musiman, jenis edisi Statistik Berkala, jendela pekan Rotasi, tahun histori Neo Seasonality, jendela 2/3/10/20 hari Broker Stalker. **Batas yang tersisa:** Top Broker dan Rincian Broker membaca rentang yang dihitung skrip panen, jadi hanya daftar dan katanya yang baku; angkanya mengikuti definisi skrip.
 
 
 ## Inventaris ruas per berkas — jawaban untuk Johan 23 Agu 2026 (Stock Detail, OHLC/OHLCV, Broker Summary, metode panen)
@@ -1658,6 +1683,7 @@ section ini saat pertama dipakai**, bukan hanya sumber data. Tanpa itu, jejak
 - 28 Agustus 2026 — **B45 Jejak Rekomendasi + tab "Riwayat & Win Rate"** (Screener) selesai — Tugas C penuh + generator C.1, spek `docs/spek-dev-papan/spek_preset_winrate_rekap.md`. `scripts/riset/rekap_preset.py` (port `PRESET_DEFS` dari `presetScreener.ts`, swauji `--uji` 9 kasus tangan-hitung lolos) dijalankan sekali untuk tanggal data terakhir yang BENAR-BENAR terisi (2026-08-27 — auto-deteksi via ambang `freq>0` melewati 2026-08-28 yang masih 0/962 baris berfrekuensi, konfirmasi lapangan atas temuan 24 Agu 14:33 "fetch pertengahan sesi"): 80 baris saham lintas 5 preset (`whale-akdis` 0 — `label_accdist` kosong seluruhnya di arsip 27 Agu, jujur ditulis apa adanya, bukan dipaksa terisi). `app/src/lib/dasbor/winRate.ts` (3 definisi menang, 19 uji vitest termasuk kasus "tak tentu" TP&SL sehari) + `rekomendasi.ts` (fetch/gabung, 6 uji) + tab ke-4 Screener.tsx. Sumber TP/SL: fallback ATR14 SELALU dipakai (bukan Target Realistis papan-terdorong `kuliPapan.ts` — itu butuh antrean penutupan yang cuma ada dari setoran kontributor, bukan data cakram 962 emiten). `npm run build` + `npx vitest run` (1597 lolos) + `tsc --noEmit` hijau; leak-sweep bersih (grep endpoint/`.json` di string ter-render). Verifikasi visual SELESAI dua viewport (laptop 1536×960×1.25, mobile 412×915×2.625) lewat tab chrome-devtools yang sudah login admin dari sesi sebelumnya (Screener tier `login` di `akses_halaman`, dicek Supabase — sesi ini sendiri tak pernah isi sandi); tabel Menang/Kalah "Tak ada baris" jujur untuk 2026-08-27 karena H+1-nya (28 Agu) belum berdata nyata, difilter `volume=0`.
 - 5 September 2026 — **J14 akhirnya berlaku juga di CI.** Ralat Johan: *"ralat dulu setiap hari itu harusnya panen 6 varian karena gross, sedangkan yang net bisa di hitung"*. Sejak J14 diputuskan (23 Agu) bat buka-laptop sudah 6 varian GROSS, tapi langkah 3d `panen-harian-rumah.yml` masih memanggil 12 atas ketetapan 23 Agu pagi ("CI harus ke lengkap Varian") — dua kebenaran hidup berdampingan selama 13 hari, dan tiap jalan CI membuang 962 × 6 panggilan untuk menulis berkas yang tak dibaca siapa pun. Sekarang keduanya `reguler,asing,nego,nego-asing,tunai,tunai-asing`; beban langkah itu turun dari ±11.500 jadi ±5.800 permintaan (≈1,3 jam → ≈40 menit). Diperiksa sebelum diubah, bukan diingat: grep `net-asing|net-nego|net-tunai|\.net\.` di `app/src` dan `scripts` tak menemukan satu pun pembaca berkas varian NET — yang muncul semuanya ruas aliran asing (`net_asing*`) atau mode tampilan "Net" yang dihitung di layar dari GROSS (`tabelDuaSisi`, `lib/dasbor/brokerEmiten.ts:164`). Berkas NET yang telanjur ada di arsip **tidak dihapus** (ketetapan J14: dibuang saat konsolidasi).
 - 15 September 2026 — **J19**: kalender bursa, Seasonality Harian IHSG, dan riwayat IHSG Indeks Dunia pindah dari `ihsg_harian.json` ke `ohlc/IHSG.json` atas keputusan Johan (#203 A); tabel pembanding 8.876 tanggal identik.
+- 15 September 2026 — **J20**: satu definisi dan satu daftar untuk semua pemilih rentang waktu atas keputusan Johan (#209).
 
 ---
 

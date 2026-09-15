@@ -10,7 +10,7 @@ import { tanggalPendek } from '../../lib/dasbor/statistikBerkala'
 import { IkonMenu, IKON_JAM } from './IkonMenu'
 import { PemilihRentang } from './PemilihRentang'
 import { LabelRentang } from './LabelRentang'
-import { LABEL_RENTANG, HARI_PRESET } from '../../lib/dasbor/periode'
+import { jendelaBaku, opsiRentangBaku, RENTANG_BAKU, type KunciBaku } from '../../lib/dasbor/periode'
 
 /**
  * Panel "Aliran Asing" (per-emiten) — lembar dari sumber bursa resmi (riwayat
@@ -92,41 +92,36 @@ export function kumulatifNet(d: AsingHarian[], mulai: string, akhir: string): Ti
     })
 }
 
-// ── Rentang chart — preset kalender-hari mundur, sama polanya dgn BrokerSummary.tsx ──
+// ── Rentang chart — jendela baku (#209), satu definisi untuk seluruh app ──
 
-type PresetId = 'w1' | 'b1' | 'b3' | 'b6' | 'y1' | 'ytd' | 'semua'
+type PresetId = 'h1' | 'w1' | 'w2' | 'b1' | 'b3' | 'b6' | 'y1' | 'y2' | 'ytd' | 'semua'
 
-/** Panjang tiap preset diambil dari `HARI_PRESET`, tidak diketik ulang.
- *  Angkanya kebetulan sama (7/30/91), dan justru itu bahayanya: dua salinan
- *  yang identik hari ini adalah dua salinan yang bisa menyimpang besok,
- *  tanpa satu pun galat — halaman ini dan bilah rentang di sebelahnya akan
- *  memberi dua jawaban untuk satu kata "1 Bulan".
- *
- *  `hariIni` dan `mtd` sengaja TIDAK ada: grafiknya kumulatif, dan rentang
- *  satu-dua titik menghasilkan garis yang tak bisa dibaca. */
-const PRESET: { id: PresetId; label: string; hari: number }[] = [
-  { id: 'w1', label: LABEL_RENTANG.w1, hari: HARI_PRESET.w1 },
-  { id: 'b1', label: LABEL_RENTANG.b1, hari: HARI_PRESET.b1 },
-  { id: 'b3', label: LABEL_RENTANG.b3, hari: HARI_PRESET.b3 },
-  { id: 'b6', label: LABEL_RENTANG.b6, hari: HARI_PRESET.b6 },
-  { id: 'y1', label: LABEL_RENTANG.y1, hari: HARI_PRESET.y1 },
-  { id: 'ytd', label: LABEL_RENTANG.sejakJan, hari: 0 },
-  { id: 'semua', label: LABEL_RENTANG.semua, hari: 0 },
-]
+/** Kunci baku (`periode.ts`) tiap id — id `ytd` dipertahankan di state (tak
+ *  perlu migrasi), tapi kuncinya `sejakJan`. */
+const KUNCI_PRESET: Record<PresetId, KunciBaku | 'semua'> =
+  { h1: 'h1', w1: 'w1', w2: 'w2', b1: 'b1', b3: 'b3', b6: 'b6', y1: 'y1', y2: 'y2', ytd: 'sejakJan', semua: 'semua' }
 
 /** Berapa hari bursa terakhir yang dipajang tabel di kaki panel. */
 const JENDELA_TABEL = 20
 
-function mundurIso(iso: string, hari: number): string {
-  const d = new Date(`${iso}T12:00:00`)
-  d.setDate(d.getDate() - hari)
-  return d.toISOString().slice(0, 10)
+/** Opsi pil: SEPULUH baku (#209 koreksi pengawas — grafiknya kumulatif jadi
+ *  `h1` tetap sah, satu titik saja masih grafik yang benar walau pendek),
+ *  nonaktif HANYA kalau `jendelaBaku` bilang datanya tak cukup — dihitung
+ *  dari deret yang SEDANG tergambar (lembar atau rupiah, tergantung
+ *  `metrik`), bukan dari preset tetap. */
+function opsiPreset(tanggal: readonly string[], akhir: string) {
+  const peta: Partial<Record<KunciBaku | 'semua', PresetId>> = {}
+  ;([...RENTANG_BAKU, 'semua'] as const).forEach((k) => {
+    if (jendelaBaku(tanggal, akhir, k)) peta[k] = k === 'sejakJan' ? 'ytd' : k
+  })
+  return opsiRentangBaku(peta)
 }
 
-function mulaiPreset(id: PresetId, akhir: string, mulaiData: string): string {
-  if (id === 'semua') return mulaiData
-  if (id === 'ytd') return `${akhir.slice(0, 4)}-01-01`
-  return mundurIso(akhir, PRESET.find((x) => x.id === id)!.hari)
+/** Mulai jendela preset terpilih, `jendelaBaku` atas deret yang benar-benar
+ *  tergambar. Jatuh ke `fallback` (hari berdata pertama) kalau presetnya
+ *  kebetulan tak valid untuk deret ini (mis. dipilih saat metrik lain aktif). */
+function mulaiPreset(tanggal: readonly string[], akhir: string, id: PresetId, fallback: string): string {
+  return jendelaBaku(tanggal, akhir, KUNCI_PRESET[id])?.mulai ?? fallback
 }
 
 // ── Format ──
@@ -191,18 +186,21 @@ export function PanelAliranAsing({ ticker }: { ticker: string }) {
   const n5r = data ? netRupiahPeriode(stockbit, data.akhir, 5) : null
   const n20r = data ? netRupiahPeriode(stockbit, data.akhir, 20) : null
 
+  const tanggalLembar = useMemo(() => data?.d.map((r) => r.tanggal) ?? [], [data])
+  const tanggalRupiah = useMemo(() => Array.from(stockbit.byDate.keys()).sort(), [stockbit])
+
   const titikLembar = useMemo(() => {
     if (!data) return []
-    const mulai = mulaiPreset(preset, data.akhir, data.mulai)
+    const mulai = mulaiPreset(tanggalLembar, data.akhir, preset, data.mulai)
     return kumulatifNet(data.d, mulai, data.akhir)
-  }, [data, preset])
+  }, [data, tanggalLembar, preset])
 
   const titikRupiah = useMemo<TitikRupiah[]>(() => {
     if (!data) return []
     const mulaiData = stockbit.mulai ?? data.mulai
-    const mulai = mulaiPreset(preset, data.akhir, mulaiData)
+    const mulai = mulaiPreset(tanggalRupiah, data.akhir, preset, mulaiData)
     return kumulatifRupiah(stockbit, data.mulai, mulai, data.akhir)
-  }, [data, stockbit, preset])
+  }, [data, stockbit, tanggalRupiah, preset])
 
   const titik = metrik === 'lembar' ? titikLembar : titikRupiah
   // Titik sebelum cakupan bursa (garis putus-putus di grafik) — cuma ada
@@ -296,7 +294,7 @@ export function PanelAliranAsing({ ticker }: { ticker: string }) {
             {rentang && (
               <LabelRentang className="asg-rentang" mulai={rentang.mulai} akhir={rentang.akhir} n={rentang.hari} />
             )}
-            <PemilihRentang className="asg-preset" opsi={PRESET} nilai={preset} onGanti={setPreset} ariaLabel="Rentang Aliran Asing" />
+            <PemilihRentang className="asg-preset" opsi={opsiPreset(metrik === 'lembar' ? tanggalLembar : tanggalRupiah, data.akhir)} nilai={preset} onGanti={setPreset} ariaLabel="Rentang Aliran Asing" />
           </>
         )}
       </div>

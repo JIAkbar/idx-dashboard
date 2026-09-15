@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { LABEL_RENTANG } from '../../../lib/dasbor/periode'
+import { LABEL_RENTANG, RENTANG_BAKU } from '../../../lib/dasbor/periode'
 import { potongRentang as potongRentangBaku, type IdRentang } from '../../../lib/dasbor/rentang'
 
 /**
@@ -55,16 +55,25 @@ export const TOKEN_SERI = [
 
 // ── Rentang tanggal (candle/volume/asing) ───────────────────────────────────
 // Definisi pindah ke modul BERSAMA `lib/dasbor/rentang.ts` (spek konsistensi
-// §2) — empat kosakata rentang lahir justru dari tiap halaman mengeja
-// presetnya sendiri. Yang di sini tinggal pembungkus: subset id Neo + adaptor
-// ruas `t`. Migrasi 27 Agu: '2w'→'w2' (masuk LABEL_RENTANG), +y1/y3/y5.
+// §2) — daftar & hitungan sekarang SATU dengan seluruh aplikasi (#209, Johan
+// 15 Sep 2026), lewat `RENTANG_BAKU`/`jendelaBaku` (periode.ts). Yang di sini
+// tinggal pembungkus: tipe id Neo + adaptor ruas `t`.
 
-export type RentangNp = Extract<IdRentang, 'w2' | 'b1' | 'b3' | 'b6' | 'ytd' | 'y1' | 'y3' | 'y5' | 'semua'>
+export type RentangNp = IdRentang
+
+/**
+ * Opsi STATIS (label + id, `LABEL_RENTANG`) untuk Transaction Chart —
+ * `NeoPapan.tsx` (pemilik state `rentang`) tak punya akses ke bar candle
+ * yang dimuat di dalam `TransaksiTab.tsx` sendiri, jadi daftar ini tak bisa
+ * menonaktifkan opsi berdasar riwayat nyata seperti `InventoryTab.tsx`/
+ * `Watchlist.tsx` (lihat `opsiRentang` di `lib/dasbor/rentang.ts`) — seluruh
+ * opsi baku selalu tampil aktif di sini. Hitungannya TETAP satu definisi:
+ * `potongRentang` di bawah mendelegasikan ke `jendelaBaku` yang sama.
+ */
 export const OPSI_RENTANG_NP: { id: RentangNp; label: string }[] =
-  (['w2', 'b1', 'b3', 'b6', 'ytd', 'y1', 'y3', 'y5', 'semua'] as const)
-    .map((id) => ({ id, label: LABEL_RENTANG[id] }))
+  ([...RENTANG_BAKU, 'semua'] as const).map((id) => ({ id, label: LABEL_RENTANG[id] }))
 
-/** Potong deret ke rentang, mundur dari bar TERAKHIR — delegasi modul bersama. */
+/** Potong deret ke rentang, mundur dari tanggal bar TERAKHIR — delegasi modul bersama. */
 export function potongRentang<T extends { t: string }>(bars: T[], rentang: RentangNp): T[] {
   return potongRentangBaku(bars, rentang, (b) => b.t)
 }
