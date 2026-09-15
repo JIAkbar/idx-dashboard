@@ -239,7 +239,7 @@ export function GrupKonglomerat() {
         <div className="gk-alat">
         <div className="bilah-kendali">
           <div className="grup-k">
-            <PemilihRentang opsi={OPSI_MODE} nilai={mode} onGanti={setMode} ariaLabel="Mode tampilan grup" />
+            <PemilihRentang tampil="auto" opsi={OPSI_MODE} nilai={mode} onGanti={setMode} ariaLabel="Mode tampilan grup" />
           </div>
           <div className="grup-k">
             {mode !== 'deret'

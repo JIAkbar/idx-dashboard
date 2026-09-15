@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { cariTanggalPembanding, hitungPeriodePct, rentangPreset } from './periode'
+import { cariTanggalPembanding, hitungPeriodePct, opsiRentangBaku, rentangPreset } from './periode'
 import { agregatBrokerRows } from './brokerHarian'
 
 const tanggal = [
@@ -110,5 +110,22 @@ describe('agregatBrokerRows (#75)', () => {
     agregatBrokerRows([hari1, hari2])
     expect(hari1[0].nilai).toBe(100)
     expect(hari2[0].nilai).toBe(70)
+  })
+})
+
+describe('opsiRentangBaku (#209)', () => {
+  it('sepuluh opsi, urutan Johan, Semua di ujung', () => {
+    const o = opsiRentangBaku({ b1: 'bulan', y1: 'tahun' })
+    expect(o.map((x) => x.label)).toEqual(['1 Hari', '5 Hari', '2 Minggu', '1 Bulan', '3 Bulan', '6 Bulan', 'YTD', '1 Tahun', '2 Tahun', 'Semua'])
+  })
+  it('kunci yang dipetakan aktif dengan id halaman, sisanya nonaktif', () => {
+    const o = opsiRentangBaku({ b1: 'bulan', semua: 'max' })
+    expect(o.find((x) => x.label === '1 Bulan')).toMatchObject({ id: 'bulan' })
+    expect(o.find((x) => x.label === '1 Bulan')?.nonaktif).toBeUndefined()
+    expect(o.find((x) => x.label === '1 Hari')?.nonaktif).toBe(true)
+    expect(o.find((x) => x.label === 'Semua')).toMatchObject({ id: 'max' })
+  })
+  it('Semua nonaktif kalau halaman tak memetakannya', () => {
+    expect(opsiRentangBaku({ b1: 'b1' }).at(-1)?.nonaktif).toBe(true)
   })
 })

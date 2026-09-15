@@ -336,7 +336,7 @@ export function StatistikBerkala() {
         ))}
       </div>
         <div className="stb-nav">
-        <PemilihRentang opsi={opsiJenis} nilai={jenis} onGanti={setJenis} ariaLabel="Panjang periode" />
+        <PemilihRentang tampil="auto" opsi={opsiJenis} nilai={jenis} onGanti={setJenis} ariaLabel="Panjang periode" />
         {daftar && idx != null && isoTerpilih && (
           <div className="stb-langkah">
             {/* Panah <  > tidak ditulis lagi di sini: DatePicker sudah

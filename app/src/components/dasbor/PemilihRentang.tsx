@@ -38,7 +38,7 @@ export function PemilihRentang<T extends string>({
   onGanti,
   ariaLabel = 'Rentang waktu',
   className = '',
-  tampil = 'auto',
+  tampil = 'dropdown',
   placeholder,
 }: {
   /** `nonaktif` = pilihan TETAP TERLIHAT tapi tak bisa ditekan (pola sama
@@ -52,11 +52,13 @@ export function PemilihRentang<T extends string>({
   onGanti: (id: T) => void
   ariaLabel?: string
   className?: string
-  /** `auto` (bawaan): pil di layar lebar, dropdown di ponsel begitu
-   *  pilihannya lebih dari `AMBANG_PIL`. `pil`/`dropdown` memaksa satu
-   *  bentuk — dipakai kelompok yang memang selalu muat (kaki chart, lima
-   *  chip kecil Indeks Dunia) atau yang diminta selalu jadi menu (bilah
-   *  Arus Broker, supaya sebentuk dengan dropdown di sebelahnya). */
+  /** `dropdown` (bawaan sejak #209, Johan 15 Sep 2026: "sweep semua rentang
+   *  waktu itu pakai dropdown"). `pil` HANYA bila dua syarat terpenuhi:
+   *  seluruh pilihan muat tanpa terpotong di laptop 1536, DAN kendalinya
+   *  duduk di bilah yang sudah berisi pil lain (mis. kaki kanvas Grafik).
+   *  `auto` (pil di layar lebar, dropdown di ponsel bila lebih dari
+   *  `AMBANG_PIL`) disisakan untuk pemilih yang BUKAN rentang waktu — mode
+   *  tampilan, satuan, urutan, filter — yang tidak termasuk permintaan itu. */
   tampil?: 'auto' | 'pil' | 'dropdown'
   /** Teks tombol saat `nilai` kosong — hanya terpakai dalam bentuk dropdown. */
   placeholder?: string

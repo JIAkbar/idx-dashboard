@@ -146,7 +146,7 @@ export function Metodologi() {
         <div className="panel-h mtd-h">
           <span className="lbl">Glosarium ({GLOSARIUM.length})</span>
           <span className="mtd-alat">
-            <PemilihRentang opsi={OPSI_URUTAN} nilai={urutan} onGanti={setUrutan} ariaLabel="Urutkan glosarium" className="mtd-urutan" />
+            <PemilihRentang tampil="auto" opsi={OPSI_URUTAN} nilai={urutan} onGanti={setUrutan} ariaLabel="Urutkan glosarium" className="mtd-urutan" />
             <span className="af-cari">
               <input className="inp" type="search" value={cari} onChange={(e) => setCari(e.target.value)}
                 placeholder="Cari istilah…" aria-label="Cari glosarium" />

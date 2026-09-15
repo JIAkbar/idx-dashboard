@@ -4548,6 +4548,7 @@ export function GrafikEmiten() {
                   arti yang sama sekali berbeda. Labelnya yang membedakan. */}
               <span className="grf-kaki-lbl">AVG broker</span>
               <PemilihRentang
+                tampil="auto"
                 className="grf-kaki-sisi"
                 opsi={OPSI_SISI_AVG}
                 nilai={sisiAvg}
@@ -4599,6 +4600,7 @@ export function GrafikEmiten() {
                   onClick={() => { setReplay(null); setPutar(false) }} />
               </span>
               <PemilihRentang
+                tampil="auto"
                 className="grf-replay-cepat"
                 opsi={KECEPATAN_REPLAY}
                 nilai={kecepatan}

@@ -42,7 +42,7 @@ export function Nego({ hari }: NegoProps) {
         ) : (
           <>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 10 }}>
-              <PemilihRentang opsi={FILTER_OPSI} nilai={filter} onGanti={setFilter} ariaLabel="Filter pola nego vs reguler" />
+              <PemilihRentang tampil="auto" opsi={FILTER_OPSI} nilai={filter} onGanti={setFilter} ariaLabel="Filter pola nego vs reguler" />
               <span className="lbl">{nBerlawanan} dari {semuaBaris.length} baris berlawanan arah dengan reguler</span>
             </div>
             {baris.length === 0 ? (

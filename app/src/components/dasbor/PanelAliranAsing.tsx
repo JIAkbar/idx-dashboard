@@ -344,7 +344,7 @@ export function PanelAliranAsing({ ticker }: { ticker: string }) {
 
             {stockbit.mulai && (
               <div style={{ marginTop: 12, display: 'flex', justifyContent: 'flex-end' }}>
-                <PemilihRentang opsi={METRIK_OPSI} nilai={metrik} onGanti={setMetrik} ariaLabel="Satuan grafik kumulatif" />
+                <PemilihRentang tampil="auto" opsi={METRIK_OPSI} nilai={metrik} onGanti={setMetrik} ariaLabel="Satuan grafik kumulatif" />
               </div>
             )}
 

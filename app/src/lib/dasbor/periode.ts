@@ -74,7 +74,8 @@ export const LABEL_RENTANG = {
   w1: '1 Minggu',
   // w2 lahir di Inventory Neo (#359, disetujui Johan) — dieja di sini sejak
   // migrasi modul rentang bersama, bukan lagi hardcode '2 Pekan' di halaman.
-  w2: '2 Pekan',
+  // Dieja '2 Minggu' sejak #209 (Johan 15 Sep 2026: "1 hari, 5 hari, 2 minggu, ...").
+  w2: '2 Minggu',
   b1: '1 Bulan',
   // b2 lahir di Harian Papan (Johan 29 Agu 2026, "berarti ada 2 month dan
   // 3 month yaa") — dieja di sini sejak awal, bukan ditulis di halamannya.
@@ -117,6 +118,37 @@ export const LABEL_RENTANG = {
 } as const
 
 export type KunciRentang = keyof typeof LABEL_RENTANG
+
+/**
+ * Daftar rentang BAKU untuk seluruh pemilih rentang (#209, Johan 15 Sep 2026:
+ * "samakan semua mulai dari 1 hari, 5 hari, 2 minggu, 1 bulan, 3 bulan,
+ * 6 bulan, Year to Date, 1 tahun, 2 tahun" · "beri opsi ekstra Semua").
+ * Tiap pemilih menampilkan daftar yang SAMA; yang datanya tak cukup di halaman
+ * itu tampil nonaktif, bukan disembunyikan.
+ */
+export const RENTANG_BAKU = ['h1', 'h5', 'w2', 'b1', 'b3', 'b6', 'sejakJan', 'y1', 'y2'] as const
+export type KunciBaku = (typeof RENTANG_BAKU)[number]
+
+/**
+ * Susun opsi `PemilihRentang` dari daftar baku. `peta` memetakan kunci baku ke
+ * id yang dipakai halaman (id lama boleh dipertahankan supaya state tersimpan
+ * tak patah). Kunci yang tak dipetakan tetap tampil, nonaktif. "Semua" selalu
+ * ada di ujung dan hanya aktif kalau `peta.semua` diisi — halaman beriwayat
+ * lebih dari dua tahun.
+ */
+export function opsiRentangBaku<T extends string>(
+  peta: Partial<Record<KunciBaku | 'semua', T>>,
+  judul: Partial<Record<KunciBaku | 'semua', string>> = {},
+): Array<{ id: T; label: string; judul?: string; nonaktif?: boolean }> {
+  return ([...RENTANG_BAKU, 'semua'] as const).map((k) => {
+    const id = peta[k]
+    // Id pengganti untuk opsi nonaktif: tak pernah bisa dipilih, jadi tak
+    // pernah sampai ke state halaman.
+    return id
+      ? { id, label: LABEL_RENTANG[k], judul: judul[k] }
+      : { id: `__${k}` as T, label: LABEL_RENTANG[k], judul: judul[k] ?? 'Data halaman ini tidak cukup untuk rentang ini', nonaktif: true }
+  })
+}
 
 /**
  * URUTAN kanonis pil rentang — pendek ke panjang (#70).
