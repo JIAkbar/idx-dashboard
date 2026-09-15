@@ -207,6 +207,20 @@ def main() -> int:
         print("tak ada ds_*.json"); return 1
     pasar = baca(ds[-1]) or {}
     tanggal = pasar.get("date_iso")
+    # Acuan = tanggal terakhir yang dimiliki KEDUA sumber (#203). Statistik
+    # harian bisa lebih maju daripada `asing/` (ringkasan asing belum terbit
+    # saat panen) atau tertinggal (PDF resmi terbit besok). Memakai yang lebih
+    # maju menyaring semua emiten dan berkasnya tak pernah segar. BBCA
+    # diperdagangkan tiap hari bursa, jadi hari terakhirnya = hari terakhir `asing/`.
+    tgl_asing = ((baca(ASING / "BBCA.json") or {}).get("d") or [[None]])[-1][0]
+    if tanggal and tgl_asing and tgl_asing < tanggal:
+        for p in reversed(ds):
+            q = baca(p) or {}
+            if (q.get("date_iso") or "9") <= tgl_asing:
+                pasar = q
+                break
+        tanggal = pasar.get("date_iso")
+    print(f"  acuan {tanggal} (statistik harian terbaru {ds[-1].stem}, asing {tgl_asing})")
     nilai_pasar = pasar.get("val_idr_today")  # miliar rupiah
     bidoffer = baca(JSON / "bidoffer.json") or {}
     bo_tgl, bo_d = bidoffer.get("tanggal"), bidoffer.get("d") or {}
@@ -219,9 +233,13 @@ def main() -> int:
             continue
         baris = a["d"]
         # ruas: tanggal, beli(asing), jual(asing), volume, value, frekuensi
-        akhir = baris[-1]
-        if akhir[0] != tanggal:
+        # Baris tanggal acuan: biasanya yang terakhir, atau beberapa sebelumnya
+        # kalau `asing/` lebih maju daripada statistik harian.
+        i = next((j for j in range(len(baris) - 1, max(-1, len(baris) - 6), -1)
+                  if baris[j][0] == tanggal), None)
+        if i is None:
             continue  # emiten tak bertransaksi hari itu / berkas tertinggal
+        akhir = baris[i]
         vol, val, frek = akhir[3] or 0, akhir[4] or 0, akhir[5] or 0
         if not vol or not frek:
             continue
@@ -233,7 +251,7 @@ def main() -> int:
         # BBCA 42 lot/transaksi dan saham gocap 8 lot/transaksi tak bisa
         # diadu langsung; yang bermakna adalah "hari ini vs biasanya".
         lot_per_tx = vol / frek / 100
-        riwayat = [(b[3] / b[5] / 100) for b in baris[-(JENDELA + 1):-1]
+        riwayat = [(b[3] / b[5] / 100) for b in baris[max(0, i - JENDELA):i]
                    if b[3] and b[5]]
         med_l, mad_l = median_mad(riwayat)
         z_lot = z_rob(lot_per_tx, med_l, mad_l)
@@ -266,7 +284,7 @@ def main() -> int:
             akd = (hh.get("ringkas") or {}).get("accdist")
             if brokers:
                 fase = fase_broker(brokers)
-                key = key_account(kode, sorted(hari.keys()), hari)
+                key = key_account(kode, sorted(t for t in hari if t <= tanggal), hari)
                 o = baca(OHLC / f"{kode}.json") or {}
                 close = None
                 for bar in reversed(o.get("d") or []):
