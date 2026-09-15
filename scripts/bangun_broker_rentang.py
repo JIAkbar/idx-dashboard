@@ -35,23 +35,20 @@ import io
 import json
 import sys
 from collections import defaultdict
-from datetime import date, timedelta
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from jendela_baku import jendela  # noqa: E402
 
 AKAR = Path(__file__).resolve().parents[1]
 SUMBER = AKAR / 'data-idx' / 'json' / 'broker'
 KELUAR = AKAR / 'data-idx' / 'json' / 'broker_rentang'
 
-# Kunci preset PERSIS `PresetRentang` di `app/src/lib/dasbor/periode.ts`, dan
-# jumlah harinya persis `HARI_PRESET` — dua tempat yang harus sepakat, jadi
-# angkanya ditulis dengan rujukan, bukan ditebak ulang.
-PRESET: dict[str, int | None] = {
-    'h5': 5,      # 5 Hari  — hari BURSA, bukan kalender (lihat `ambil`)
-    'w1': 7,
-    'b1': 30,
-    'b3': 91,
-    'ytd': None,  # sejak 1 Januari tahun berjalan
-}
+# Kunci baku J20 (`RENTANG_BAKU` di `app/src/lib/dasbor/periode.ts`, cermin
+# Python `jendela_baku.py`) tanpa `h1` (mode hari di halaman membaca rekap
+# harian), ditambah `semua` (#211 A). Satu definisi: jendela = hari berdata
+# sesudah pembanding, pembanding tak ikut dijumlah.
+PRESET = ('w1', 'w2', 'b1', 'b3', 'b6', 'sejakJan', 'y1', 'y2', 'semua')
 
 
 def berkas_harian() -> list[tuple[str, Path]]:
@@ -65,24 +62,15 @@ def berkas_harian() -> list[tuple[str, Path]]:
     return sorted(keluar)
 
 
-def ambil(semua: list[tuple[str, Path]], preset: str) -> list[tuple[str, Path]]:
-    """Potong daftar hari bursa untuk satu preset.
-
-    `h5` dihitung sebagai lima hari BURSA terakhir — bukan lima hari kalender.
-    Sisanya dihitung mundur dari tanggal terakhir yang berdata, jadi akhir
-    pekan dan libur bursa tak diam-diam memendekkan rentangnya.
-    """
+def ambil(semua: list[tuple[str, Path]], preset: str) -> tuple[list[tuple[str, Path]], str | None]:
+    """Hari di jendela J20 + tanggal pembanding. Daftar kosong = data tak cukup."""
     if not semua:
-        return []
-    akhir = date.fromisoformat(semua[-1][0])
-    n = PRESET[preset]
-    if preset == 'h5':
-        return semua[-5:]
-    if n is None:
-        mulai = date(akhir.year, 1, 1)
-    else:
-        mulai = akhir - timedelta(days=n - 1)
-    return [(t, p) for t, p in semua if date.fromisoformat(t) >= mulai]
+        return [], None
+    tanggal = [t for t, _ in semua]
+    j = jendela(tanggal, tanggal[-1], preset)
+    if not j:
+        return [], None
+    return [(t, p) for t, p in semua if t >= j['mulai']], j['pembanding']
 
 
 def rollup(hari: list[tuple[str, Path]]) -> dict:
@@ -152,9 +140,14 @@ def main() -> int:
     if a.tulis:
         KELUAR.mkdir(parents=True, exist_ok=True)
     for preset in PRESET:
-        hasil = rollup(ambil(semua, preset))
+        hari, pembanding = ambil(semua, preset)
+        if not hari:
+            print(f'  {preset:<8} data tidak cukup, tidak ditulis')
+            continue
+        hasil = rollup(hari)
+        hasil['pembanding'] = pembanding
         teratas = hasil['broker_val'][0] if hasil['broker_val'] else None
-        print(f"  {preset:<4} {hasil['n_hari']:>3} hari  {hasil['mulai']} .. {hasil['akhir']}"
+        print(f"  {preset:<8} {hasil['n_hari']:>3} hari  {hasil['mulai']} .. {hasil['akhir']}"
               f"  teratas(nilai) {teratas['cd'] if teratas else '-'}")
         if a.tulis:
             (KELUAR / f'{preset}.json').write_text(

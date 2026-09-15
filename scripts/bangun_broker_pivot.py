@@ -44,75 +44,42 @@ import io
 import json
 import sys
 from collections import defaultdict
-from datetime import date, timedelta
+from datetime import date
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from jendela_baku import jendela  # noqa: E402
 
 AKAR = Path(__file__).resolve().parents[1]
 SUMBER = AKAR / 'data-idx' / 'json' / 'broker_tahunan'
 KELUAR = AKAR / 'data-idx' / 'json' / 'broker_pivot'
 
-# Panjang tiap preset dalam HARI KALENDER, kecuali yang disebut di dua
-# himpunan di bawah. Kunci dan panjangnya sama dengan pemilih rentang di
-# aplikasi (`lib/dasbor/periode.ts`) supaya dua halaman berdampingan tak
-# diam-diam memakai definisi "1 Bulan" yang berbeda.
-#
-# Sembilan, bukan tiga (#119 3A). Tiga yang lama bukan batas data — arsip
-# broker mulai 2016-01-04 — melainkan daftar yang dikunci tangan di tiga
-# tempat sekaligus (skrip ini, tipe TS, halaman) dengan komentar yang
-# mengklaim menyamai berkas lain yang ternyata punya daftar berbeda.
-PRESET: dict[str, int] = {
-    'hariini': 1,   # ditangani PRESET_HARI_BURSA di bawah
-    'h5': 5,        # hari BURSA
-    'w1': 7,        # hari kalender
-    'b1': 30,
-    'b3': 91,
-    'b6': 182,
-    'mtd': 0,       # ditangani PRESET_TANGGAL — panjangnya tak tetap
-    'ytd': 0,
-    'y1': 365,
-}
-# `hariini` dan `h5` dihitung dari hari BURSA (satu dan lima hari berdata
-# terakhir), bukan dari kalender: lima hari kalender yang melintasi akhir
-# pekan cuma memuat tiga hari perdagangan.
-PRESET_HARI_BURSA = {'hariini', 'h5'}
-# `mtd` dan `ytd` berpangkal pada TANGGAL (tanggal 1 bulan / tahun berjalan),
-# jadi panjangnya berubah tiap hari dan tak bisa ditulis sebagai jumlah hari.
-# Memberi mereka angka tetap berarti mengarang panjang yang salah tiap
-# tanggal — aturan yang sama dipakai pemilih rentang di aplikasi.
-PRESET_TANGGAL = {'mtd', 'ytd'}
+# Kunci baku J20 (`RENTANG_BAKU` di `app/src/lib/dasbor/periode.ts`, cermin
+# Python `jendela_baku.py`), satu definisi dengan pemilih rentang lain (#211 A).
+# Tanpa `semua`: pivot seluruh arsip 2016-2026 berarti membaca seluruh gudang
+# tahunan tiap sore hanya untuk satu opsi.
+PRESET = ('h1', 'w1', 'w2', 'b1', 'b3', 'b6', 'sejakJan', 'y1', 'y2')
 
 TOP_N = 20
 
 
-def tahun_perlu(akhir: date, mundur_hari: int) -> set[int]:
-    return {akhir.year, (akhir - timedelta(days=mundur_hari)).year}
-
-
-def hari_bursa_terakhir() -> tuple[date, list[str]]:
-    """Tanggal bursa terakhir + seluruh tanggal yang ada, dari satu emiten
-    paling likuid. BBCA diperdagangkan tiap hari bursa, jadi daftarnya setara
-    kalender bursa — dan membacanya dari SATU berkas jauh lebih murah daripada
-    menyatukan 963 berkas hanya untuk tahu tanggalnya."""
-    p = SUMBER / 'BBCA' / f'{date.today().year}.json'
-    if not p.exists():
-        raise SystemExit(f'acuan kalender tak ada: {p}')
-    d = json.loads(io.open(p, encoding='utf-8').read())
-    tgl = sorted(d.get('hari', {}))
+def kalender_bursa() -> list[str]:
+    """Tanggal bursa dari SATU emiten paling likuid, tiga tahun terakhir (cukup
+    untuk pembanding 2 Tahun). BBCA diperdagangkan tiap hari bursa, jadi
+    daftarnya setara kalender bursa, dan membacanya dari satu emiten jauh lebih
+    murah daripada menyatukan 963 berkas hanya untuk tahu tanggalnya."""
+    kini = date.today().year
+    acuan = SUMBER / 'BBCA' / f'{kini}.json'
+    if not acuan.exists():
+        raise SystemExit(f'acuan kalender tak ada: {acuan}')
+    tgl: list[str] = []
+    for t in range(kini - 2, kini + 1):
+        p = SUMBER / 'BBCA' / f'{t}.json'
+        if p.exists():
+            tgl += json.loads(io.open(p, encoding='utf-8').read()).get('hari', {}).keys()
     if not tgl:
         raise SystemExit('acuan kalender kosong')
-    return date.fromisoformat(tgl[-1]), tgl
-
-
-def batas(preset: str, akhir: date, kalender: list[str]) -> str:
-    """Tanggal ISO paling awal yang masih ikut, inklusif."""
-    if preset in PRESET_HARI_BURSA:
-        n = PRESET[preset]
-        return kalender[-n] if len(kalender) >= n else kalender[0]
-    if preset == 'mtd':
-        return akhir.replace(day=1).isoformat()
-    if preset == 'ytd':
-        return akhir.replace(month=1, day=1).isoformat()
-    return (akhir - timedelta(days=PRESET[preset])).isoformat()
+    return sorted(tgl)
 
 
 def daftar_emiten(batas_jumlah: int | None) -> list[str]:
@@ -139,10 +106,10 @@ def kumpul(emiten: list[str], tahun: set[int], mulai: dict[str, str]):
     """
     # preset -> broker -> emiten -> [beli_lot, beli_nilai, jual_lot, jual_nilai, n_hari]
     agg: dict[str, dict[str, dict[str, list[float]]]] = {
-        k: defaultdict(lambda: defaultdict(lambda: [0.0, 0.0, 0.0, 0.0, 0.0])) for k in PRESET
+        k: defaultdict(lambda: defaultdict(lambda: [0.0, 0.0, 0.0, 0.0, 0.0])) for k in mulai
     }
     # preset -> emiten -> total nilai transaksi emiten (penyebut pangsa)
-    total: dict[str, dict[str, float]] = {k: defaultdict(float) for k in PRESET}
+    total: dict[str, dict[str, float]] = {k: defaultdict(float) for k in mulai}
     dilewati: list[str] = []
 
     for i, kode in enumerate(emiten, 1):
@@ -215,26 +182,12 @@ def uji_bawaan() -> int:
     """
     kal = ['2026-08-25', '2026-08-26', '2026-08-27', '2026-08-28',
            '2026-08-31', '2026-09-01', '2026-09-02', '2026-09-03', '2026-09-04']
-    akhir = date(2026, 9, 4)
-    # h5 memotong HARI BURSA: lima bar terakhir, bukan lima hari kalender
-    # (yang akan jatuh ke 30 Agustus, seberang akhir pekan).
-    assert batas('h5', akhir, kal) == '2026-08-31', batas('h5', akhir, kal)
-    assert batas('b1', akhir, kal) == '2026-08-05'
-    assert batas('b3', akhir, kal) == '2026-06-05'
-    # Kalender lebih pendek daripada jendela: ambil yang paling awal,
-    # jangan melampaui ujung larik dan diam-diam memotong dari belakang.
-    assert batas('h5', akhir, kal[:3]) == kal[0]
-    # Preset yang ditambahkan #119 3A. `hariini` = SATU hari bursa terakhir
-    # (rentang satu hari, bukan nol); `mtd`/`ytd` berpangkal tanggal, jadi
-    # panjangnya berubah tiap hari dan tak boleh dihitung mundur berhari.
-    assert batas('hariini', akhir, kal) == '2026-09-04'
-    assert batas('mtd', akhir, kal) == '2026-09-01'
-    assert batas('ytd', akhir, kal) == '2026-01-01'
-    assert batas('w1', akhir, kal) == '2026-08-28'
-    assert batas('b6', akhir, kal) == '2026-03-06'
-    assert batas('y1', akhir, kal) == '2025-09-04'
-    # MTD di tanggal 1 = satu hari, bukan mundur ke bulan lalu.
-    assert batas('mtd', date(2026, 9, 1), kal) == '2026-09-01'
+    # Definisi periode = `jendela_baku` (J20, diuji di sana). Yang diuji di
+    # sini: pivot memakai `mulai` (hari SESUDAH pembanding), bukan pembanding,
+    # dan kalender yang terlalu pendek memberi None, bukan jendela terpotong.
+    assert jendela(kal, '2026-09-04', 'h1')['mulai'] == '2026-09-04'
+    assert jendela(kal, '2026-09-04', 'w1')['mulai'] == '2026-08-31'
+    assert jendela(kal, '2026-09-04', 'b1') is None
 
     agg = {
         'b1': {'XL': {
@@ -273,15 +226,19 @@ def main() -> int:
     if a.uji_bawaan:
         return uji_bawaan()
 
-    akhir, kalender = hari_bursa_terakhir()
-    mulai = {k: batas(k, akhir, kalender) for k in PRESET}
-    tahun = set()
+    kalender = kalender_bursa()
+    akhir = kalender[-1]
+    mulai: dict[str, str] = {}
     for k in PRESET:
-        # Preset ber-pangkal-tanggal butuh tahun berjalan saja untuk `mtd`,
-        # dan tahun berjalan untuk `ytd` — keduanya tak pernah melintasi
-        # tahun ke belakang, jadi 0 hari mundur sudah benar di sini.
-        mundur = 14 if k in PRESET_HARI_BURSA else PRESET[k]
-        tahun |= tahun_perlu(akhir, mundur)
+        j = jendela(kalender, akhir, k)
+        if j:
+            mulai[k] = j['mulai']
+        else:
+            print(f'  {k}: kalender tak cukup, tidak ditulis')
+    if not mulai:
+        print('kalender tak cukup untuk preset mana pun, tidak menulis apa pun')
+        return 1
+    tahun = set(range(int(min(mulai.values())[:4]), int(akhir[:4]) + 1))
 
     emiten = daftar_emiten(a.emiten)
     print(f'akhir {akhir} · tahun {sorted(tahun)} · {len(emiten)} emiten')
@@ -290,7 +247,7 @@ def main() -> int:
 
     agg, total, dilewati = kumpul(emiten, tahun, mulai)
 
-    broker = sorted({b for k in PRESET for b in agg[k]})
+    broker = sorted({b for k in mulai for b in agg[k]})
     print(f'{len(broker)} broker · {len(dilewati)} emiten/tahun dilewati')
     if not broker:
         print('tak ada broker terkumpul — tidak menulis apa pun')
@@ -308,18 +265,18 @@ def main() -> int:
     for b in broker:
         isi = {
             'broker': b,
-            'akhir': akhir.isoformat(),
+            'akhir': akhir,
             'dibangun': date.today().isoformat(),
             # Disebut apa adanya supaya halaman bisa mengutipnya: daftar broker
             # harian per emiten dipotong 50 teratas tiap sisi oleh sumbernya.
             'terpotong': 50,
-            'periode': {k: {'mulai': mulai[k], 'akhir': akhir.isoformat()} for k in PRESET},
-            'data': {k: susun(agg, total, k, b) for k in PRESET},
+            'periode': {k: {'mulai': mulai[k], 'akhir': akhir} for k in mulai},
+            'data': {k: susun(agg, total, k, b) for k in mulai},
         }
         io.open(KELUAR / f'{b}.json', 'w', encoding='utf-8').write(
             json.dumps(isi, ensure_ascii=False, separators=(',', ':')))
     io.open(KELUAR / 'index.json', 'w', encoding='utf-8').write(
-        json.dumps({'akhir': akhir.isoformat(), 'broker': broker}, ensure_ascii=False))
+        json.dumps({'akhir': akhir, 'broker': broker}, ensure_ascii=False))
     print(f'ditulis {len(broker)} berkas + index ke {KELUAR}')
     return 0
 

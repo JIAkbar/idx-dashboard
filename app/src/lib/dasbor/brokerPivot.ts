@@ -22,9 +22,8 @@ import { useEffect, useState } from 'react'
 import { urlData } from './baseData'
 
 /** Kunci preset — sama persis dengan yang ditulis skrip pembangunnya.
- *  Sembilan sejak #119 3A; tiga yang lama bukan batas data melainkan daftar
- *  yang dikunci tangan di tiga tempat sekaligus. */
-export type PresetPivot = 'hariini' | 'h5' | 'w1' | 'b1' | 'b3' | 'b6' | 'mtd' | 'ytd' | 'y1'
+ *  Sembilan kunci baku J20 sejak #211 A (dulu hariini/h5/mtd/ytd berdefinisi lama). */
+export type PresetPivot = 'h1' | 'w1' | 'w2' | 'b1' | 'b3' | 'b6' | 'sejakJan' | 'y1' | 'y2'
 
 export interface BarisPivot {
   kode: string
@@ -57,8 +56,8 @@ export interface BrokerPivot {
   akhir: string
   dibangun: string
   terpotong: number
-  periode: Record<PresetPivot, { mulai: string; akhir: string }>
-  data: Record<PresetPivot, SisiPivot>
+  periode: Partial<Record<PresetPivot, { mulai: string; akhir: string }>>
+  data: Partial<Record<PresetPivot, SisiPivot>>
 }
 
 const cache = new Map<string, Promise<BrokerPivot | null>>()

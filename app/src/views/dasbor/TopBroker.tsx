@@ -172,11 +172,11 @@ export function TopBroker() {
             // dipetakan ke "1 Hari" (Johan 15 Sep 2026: "Hari Ini" dieja
             // "1 Hari"), lewat id lokal `'hari'` — bukan `PresetBroker`,
             // supaya state `null` (bukan salah satu rollup) tetap terpisah.
-            // `h5` DIBUANG dari daftar baku (bersama MTD/WTD/3-5-10-20 Tahun)
-            // walau rollupnya masih dipanen; `b6`/`y1`/`y2`/`w2`/"Semua" tak
-            // punya rollup sama sekali — keduanya tampil nonaktif.
+            // Sejak #211 A rollupnya ditulis untuk semua kunci baku ditambah
+            // "Semua", satu definisi J20 (`scripts/jendela_baku.py`).
             opsi={opsiRentangBaku<PresetBroker | 'hari'>({
-              h1: 'hari', w1: 'w1', b1: 'b1', b3: 'b3', sejakJan: 'ytd',
+              h1: 'hari', w1: 'w1', w2: 'w2', b1: 'b1', b3: 'b3', b6: 'b6',
+              sejakJan: 'sejakJan', y1: 'y1', y2: 'y2', semua: 'semua',
             }, { h1: 'Rekap satu hari bursa' })}
           />
         </div>

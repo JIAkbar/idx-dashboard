@@ -54,16 +54,15 @@ function miliar(v: number): string {
 
 /**
  * Daftar baku (#209 tahap 2) — tapi datanya PRA-DIHITUNG skrip Python
- * (`bangun_broker_pivot.py`, di luar cakupan sunting ini) per bucket TETAP,
+ * (`bangun_broker_pivot.py`) per bucket TETAP,
  * jadi rentangnya tak bisa dihitung ulang di peramban seperti pemilih lain.
- * Hanya kunci baku yang punya rollup di `PresetPivot` yang dipetakan;
- * `h5` dan `mtd` DIBUANG (Johan 15 Sep 2026), dan `w2`/`y2`/"Semua" tak
- * dipetakan karena skripnya tak menghasilkan bucket itu — keduanya tampil
- * nonaktif, bukan disembunyikan.
+ * Sejak #211 A skripnya menulis sembilan kunci baku dengan definisi J20
+ * (`scripts/jendela_baku.py`). "Semua" tak dipetakan: pivot seluruh arsip
+ * 2016-2026 berarti membaca seluruh gudang tahunan tiap sore; tampil nonaktif.
  */
 const PRESET = opsiRentangBaku<PresetPivot>({
-  h1: 'hariini', w1: 'w1', b1: 'b1', b3: 'b3', b6: 'b6', sejakJan: 'ytd', y1: 'y1',
-})
+  h1: 'h1', w1: 'w1', w2: 'w2', b1: 'b1', b3: 'b3', b6: 'b6', sejakJan: 'sejakJan', y1: 'y1', y2: 'y2',
+}, { semua: 'Belum dihitung: seluruh arsip sejak 2016 terlalu berat untuk panen harian' })
 
 function Tabel({ baris, sisi }: { baris: BarisPivot[]; sisi: 'beli' | 'jual' }) {
   if (baris.length === 0) {

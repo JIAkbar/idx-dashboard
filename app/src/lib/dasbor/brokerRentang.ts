@@ -25,12 +25,15 @@ import { useEffect, useState } from 'react'
 import type { BrokerRankRow } from './dataHarian'
 import { urlData } from './baseData'
 
-/** Kunci preset = `PresetRentang` di `periode.ts`; berkasnya bernama sama. */
-export type PresetBroker = 'h5' | 'w1' | 'b1' | 'b3' | 'ytd'
+/** Kunci baku J20 (`RENTANG_BAKU` di `periode.ts`) tanpa `h1` (mode hari
+ *  membaca rekap harian), ditambah `semua`; berkasnya bernama sama (#211 A). */
+export type PresetBroker = 'w1' | 'w2' | 'b1' | 'b3' | 'b6' | 'sejakJan' | 'y1' | 'y2' | 'semua'
 
 export interface BrokerRentang {
   mulai: string | null
   akhir: string | null
+  /** Hari berdata sebelum jendela (J20); tak dijumlah. Berkas lama tak memuatnya. */
+  pembanding?: string | null
   n_hari: number
   hari: string[]
   n_broker: number
