@@ -8,8 +8,7 @@ import {
   type BarisStalkerV2, type HariStalkerV2, type InvestorStalker,
 } from '../../../lib/dasbor/neoPapan'
 import { DropdownMulti, type OpsiMulti } from '../../../components/dasbor/DropdownMulti'
-import { LABEL_RENTANG } from '../../../lib/dasbor/periode'
-import { HARI_BURSA } from '../../../lib/dasbor/rentang'
+import { LABEL_RENTANG, batasKalenderBaku, type KunciBaku } from '../../../lib/dasbor/periode'
 import { PemilihRentang } from '../../../components/dasbor/PemilihRentang'
 import { namaBroker, warnaBroker } from '../../../lib/dasbor/kelompokBroker'
 import { useRingkasKartu } from '../../../lib/dasbor/kartuRingkas'
@@ -40,10 +39,10 @@ const INFO_STALKER: ItemInfoIndikator[] = [
  *   otomatis, dan judul tabel selalu menampilkan rentang SEBENARNYA.
  */
 
-/** Keluarga hari-granular (1-20 hari, khas stalking harian) + kosakata baku
- *  modul rentang (spek konsistensi §2): '60 hari'→b3, '1 tahun'→y1, dan
- *  preset panjang y3/y5/y10 menyusul arsip broker 2016-2026. Label rentang
- *  baku dieja LABEL_RENTANG (#170), bukan di sini. */
+/** Keluarga hari-granular (1-20 hari, khas stalking harian) + preset panjang
+ *  dari daftar baku (#210 B, 16 Sep 2026): 3 Bulan, 6 Bulan, YTD, 1 Tahun,
+ *  2 Tahun, Semua, dihitung J20 (`batasKalenderBaku`), bukan hari bursa.
+ *  Label rentang baku dieja LABEL_RENTANG (#170), bukan di sini. */
 const PRESET_JENDELA = [
   // Kata untuk hari ini milik kamus, bukan halaman: dieja 'Hari ini' di sini
   // sementara sembilan pemilih lain menulis 'Hari Ini' (#120 4C).
@@ -54,15 +53,19 @@ const PRESET_JENDELA = [
   { id: '10', label: '10 hari' },
   { id: '20', label: '20 hari' },
   { id: 'b3', label: LABEL_RENTANG.b3 },
+  { id: 'b6', label: LABEL_RENTANG.b6 },
   { id: 'ytd', label: LABEL_RENTANG.sejakJan },
   { id: 'y1', label: LABEL_RENTANG.y1 },
-  { id: 'y3', label: LABEL_RENTANG.y3 },
-  { id: 'y5', label: LABEL_RENTANG.y5 },
-  { id: 'y10', label: LABEL_RENTANG.y10 },
+  { id: 'y2', label: LABEL_RENTANG.y2 },
+  { id: 'semua', label: LABEL_RENTANG.semua },
 ] as const
 type IdJendela = (typeof PRESET_JENDELA)[number]['id']
-/** Preset kosakata baku yang jendelanya dihitung hari BURSA via HARI_BURSA. */
-const JENDELA_BAKU = new Set(['b3', 'y1', 'y3', 'y5', 'y10'])
+/** Preset panjang ke kunci baku; jendelanya dari gudang tahunan. */
+const JENDELA_BAKU: Partial<Record<IdJendela, KunciBaku | 'semua'>> = {
+  b3: 'b3', b6: 'b6', ytd: 'sejakJan', y1: 'y1', y2: 'y2', semua: 'semua',
+}
+/** Hari pertama arsip broker (lantai sumber). */
+const ARSIP_AWAL = '2016-01-04'
 
 const BARIS_PER_HAL = 25
 const SPARK_N = 12
@@ -140,20 +143,21 @@ export function StalkerTab() {
   }, [peta20])
   const hariAkhir = kalender20[kalender20.length - 1] ?? ''
 
-  const butuhTahunan = investor !== 'all' || JENDELA_BAKU.has(jendelaId) || jendelaId === 'ytd'
+  const kunciBaku = JENDELA_BAKU[jendelaId]
+  // Batas J20 dari hari terakhir broker harian; hari berdata SESUDAH batas masuk jendela.
+  const batasBaku = kunciBaku && hariAkhir ? batasKalenderBaku(hariAkhir, kunciBaku) : null
+  const butuhTahunan = investor !== 'all' || kunciBaku != null
 
   /** Rentang tanggal jalur tahunan (kalender, sebelum diiris jadi hari bursa). */
   const rentangTahunan = useMemo(() => {
     if (!hariAkhir) return null
-    if (jendelaId === 'ytd') return { dari: `${hariAkhir.slice(0, 4)}-01-01`, sampai: hariAkhir }
-    // Hari bursa → hari kalender: ×1.45 + slack (akhir pekan + libur bursa).
-    const nHari = JENDELA_BAKU.has(jendelaId)
-      ? Math.ceil(HARI_BURSA[jendelaId as 'b3' | 'y1' | 'y3' | 'y5' | 'y10'] * 1.45) + 8
-      : Math.ceil(Number(jendelaId) * 1.7) + 4
+    if (kunciBaku) return { dari: batasBaku ?? ARSIP_AWAL, sampai: hariAkhir }
+    // Hari bursa → hari kalender: ×1.7 + slack (akhir pekan + libur bursa).
+    const nHari = Math.ceil(Number(jendelaId) * 1.7) + 4
     const d = new Date(`${hariAkhir}T00:00:00Z`)
     d.setUTCDate(d.getUTCDate() - nHari)
     return { dari: d.toISOString().slice(0, 10), sampai: hariAkhir }
-  }, [jendelaId, hariAkhir])
+  }, [jendelaId, hariAkhir, kunciBaku, batasBaku])
 
   const kunciTahunan = rentangTahunan ? `${rentangTahunan.dari}~${rentangTahunan.sampai}` : ''
   const tahunTersentuh = rentangTahunan
@@ -186,10 +190,10 @@ export function StalkerTab() {
     const set = new Set<string>()
     for (const e of tahunan.peta.values()) for (const t of Object.keys(e.hari)) set.add(t)
     let jendela = [...set].sort()
-    if (JENDELA_BAKU.has(jendelaId)) jendela = jendela.slice(-HARI_BURSA[jendelaId as 'b3' | 'y1' | 'y3' | 'y5' | 'y10'])
-    else if (jendelaId !== 'ytd') jendela = jendela.slice(-Number(jendelaId))
+    if (kunciBaku) jendela = jendela.filter((t) => (batasBaku == null || t > batasBaku) && t <= hariAkhir)
+    else jendela = jendela.slice(-Number(jendelaId))
     return stalkerAgregasiV2(tahunan.peta, dipilih, jendela, investor)
-  }, [peta20, tahunan, kunciTahunan, dipilih, jendelaId, investor, butuhTahunan, kalender20])
+  }, [peta20, tahunan, kunciTahunan, dipilih, jendelaId, investor, butuhTahunan, kalender20, kunciBaku, batasBaku, hariAkhir])
 
   // reset halaman tiap parameter/saringan/urutan berubah
   useEffect(() => { setHalBuy(1); setHalSell(1) },
@@ -387,7 +391,7 @@ export function StalkerTab() {
               untuk {totalEmiten ?? '…'} emiten, sekali per rentang per sesi.
               <br />
               <button type="button" className="btn-p" style={{ marginTop: 10 }} onClick={muatTahunan}>
-                Muat data {jendelaId === 'ytd' ? LABEL_RENTANG.sejakJan : JENDELA_BAKU.has(jendelaId) ? PRESET_JENDELA.find((o) => o.id === jendelaId)?.label : `${jendelaId} hari`}
+                Muat data {kunciBaku ? PRESET_JENDELA.find((o) => o.id === jendelaId)?.label : `${jendelaId} hari`}
                 {investor !== 'all' ? ` · investor ${investor}` : ''}
               </button>
             </>

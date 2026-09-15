@@ -168,18 +168,23 @@ export function jendelaBaku(tanggal: readonly string[], akhir: string, kunci: Ku
   if (iAkhir < 0) return null
   const akhirEf = tanggal[iAkhir]
   if (kunci === 'semua') return { pembanding: null, mulai: tanggal[0], akhir: akhirEf }
-  let batas: string
-  if (kunci === 'h1') {
-    batas = geserHari(akhirEf, -1)
-  } else if (kunci === 'sejakJan') {
-    batas = `${Number(akhirEf.slice(0, 4)) - 1}-12-31`
-  } else {
-    batas = geserHari(akhirEf, -HARI_KALENDER_BAKU[kunci])
-  }
+  const batas = batasKalenderBaku(akhirEf, kunci) as string
   let iPemb = -1
   for (let i = iAkhir - 1; i >= 0; i--) if (tanggal[i] <= batas) { iPemb = i; break }
   if (iPemb < 0) return null
   return { pembanding: tanggal[iPemb], mulai: tanggal[iPemb + 1], akhir: akhirEf }
+}
+
+/**
+ * Batas kalender J20: hari berdata SESUDAH tanggal ini masuk jendela; null =
+ * Semua. Dipakai `jendelaBaku` dan pemakai yang memuat data sebelum kalendernya
+ * diketahui (Broker Stalker, #210). Cermin Python: `scripts/jendela_baku.py`.
+ */
+export function batasKalenderBaku(akhir: string, kunci: KunciBaku | 'semua'): string | null {
+  if (kunci === 'semua') return null
+  if (kunci === 'h1') return geserHari(akhir, -1)
+  if (kunci === 'sejakJan') return `${Number(akhir.slice(0, 4)) - 1}-12-31`
+  return geserHari(akhir, -HARI_KALENDER_BAKU[kunci])
 }
 
 function geserHari(iso: string, hari: number): string {
