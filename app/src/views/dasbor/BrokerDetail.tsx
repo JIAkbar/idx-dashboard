@@ -164,7 +164,7 @@ export function BrokerDetail() {
             Rinciannya dibangun dari arsip transaksi per emiten. Broker yang belum pernah
             muncul di arsip itu — atau yang rollupnya belum dijalankan — belum punya halaman isi.
           </p>
-          <p><Link to="/broker" className="kd-tautan">← Kembali ke Top Broker</Link></p>
+          <p><Link to="/broker" className="kd-tautan">← Kembali ke Broker Pasar</Link></p>
         </div>
       </div>
     )

@@ -12,7 +12,9 @@ import './Metodologi.css'
  *  yang belum/tidak terdaftar di menu (mis. berubah nanti) tetap tertaut,
  *  cuma labelnya jatuh ke rute mentah. */
 function labelRute(path: string): string {
-  return MENU_ITEMS.find((m) => m.path === path)?.label ?? path
+  // Rute boleh membawa ?bagian=… (Broker Pasar); labelnya milik halamannya.
+  const rute = path.split('?')[0]
+  return MENU_ITEMS.find((m) => m.path === rute)?.label ?? path
 }
 
 /**

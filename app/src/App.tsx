@@ -10,7 +10,7 @@ import { PemuatHalaman } from './components/dasbor/PemuatHalaman'
 import { Beranda } from './views/dasbor/Beranda'
 import { IndeksDunia } from './views/dasbor/IndeksDunia'
 import { TopStocks } from './views/dasbor/TopStocks'
-import { TopBroker } from './views/dasbor/TopBroker'
+import { BrokerPasar } from './views/dasbor/BrokerPasar'
 import { BrokerDetail } from './views/dasbor/BrokerDetail'
 import { SektorIndeks } from './views/dasbor/SektorIndeks'
 import { KalkulatorJia } from './views/dasbor/KalkulatorJia'
@@ -25,7 +25,6 @@ import './App.css'
 // Broker Summary/Stock Detail (Chart.js), Radar, Bulletin, dan seluruh
 // area /admin/* dipindah ke sini.
 const ChartIndeks = lazy(() => import('./views/dasbor/ChartIndeks').then((m) => ({ default: m.ChartIndeks })))
-const BrokerSummary = lazy(() => import('./views/dasbor/BrokerSummary').then((m) => ({ default: m.BrokerSummary })))
 // Broker Summary v2 (22 Agu 2026) — arus broker PER EMITEN, berkas terpisah
 // dari BrokerSummary lama (broker level pasar) yang sengaja tidak disentuh.
 const BrokerSummaryV2 = lazy(() => import('./views/dasbor/BrokerSummaryV2').then((m) => ({ default: m.BrokerSummaryV2 })))
@@ -111,9 +110,10 @@ function App() {
                   Radar). Keduanya kini publik secara default, tapi bisa
                   dikunci dari panel tanpa menyentuh kode. */}
               <Route path="/stocks" element={<PenjagaHalaman kunci="stocks"><TopStocks /></PenjagaHalaman>} />
-              {/* Kunci 'broker' = "Broker Summary" (halaman lain); Top Broker
-                  punya kuncinya sendiri, 'topbroker'. */}
-              <Route path="/broker" element={<PenjagaHalaman kunci="topbroker"><TopBroker /></PenjagaHalaman>} />
+              {/* Broker Pasar (#200 A gelombang 2): Top Broker + Broker Summary
+                  level pasar. Rute menjaga bagian Peringkat dengan 'topbroker';
+                  bagian Rincian dijaga 'broker' di dalam BrokerPasar. */}
+              <Route path="/broker" element={<PenjagaHalaman kunci="topbroker"><BrokerPasar /></PenjagaHalaman>} />
               {/* Rincian satu broker (#30). Kuncinya SENGAJA `topbroker`,
                   bukan kunci baru: ini tampilan rinci dari halaman yang
                   sama, bukan halaman menu tersendiri, jadi aturan akses
@@ -141,7 +141,9 @@ function App() {
                   seperti sebelum dialihkan. */}
               <Route path="/bedah-emiten" element={<PenjagaHalaman kunci="bedah-emiten"><RedirectBedahEmiten /></PenjagaHalaman>} />
               <Route path="/peta-investor" element={<PenjagaHalaman kunci="peta"><PetaInvestor /></PenjagaHalaman>} />
-              <Route path="/broker-summary" element={<PenjagaHalaman kunci="broker"><BrokerSummary /></PenjagaHalaman>} />
+              {/* Alamat lama Broker Summary level pasar tetap terbuka: dialihkan
+                  ke bagian Rincian di Broker Pasar (#200 A gelombang 2). */}
+              <Route path="/broker-summary" element={<Navigate to="/broker?bagian=rincian" replace />} />
               {/* Broker Summary v2 (22 Agu 2026) — arus broker PER EMITEN,
                   berdampingan dengan /broker-summary di atas (tidak
                   disentuh). Kunci 'broker-v2' terdaftar di PETA_MENU_KUNCI

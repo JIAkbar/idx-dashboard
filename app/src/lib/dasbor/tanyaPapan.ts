@@ -344,7 +344,7 @@ function jawabKinerja(kode: string, od: OhlcRingkas | null): Jawaban {
   }
 }
 
-const linkBroker = { ke: '/broker', keLabel: 'Top Broker' }
+const linkBroker = { ke: '/broker', keLabel: 'Broker Pasar' }
 
 /**
  * Top Broker — broker paling aktif SE-PASAR hari itu, DIURUT NILAI transaksi.

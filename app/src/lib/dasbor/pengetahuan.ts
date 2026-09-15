@@ -153,8 +153,8 @@ export const PENGETAHUAN: Entri[] = [
       'Rekap broker per emiten tidak tersedia di endpoint publik IDX mana pun — yang terbuka hanya rekap level ' +
       'pasar untuk 88 broker, tanpa rincian per saham. Karena itu broker summary PAPAN berasal dari setoran ' +
       'kontributor, jadi cakupannya sebatas emiten yang disetor hari itu. Ini keterbatasan sumber, bukan pilihan.',
-    ke: '/broker-summary',
-    keLabel: 'Buka Broker Summary',
+    ke: '/broker?bagian=rincian',
+    keLabel: 'Buka Broker Pasar',
   },
   {
     id: 'bukan-saran-investasi',
@@ -272,8 +272,8 @@ export const PENGETAHUAN: Entri[] = [
       'Istilah yang benar untuk rekap transaksi broker per emiten adalah "broker summary", bukan "orderbook" — ' +
       'istilah lama itu masih menempel di beberapa nama teknis di balik layar, tapi tak lagi dipakai di teks ' +
       'yang dibaca pengguna.',
-    ke: '/broker-summary',
-    keLabel: 'Broker Summary',
+    ke: '/broker?bagian=rincian',
+    keLabel: 'Broker Pasar',
   },
 
   // ── Sumber data & istilah pasar ───────────────────────────────────────────
@@ -413,7 +413,7 @@ export const PENGETAHUAN: Entri[] = [
     judul: 'Top Broker',
     isi: 'Top Broker menampilkan broker paling aktif per hari — nilai transaksi, jumlah lot, dan arah bersihnya.',
     ke: '/broker',
-    keLabel: 'Buka Top Broker',
+    keLabel: 'Buka Broker Pasar',
   },
   {
     id: 'halaman-sektor-indeks',
@@ -452,8 +452,8 @@ export const PENGETAHUAN: Entri[] = [
     kunci: ['apa itu broker summary', 'halaman broker summary'],
     judul: 'Broker Summary',
     isi: 'Broker Summary menampilkan rekap transaksi broker per emiten, ditranskripsi dari setoran kontributor.',
-    ke: '/broker-summary',
-    keLabel: 'Buka Broker Summary',
+    ke: '/broker?bagian=rincian',
+    keLabel: 'Buka Broker Pasar',
   },
   {
     id: 'halaman-kalkulator',

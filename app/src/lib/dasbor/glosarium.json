@@ -79,7 +79,7 @@
       "definisi": "Label ringkasan rentang tanggal dari Stockbit untuk pola broker bersih dominan: Big Acc (akumulasi besar) atau Big Dist (distribusi besar) pada rentang mingguan/bulanan tertentu.",
       "catatan": "Istilah bawaan Stockbit yang dikutip PAPAN saat menranskripsi broker summary rentang, bukan istilah yang dihitung sendiri oleh PAPAN.",
       "contoh": "Vonis Stockbit rerata: Big Dist.",
-      "ke": "/broker-summary",
+      "ke": "/broker?bagian=rincian",
       "frekuensi": 47
     },
     {
@@ -122,7 +122,7 @@
       ],
       "definisi": "Pembelian bertahap yang membuat kepemilikan suatu pihak bertambah, biasanya dibaca dari pola beli institusi/bandar yang konsisten pada satu saham selama beberapa hari.",
       "contoh": "Kualitas akumulasi sehat.",
-      "ke": "/broker-summary",
+      "ke": "/broker?bagian=rincian",
       "frekuensi": 36
     },
     {
@@ -134,7 +134,7 @@
       ],
       "definisi": "Penjualan bertahap yang mengurangi kepemilikan suatu pihak — kebalikan akumulasi. Distribusi di harga tinggi sering jadi peringatan bahwa kenaikan harga kehabisan sponsor.",
       "contoh": "Distribusi PD/OD yang berlanjut membuat rejection 565 berpotensi menyeret harga kembali ke 540;",
-      "ke": "/broker-summary",
+      "ke": "/broker?bagian=rincian",
       "frekuensi": 34
     },
     {
@@ -245,7 +245,7 @@
       ],
       "definisi": "Rekap transaksi broker per emiten (sisi beli & jual, per broker, per hari) — istilah yang benar untuk data ini di PAPAN.",
       "contoh": "Arus broker ditranskripsi dari Broker Summary Stockbit dan diverifikasi redaksi.",
-      "ke": "/broker-summary",
+      "ke": "/broker?bagian=rincian",
       "frekuensi": 18
     },
     {
@@ -466,7 +466,7 @@
       "definisi": "Sebutan pasar untuk pemain besar (institusi/broker tertentu) yang pola transaksinya diduga menggerakkan harga suatu saham secara terkoordinasi.",
       "catatan": "Istilah pasar informal, bukan istilah resmi bursa — PAPAN memakainya untuk membaca pola broker summary, bukan sebagai tuduhan pihak tertentu.",
       "contoh": "sisi jual terpecah rata — dorongan beli merata, bukan satu bandar.",
-      "ke": "/broker-summary",
+      "ke": "/broker?bagian=rincian",
       "frekuensi": 7
     },
     {

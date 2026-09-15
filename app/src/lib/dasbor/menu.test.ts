@@ -43,6 +43,11 @@ describe('pengelompokan menu', () => {
     }
   })
 
+  it('Top Broker dan Broker Summary level pasar satu halaman (#200 A gelombang 2)', () => {
+    expect(MENU_ITEMS.some((m) => m.path === '/broker-summary')).toBe(false)
+    expect(judulHalaman('/broker')).toBe('Broker Pasar')
+  })
+
   it('pintu Alat & baca berinduk halaman tanpa kunci, supaya Kabar dan Metodologi tetap terbuka', () => {
     expect(MENU_UTAMA.find((m) => m.grup === 'alat')!.path).toBe('/kabar')
   })

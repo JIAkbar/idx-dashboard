@@ -125,8 +125,8 @@ export const MENU_ITEMS: MenuItem[] = [
     ikon: 'M4 20h16M7 20V10M12 20V4M17 20v-7M4 7h6M4 13h3',
   },
   {
-    id: 'broker', path: '/broker', label: 'Top Broker', kode: 'BRK', tabLabel: 'Top Broker', induk: '/indeks', grup: 'pasar',
-    ringkas: 'Broker paling aktif per hari — nilai, lot, dan arah bersihnya.',
+    id: 'broker', path: '/broker', label: 'Broker Pasar', kode: 'BRK', tabLabel: 'Broker Pasar', induk: '/indeks', grup: 'pasar',
+    ringkas: 'Broker paling aktif per hari, lalu rincian 88 broker level pasar: inventory, kuadran, nego, dan flow.',
     ikon: 'M4 20V9m5.4 11V4m5.2 16v-8m5.4 8V7',
   },
 
@@ -157,11 +157,6 @@ export const MENU_ITEMS: MenuItem[] = [
     id: 'peta-investor', path: '/peta-investor', label: 'Peta Investor', kode: 'MAP', tabLabel: 'Kepemilikan', induk: '/whales-papan', grup: 'bandar',
     ringkas: 'Kepemilikan saham dari data KSEI — asing vs domestik, ritel vs institusi, dan grup konglomerat.',
     ikon: 'M12 5a2 2 0 100 4 2 2 0 000-4zM5 15a2 2 0 100 4 2 2 0 000-4zM19 15a2 2 0 100 4 2 2 0 000-4zM11 8.5L6.3 14.6M13 8.5l4.7 6.1M7 17h10',
-  },
-  {
-    id: 'broker-summary', path: '/broker-summary', label: 'Broker Summary', kode: 'BSM', induk: '/indeks', tabLabel: 'Broker Pasar', grup: 'pasar',
-    ringkas: 'Rekap transaksi broker per emiten, ditranskripsi dari setoran kontributor.',
-    ikon: 'M4 7h16M4 7l2-3h12l2 3M4 7v11a2 2 0 002 2h12a2 2 0 002-2V7M9 12h6',
   },
   {
     // Aliran Asing (22 Agu 2026, Johan: "aliran asing ini bisa di adaptasi
