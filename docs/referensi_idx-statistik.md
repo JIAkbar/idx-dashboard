@@ -50,7 +50,7 @@ Satu baris per halaman di `app/src/lib/dasbor/menu.ts` + komponen data di Berand
 | Panel Aliran Asing (Beranda/Stock Detail, `PanelAliranAsing.tsx:13`) | `asing/<KODE>.json` (lembar) + `ohlcv_stockbit/<KODE>.json` (rupiah, lewat `ohlcvKaya.ts`/`aliranAsingRupiah.ts`) | lembar: IDX GetStockSummary (2020→); rupiah: Stockbit chartbit (2004→) | **ya** (rupiah pra-2020, cuma Stockbit — ditandai jahitan di grafik & teks) | 24 Agu 2026 |
 | Panel Diary (Beranda, `PanelDiary.tsx:91`) | `ihsg_harian.json` | IDX PDF harian, **cadangan sementara Yahoo `^JKSE`** bila PDF belum terbit (ditimpa PDF saat terbit) | sementara | 23 Agu 2026 |
 | Grup Konglomerat (Beranda, `GrupKonglomerat.tsx:42`) | `grup_konglomerat.json` | ⚙️ turunan `petakan_grup.py` dari profil/pengendali IDX + KSEI | turunan | 23 Agu 2026 |
-| Indeks Dunia `/indeks` | `index.json` (dataHarian), `ihsg_harian.json`, `ihsg_ohlc_ringkas.json` | IDX PDF harian; **IHSG: Stockbit utama, Yahoo hanya untuk tanggal yang tak dimilikinya (praktis sebelum Juli 1997)** | **ya — kartu IHSG menyebut bagian cadangan beserta tanggalnya (`CatatanSumberBar`)** | 9 Sep 2026 |
+| Indeks Dunia `/indeks` | `index.json` (dataHarian), `ohlc/IHSG.json` (riwayat IHSG panjang sejak #203 A, J19), `ihsg_ohlc_ringkas.json` | IDX PDF harian; **IHSG: Stockbit utama, Yahoo hanya untuk tanggal yang tak dimilikinya (praktis sebelum Juli 1997)** | **ya — kartu IHSG menyebut bagian cadangan beserta tanggalnya (`CatatanSumberBar`)** | 9 Sep 2026 |
 | Sektor & Indeks `/sector` | `index.json`/`ds_*`, `fundamental/` (stockDetailData), `emiten_sektor.json` | IDX PDF; **fundamental campuran yfinance + IDX** (lihat Jahitan); IDX profil | **ya** (fundamental) | 23 Agu 2026 |
 | Top Stocks `/stocks` | `index.json`/`ds_*` | IDX PDF harian | tidak | 23 Agu 2026 |
 | Statistik Berkala `/statistik` | `index_weekly.json`, `index_monthly.json`, `ws_*`, `ms_*` | IDX PDF mingguan/bulanan | tidak | 23 Agu 2026 |
@@ -63,7 +63,7 @@ Satu baris per halaman di `app/src/lib/dasbor/menu.ts` + komponen data di Berand
 | Harian Papan `/harian-papan` | `harian_papan/index.json` + `harian_papan/<tgl>.json` (turunan) · penanda kebasian membaca `index.json` (statistik harian) | ⚙️ turunan `bangun-harian-papan.mjs` dari `ohlcv_stockbit/` (Stockbit chartbit) + `profil/` (IDX) + `daftar_emiten.json` (IDX) + `emiten_sektor.json` (IDX); **tambalan hari terakhir dari `_arsip-mentah/asing/` (IDX GetStockSummary)** | **ya** — tambalan ujung, ditandai di layar; rincian di bagian "Harian Papan" | 29 Agu 2026 |
 | Aliran Asing `/aliran-asing` | `asing/<KODE>.json`, `fundamental/`, `screener.json` | IDX GetStockSummary; fundamental campuran; ⚙️ screener turunan | **ya** (lewat fundamental) | 23 Agu 2026 |
 | Broker Summary v2 `/broker-summary-v2` (Overview, Inventory, FlowNetGross, Nego, TimelineForeign, VsIhsg, Shareholders) | `ohlcv_stockbit/<KODE>.json` (`brokerEmitenV2.ts:6,50`), `broker_tahunan/` (`:147`), `broker/`, `kepemilikan/<KODE>.json` (`brokerProfilKsei.ts:27`), `profil_stockbit/<KODE>.json` (`:136`) | Stockbit chartbit **murni** (bukan `ohlc/`); ⚙️ `bangun_broker_tahunan.py` dari Stockbit marketdetectors; IDX GetBrokerSummary; KSEI Balancepos; Stockbit profil | tidak — satu-satunya halaman harga yang memakai Stockbit tanpa jahitan Yahoo | 23 Agu 2026 |
-| Seasonality `/seasonality` (+ Harian, Komparasi) | `seasonality/harga_bulanan.json`, `ihsg_harian.json`, `ohlc/<KODE>.json` (SeasonalityHarian) | Yahoo bulanan (**bukan sejak IPO** — titik tertua Agu 2000); IDX PDF; **`ohlc/` jahitan** | **ya** (Harian) | 23 Agu 2026 |
+| Seasonality `/seasonality` (+ Harian, Komparasi) | `seasonality/harga_bulanan.json`, `ohlc/<KODE>.json` (SeasonalityHarian) | Yahoo bulanan (**bukan sejak IPO** — titik tertua Agu 2000); IDX PDF; **`ohlc/` jahitan** | **ya** (Harian) | 23 Agu 2026 |
 | Radar Watchlist `/radar` | `data-idx/radar/*.json`, `index.json` | unggahan admin; IDX PDF | tidak | 23 Agu 2026 |
 | Watchlist `/watchlist` | `ohlc/<KODE>.json`, `fundamental/`, `harga_terakhir.json`, `daftar_emiten.json` | **`ohlc/` jahitan**; fundamental campuran; `harga_terakhir` ⚙️ (produsen: dirujuk `petakan_grup.py` — ❓ penulis aslinya belum ditelusuri) | **ya** | 23 Agu 2026 |
 | Kalkulator `/kalkulator` (AvgDown, Pemulihan, PosisiBar, …) | `harga_terakhir.json`, `fundamental/` | ⚙️ turunan; fundamental campuran | **ya** (lewat fundamental) | 23 Agu 2026 |
@@ -600,6 +600,7 @@ satu tempat penyimpanan antar-jalan yang bisa hilang.
 | `fundamental/` · yfinance + IDX ListedShares + tambalan XBRL (J4) | jahit per ruas | ruas kosong ditambal | 154 emiten `eps` | agen | 17–18 Agu 2026 — **perlu keputusan Johan: sumber rasio resmi** |
 | Stock Detail · gabung `keuangan_idx` + `keuangan` (J5) | jahit saat baca | — | tidak ada tabel pembanding | agen | — **perlu keputusan Johan** |
 | `ihsg_harian` · cadangan Yahoo sementara (J6) | timpa sementara | PDF terbit sore | — | tercatat status-panen | 21 Agu 2026 — sah kalau ditandai di antarmuka |
+| Kalender bursa + IHSG Seasonality Harian + riwayat IHSG Indeks Dunia · `ihsg_harian.json` → `ohlc/IHSG.json` (J19) | **rotasi pembaca** | `ihsg_harian.json` tertinggal sehari dari arsip harga IHSG | 8.876 lawan 8.876 tanggal identik 1990-04-06 s.d. 2026-09-14, selisih tutup maks 0,000046% | **Johan** (*"setujui #203 A dan ya #200 A susunan lima pintu"*, 15 Sep 2026 21:12 WIB, diteruskan pengawas) | 15 Sep 2026 |
 | Aliran asing rupiah · taksiran vs chartbit (J8) | **diganti 24 Agu 2026** | angka resmi sudah ada di `ohlcv_stockbit/` | taksiran meleset 1,33× kumulatif | Johan ("ok setuju") | selesai |
 | Konvensi harga & volume · tersesuaikan vs apa adanya (J12) | **batas ditetapkan** | dua konvensi, dua-duanya benar; yang salah menyilangkannya | 936 emiten: 129.723/1.173.805 bar beda (11,05%), 167 emiten >5%; rasio pembeda BULAT (250·25·5·4·2); DSSA volume ×25 & harga ÷25 sampai Mar 2026 lalu 1,00 (pecah saham 1:25) | **Johan** (*"ok tulis"*) | 23 Agu 2026 |
 
@@ -904,6 +905,26 @@ Sapuan `git grep -n -o -E ".{0,60}(forward_pe|pe_annualised|eps_fwd).{0,40}" -- 
 berkas uji menemukan tipe di `stockDetailData.ts`, tiga baris `KolomValuasi.tsx`, dan satu baris
 `StockDetail.tsx` (strip atas). Sapuan pertama melewatkan baris strip itu karena keluarannya dipotong
 170 karakter dan `forward_pe` ada di ujung baris; Pemeriksa Akhir yang menemukannya.
+
+## J19 · Kalender bursa dan dua pembaca IHSG pindah ke arsip harga IHSG (15 September 2026)
+
+**Keputusan Johan**, 15 Sep 2026 sekitar 21:12 WIB di sesi pengawas, diteruskan dengan sidik PGW-0915-JOHAN-203A-200A: *"setujui #203 A dan ya #200 A susunan lima pintu"*. Antrean #203.
+
+**Sebab.** Sesudah panen 15 Sep, kalender bursa (`app/src/lib/tanggalBursa.ts`, diimpor 18 berkas), Seasonality Harian IHSG, dan riwayat IHSG panjang di Indeks Dunia masih berhenti di 14 Sep. Ketiganya membaca `ihsg_harian.json`: segmen Stockbit sampai 11 Sep, 14 Sep dari Yahoo, 15 Sep belum ada. `ohlc/IHSG.json` sudah sampai 15 Sep.
+
+**Tabel pembanding** (Papan, 15 Sep 2026 malam, seluruh rentang yang dimiliki keduanya):
+
+| Periode | Tanggal di `ihsg_harian.json` | Tanggal di `ohlc/IHSG.json` | Hanya di satu berkas | Hari selisih tutup > 0,01% | Selisih tutup maksimum |
+|---|---:|---:|---:|---:|---:|
+| 1990-04-06 – 1997-06-30 | 1.773 | 1.773 | 0 | 0 | 0% |
+| 1997-07-01 – 2017-11-30 | 4.988 | 4.988 | 0 | 0 | 0% |
+| 2017-12-01 – 2026-09-14 | 2.115 | 2.115 | 0 | 0 | 0,000046% |
+| **Seluruhnya** | **8.876** | **8.876** | **0** | **0** | **0,000046%** |
+
+`ohlc/IHSG.json` memuat satu hari lebih (15 Sep). Keduanya deret yang sama: Stockbit dengan kerangka Yahoo untuk tanggal yang tidak dimiliki Stockbit. Ukuran 486 KB lawan 362 KB; berkas yang sama sudah diunduh Panel Diary di Beranda.
+
+**Yang berubah.** `tanggalBursa.ts` `muatDaftarHariBursa()` mengambil tanggal dari larik `d`; `SeasonalityHarian.tsx` membaca `ohlc/<KODE>.json` untuk IHSG juga; `IndeksDunia.tsx` riwayat panjang dari kolom tutup larik `d`. `ihsg_harian.json` **tidak dihapus** dan tetap ditulis `panen_ihsg.py` sebagai cadangan; pembacanya di skrip Python (mis. Kartu Analisa) tidak diubah.
+
 
 ## Inventaris ruas per berkas — jawaban untuk Johan 23 Agu 2026 (Stock Detail, OHLC/OHLCV, Broker Summary, metode panen)
 
@@ -1628,6 +1649,7 @@ section ini saat pertama dipakai**, bukan hanya sumber data. Tanpa itu, jejak
 - 25 Agustus 2026 — **endpoint intraday Stockbit terpecahkan** (pertanyaan Johan soal timeframe RBS/Gap): `chartbit/{kode}/price/intraday` dengan `from`=epoch terbaru, `to`=epoch terlama → **bar 1 menit** (o/h/l/c, volume, lot, value, frequency, foreign_buy/sell; 08:58–16:14), server menyimpan **±90 hari** saja (−180 hari → HTTP 400). Konsekuensi: timeframe 5m/15m/30m/1H/2H/4H bisa diagregasi dari 1 menit untuk 90 hari terakhir; riwayat panjang butuh panen rutin (±13 menit/putaran untuk 962 emiten). `docs/riset/stockbit-inventaris-endpoint.md` diperbarui. Pola RBS/Gap sendiri bebas timeframe (fungsi murni atas OHLC); backtest yang sudah ada = timeframe harian.
 - 28 Agustus 2026 — **B45 Jejak Rekomendasi + tab "Riwayat & Win Rate"** (Screener) selesai — Tugas C penuh + generator C.1, spek `docs/spek-dev-papan/spek_preset_winrate_rekap.md`. `scripts/riset/rekap_preset.py` (port `PRESET_DEFS` dari `presetScreener.ts`, swauji `--uji` 9 kasus tangan-hitung lolos) dijalankan sekali untuk tanggal data terakhir yang BENAR-BENAR terisi (2026-08-27 — auto-deteksi via ambang `freq>0` melewati 2026-08-28 yang masih 0/962 baris berfrekuensi, konfirmasi lapangan atas temuan 24 Agu 14:33 "fetch pertengahan sesi"): 80 baris saham lintas 5 preset (`whale-akdis` 0 — `label_accdist` kosong seluruhnya di arsip 27 Agu, jujur ditulis apa adanya, bukan dipaksa terisi). `app/src/lib/dasbor/winRate.ts` (3 definisi menang, 19 uji vitest termasuk kasus "tak tentu" TP&SL sehari) + `rekomendasi.ts` (fetch/gabung, 6 uji) + tab ke-4 Screener.tsx. Sumber TP/SL: fallback ATR14 SELALU dipakai (bukan Target Realistis papan-terdorong `kuliPapan.ts` — itu butuh antrean penutupan yang cuma ada dari setoran kontributor, bukan data cakram 962 emiten). `npm run build` + `npx vitest run` (1597 lolos) + `tsc --noEmit` hijau; leak-sweep bersih (grep endpoint/`.json` di string ter-render). Verifikasi visual SELESAI dua viewport (laptop 1536×960×1.25, mobile 412×915×2.625) lewat tab chrome-devtools yang sudah login admin dari sesi sebelumnya (Screener tier `login` di `akses_halaman`, dicek Supabase — sesi ini sendiri tak pernah isi sandi); tabel Menang/Kalah "Tak ada baris" jujur untuk 2026-08-27 karena H+1-nya (28 Agu) belum berdata nyata, difilter `volume=0`.
 - 5 September 2026 — **J14 akhirnya berlaku juga di CI.** Ralat Johan: *"ralat dulu setiap hari itu harusnya panen 6 varian karena gross, sedangkan yang net bisa di hitung"*. Sejak J14 diputuskan (23 Agu) bat buka-laptop sudah 6 varian GROSS, tapi langkah 3d `panen-harian-rumah.yml` masih memanggil 12 atas ketetapan 23 Agu pagi ("CI harus ke lengkap Varian") — dua kebenaran hidup berdampingan selama 13 hari, dan tiap jalan CI membuang 962 × 6 panggilan untuk menulis berkas yang tak dibaca siapa pun. Sekarang keduanya `reguler,asing,nego,nego-asing,tunai,tunai-asing`; beban langkah itu turun dari ±11.500 jadi ±5.800 permintaan (≈1,3 jam → ≈40 menit). Diperiksa sebelum diubah, bukan diingat: grep `net-asing|net-nego|net-tunai|\.net\.` di `app/src` dan `scripts` tak menemukan satu pun pembaca berkas varian NET — yang muncul semuanya ruas aliran asing (`net_asing*`) atau mode tampilan "Net" yang dihitung di layar dari GROSS (`tabelDuaSisi`, `lib/dasbor/brokerEmiten.ts:164`). Berkas NET yang telanjur ada di arsip **tidak dihapus** (ketetapan J14: dibuang saat konsolidasi).
+- 15 September 2026 — **J19**: kalender bursa, Seasonality Harian IHSG, dan riwayat IHSG Indeks Dunia pindah dari `ihsg_harian.json` ke `ohlc/IHSG.json` atas keputusan Johan (#203 A); tabel pembanding 8.876 tanggal identik.
 
 ---
 

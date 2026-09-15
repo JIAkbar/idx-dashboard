@@ -77,12 +77,14 @@ function IhsgYtdChart({ dates }: { dates: TanggalIndex[] }) {
   useEffect(() => {
     if (rentang === 'ytd' || riwayat) return
     let batal = false
-    fetch(urlData('/data-idx/json/ihsg_harian.json'))
+    // Arsip harga IHSG, bukan ihsg_harian.json, sejak #203 A (15 Sep 2026):
+    // penutupannya identik, arsip harga sehari lebih segar.
+    fetch(urlData('/data-idx/json/ohlc/IHSG.json'))
       .then((r) => r.json())
-      .then((j: { tutup: Record<string, number>; sumber_bar?: RentangSumber[] }) => {
+      .then((j: { d: Array<[string, number, number, number, number, number]>; sumber_bar?: RentangSumber[] }) => {
         if (batal) return
         setSumberBar(j.sumber_bar)
-        setRiwayat(Object.entries(j.tutup).map(([iso, ihsg]) => ({
+        setRiwayat(j.d.map(([iso, , , , ihsg]) => ({
           date_iso: iso, date_id: tglSingkatTahun(iso), ihsg,
         } as TanggalIndex)))
       })

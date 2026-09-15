@@ -45,7 +45,7 @@ const BLN_PENDEK = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep
 /**
  * Pola hari dalam seminggu — tab kedua Seasonality.
  *
- * Sumbernya IHSG (ihsg_harian.json, 8.849 hari sejak 1990) ATAU satu emiten
+ * Sumbernya IHSG (arsip harga IHSG, 8.877 hari sejak 1990) ATAU satu emiten
  * (#131b — data OHLC 5 tahun per emiten dipanen di #122). Perhitungannya sama
  * persis untuk keduanya; yang berbeda cuma bentuk berkasnya, dan itu
  * diseragamkan saat dimuat.
@@ -57,11 +57,8 @@ const BLN_PENDEK = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep
  */
 export function SeasonalityHarian() {
   const [tutup, setTutup] = useState<Record<string, number> | null>(null)
-  /** Penanda sumber per bar — hanya ada di arsip harga emiten. IHSG di
-   *  halaman ini dibaca dari arsip statistik harian, yang punya cerita
-   *  sumber sendiri (cadangan sementara saat laporan resmi belum terbit),
-   *  jadi sengaja TIDAK diisi dari sana — dua hal berbeda yang kebetulan
-   *  sama-sama bernama jahitan. */
+  /** Penanda sumber per bar dari arsip harga — untuk IHSG maupun emiten sejak
+   *  #203 A, karena keduanya kini dibaca dari arsip yang sama. */
   const [sumberBarBerkas, setSumberBarBerkas] = useState<RentangSumber[] | undefined>(undefined)
   const [galat, setGalat] = useState<string | null>(null)
   // Bawaan "1 Tahun" (bukan "Semua"): "Semua" menarik 8.848 hari sejak 1990 dan
@@ -91,10 +88,10 @@ export function SeasonalityHarian() {
     setTutup(null)
     setSumberBarBerkas(undefined)
     setGalat(null)
-    const alamat = kode === 'IHSG'
-      ? urlData('/data-idx/json/ihsg_harian.json')
-      : urlData(`/data-idx/json/ohlc/${kode}.json`)
-    fetch(alamat)
+    // IHSG dibaca dari arsip harga yang sama dengan emiten sejak #203 A
+    // (15 Sep 2026): deret penutupan identik dengan ihsg_harian.json di seluruh
+    // rentang bersama, tetapi selalu sehari lebih segar.
+    fetch(urlData(`/data-idx/json/ohlc/${kode}.json`))
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
       // Dua bentuk berkas: IHSG menyimpan peta {tanggal: tutup}, emiten
       // menyimpan baris OHLCV. Yang dibutuhkan ringkasHarian() cuma

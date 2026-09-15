@@ -1,6 +1,6 @@
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
-  hariBursa, hariBursaSejak, jamDetikJakarta, jamPasarJakarta, lupakanDaftarHariBursa, pasangDaftarHariBursa,
+  hariBursa, hariBursaSejak, jamDetikJakarta, jamPasarJakarta, lupakanDaftarHariBursa, muatDaftarHariBursa, pasangDaftarHariBursa,
   tanggalBursaTerakhir,
 } from './tanggalBursa'
 
@@ -90,6 +90,22 @@ describe('hariBursa', () => {
     pasangDaftarHariBursa(['2026-07-07', '2026-07-09'], '2026-07-09')
     expect(hariBursa('2026-07-08')).toBe(false)
     expect(hariBursa('2026-07-07')).toBe(true)
+  })
+
+  it('muat dari arsip harga IHSG: 15 Sep 2026 terbaca hari bursa bila berkasnya memuatnya (#203 A)', async () => {
+    // Bentuk berkas ohlc/IHSG.json: baris [tanggal, buka, tinggi, rendah, tutup, volume].
+    // 14 Sep sengaja dilubangi supaya terbukti daftarnya benar-benar dipakai.
+    vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify({
+      kode: 'IHSG', akhir: '2026-09-15',
+      d: [['2026-09-11', 1, 1, 1, 1, 0], ['2026-09-15', 1, 1, 1, 1, 0]],
+    }))))
+    try {
+      await muatDaftarHariBursa()
+      expect(hariBursa('2026-09-15')).toBe(true)
+      expect(hariBursa('2026-09-14')).toBe(false)
+    } finally {
+      vi.unstubAllGlobals()
+    }
   })
 
   it('daftar termuat: tanggal DI LUAR cakupan tetap ikut aturan akhir pekan', () => {

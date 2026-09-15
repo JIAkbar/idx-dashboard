@@ -44,7 +44,7 @@ export function todayIsoJakarta(): string {
   return new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Jakarta' }).format(new Date())
 }
 
-/** Daftar hari bursa sungguhan (`ihsg_harian.json`), kalau sudah dimuat.
+/** Daftar hari bursa sungguhan (`ohlc/IHSG.json`), kalau sudah dimuat.
  *  `akhirDaftar` = hari bursa terakhir yang tercakup — di luar itu daftarnya
  *  tak boleh dijadikan bukti apa pun (lihat `hariBursa`). */
 let daftarBursa: ReadonlySet<string> | null = null
@@ -66,7 +66,12 @@ export function lupakanDaftarHariBursa(): void {
 }
 
 /**
- * Muat daftar hari bursa dari `ihsg_harian.json` (8.849 hari sejak 1990).
+ * Muat daftar hari bursa dari `ohlc/IHSG.json` (8.877 hari sejak 1990).
+ *
+ * Sampai 15 Sep 2026 daftarnya dari `ihsg_harian.json`, yang tertinggal sehari
+ * dari arsip harga IHSG. Keduanya dibandingkan atas seluruh rentang bersama
+ * (1990-04-06 s.d. 2026-09-14): 8.876 tanggal sama persis, selisih tutup
+ * maksimum 0,000046%. Johan memutuskan rotasi ini (#203 A).
  *
  * Sengaja BUKAN daftar libur dari luar: berkas ini mencatat hari yang benar-
  * benar diperdagangkan, jadi ia ikut memuat libur dadakan dan cuti bersama
@@ -78,11 +83,11 @@ export function lupakanDaftarHariBursa(): void {
  */
 export async function muatDaftarHariBursa(): Promise<void> {
   if (daftarBursa) return
-  const r = await fetch(urlData('/data-idx/json/ihsg_harian.json'))
-  if (!r.ok) throw new Error(`ihsg_harian.json: HTTP ${r.status}`)
-  const j = (await r.json()) as { tutup?: Record<string, number>; akhir?: string }
-  const kunci = Object.keys(j.tutup ?? {})
-  if (kunci.length === 0) throw new Error('ihsg_harian.json tidak berisi hari bursa.')
+  const r = await fetch(urlData('/data-idx/json/ohlc/IHSG.json'))
+  if (!r.ok) throw new Error(`Arsip harga IHSG: HTTP ${r.status}`)
+  const j = (await r.json()) as { d?: Array<[string, ...number[]]>; akhir?: string }
+  const kunci = (j.d ?? []).map((b) => b[0])
+  if (kunci.length === 0) throw new Error('Arsip harga IHSG tidak berisi hari bursa.')
   pasangDaftarHariBursa(kunci, j.akhir || kunci[kunci.length - 1])
 }
 
