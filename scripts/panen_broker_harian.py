@@ -428,8 +428,11 @@ COBA_KONEKSI = 3
 # (Diperiksa: arsip asing bernilai nol 16-18 Sep TIDAK melonjak — 78-86 per
 # hari bertentangan dengan catatan asing bursa, sama dengan 61-82 di hari
 # normal — jadi tak ada arsip yang perlu dikarantina.)
-# 1,5/detik = 90/menit menyisakan ruang untuk kanari dan salah ukur.
-LAJU_MAKS = 1.5
+# Jatah jangka panjang juga ada: susulan 1,5/detik selama 25 menit tetap
+# berselang-seling kosong, dan sesudah ±15 ribu panggilan sehari bahkan
+# 0,5/detik kosong. Besarnya belum terukur; 1/detik = satu panen 962 x 6
+# varian ±1,5 jam, masih di dalam batas waktu CI 150 menit.
+LAJU_MAKS = 1.0
 _kunci_laju = threading.Lock()
 _giliran = [0.0]
 
