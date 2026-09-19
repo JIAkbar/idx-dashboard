@@ -417,6 +417,30 @@ def sesi(maks: int = 512):
 # (khususnya 401 — lihat larangan memutar token di CLAUDE.md).
 COBA_KONEKSI = 3
 
+# Batas laju SELURUH proses, bukan per utas (#215). Terukur 19 Sep 2026 atas
+# BBCA hari lama yang pasti berisi, tahap 90 detik: 0,5 / 1 / 1,5 / 2 panggilan
+# per detik nol kosong (45/90/135/180 panggilan); 3 per detik mulai kosong di
+# panggilan ke-190 (detik ke-63) dan 30% kosong sesudahnya, pulih 30 detik
+# kemudian. Jadi sumber memasang jatah per menit di antara 120 dan ±180, dan
+# melampauinya dijawab 200 "Successfully retrieved" dengan broker KOSONG.
+# Sebelum ini laju hanya diatur `--paralel`/`--jeda` (48 utas x jeda 0,4 =
+# puluhan panggilan per detik): 16-18 Sep 2026 dua pertiga emiten kosong.
+# (Diperiksa: arsip asing bernilai nol 16-18 Sep TIDAK melonjak — 78-86 per
+# hari bertentangan dengan catatan asing bursa, sama dengan 61-82 di hari
+# normal — jadi tak ada arsip yang perlu dikarantina.)
+# 1,5/detik = 90/menit menyisakan ruang untuk kanari dan salah ukur.
+LAJU_MAKS = 1.5
+_kunci_laju = threading.Lock()
+_giliran = [0.0]
+
+
+def _tunggu_giliran() -> None:
+    """Jatah waktu satu panggilan; utas yang antre tidur sampai gilirannya."""
+    with _kunci_laju:
+        t = max(time.monotonic(), _giliran[0])
+        _giliran[0] = t + 1 / LAJU_MAKS
+    time.sleep(max(0.0, t - time.monotonic()))
+
 
 def ambil(token: str, kode: str, tanggal: str, pasar: str = "MARKET_BOARD_REGULER",
           investor: str = "INVESTOR_TYPE_ALL",
@@ -438,6 +462,7 @@ def ambil(token: str, kode: str, tanggal: str, pasar: str = "MARKET_BOARD_REGULE
 
 def _ambil_sekali(token: str, kode: str, tanggal: str, pasar: str,
                   investor: str, transaksi: str):
+    _tunggu_giliran()
     r = sesi().get(URL.format(kode=kode), headers={
         "Authorization": f"Bearer {token}", "Origin": "https://stockbit.com",
         "Referer": "https://stockbit.com/",
@@ -499,6 +524,37 @@ def volume_idx(kode: str, tanggal: str):
     return None
 
 
+_berkas_kunci = None
+
+
+def _kunci_proses() -> None:
+    """Satu panen broker sekaligus di mesin ini (#215). CI rumah, panen sore,
+    dan buka-laptop memanggil skrip ini; dua yang berjalan bersamaan
+    menggandakan laju dan menembus jatah sumber. Proses kedua MENUNGGU, lalu
+    jalan dengan arsip yang sudah terisi — jadi yang ia minta tinggal sisanya.
+    Kunci berkas OS lepas sendiri saat proses mati, jadi tak ada kunci basi."""
+    global _berkas_kunci
+    p = ARSIP / ".panen-broker.lock"
+    p.parent.mkdir(parents=True, exist_ok=True)
+    _berkas_kunci = open(p, "a+")
+    tunggu = 0
+    while True:
+        try:
+            if sys.platform == "win32":
+                import msvcrt
+                _berkas_kunci.seek(0)
+                msvcrt.locking(_berkas_kunci.fileno(), msvcrt.LK_NBLCK, 1)
+            else:
+                import fcntl
+                fcntl.flock(_berkas_kunci, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            return
+        except OSError:
+            if tunggu % 300 == 0:
+                print(f"  panen broker lain sedang berjalan — menunggu ({tunggu // 60} menit)", flush=True)
+            time.sleep(10)
+            tunggu += 10
+
+
 def jalankan(a) -> int:
     from stockbit_token import token_segar
 
@@ -517,6 +573,7 @@ def jalankan(a) -> int:
             raise SystemExit(f"varian tak dikenal: {v} (pilihan: {', '.join(VARIAN)})")
 
     paralel = max(1, int(getattr(a, "paralel", 1) or 1))
+    _kunci_proses()
     tok = {"v": token_segar()}
     if len(kode_semua) > 1:
         print(f"Panen broker GROSS {tanggal} — {len(kode_semua)} emiten, "
@@ -829,8 +886,13 @@ def uji_bawaan() -> int:
     # Berkas milik emiten lain tak boleh ditimpa-gabung.
     r4 = perbarui_ringkas(r3, "BUMI", "2026-08-23", baris, ringkas, jendela=2)
     assert list(r4["hari"]) == ["2026-08-23"] and r4["kode"] == "BUMI"
+    # Pembatas laju (#215): 4 utas x 2 giliran tak boleh lebih cepat dari LAJU_MAKS.
+    t0 = time.monotonic()
+    utas = [threading.Thread(target=lambda: [_tunggu_giliran() for _ in range(2)]) for _ in range(4)]
+    [u.start() for u in utas]; [u.join() for u in utas]
+    assert time.monotonic() - t0 >= 7 / LAJU_MAKS - 0.05, "pembatas laju bocor"
 
-    print("14/14 lulus")
+    print("15/15 lulus")
     return 0
 
 
