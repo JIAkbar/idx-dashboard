@@ -30,7 +30,7 @@ export function Feedback() {
   const hrefWa = `https://wa.me/${NOMOR_WA}?text=${encodeURIComponent(teks)}`
 
   return (
-    <div className="lantai">
+    <div className="lantai hal-feedback">
       <div className="vhead">
         <h1>Kritik &amp; Saran</h1>
         <span className="sub">masukan langsung ke pengembang, dibalas via WhatsApp</span>

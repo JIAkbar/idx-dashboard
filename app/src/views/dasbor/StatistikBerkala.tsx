@@ -289,7 +289,7 @@ export function StatistikBerkala() {
 
   if (galat) {
     return (
-      <div className="lantai">
+      <div className="lantai hal-statistik-berkala">
         {kepala}
         <div className="panel">
           <div className="panel-b stb-pesan">
@@ -303,7 +303,7 @@ export function StatistikBerkala() {
 
   if (!edisi) {
     return (
-      <div className="lantai">
+      <div className="lantai hal-statistik-berkala">
         {kepala}
         <div className="panel"><div className="panel-b stb-pesan"><p className="lbl">Memuat edisi…</p></div></div>
       </div>
@@ -317,7 +317,7 @@ export function StatistikBerkala() {
   const edisiBulanan = jenis === 'bulan' ? (edisi as unknown as EdisiBulanan) : null
 
   return (
-    <div className="lantai">
+    <div className="lantai hal-statistik-berkala">
       {kepala}
 
       <div className="stb-kepala">

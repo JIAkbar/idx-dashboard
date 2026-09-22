@@ -776,7 +776,7 @@ export function IndeksDunia() {
 
   if (loading && !hari) {
     return (
-      <div className="lantai">
+      <div className="lantai hal-indeks">
         {vhead()}
         <BilahTanggal tanggalTersedia={tanggalTersedia} tanggalAktif={tanggalAktif} onPilih={pilihTanggal} memuat={loading} />
         <PanelSkeleton />
@@ -786,7 +786,7 @@ export function IndeksDunia() {
 
   if (error || !hari) {
     return (
-      <div className="lantai">
+      <div className="lantai hal-indeks">
         {vhead()}
         <BilahTanggal tanggalTersedia={tanggalTersedia} tanggalAktif={tanggalAktif} onPilih={pilihTanggal} memuat={loading && !hari} />
         <div className="panel panel-b" style={{ textAlign: 'center', padding: '40px 20px' }}>
@@ -802,7 +802,7 @@ export function IndeksDunia() {
   let curR = ''
 
   return (
-    <div className="lantai">
+    <div className="lantai hal-indeks">
       {vhead(tanggalAktif, hari?.sementara === true)}
       <BilahTanggal
         tanggalTersedia={tanggalTersedia}

@@ -208,7 +208,7 @@ export function Screener() {
 
   if (!data) {
     return (
-      <div className="lantai">
+      <div className="lantai hal-screener">
         <div className="vhead"><h1>Screener</h1></div>
         <div className="panel panel-b" style={{ textAlign: 'center', padding: '40px 20px' }}>
           <p><IkonMenu d={IKON_PERINGATAN} size={28} /></p>
@@ -222,7 +222,7 @@ export function Screener() {
   const sisa = s.urut.length - tampilBaris.length
 
   return (
-    <div className="lantai">
+    <div className="lantai hal-screener">
       <div className="vhead">
         <h1>Screener</h1>
         {/* "saring, urutkan, cari" dibuang 7 Sep 2026: kendalinya sudah bicara

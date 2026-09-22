@@ -15,6 +15,7 @@ import { judulHalaman } from '../../lib/dasbor/menu'
 import { catatKunjungan } from '../../lib/dasbor/kunjungan'
 import { TANYA_PAPAN_AKTIF } from '../../lib/fitur'
 import '../../dasbor/lantai.css'
+import '../../dasbor/tampilan-baru.css'
 
 /**
  * Shell dasbor publik "Papan": rail kiri (layar lebar) + pita kurs berjalan +

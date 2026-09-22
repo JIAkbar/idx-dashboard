@@ -269,7 +269,7 @@ export function Radar() {
 
   if (error) {
     return (
-      <div className="lantai">
+      <div className="lantai hal-radar">
         <div className="vhead"><h1>Radar Watchlist</h1></div>
         <p className="muted">Gagal memuat arsip radar: {error}</p>
       </div>
@@ -277,7 +277,7 @@ export function Radar() {
   }
   if (!arsip || !edisi) {
     return (
-      <div className="lantai">
+      <div className="lantai hal-radar">
         <div className="vhead"><h1>Radar Watchlist</h1></div>
         <p className="muted">Memuat arsip…</p>
       </div>
@@ -295,7 +295,7 @@ export function Radar() {
   }
 
   return (
-    <div className="lantai">
+    <div className="lantai hal-radar">
       <div className="vhead" style={{ justifyContent: 'space-between' }}>
         <div className="vhead-kiri">
           <h1>Radar Watchlist</h1>

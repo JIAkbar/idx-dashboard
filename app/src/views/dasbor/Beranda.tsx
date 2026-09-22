@@ -267,7 +267,7 @@ export function Beranda() {
   // kehilangan SEMUA warnanya sekaligus dan tautan jatuh ke biru bawaan
   // peramban. Tiap view dasbor membungkus dirinya sendiri (lihat IndeksDunia).
   return (
-    <div className="lantai">
+    <div className="lantai hal-beranda">
       {/* ARAH 1 (keputusan Johan 29 Agu, artifact "Tiga Arah Beranda PAPAN"):
           yang menjawab "hari ini kenapa" naik ke atas; papan angka menyusut.
 

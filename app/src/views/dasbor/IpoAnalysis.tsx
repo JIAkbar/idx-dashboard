@@ -66,7 +66,7 @@ export function IpoAnalysis() {
 
   if (!data) {
     return (
-      <div className="lantai">
+      <div className="lantai hal-ipo">
         <div className="vhead"><h1>IPO Papan</h1></div>
         <div className="panel panel-b" style={{ textAlign: 'center', padding: '40px 20px' }}>
           <p><IkonMenu d={IKON_PERINGATAN} size={28} /></p>
@@ -77,7 +77,7 @@ export function IpoAnalysis() {
   }
 
   return (
-    <div className="lantai">
+    <div className="lantai hal-ipo">
       <div className="vhead">
         <h1>IPO Papan</h1>
         <span className="sub">{data.n} emiten tercatat sejak listing perdana, dengan rapor penjamin emisi.</span>

@@ -300,7 +300,7 @@ export function StockDetail() {
   const fwdPilih = pilihRasio('forward_pe', fd?.forward_pe, rasioUtama)
 
   return (
-    <div className="lantai">
+    <div className="lantai hal-stock-detail">
       {/* Judul untuk pembaca layar saja (#24). Halaman ini membuka dengan
           bilah cari emiten, dan menyelipkan baris judul di atasnya mendorong
           kendali utamanya turun tanpa menambah satu pun keterangan bagi yang

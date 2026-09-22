@@ -123,7 +123,7 @@ export function PetaInvestor() {
   }, [])
 
   return (
-    <div className="lantai">
+    <div className="lantai hal-peta-investor">
       <div className="vhead">
         <h1>Peta Investor</h1>
         <span className="sub">

@@ -26,7 +26,7 @@ export function LaciMobile({ buka, onTutup, onMasuk }: {
   onTutup: () => void
   onMasuk: () => void
 }) {
-  const { theme, toggleTheme } = useTheme()
+  const { theme, toggleTheme, tampilan, toggleTampilan } = useTheme()
   const { session } = useAuth()
   const { boleh, alasanRingkas } = useAksesHalaman()
   const { pathname } = useLocation()
@@ -116,6 +116,9 @@ export function LaciMobile({ buka, onTutup, onMasuk }: {
               )}
             </svg>
             <span>{theme === 'dark' ? 'Tema terang' : 'Tema gelap'}</span>
+          </button>
+          <button type="button" className="dasbor-laci-tombol" onClick={toggleTampilan} aria-pressed={tampilan === 'baru'}>
+            <span>{tampilan === 'baru' ? 'Tampilan PAPAN lama' : 'Tampilan PAPAN Baru'}</span>
           </button>
           {session ? (
             <NavLink

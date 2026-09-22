@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { ringkasRekam, MIN_SAMPEL_PERSEN, type Trade } from './berkasRekam'
+import { ringkasRekam, muatRekam, namaStrategi, MIN_SAMPEL_PERSEN, type Trade } from './berkasRekam'
+import { vi, afterEach } from 'vitest'
 
 const t = (kode: string, r: number): Trade => ({ kode, return: r })
 
@@ -60,5 +61,35 @@ describe('ringkasRekam', () => {
   it('median genap = rata-rata dua tengah', () => {
     const r = ringkasRekam('rbs', [t('BBCA', 0.1), t('BBCA', 0.3)], 'BBCA')
     expect(r.median).toBeCloseTo(0.2)
+  })
+})
+
+describe('namaStrategi (#225)', () => {
+  it('kunci arsip jadi nama yang bisa dibaca', () => {
+    expect(namaStrategi('ind-obv-D-lq45')).toBe('OBV harian · LQ45')
+    expect(namaStrategi('ind-adx_dmi-1H-semua')).toBe('ADX/DMI per jam · semua saham')
+    expect(namaStrategi('pivot_cpr.posisi_di_atas-W')).toBe('Harga di atas pivot · mingguan')
+    expect(namaStrategi('gap-naik')).toBe('Gap naik')
+    expect(namaStrategi('tak-dikenal')).toBe('tak-dikenal')
+  })
+})
+
+describe('muatRekam (#225)', () => {
+  afterEach(() => { vi.unstubAllGlobals() })
+  it('run riset broker- tidak ikut dimuat', async () => {
+    const diminta: string[] = []
+    vi.stubGlobal('fetch', async (url: string) => {
+      diminta.push(url)
+      if (url.endsWith('bt/index.json')) {
+        return { ok: true, json: async () => ({ run: [
+          { strategi: 'rbs', berkas: 'rbs.json' },
+          { strategi: 'broker-s1-n5-h5', berkas: 'broker-s1-n5-h5.json' },
+        ] }) }
+      }
+      return { ok: true, json: async () => ({ trades: [{ kode: 'BBCA', return: 0.1 }] }) }
+    })
+    const hasil = await muatRekam('BBCA')
+    expect(hasil.map((x) => x.strategi)).toEqual(['rbs'])
+    expect(diminta.some((u) => u.includes('broker-'))).toBe(false)
   })
 })

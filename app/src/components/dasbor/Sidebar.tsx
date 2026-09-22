@@ -29,7 +29,7 @@ import { prefetchRute } from '../../lib/prefetchRute'
  * navigasi /login lagi, lihat #38).
  */
 export function Sidebar({ onMasuk }: { onMasuk: () => void }) {
-  const { theme, toggleTheme } = useTheme()
+  const { theme, toggleTheme, tampilan, toggleTampilan } = useTheme()
   const { session } = useAuth()
   const { boleh, alasanRingkas } = useAksesHalaman()
 
@@ -130,6 +130,18 @@ export function Sidebar({ onMasuk }: { onMasuk: () => void }) {
               <path d="M20.5 14.6A8.5 8.5 0 019.4 3.5a8.5 8.5 0 1011.1 11.1z" />
             )}
           </svg>
+        </button>
+
+        {/* #223: sakelar rupa Lama/Baru. Teks, bukan ikon: "Baru"/"Lama"
+            menyebut ke mana tombol ini membawa. */}
+        <button
+          type="button"
+          className="dasbor-rail-tombol dasbor-rail-tampilan"
+          onClick={toggleTampilan}
+          aria-pressed={tampilan === 'baru'}
+          title={tampilan === 'baru' ? 'Kembali ke tampilan PAPAN lama' : 'Coba tampilan PAPAN Baru'}
+        >
+          <span className="dasbor-rail-kode">{tampilan === 'baru' ? 'Lama' : 'Baru'}</span>
         </button>
 
         {session ? (

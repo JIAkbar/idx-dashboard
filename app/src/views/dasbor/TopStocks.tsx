@@ -152,7 +152,7 @@ export function TopStocks() {
 
   if (loading && !hari) {
     return (
-      <div className="lantai">
+      <div className="lantai hal-top-stocks">
         {vhead()}
         <BilahTanggal tanggalTersedia={tanggalTersedia} tanggalAktif={tanggalAktif} onPilih={pilihTanggal} onRentang={gantiRentang} rentangAktif={rentang} />
         <div className="panel panel-b" style={{ textAlign: 'center', padding: '40px 20px' }}>
@@ -165,7 +165,7 @@ export function TopStocks() {
 
   if (error || !hari) {
     return (
-      <div className="lantai">
+      <div className="lantai hal-top-stocks">
         {vhead()}
         <BilahTanggal tanggalTersedia={tanggalTersedia} tanggalAktif={tanggalAktif} onPilih={pilihTanggal} onRentang={gantiRentang} rentangAktif={rentang} />
         <div className="panel panel-b" style={{ textAlign: 'center', padding: '40px 20px' }}>
@@ -190,7 +190,7 @@ export function TopStocks() {
   const labelRentang = rentang ? `${fmtTanggalPendek(rentang.mulai)} – ${fmtTanggalPendek(rentang.akhir)}` : null
 
   return (
-    <div className="lantai">
+    <div className="lantai hal-top-stocks">
       {vhead(tanggalAktif, hari?.sementara === true)}
       <BilahTanggal tanggalTersedia={tanggalTersedia} tanggalAktif={tanggalAktif} onPilih={pilihTanggal} onRentang={gantiRentang} rentangAktif={rentang} />
 

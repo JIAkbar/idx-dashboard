@@ -1,0 +1,81 @@
+/* ===== #223 TAMPILAN BARU — rupa PAPAN Baru untuk SEMUA halaman ============
+   Dinyalakan sakelar "Baru" di rail/laci (ThemeContext -> <html data-tampilan>).
+   Mode "lama" tak tersentuh: SETIAP aturan di berkas ini dan di
+   tampilan-baru/*.css diawali html[data-tampilan="baru"].
+
+   Yang berubah di sini (berlaku ke semua halaman sekaligus):
+   - palet: permukaan kartu PAPAN Baru (#141826), garis lebih halus, hijau/merah
+     lebih bersih — dan padanan tema terangnya;
+   - kartu (.panel): sudut 14px, tanpa garis bawah kepala, ruang dalam lega;
+   - huruf: dasar 14px (dari 13px), judul halaman besar, sub-judul terbaca.
+   Tata letak per halaman ada di tampilan-baru/<kelompok>.css. */
+
+@import './tampilan-baru/pasar-indeks.css';
+@import './tampilan-baru/pasar-peringkat.css';
+@import './tampilan-baru/arus.css';
+@import './tampilan-baru/emiten.css';
+@import './tampilan-baru/broker.css';
+@import './tampilan-baru/rekam.css';
+@import './tampilan-baru/terbitan.css';
+@import './tampilan-baru/pagi.css';
+
+/* ---- Token: gelap ---- */
+html[data-tampilan='baru'] .dasbor-shell[data-theme='dark'] {
+  --bg2: #141826; --bg3: #1B2031; --card: #141826; --card2: #1B2031;
+  --border: #2C3449;
+  --green: #3DD68C; --green-txt: #8BE8B9; --red: #F0596A; --red-txt: #F7A3AC;
+}
+html[data-tampilan='baru'] .lantai,
+html[data-tampilan='baru'] .dasbor-shell[data-theme='dark'] .lantai {
+  --bg1: #141826; --bg2: #1B2031; --bg3: #242A3D;
+  --line: #2C3449; --line2: #414B66;
+  --text2: #A9B0C4; --text3: #9AA2B8;
+  --green: #3DD68C; --green-dim: rgba(61,214,140,.12);
+  --red: #F0596A; --red-dim: rgba(240,89,106,.12);
+  --blue: #6FA8FF;
+  --r: 14px; --r-kecil: 10px;
+}
+/* ---- Token: terang ---- */
+html[data-tampilan='baru'] .dasbor-shell[data-theme='light'] {
+  --bg: #F4F5F7; --bg2: #FFFFFF; --bg3: #EBEDF1; --card: #FFFFFF; --card2: #F2F4F7;
+  --border: #E0E3E9;
+}
+html[data-tampilan='baru'] .dasbor-shell[data-theme='light'] .lantai {
+  --bg0: #F4F5F7; --bg1: #FFFFFF; --bg2: #F2F4F7; --bg3: #E7EAEF;
+  --line: #E0E3E9; --line2: #C7CCD6;
+  --text: #121521; --text2: #4B5263; --text3: #596073;
+  --green: #13784A; --green-dim: rgba(19,120,74,.09);
+  --red: #BD3B32; --red-dim: rgba(189,59,50,.08);
+  --blue: #2A62C9;
+}
+
+/* ---- Huruf & irama halaman ---- */
+html[data-tampilan='baru'] .lantai { font-size: 14px; line-height: 1.55; gap: 20px; }
+html[data-tampilan='baru'] .lantai .vhead { gap: 6px 14px; }
+html[data-tampilan='baru'] .lantai .vhead h1 {
+  font-size: clamp(24px, 2.2vw, 32px); letter-spacing: -.01em; line-height: 1.15; text-wrap: balance;
+}
+html[data-tampilan='baru'] .lantai .vhead .sub { font-size: 13.5px; color: var(--text2); }
+html[data-tampilan='baru'] .lantai .catatan-cakupan { font-size: 12.5px; }
+
+/* ---- Kartu ---- */
+html[data-tampilan='baru'] .lantai .panel {
+  background: var(--bg1); border: 1px solid var(--line); border-radius: var(--r);
+  box-shadow: none; min-width: 0;
+}
+html[data-tampilan='baru'] .dasbor-shell[data-theme='light'] .lantai .panel { box-shadow: 0 1px 2px rgba(18,21,33,.04); }
+html[data-tampilan='baru'] .lantai .panel-h {
+  border-bottom: 0; padding: 16px 18px 6px; min-height: 0;
+}
+html[data-tampilan='baru'] .lantai .panel-h .lbl,
+html[data-tampilan='baru'] .lantai .panel-h h2,
+html[data-tampilan='baru'] .lantai .panel-h h3 {
+  font-size: 15px; font-weight: 700; letter-spacing: 0; text-transform: none; color: var(--text);
+}
+html[data-tampilan='baru'] .lantai .panel-b { padding: 10px 18px 18px; }
+
+/* ---- Sakelar di rail ---- */
+.dasbor-rail-tampilan .dasbor-rail-kode {
+  font-size: 10px; font-weight: 700; padding: 3px 7px; border: 1px solid currentColor; border-radius: 999px;
+}
+html[data-tampilan='baru'] .dasbor-rail-tampilan { color: var(--accent); }

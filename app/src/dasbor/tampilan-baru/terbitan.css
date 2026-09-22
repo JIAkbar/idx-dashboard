@@ -1,0 +1,189 @@
+/* #223 Tampilan Baru — kelompok terbitan. Semua aturan WAJIB diawali html[data-tampilan="baru"].
+   Halaman: Bulletin (.hal-bulletin), Kabar (.hal-kabar), IPO Papan (.hal-ipo),
+   Seasonality (.seasonality — sudah ada di root sebelum #223), Metodologi (.mtd — sudah ada).
+   Artboard acuan: L4-Terbitan, L3-IPO, L3-Musiman, L1-Metodologi. DOM asli tiap halaman
+   (tabel/filter) jauh lebih sederhana dari artboard (kartu Deep Dive, garis waktu IPO,
+   layar-tanya Metodologi) — CSS-only tidak bisa membangun widget baru, jadi yang ditiru
+   di sini adalah BAHASA RUPA-nya: label kecil huruf besar, angka KPI mono besar, kartu
+   tanpa bingkai dalam, kendali lega. Lihat laporan tugas untuk yang tak tercapai lewat CSS. */
+
+/* ===== Kendali: tinggi ≥36px laptop, ≥44px ≤860px (spek §Kendali) ===== */
+html[data-tampilan='baru'] .lantai.hal-bulletin .tabs,
+html[data-tampilan='baru'] .lantai.hal-kabar .tabs,
+html[data-tampilan='baru'] .lantai.hal-ipo .tabs,
+html[data-tampilan='baru'] .lantai.seasonality .tabs {
+  min-height: 36px; padding: 4px;
+}
+html[data-tampilan='baru'] .lantai.hal-bulletin .tab,
+html[data-tampilan='baru'] .lantai.hal-kabar .tab,
+html[data-tampilan='baru'] .lantai.hal-ipo .tab,
+html[data-tampilan='baru'] .lantai.seasonality .tab {
+  height: 30px; font-size: 12px; padding: 0 16px;
+}
+html[data-tampilan='baru'] .lantai.hal-bulletin .inp,
+html[data-tampilan='baru'] .lantai.hal-kabar .inp,
+html[data-tampilan='baru'] .lantai.hal-ipo .inp,
+html[data-tampilan='baru'] .lantai.seasonality .inp,
+html[data-tampilan='baru'] .lantai.mtd .inp,
+html[data-tampilan='baru'] .lantai.hal-bulletin .dd-btn,
+html[data-tampilan='baru'] .lantai.hal-kabar .dd-btn,
+html[data-tampilan='baru'] .lantai.hal-ipo .dd-btn,
+html[data-tampilan='baru'] .lantai.seasonality .dd-btn,
+html[data-tampilan='baru'] .lantai.mtd .dd-btn,
+html[data-tampilan='baru'] .lantai.hal-bulletin .blt-dl,
+html[data-tampilan='baru'] .lantai.hal-bulletin .chip-t,
+html[data-tampilan='baru'] .lantai.seasonality .chip-t {
+  min-height: 36px; font-size: 12px;
+}
+@media (max-width: 860px) {
+  html[data-tampilan='baru'] .lantai.hal-bulletin .tab,
+  html[data-tampilan='baru'] .lantai.hal-kabar .tab,
+  html[data-tampilan='baru'] .lantai.hal-ipo .tab,
+  html[data-tampilan='baru'] .lantai.seasonality .tab,
+  html[data-tampilan='baru'] .lantai.hal-bulletin .inp,
+  html[data-tampilan='baru'] .lantai.hal-kabar .inp,
+  html[data-tampilan='baru'] .lantai.hal-ipo .inp,
+  html[data-tampilan='baru'] .lantai.seasonality .inp,
+  html[data-tampilan='baru'] .lantai.mtd .inp,
+  html[data-tampilan='baru'] .lantai.hal-bulletin .dd-btn,
+  html[data-tampilan='baru'] .lantai.hal-kabar .dd-btn,
+  html[data-tampilan='baru'] .lantai.hal-ipo .dd-btn,
+  html[data-tampilan='baru'] .lantai.seasonality .dd-btn,
+  html[data-tampilan='baru'] .lantai.mtd .dd-btn,
+  html[data-tampilan='baru'] .lantai.hal-bulletin .blt-dl,
+  html[data-tampilan='baru'] .lantai.hal-bulletin .chip-t,
+  html[data-tampilan='baru'] .lantai.seasonality .chip-t {
+    min-height: 44px;
+  }
+}
+
+/* ===== Typografi lantai (label + kepala tabel) — floor 12px ===== */
+html[data-tampilan='baru'] .lantai.hal-bulletin .lbl,
+html[data-tampilan='baru'] .lantai.hal-kabar .lbl,
+html[data-tampilan='baru'] .lantai.hal-ipo .lbl,
+html[data-tampilan='baru'] .lantai.seasonality .lbl,
+html[data-tampilan='baru'] .lantai.mtd .lbl {
+  font-size: 12px; letter-spacing: .1em;
+}
+html[data-tampilan='baru'] .lantai.hal-bulletin .tbl th,
+html[data-tampilan='baru'] .lantai.hal-ipo .tbl th,
+html[data-tampilan='baru'] .lantai.seasonality .tbl th {
+  font-size: 12px; letter-spacing: .08em; padding: 8px 10px;
+}
+html[data-tampilan='baru'] .lantai.hal-bulletin .tbl td,
+html[data-tampilan='baru'] .lantai.hal-ipo .tbl td,
+html[data-tampilan='baru'] .lantai.seasonality .tbl td {
+  padding: 8px 10px;
+}
+html[data-tampilan='baru'] .lantai.hal-bulletin .vhead .sub,
+html[data-tampilan='baru'] .lantai.hal-ipo .vhead .sub,
+html[data-tampilan='baru'] .lantai.seasonality .vhead .sub {
+  font-size: 13px; color: var(--text2); max-width: 72ch;
+}
+
+/* ===== Bulletin — daftar edisi ===== */
+html[data-tampilan='baru'] .lantai.hal-bulletin .blt-no,
+html[data-tampilan='baru'] .lantai.hal-bulletin .blt-dl,
+html[data-tampilan='baru'] .lantai.hal-bulletin .bchip,
+html[data-tampilan='baru'] .lantai.hal-bulletin .ytd-bdg {
+  font-size: 12px;
+}
+html[data-tampilan='baru'] .lantai.hal-bulletin .panel-h.blt-h {
+  padding: 16px 18px 12px; gap: 10px;
+}
+/* Baris hasil H+5 / probabilitas yang mekar di bawah tabel — kartu dalam
+   kartu (sudah bg2 lewat inline style bawaan komponen), cukup dirapikan. */
+html[data-tampilan='baru'] .lantai.hal-bulletin .pgh-judul { font-size: 13px; }
+html[data-tampilan='baru'] .lantai.hal-bulletin .pgh-kalimat { font-size: 12px; }
+
+/* ===== Kabar — daftar berita ===== */
+html[data-tampilan='baru'] .lantai.hal-kabar .kbr-meta {
+  font-size: 12px; gap: 10px;
+}
+html[data-tampilan='baru'] .lantai.hal-kabar .kbr-judul {
+  font-size: 14px; line-height: 1.6; min-height: calc(2 * 1.6em);
+}
+html[data-tampilan='baru'] .lantai.hal-kabar .kbr-sumber {
+  font-size: 13px;
+}
+/* Kartu dalam kartu (§Kartu): bingkai dalam dihapus, tinggal latar bg2.
+   Penanda "resmi" (pengumuman IDX) tetap punya aksen kiri — itu status,
+   bukan hiasan. */
+html[data-tampilan='baru'] .lantai.hal-kabar .kbr-it {
+  border: 0; border-left: 3px solid transparent; padding: 14px 16px;
+}
+html[data-tampilan='baru'] .lantai.hal-kabar .kbr-it.resmi {
+  border-left-color: var(--amber);
+}
+
+/* ===== IPO Papan ===== */
+/* KPI utama (ringkasan seluruh tahun) — angka mono besar, spek §Huruf. */
+html[data-tampilan='baru'] .lantai.hal-ipo .rasio .v {
+  font-size: 28px; line-height: 1.1;
+}
+html[data-tampilan='baru'] .lantai.hal-ipo .rasio .sub {
+  font-size: 12px;
+}
+html[data-tampilan='baru'] .lantai.hal-ipo .rasio > div {
+  padding: 16px 16px;
+}
+/* Kartu per tahun: kartu dalam kartu (.vcard bg1 di dalam .panel bg1 +
+   bingkai) → latar bg2 tanpa bingkai, sama pola dengan kartu langkah di
+   artboard L3-IPO. */
+html[data-tampilan='baru'] .lantai.hal-ipo .vcard {
+  background: var(--bg2); border: 0; padding: 16px;
+}
+html[data-tampilan='baru'] .lantai.hal-ipo .vcard .v-num {
+  font-size: 24px;
+}
+html[data-tampilan='baru'] .lantai.hal-ipo .vcard .v-note,
+html[data-tampilan='baru'] .lantai.hal-ipo .ipo-hrow,
+html[data-tampilan='baru'] .lantai.hal-ipo .ipo-hrow-n {
+  font-size: 12px;
+}
+html[data-tampilan='baru'] .lantai.hal-ipo .ipo-uw-cell .chip-t {
+  font-size: 12px; padding: 4px 10px;
+}
+
+/* ===== Seasonality — matriks musiman ===== */
+html[data-tampilan='baru'] .lantai.seasonality .sea-matriks tbody th .rg,
+html[data-tampilan='baru'] .lantai.seasonality .sea-saran-it .rg,
+html[data-tampilan='baru'] .lantai.seasonality .sea-saran-it .nm,
+html[data-tampilan='baru'] .lantai.seasonality .sea-legenda,
+html[data-tampilan='baru'] .lantai.seasonality .sea-bar-baris .th,
+html[data-tampilan='baru'] .lantai.seasonality .sea-bar-baris .ag,
+html[data-tampilan='baru'] .lantai.seasonality .sea-uji-baris .pv {
+  font-size: 12px;
+}
+html[data-tampilan='baru'] .lantai.seasonality .sea-laci-angka .besar {
+  font-size: 30px;
+}
+html[data-tampilan='baru'] .lantai.seasonality .sea-cari-blok {
+  gap: 14px;
+}
+
+/* ===== Metodologi — kartu penjelasan + glosarium ===== */
+/* Kartu "cara menghitung": kartu dalam kartu → bingkai dihapus, hanya bg2,
+   ruang dalam dilonggarkan supaya tak terasa bertumpuk (keluhan Johan). */
+html[data-tampilan='baru'] .lantai.mtd .mtd-kartu {
+  border: 0; padding: 18px 20px; margin-bottom: 12px;
+}
+html[data-tampilan='baru'] .lantai.mtd .mtd-kartu h3 {
+  font-size: 16px; margin-bottom: 10px;
+}
+html[data-tampilan='baru'] .lantai.mtd .mtd-kartu p {
+  font-size: 14px; line-height: 1.75; max-width: 72ch;
+}
+html[data-tampilan='baru'] .lantai.mtd .mtd-entri {
+  border: 0; padding: 14px 16px;
+}
+html[data-tampilan='baru'] .lantai.mtd .mtd-entri h4 {
+  font-size: 14px;
+}
+html[data-tampilan='baru'] .lantai.mtd .mtd-frek,
+html[data-tampilan='baru'] .lantai.mtd .mtd-catatan {
+  font-size: 12px;
+}
+html[data-tampilan='baru'] .lantai.mtd .mtd-def {
+  font-size: 13px;
+}

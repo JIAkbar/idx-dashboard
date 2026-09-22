@@ -109,7 +109,7 @@ export function TopBroker() {
 
   if (loading && !hari) {
     return (
-      <div className="lantai">
+      <div className="lantai hal-broker-pasar">
         {vhead()}
         <BilahTanggal tanggalTersedia={tanggalTersedia} tanggalAktif={tanggalAktif} onPilih={pilihTanggal} />
         <div className="panel panel-b" style={{ textAlign: 'center', padding: '40px 20px' }}>
@@ -122,7 +122,7 @@ export function TopBroker() {
 
   if (error || !hari) {
     return (
-      <div className="lantai">
+      <div className="lantai hal-broker-pasar">
         {vhead()}
         <BilahTanggal tanggalTersedia={tanggalTersedia} tanggalAktif={tanggalAktif} onPilih={pilihTanggal} />
         <div className="panel panel-b" style={{ textAlign: 'center', padding: '40px 20px' }}>
@@ -157,7 +157,7 @@ export function TopBroker() {
   ))
 
   return (
-    <div className="lantai">
+    <div className="lantai hal-broker-pasar">
       {vhead(tanggalAktif, hari?.sementara === true)}
       <BilahTanggal tanggalTersedia={tanggalTersedia} tanggalAktif={tanggalAktif} onPilih={pilihTanggal} />
       <div className="bilah-kendali">

@@ -87,7 +87,7 @@ export function Kabar() {
   const tampil = tersaring.slice(hal * PER_HAL, (hal + 1) * PER_HAL)
 
   return (
-    <div className="lantai">
+    <div className="lantai hal-kabar">
       <section className="panel">
         <div className="panel-h kbr-h">
           {/* h1, bukan span: nama halaman ini sudah tercetak di sini, jadi

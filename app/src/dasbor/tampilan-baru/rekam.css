@@ -1,0 +1,204 @@
+/* #223 Tampilan Baru — kelompok rekam. Semua aturan WAJIB diawali html[data-tampilan="baru"].
+   Halaman: Jago Papan (.jgp, /jago-papan), Screener (.hal-screener, /screener),
+   Winrate PAPAN (.wr, /winrate), Kartu Analisa Emiten (.hal-kartu, /kartu).
+   Acuan artboard: L4-Jago(-Tel) = "Rekam Jejak" (nav Jago Papan/Terbitan/Screener,
+   isinya KPI winrate + tabel preset — dipakai untuk Winrate PAPAN), L4-Screener(-Tel)
+   = kandidat Deep Dive (corong angka + tabel skor berbatang — dipakai untuk Screener).
+   L1-Bukti(-Tel) = kartu statistik ringkas (dipakai bahasa rupa umum untuk Kartu
+   Analisa: kartu padat angka mono besar, label kecil huruf besar). Jago Papan sendiri
+   tak punya artboard 1:1 (tabel tunggal) — dasarnya bahasa rupa umum tampilan-baru.css. */
+
+/* ============================================================
+   BERSAMA — kendali & label kecil, berlaku ke 4 halaman kelompok ini.
+   ============================================================ */
+
+/* Tinggi kendali ≥36px laptop (naik dari 32px canonical #170), ≥44px ≤860px. */
+html[data-tampilan='baru'] .lantai.jgp .tabs,
+html[data-tampilan='baru'] .lantai.hal-screener .tabs,
+html[data-tampilan='baru'] .lantai.wr .tabs,
+html[data-tampilan='baru'] .lantai.hal-kartu .tabs {
+  min-height: 36px;
+}
+html[data-tampilan='baru'] .lantai.jgp .tab,
+html[data-tampilan='baru'] .lantai.jgp .chip-t,
+html[data-tampilan='baru'] .lantai.jgp .dd-btn,
+html[data-tampilan='baru'] .lantai.jgp .btn-p,
+html[data-tampilan='baru'] .lantai.jgp .inp,
+html[data-tampilan='baru'] .lantai.hal-screener .tab,
+html[data-tampilan='baru'] .lantai.hal-screener .chip-t,
+html[data-tampilan='baru'] .lantai.hal-screener .dd-btn,
+html[data-tampilan='baru'] .lantai.hal-screener .btn-p,
+html[data-tampilan='baru'] .lantai.hal-screener .inp,
+html[data-tampilan='baru'] .lantai.wr .tab,
+html[data-tampilan='baru'] .lantai.wr .chip-t,
+html[data-tampilan='baru'] .lantai.wr .dd-btn,
+html[data-tampilan='baru'] .lantai.wr .btn-p,
+html[data-tampilan='baru'] .lantai.wr .inp,
+html[data-tampilan='baru'] .lantai.hal-kartu .tab,
+html[data-tampilan='baru'] .lantai.hal-kartu .chip-t,
+html[data-tampilan='baru'] .lantai.hal-kartu .dd-btn,
+html[data-tampilan='baru'] .lantai.hal-kartu .btn-p,
+html[data-tampilan='baru'] .lantai.hal-kartu .inp {
+  height: 36px;
+  font-size: 12px;
+}
+@media (max-width: 860px) {
+  html[data-tampilan='baru'] .lantai.jgp .tabs,
+  html[data-tampilan='baru'] .lantai.hal-screener .tabs,
+  html[data-tampilan='baru'] .lantai.wr .tabs,
+  html[data-tampilan='baru'] .lantai.hal-kartu .tabs {
+    min-height: 44px;
+  }
+  html[data-tampilan='baru'] .lantai.jgp .tab,
+  html[data-tampilan='baru'] .lantai.jgp .chip-t,
+  html[data-tampilan='baru'] .lantai.jgp .dd-btn,
+  html[data-tampilan='baru'] .lantai.jgp .btn-p,
+  html[data-tampilan='baru'] .lantai.jgp .inp,
+  html[data-tampilan='baru'] .lantai.hal-screener .tab,
+  html[data-tampilan='baru'] .lantai.hal-screener .chip-t,
+  html[data-tampilan='baru'] .lantai.hal-screener .dd-btn,
+  html[data-tampilan='baru'] .lantai.hal-screener .btn-p,
+  html[data-tampilan='baru'] .lantai.hal-screener .inp,
+  html[data-tampilan='baru'] .lantai.wr .tab,
+  html[data-tampilan='baru'] .lantai.wr .chip-t,
+  html[data-tampilan='baru'] .lantai.wr .dd-btn,
+  html[data-tampilan='baru'] .lantai.wr .btn-p,
+  html[data-tampilan='baru'] .lantai.wr .inp,
+  html[data-tampilan='baru'] .lantai.hal-kartu .tab,
+  html[data-tampilan='baru'] .lantai.hal-kartu .chip-t,
+  html[data-tampilan='baru'] .lantai.hal-kartu .dd-btn,
+  html[data-tampilan='baru'] .lantai.hal-kartu .btn-p,
+  html[data-tampilan='baru'] .lantai.hal-kartu .inp {
+    height: 44px;
+  }
+}
+
+/* Label kecil huruf besar → 12px (dari 9-10px), letter-spacing .1em, text3. */
+html[data-tampilan='baru'] .lantai.jgp .lbl,
+html[data-tampilan='baru'] .lantai.jgp .tbl th,
+html[data-tampilan='baru'] .lantai.hal-screener .lbl,
+html[data-tampilan='baru'] .lantai.hal-screener .tbl th,
+html[data-tampilan='baru'] .lantai.hal-screener .grup-lbl,
+html[data-tampilan='baru'] .lantai.wr .lbl,
+html[data-tampilan='baru'] .lantai.wr .tbl th,
+html[data-tampilan='baru'] .lantai.hal-kartu .lbl,
+html[data-tampilan='baru'] .lantai.hal-kartu .tbl th,
+html[data-tampilan='baru'] .lantai.hal-kartu .grup-lbl,
+html[data-tampilan='baru'] .lantai.hal-kartu .blok h4 {
+  font-size: 12px;
+  letter-spacing: .1em;
+}
+
+/* Teks narasi/keterangan kecil (11-11.5px) → 12px, di keempat halaman. */
+html[data-tampilan='baru'] .lantai.jgp .muted,
+html[data-tampilan='baru'] .lantai.jgp .asal,
+html[data-tampilan='baru'] .lantai.hal-screener .muted,
+html[data-tampilan='baru'] .lantai.hal-screener .asal,
+html[data-tampilan='baru'] .lantai.wr .muted,
+html[data-tampilan='baru'] .lantai.wr .asal,
+html[data-tampilan='baru'] .lantai.wr .wr-meta,
+html[data-tampilan='baru'] .lantai.wr .wr-sub,
+html[data-tampilan='baru'] .lantai.wr .wr-daftar,
+html[data-tampilan='baru'] .lantai.wr .wr-kaki,
+html[data-tampilan='baru'] .lantai.wr .wr-tile .t-name,
+html[data-tampilan='baru'] .lantai.wr .wr-tile .t-code,
+html[data-tampilan='baru'] .lantai.wr .wr-lencana,
+html[data-tampilan='baru'] .lantai.hal-kartu .muted,
+html[data-tampilan='baru'] .lantai.hal-kartu .asal,
+html[data-tampilan='baru'] .lantai.hal-kartu .kta-nama,
+html[data-tampilan='baru'] .lantai.hal-kartu .kta-harga small,
+html[data-tampilan='baru'] .lantai.hal-kartu .kta-kaki,
+html[data-tampilan='baru'] .lantai.hal-kartu .kta-lihat summary,
+html[data-tampilan='baru'] .lantai.hal-kartu .kta-lencana,
+html[data-tampilan='baru'] .lantai.hal-kartu .kta-struktur,
+html[data-tampilan='baru'] .lantai.hal-kartu .badge,
+html[data-tampilan='baru'] .lantai.hal-kartu .lvl em {
+  font-size: 12px;
+}
+
+/* Angka KPI utama — mono besar (24-32px), bukan 15-24px bawaan .tile/.t-val. */
+html[data-tampilan='baru'] .lantai.wr .wr-tile .t-val {
+  font-size: clamp(24px, 2.4vw, 32px);
+}
+
+/* ============================================================
+   Kotak peringatan/batas bermerah → latar netral, hanya LABEL berwarna
+   (keluhan Johan: "kotak peringatan merah menyala"). Kartu Analisa saja
+   yang punya kotak jenis ini di kelompok ini (.blok-kosong, .catat.awas).
+   ============================================================ */
+html[data-tampilan='baru'] .lantai.hal-kartu .blok.blok-kosong {
+  background: var(--bg2);
+  border-color: var(--line);
+}
+html[data-tampilan='baru'] .lantai.hal-kartu .catat.awas {
+  background: var(--bg2);
+  border-color: var(--line);
+}
+
+/* ============================================================
+   JAGO PAPAN (.jgp) — satu panel, satu tabel lebar. Bahasa rupa umum
+   tampilan-baru.css (kartu, judul, huruf) sudah cukup; di sini cuma
+   jarak bilah kendali supaya tak dempet saat baris kedua (.jgp-aturan)
+   ikut tampil.
+   ============================================================ */
+html[data-tampilan='baru'] .lantai.jgp .jgp-kepala {
+  gap: 12px;
+}
+html[data-tampilan='baru'] .lantai.jgp .jgp-aturan {
+  font-size: 14px;
+  color: var(--text2);
+  max-width: 72ch;
+}
+
+/* ============================================================
+   SCREENER (.hal-screener) — bilah saring padat + tiga sub-tampilan.
+   Artboard L4-Screener: strip kendali di atas, tabel lebar di bawah, tanpa
+   kartu bersarang berbingkai ganda — sudah begitu di struktur yang ada;
+   di sini cuma merapikan jarak bilah & baris chip aktif di layar sempit.
+   ============================================================ */
+html[data-tampilan='baru'] .lantai.hal-screener .scr-alat {
+  gap: 10px;
+}
+html[data-tampilan='baru'] .lantai.hal-screener .scr-chips-aktif {
+  gap: 8px;
+}
+@media (max-width: 860px) {
+  html[data-tampilan='baru'] .lantai.hal-screener .af-cari.scr-cari {
+    max-width: none;
+    width: 100%;
+  }
+}
+
+/* ============================================================
+   WINRATE PAPAN (.wr) — artboard L4-Jago "Rekam Jejak": strip KPI di atas,
+   dua kartu bersisian, tabel di bawah. Struktur grid (.wr-kpi/.wr-duo) sudah
+   minmax responsif di WinratePapan.css; di sini cuma jarak & lebar penuh
+   kolom ganda di layar sempit.
+   ============================================================ */
+html[data-tampilan='baru'] .lantai.wr .wr-kpi {
+  gap: 12px;
+}
+@media (max-width: 860px) {
+  html[data-tampilan='baru'] .lantai.wr .wr-kpi .tile {
+    flex: 1 1 100%;
+  }
+}
+
+/* ============================================================
+   KARTU ANALISA (.hal-kartu) — artboard L1-Bukti: kartu padat, angka mono
+   besar, label kecil huruf besar. Grid enam blok dikunci 3 kolom di
+   KartuAnalisa.css (900px→2, 640px→1) — spek kelompok ini minta satu kolom
+   sudah di bawah 860px, jadi ditimpa di sini (spesifisitas lebih tinggi,
+   menang atas breakpoint lama tanpa mengubah berkas itu).
+   ============================================================ */
+html[data-tampilan='baru'] .lantai.hal-kartu .kta-tik {
+  font-family: var(--mono);
+}
+html[data-tampilan='baru'] .lantai.hal-kartu .kta-harga {
+  font-size: clamp(22px, 2.2vw, 28px);
+}
+@media (max-width: 860px) {
+  html[data-tampilan='baru'] .lantai.hal-kartu .kta-kartu .blok-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

@@ -141,10 +141,10 @@ export default function Bandarmologi() {
     </div>
   )
 
-  if (memuat) return <div className="lantai">{vhead()}<div className="panel panel-b">Memuat…</div></div>
+  if (memuat) return <div className="lantai hal-bandarmologi">{vhead()}<div className="panel panel-b">Memuat…</div></div>
   if (galat || !data) {
     return (
-      <div className="lantai">{vhead()}
+      <div className="lantai hal-bandarmologi">{vhead()}
         <div className="panel panel-b bm-kosong">
           <p><IkonMenu d={IKON_PERINGATAN} size={28} /></p>
           <p className="lbl">Data belum dibangun untuk hari ini.</p>
@@ -156,7 +156,7 @@ export default function Bandarmologi() {
   const lipat = data.ambang.lipat_timpang
 
   return (
-    <div className="lantai">
+    <div className="lantai hal-bandarmologi">
       {vhead(data.tanggal)}
 
       <p className="bm-pengantar">

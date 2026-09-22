@@ -224,7 +224,7 @@ export function HarianPapan() {
 
   if (!tanggalData) {
     return (
-      <div className="lantai">
+      <div className="lantai hal-harian-papan">
         <div className="vhead"><h1>Harian Papan</h1></div>
         <div className="panel panel-b" style={{ textAlign: 'center', padding: '40px 20px' }}>
           <p><IkonMenu d={IKON_PERINGATAN} size={28} /></p>
@@ -239,7 +239,7 @@ export function HarianPapan() {
   const sisa = urut.length - tampilBaris.length
 
   return (
-    <div className="lantai">
+    <div className="lantai hal-harian-papan">
       <div className="vhead">
         <h1>Harian Papan</h1>
         <BedaSkor halaman="harian" />

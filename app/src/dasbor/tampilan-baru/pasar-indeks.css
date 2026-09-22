@@ -1,0 +1,90 @@
+/* #223 Tampilan Baru — kelompok pasar-indeks. Semua aturan WAJIB diawali html[data-tampilan="baru"]. */
+
+/* Halaman: IndeksDunia.tsx (/indeks, .hal-indeks), SektorPasar.tsx
+   (/sector, .hal-sektor — cuma tab Rotasi & Aktivitas yang dibungkus
+   .lantai; tab "Sektor" pakai SektorIndeks.tsx yang di luar berkas yang
+   boleh disentuh #223, jadi tak diberi kelas penanda dan tak tersentuh di
+   sini), ChartIndeks.tsx (/chart, .hal-chart). Artboard acuan L2-Indeks
+   cuma untuk /indeks; /sector & /chart pakai bahasa rupa yang sama tanpa
+   artboard sendiri.
+
+   lantai.css DILARANG disentuh (dipakai semua halaman) — komponen kanonis
+   di sana (.lbl, .chip-t K4, .dd-btn K4, BatangPeringkat .rk-*, tabel .tbl
+   th) masih 9-11,5px, di bawah lantai huruf minimum #223 (12px). Floornya
+   diulang di sini, per halaman. */
+
+html[data-tampilan='baru'] .lantai.hal-indeks .lbl,
+html[data-tampilan='baru'] .lantai.hal-sektor .lbl,
+html[data-tampilan='baru'] .lantai.hal-chart .lbl {
+  font-size: 12px; letter-spacing: .1em; color: var(--text3);
+}
+html[data-tampilan='baru'] .lantai.hal-indeks .chip-t,
+html[data-tampilan='baru'] .lantai.hal-sektor .chip-t,
+html[data-tampilan='baru'] .lantai.hal-chart .chip-t,
+html[data-tampilan='baru'] .lantai.hal-indeks .dd-btn,
+html[data-tampilan='baru'] .lantai.hal-sektor .dd-btn,
+html[data-tampilan='baru'] .lantai.hal-chart .dd-btn {
+  font-size: 12px;
+}
+html[data-tampilan='baru'] .lantai.hal-indeks .tbl th,
+html[data-tampilan='baru'] .lantai.hal-sektor .tbl th,
+html[data-tampilan='baru'] .lantai.hal-chart .tbl th {
+  font-size: 12px;
+}
+
+/* ===== /indeks — IndeksDunia ===== */
+
+/* Papan IHSG: ruang napas lebih lega + label ruas (Volume/Nilai/…) ikut
+   floor 12px lewat .lbl di atas. */
+html[data-tampilan='baru'] .lantai.hal-indeks .board {
+  padding: 22px 24px; gap: 30px;
+}
+html[data-tampilan='baru'] .lantai.hal-indeks .board-meta {
+  gap: 26px; padding-top: 16px; margin-top: 16px; border-top: 1px solid var(--line);
+}
+html[data-tampilan='baru'] .lantai.hal-indeks .board-side .num {
+  font-size: 12px !important;
+}
+html[data-tampilan='baru'] .lantai.hal-indeks .nf-unit,
+html[data-tampilan='baru'] .lantai.hal-indeks .adt-u,
+html[data-tampilan='baru'] .lantai.hal-indeks .adt-s,
+html[data-tampilan='baru'] .lantai.hal-indeks .lilin-catatan,
+html[data-tampilan='baru'] .lantai.hal-indeks .be-pil,
+html[data-tampilan='baru'] .lantai.hal-indeks .rk-no,
+html[data-tampilan='baru'] .lantai.hal-indeks .rk-v {
+  font-size: 12px;
+}
+
+/* Kartu di dalam kartu (keluhan Johan): ruas rentang pasar (.vcard) duduk
+   di dalam .panel yang sudah punya bingkai sendiri — bingkai dalamnya
+   dibuang, latar dibedakan tipis lewat --bg2 (aturan #223 baris 20). */
+html[data-tampilan='baru'] .lantai.hal-indeks .panel .vcard {
+  border: 0; background: var(--bg2); padding: 12px 14px;
+}
+
+/* ===== /sector — Rotasi & Aktivitas (Sektor sendiri di luar cakupan) ===== */
+
+html[data-tampilan='baru'] .lantai.hal-sektor .np-sumber,
+html[data-tampilan='baru'] .lantai.hal-sektor .np-kv > span,
+html[data-tampilan='baru'] .lantai.hal-sektor .np-rrg-legenda,
+html[data-tampilan='baru'] .lantai.hal-sektor .np-rrg-nama,
+html[data-tampilan='baru'] .lantai.hal-sektor .np-rrg-emiten-judul,
+html[data-tampilan='baru'] .lantai.hal-sektor .np-rrg-kode,
+html[data-tampilan='baru'] .lantai.hal-sektor .np-lbl,
+html[data-tampilan='baru'] .lantai.hal-sektor .np-n-sel,
+html[data-tampilan='baru'] .lantai.hal-sektor .np-parsial,
+html[data-tampilan='baru'] .lantai.hal-sektor .np-broker-badges {
+  font-size: 12px;
+}
+
+/* ===== /chart — ChartIndeks: dua panel (pemilih grup+simbol, heatmap) ===== */
+
+html[data-tampilan='baru'] .lantai.hal-chart .tv-section-inner {
+  border-radius: var(--r-kecil);
+}
+
+@media (max-width: 860px) {
+  html[data-tampilan='baru'] .lantai.hal-indeks .board {
+    padding: 16px 18px; gap: 20px;
+  }
+}

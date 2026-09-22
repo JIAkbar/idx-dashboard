@@ -3728,7 +3728,7 @@ export function GrafikEmiten() {
   const kerangkaAktif = KERANGKA.find((k) => k.id === kerangka)
 
   return (
-    <div className="lantai">
+    <div className="lantai hal-grafik-emiten">
       {/* Tanpa judul by design (langsung chart) — C+A gelombang 3, 28 Agu.
           Catatan cakupan broker yang dulu dibungkus di sini DICABUT 7 Sep 2026
           bersama sepuluh pemakai lainnya (Johan menyebutnya tiga kali). */}

@@ -901,7 +901,7 @@ export default function WhalesPapan() {
     modeBaris === 'signifikan' ? saringSignifikan(baris, nilai) : baris
 
   return (
-    <div className="lantai">
+    <div className="lantai hal-whales">
       <div className="vhead">
         <h1>Whales Papan</h1>
       </div>

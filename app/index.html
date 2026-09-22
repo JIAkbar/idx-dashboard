@@ -80,6 +80,8 @@
           else if (s === 'sistem') t = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
         } catch (e) { /* private mode — pakai default */ }
         document.documentElement.dataset.tema = t;
+        // #223: rupa Lama/Baru dipasang sebelum React supaya tak berkedip.
+        try { document.documentElement.dataset.tampilan = localStorage.getItem('papan-tampilan') === 'baru' ? 'baru' : 'lama'; } catch (e) { /* abaikan */ }
       })();
     </script>
   </head>

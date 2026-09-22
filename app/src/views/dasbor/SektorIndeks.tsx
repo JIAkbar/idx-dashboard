@@ -213,7 +213,7 @@ export function SektorIndeks() {
 
   if (loading && !hari) {
     return (
-      <div className="lantai">
+      <div className="lantai hal-sektor">
         {vhead()}
         <BilahTanggal tanggalTersedia={tanggalTersedia} tanggalAktif={tanggalAktif} onPilih={pilihTanggal} onRentang={gantiRentang} rentangAktif={rentang} memuat={loading && !hari} />
         <div className="panel panel-b" style={{ textAlign: 'center', padding: '40px 20px' }}>
@@ -226,7 +226,7 @@ export function SektorIndeks() {
 
   if (error || !hari) {
     return (
-      <div className="lantai">
+      <div className="lantai hal-sektor">
         {vhead()}
         <BilahTanggal tanggalTersedia={tanggalTersedia} tanggalAktif={tanggalAktif} onPilih={pilihTanggal} onRentang={gantiRentang} rentangAktif={rentang} memuat={loading && !hari} />
         <div className="panel panel-b" style={{ textAlign: 'center', padding: '40px 20px' }}>
@@ -310,7 +310,7 @@ export function SektorIndeks() {
   ]
 
   return (
-    <div className="lantai">
+    <div className="lantai hal-sektor">
       {vhead(tanggalAktif, hari?.sementara === true)}
       <BilahTanggal tanggalTersedia={tanggalTersedia} tanggalAktif={tanggalAktif} onPilih={pilihTanggal} onRentang={gantiRentang} rentangAktif={rentang} memuat={loading && !hari} />
 

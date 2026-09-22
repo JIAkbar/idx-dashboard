@@ -272,7 +272,7 @@ export function Bulletin() {
   )
 
   return (
-    <div className="lantai">
+    <div className="lantai hal-bulletin">
       <div className="vhead">
         <h1>Bulletin Arus Pasar</h1>
       </div>

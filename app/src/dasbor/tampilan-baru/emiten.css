@@ -1,0 +1,209 @@
+/* #223 Tampilan Baru — kelompok emiten. Semua aturan WAJIB diawali html[data-tampilan="baru"]. */
+
+/* ============================================================
+   StockDetail (/stock-detail) — html[data-tampilan="baru"] .lantai.hal-stock-detail
+   Tanpa artboard 1:1 — mengikuti bahasa rupa umum #223: label besar 12px,
+   kartu tanpa bingkai ganda, angka utama lewat --mono.
+   ============================================================ */
+
+/* Label kecil (nama kelas generik `.lbl` dipakai di mana-mana di halaman
+   ini: ticker, "Mkt Cap", sub rasio, "Terakhir dilihat") — 10px dasar naik
+   ke 12px, spasi huruf dirapikan supaya tak melebar berlebihan di 12px. */
+html[data-tampilan='baru'] .lantai.hal-stock-detail .lbl {
+  font-size: 12px; letter-spacing: .08em;
+}
+html[data-tampilan='baru'] .lantai.hal-stock-detail .hero .ident .tk {
+  font-size: 12px;
+}
+html[data-tampilan='baru'] .lantai.hal-stock-detail .hero .ident .sek,
+html[data-tampilan='baru'] .lantai.hal-stock-detail .sd-pengendali {
+  font-size: 12px; line-height: 1.6;
+}
+html[data-tampilan='baru'] .lantai.hal-stock-detail .badge {
+  font-size: 12px; padding: 3px 10px;
+}
+
+/* Harga utama — angka KPI, ambil batas atas rentang (24-32px) yang diizinkan
+   spek supaya tetap jadi jangkar visual hero tanpa melanggar aturan skala. */
+html[data-tampilan='baru'] .lantai.hal-stock-detail .hero .harga .px {
+  font-size: 32px;
+}
+html[data-tampilan='baru'] .lantai.hal-stock-detail .hero .rng .mm {
+  font-size: 12px;
+}
+html[data-tampilan='baru'] .lantai.hal-stock-detail .hero .statgrid .v {
+  font-size: 16px;
+}
+
+/* Strip rasio (P/E, P/B, P/S, Earnings Yield, Div Yield, FCF/Share) — enam
+   sel dengan angka sedang; dinaikkan dari 15px supaya sejajar bahasa "angka
+   sehat" rancangan acuan, sub-nya (fwd/EPS/BV) naik dari 9.5px ke minimum. */
+html[data-tampilan='baru'] .lantai.hal-stock-detail .rasio .v {
+  font-size: 20px;
+}
+html[data-tampilan='baru'] .lantai.hal-stock-detail .rasio .sub {
+  font-size: 12px;
+}
+
+/* Tab Statistik/Valuasi/Banding — target sentuh naik dari 26px. */
+html[data-tampilan='baru'] .lantai.hal-stock-detail .tabs {
+  min-height: 44px; padding: 4px;
+}
+html[data-tampilan='baru'] .lantai.hal-stock-detail .tab {
+  height: 36px; font-size: 12.5px;
+}
+
+/* Keadaan kosong — kalimat ajakan cari jadi teks narasi 14px, bukan label
+   kecil 13px bawaan. */
+html[data-tampilan='baru'] .lantai.hal-stock-detail .empty p {
+  font-size: 14px;
+}
+
+/* Kartu di dalam kartu (Profil Perusahaan → Kantor Pusat / Sekretaris /
+   Pencatatan Awal) — hapus bingkai dalam, latar `--bg2` menggantikan
+   `--bg1` + border supaya bedanya cuma satu lapis, bukan kotak berbingkai
+   bertumpuk. Panel Rasio Bank / Peringkat Peer di `.duo` tidak kena aturan
+   ini — keduanya kartu tingkat pertama, bukan bersarang. */
+html[data-tampilan='baru'] .lantai.hal-stock-detail .panel-b .panel {
+  border: 0; background: var(--bg2);
+}
+html[data-tampilan='baru'] .lantai.hal-stock-detail .panel-b .panel .panel-h {
+  padding: 12px 14px 4px;
+}
+html[data-tampilan='baru'] .lantai.hal-stock-detail .panel-b .panel .panel-b {
+  padding: 6px 14px 14px;
+}
+
+/* ============================================================
+   GrafikEmiten (/grafik) — html[data-tampilan="baru"] .lantai.hal-grafik-emiten
+   Kanvas (.grf-chart-wrap/.grf-kanvas-*) TIDAK disentuh (instruksi pemanggil).
+   Yang ditata: kendali di bilah atas/bawah, kotak template/panduan/replay.
+   ============================================================ */
+
+/* Bilah atas & bawah — target sentuh naik ke standar #223 (36px laptop). */
+html[data-tampilan='baru'] .lantai.hal-grafik-emiten .grf-toolbar > .ti,
+html[data-tampilan='baru'] .lantai.hal-grafik-emiten .grf-jenis .ti {
+  width: 36px; height: 36px;
+}
+html[data-tampilan='baru'] .lantai.hal-grafik-emiten .grf-menu .dd-btn,
+html[data-tampilan='baru'] .lantai.hal-grafik-emiten .grf-toolbar .tlp,
+html[data-tampilan='baru'] .lantai.hal-grafik-emiten .grf-cari .inp {
+  height: 36px; font-size: 12px;
+}
+html[data-tampilan='baru'] .lantai.hal-grafik-emiten .grf-kerangka .chip-t {
+  font-size: 12px; padding: 6px 12px;
+}
+html[data-tampilan='baru'] .lantai.hal-grafik-emiten .grf-kode-aktif {
+  font-size: 12.5px;
+}
+
+/* Kaki kanvas (rentang tampil, sisi broker, jam) — label & pil naik ke 12px. */
+html[data-tampilan='baru'] .lantai.hal-grafik-emiten .grf-kaki-rentang .chip-t,
+html[data-tampilan='baru'] .lantai.hal-grafik-emiten .grf-kaki-sisi .chip-t,
+html[data-tampilan='baru'] .lantai.hal-grafik-emiten .grf-kaki-chip {
+  font-size: 12px; padding: 5px 12px;
+}
+html[data-tampilan='baru'] .lantai.hal-grafik-emiten .grf-kaki-lbl,
+html[data-tampilan='baru'] .lantai.hal-grafik-emiten .grf-kaki-jam {
+  font-size: 12px;
+}
+
+/* Kotak template/panduan/replay — sudah pakai token `--bg2`/`--line`, cuma
+   sudutnya disamakan ke `--r` (14px) supaya sejajar kartu panel lain, dan
+   labelnya naik ke 12px. */
+html[data-tampilan='baru'] .lantai.hal-grafik-emiten .grf-template,
+html[data-tampilan='baru'] .lantai.hal-grafik-emiten .grf-panduan,
+html[data-tampilan='baru'] .lantai.hal-grafik-emiten .grf-replay {
+  border-radius: var(--r);
+}
+html[data-tampilan='baru'] .lantai.hal-grafik-emiten .grf-template-isi,
+html[data-tampilan='baru'] .lantai.hal-grafik-emiten .grf-replay-judul,
+html[data-tampilan='baru'] .lantai.hal-grafik-emiten .grf-panduan > summary {
+  font-size: 12px;
+}
+html[data-tampilan='baru'] .lantai.hal-grafik-emiten .grf-panduan-item dt,
+html[data-tampilan='baru'] .lantai.hal-grafik-emiten .grf-panduan-item dd {
+  font-size: 12.5px;
+}
+
+@media (max-width: 860px) {
+  html[data-tampilan='baru'] .lantai.hal-grafik-emiten .grf-toolbar > .ti,
+  html[data-tampilan='baru'] .lantai.hal-grafik-emiten .grf-jenis .ti,
+  html[data-tampilan='baru'] .lantai.hal-grafik-emiten .grf-menu .dd-btn,
+  html[data-tampilan='baru'] .lantai.hal-grafik-emiten .grf-toolbar .tlp {
+    height: 44px;
+  }
+  html[data-tampilan='baru'] .lantai.hal-grafik-emiten .grf-toolbar .tlp {
+    width: 44px;
+  }
+  html[data-tampilan='baru'] .lantai.hal-grafik-emiten .grf-kanvas-area .grf-alat-isi .ti,
+  html[data-tampilan='baru'] .lantai.hal-grafik-emiten .grf-kanvas-area .grf-alat-isi .dd-btn {
+    width: 44px; height: 44px;
+  }
+}
+/* Legenda/status/tooltip DI DALAM kanvas (grf-legenda-*, grf-status-*,
+   grf-pola-tip) sengaja tidak disentuh: itu anotasi padat ala TradingView,
+   dan membesarkannya butuh ruang kanvas ekstra — di luar lingkup berkas ini
+   (lihat laporan). */
+
+/* ============================================================
+   BerkasEmiten (/berkas-emiten) — html[data-tampilan="baru"] .lantai.be
+   Akar `lantai be` sudah ada di tsx (tak disentuh). Tata letak dasar blok
+   C/D/E sedang diubah pemanggil lain — DILARANG menyentuh grid/tsx-nya.
+   Cakupan di sini: kartu (.be-kartu), kotak merah (.be-batas), kotak angka,
+   dan label 8-10px → 12px.
+   ============================================================ */
+
+/* Kartu utama — sudut & padding menyamai `.panel` #223, garis satu lapis. */
+html[data-tampilan='baru'] .lantai.be .be-kartu {
+  border-radius: var(--r); background: var(--bg1);
+}
+html[data-tampilan='baru'] .lantai.be .be-kartu h2 { font-size: 15px; }
+
+/* Kotak berbingkai DI DALAM kartu — sebelumnya border + bg1 di atas kartu
+   yang juga border + bg1 (dua bingkai identik bertumpuk). Dalamnya lepas
+   bingkai, cukup beda latar `--bg2`. Mencakup kotak angka (.be-sisi),
+   kelompok rasio (.be-rasio-grup), baris broker (.be-krow), grup tangga,
+   grup rekam jejak, kotak bukti probabilitas, dan item bendera risiko. */
+html[data-tampilan='baru'] .lantai.be .be-sisi,
+html[data-tampilan='baru'] .lantai.be .be-rasio-grup,
+html[data-tampilan='baru'] .lantai.be .be-krow,
+html[data-tampilan='baru'] .lantai.be .be-rekam-grup,
+html[data-tampilan='baru'] .lantai.be .be-prob-uji,
+html[data-tampilan='baru'] .lantai.be .be-bendera-item {
+  border: 0; background: var(--bg2); border-radius: var(--r-kecil);
+}
+/* Item bendera tetap punya tepi kiri berwarna — itu KODE arti (tinggi/
+   sedang/rendah), bukan bingkai dekoratif, jadi dipertahankan di atas
+   aturan "hapus bingkai" umum. */
+html[data-tampilan='baru'] .lantai.be .be-bendera-item {
+  border-left: 2px solid var(--line2);
+}
+html[data-tampilan='baru'] .lantai.be .be-bendera-item.bb-tinggi { border-left-color: var(--red); }
+html[data-tampilan='baru'] .lantai.be .be-bendera-item.bb-sedang { border-left-color: var(--amber); }
+html[data-tampilan='baru'] .lantai.be .be-bendera-item.bb-rendah { border-left-color: var(--line2); }
+
+/* Kotak peringatan merah menyala (.be-batas) — keluhan Johan persis ini.
+   Latar & bingkai jadi netral; yang tetap merah cuma labelnya sendiri. */
+html[data-tampilan='baru'] .lantai.be .be-batas {
+  border: 1px solid var(--line); background: var(--bg2); border-radius: var(--r-kecil);
+}
+html[data-tampilan='baru'] .lantai.be .be-batas > b { color: var(--red); }
+
+/* Label 8-10px → 12px minimum, warna & huruf-besar dipertahankan. */
+html[data-tampilan='baru'] .lantai.be .be-lbl,
+html[data-tampilan='baru'] .lantai.be .be-n,
+html[data-tampilan='baru'] .lantai.be .be-cap,
+html[data-tampilan='baru'] .lantai.be .be-zona span,
+html[data-tampilan='baru'] .lantai.be .be-zona small,
+html[data-tampilan='baru'] .lantai.be .be-sumbu,
+html[data-tampilan='baru'] .lantai.be .be-tabel th,
+html[data-tampilan='baru'] .lantai.be .be-batas > b,
+html[data-tampilan='baru'] .lantai.be .be-rasio-grup h3,
+html[data-tampilan='baru'] .lantai.be .be-rekam-kepala b,
+html[data-tampilan='baru'] .lantai.be .be-rekom-daftar b,
+html[data-tampilan='baru'] .lantai.be .be-prob-jarak {
+  font-size: 12px;
+}
+
+/* Angka KPI (.be-ang, 32px) sudah di batas atas rentang spek — dibiarkan. */

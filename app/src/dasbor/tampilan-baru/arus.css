@@ -1,0 +1,172 @@
+/* #223 Tampilan Baru — kelompok arus. Semua aturan WAJIB diawali html[data-tampilan="baru"].
+   Halaman: AliranAsing (.hal-aliran-asing), PetaInvestor (.hal-peta-investor),
+   HarianPapan (.hal-harian-papan, percontohan C+A — bilah kendalinya TIDAK direstruktur,
+   cuma dirapikan ukurannya). Acuan: artboard L2-Arus/L2-HariIni — susunan & irama saja,
+   isinya beda karena DOM ketiga halaman ini tetap (tak boleh ubah tsx selain kelas akar).
+
+   Tiga keluhan Johan yang jadi target di sini: huruf 8-11px di seluruh kendali/label/
+   tabel, kendali 32px terlalu kecil untuk jempol, dan "kartu di dalam kartu" (bilah
+   kendali berbingkai sendiri di dalam .panel). */
+
+/* ── Kartu di dalam kartu: bilah kendali kehilangan bingkainya sendiri ────── */
+html[data-tampilan='baru'] .lantai.hal-aliran-asing .bilah-kendali,
+html[data-tampilan='baru'] .lantai.hal-peta-investor .bilah-kendali,
+html[data-tampilan='baru'] .lantai.hal-harian-papan .bilah-kendali {
+  border: 0;
+  background: var(--bg2);
+  border-radius: var(--r-kecil);
+  padding: 10px 12px;
+}
+
+/* ── Kendali: tinggi & huruf ────────────────────────────────────────────── */
+html[data-tampilan='baru'] .lantai.hal-aliran-asing .inp,
+html[data-tampilan='baru'] .lantai.hal-aliran-asing .dd-btn,
+html[data-tampilan='baru'] .lantai.hal-aliran-asing .chip-t,
+html[data-tampilan='baru'] .lantai.hal-aliran-asing .btn-p,
+html[data-tampilan='baru'] .lantai.hal-peta-investor .inp,
+html[data-tampilan='baru'] .lantai.hal-peta-investor .dd-btn,
+html[data-tampilan='baru'] .lantai.hal-peta-investor .chip-t,
+html[data-tampilan='baru'] .lantai.hal-peta-investor .btn-p,
+html[data-tampilan='baru'] .lantai.hal-peta-investor .pi-search-go,
+html[data-tampilan='baru'] .lantai.hal-peta-investor .pi-search-reset,
+html[data-tampilan='baru'] .lantai.hal-peta-investor .pi-tbl-search,
+html[data-tampilan='baru'] .lantai.hal-peta-investor .pi-tbl-select,
+html[data-tampilan='baru'] .lantai.hal-peta-investor .pi-loadmore,
+html[data-tampilan='baru'] .lantai.hal-harian-papan .inp,
+html[data-tampilan='baru'] .lantai.hal-harian-papan .dd-btn,
+html[data-tampilan='baru'] .lantai.hal-harian-papan .chip-t,
+html[data-tampilan='baru'] .lantai.hal-harian-papan .btn-p {
+  height: 36px;
+  font-size: 12.5px;
+}
+html[data-tampilan='baru'] .lantai.hal-aliran-asing .tabs,
+html[data-tampilan='baru'] .lantai.hal-peta-investor .tabs,
+html[data-tampilan='baru'] .lantai.hal-harian-papan .tabs {
+  min-height: 36px;
+}
+html[data-tampilan='baru'] .lantai.hal-aliran-asing .tab,
+html[data-tampilan='baru'] .lantai.hal-peta-investor .tab,
+html[data-tampilan='baru'] .lantai.hal-harian-papan .tab {
+  height: 30px;
+  font-size: 12px;
+}
+@media (max-width: 860px) {
+  html[data-tampilan='baru'] .lantai.hal-aliran-asing .inp,
+  html[data-tampilan='baru'] .lantai.hal-aliran-asing .dd-btn,
+  html[data-tampilan='baru'] .lantai.hal-aliran-asing .chip-t,
+  html[data-tampilan='baru'] .lantai.hal-aliran-asing .btn-p,
+  html[data-tampilan='baru'] .lantai.hal-peta-investor .inp,
+  html[data-tampilan='baru'] .lantai.hal-peta-investor .dd-btn,
+  html[data-tampilan='baru'] .lantai.hal-peta-investor .chip-t,
+  html[data-tampilan='baru'] .lantai.hal-peta-investor .btn-p,
+  html[data-tampilan='baru'] .lantai.hal-peta-investor .pi-search-go,
+  html[data-tampilan='baru'] .lantai.hal-peta-investor .pi-search-reset,
+  html[data-tampilan='baru'] .lantai.hal-harian-papan .inp,
+  html[data-tampilan='baru'] .lantai.hal-harian-papan .dd-btn,
+  html[data-tampilan='baru'] .lantai.hal-harian-papan .chip-t,
+  html[data-tampilan='baru'] .lantai.hal-harian-papan .btn-p {
+    height: 44px;
+  }
+  html[data-tampilan='baru'] .lantai.hal-aliran-asing .tabs,
+  html[data-tampilan='baru'] .lantai.hal-peta-investor .tabs,
+  html[data-tampilan='baru'] .lantai.hal-harian-papan .tabs {
+    min-height: 44px;
+  }
+  html[data-tampilan='baru'] .lantai.hal-aliran-asing .tab,
+  html[data-tampilan='baru'] .lantai.hal-peta-investor .tab,
+  html[data-tampilan='baru'] .lantai.hal-harian-papan .tab {
+    height: 38px;
+  }
+}
+
+/* ── Label kecil huruf besar: 9-10px → 12px, jarak huruf .1em ────────────── */
+html[data-tampilan='baru'] .lantai.hal-aliran-asing .grup-lbl,
+html[data-tampilan='baru'] .lantai.hal-aliran-asing .lbl,
+html[data-tampilan='baru'] .lantai.hal-peta-investor .grup-lbl,
+html[data-tampilan='baru'] .lantai.hal-peta-investor .lbl,
+html[data-tampilan='baru'] .lantai.hal-peta-investor .pi-legend-title,
+html[data-tampilan='baru'] .lantai.hal-peta-investor .pi-panel-eyebrow,
+html[data-tampilan='baru'] .lantai.hal-peta-investor .pi-panel-section-label,
+html[data-tampilan='baru'] .lantai.hal-peta-investor .pi-drop-label,
+html[data-tampilan='baru'] .lantai.hal-harian-papan .grup-lbl,
+html[data-tampilan='baru'] .lantai.hal-harian-papan .lbl {
+  font-size: 12px;
+  letter-spacing: .1em;
+  color: var(--text3);
+}
+
+/* ── Tabel: kepala kolom & badan ≥12px ────────────────────────────────── */
+html[data-tampilan='baru'] .lantai.hal-aliran-asing .tbl th,
+html[data-tampilan='baru'] .lantai.hal-harian-papan .tbl th,
+html[data-tampilan='baru'] .lantai.hal-peta-investor .pi-tbl th {
+  font-size: 12px;
+  padding: 8px 10px;
+}
+html[data-tampilan='baru'] .lantai.hal-aliran-asing .tbl td,
+html[data-tampilan='baru'] .lantai.hal-harian-papan .tbl td {
+  padding: 8px 10px;
+}
+html[data-tampilan='baru'] .lantai.hal-peta-investor .pi-tbl th,
+html[data-tampilan='baru'] .lantai.hal-peta-investor .pi-tbl td,
+html[data-tampilan='baru'] .lantai.hal-peta-investor .pi-panel-row-name,
+html[data-tampilan='baru'] .lantai.hal-peta-investor .pi-panel-row-issuer,
+html[data-tampilan='baru'] .lantai.hal-peta-investor .pi-panel-sub,
+html[data-tampilan='baru'] .lantai.hal-peta-investor .pi-legend,
+html[data-tampilan='baru'] .lantai.hal-peta-investor .pi-legend-hint,
+html[data-tampilan='baru'] .lantai.hal-peta-investor .pi-tbl-count,
+html[data-tampilan='baru'] .lantai.hal-peta-investor .pi-drop-item-sub,
+html[data-tampilan='baru'] .lantai.hal-peta-investor .pi-badge-more,
+html[data-tampilan='baru'] .lantai.hal-peta-investor .em-name,
+html[data-tampilan='baru'] .lantai.hal-peta-investor .konteks-data {
+  font-size: 12px;
+}
+/* Kolom Peta Investor ikut memadat di layar sempit — 10px lama dinaikkan
+   sepadan, bukan disamakan persis 12px, supaya 6 kolom masih muat tanpa
+   gulir ganda di dalam .pi-tbl-wrap yang sudah menggulir sendiri. */
+@media (max-width: 700px) {
+  html[data-tampilan='baru'] .lantai.hal-peta-investor .pi-tbl th,
+  html[data-tampilan='baru'] .lantai.hal-peta-investor .pi-tbl td {
+    font-size: 11px;
+  }
+}
+html[data-tampilan='baru'] .lantai.hal-peta-investor .rasio .sub {
+  font-size: 12px;
+}
+
+/* ── Teks narasi (catatan sumber data) — 14px, lebar baca dibatasi ───────── */
+html[data-tampilan='baru'] .lantai.hal-aliran-asing .asal,
+html[data-tampilan='baru'] .lantai.hal-harian-papan .asal {
+  font-size: 14px;
+  color: var(--text2);
+  max-width: 72ch;
+}
+
+/* ── AliranAsing: sedikit lega di panel bilah kendali & baris "cari lain" ── */
+html[data-tampilan='baru'] .lantai.hal-aliran-asing .panel-b {
+  padding-top: 14px;
+}
+html[data-tampilan='baru'] .lantai.hal-aliran-asing .ala-cari-lain {
+  gap: 12px;
+}
+
+/* ── PetaInvestor: legenda & panel detail lebih bernapas, kanvas graf TIDAK
+   disentuh (pi-graph/pi-graph-wrap/pi-graph-card tetap ukuran aslinya). ──── */
+html[data-tampilan='baru'] .lantai.hal-peta-investor .pi-legend {
+  gap: 18px;
+  padding: 12px 16px;
+}
+html[data-tampilan='baru'] .lantai.hal-peta-investor .pi-panel-title {
+  font-size: 18px;
+}
+html[data-tampilan='baru'] .lantai.hal-peta-investor .pi-panel-row {
+  padding: 11px 0;
+}
+
+/* ── HarianPapan: tabel 22 kolom tetap padat (spec proyek, jangan diubah
+   strukturnya) — cuma jarak baris & kepala yang dilonggarkan sedikit supaya
+   tak terasa "berhimpitan" seperti versi lama. ─────────────────────────── */
+html[data-tampilan='baru'] .lantai.hal-harian-papan .hp-tbl th,
+html[data-tampilan='baru'] .lantai.hal-harian-papan .hp-tbl td {
+  padding-top: 7px;
+  padding-bottom: 7px;
+}

@@ -172,7 +172,7 @@ export function ChartIndeks() {
   }
 
   return (
-    <div className="lantai">
+    <div className="lantai hal-chart">
       {/* Judul untuk pembaca layar saja (#24). Kepala panel halaman ini
           DIBUANG 7 Sep 2026 karena judulnya cuma mengulang nama halaman dan
           barisnya memakan tinggi layar pertama; alasan itu masih berlaku,

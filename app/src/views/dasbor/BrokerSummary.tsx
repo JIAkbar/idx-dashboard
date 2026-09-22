@@ -117,7 +117,7 @@ export function BrokerSummary() {
   const tersedia = harian ? setBroker : setDs
 
   return (
-    <div className="lantai">
+    <div className="lantai hal-broker-pasar">
       <div className="vhead">
         <h1>Broker Summary</h1>
         <KonteksData tanggal={tanggalAktif} />

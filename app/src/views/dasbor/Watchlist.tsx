@@ -273,7 +273,7 @@ export function Watchlist() {
   const s = useUrut(baris, 'kode', 'naik')
 
   return (
-    <div className="lantai">
+    <div className="lantai hal-watchlist">
       <div className="vhead">
         <h1>Watchlist</h1>
       </div>

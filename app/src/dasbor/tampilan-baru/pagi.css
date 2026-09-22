@@ -1,0 +1,283 @@
+/* #223 Tampilan Baru — kelompok pagi. Semua aturan WAJIB diawali html[data-tampilan="baru"].
+   Halaman: Beranda (.hal-beranda), Watchlist (.hal-watchlist), Radar (.hal-radar),
+   Kalkulator (.kalkulator-view — kelas sudah ada di KalkulatorJia.tsx) + Kuli Papan
+   (.kuli-papan — kelas sudah ada di KuliPapan.tsx), Feedback (.hal-feedback).
+
+   Rancangan acuan (artboard): Main.dc.html (Beranda — konsep Tanya PAPAN, TIDAK
+   dipakai literal karena strukturnya beda total dari Beranda sungguhan dan tsx
+   tak boleh dirombak), Pagi.dc.html (kartu pagi, fitur belum ada di kode — dipakai
+   sebagai rujukan irama kartu: label kecil huruf besar, angka mono, narasi 14px),
+   L5-Watchlist.dc.html (Watchlist — juga konsep kartu-per-emiten yang tak match
+   tabel sungguhan). Yang diambil dari ketiganya: skala huruf, kartu tanpa bingkai
+   dalam, label uppercase kecil, angka mono besar — bahasa rupa, bukan tata letak
+   literal (spek §"Rancangan acuan": tiru irama, bukan isi). */
+
+/* ============================================================
+   0. LANTAI BERSAMA — floor tipografi & kendali, lima halaman
+   ============================================================ */
+html[data-tampilan='baru'] .lantai.hal-beranda,
+html[data-tampilan='baru'] .lantai.hal-watchlist,
+html[data-tampilan='baru'] .lantai.hal-radar,
+html[data-tampilan='baru'] .lantai.kalkulator-view,
+html[data-tampilan='baru'] .lantai.kuli-papan,
+html[data-tampilan='baru'] .lantai.hal-feedback {
+  gap: 16px;
+}
+
+/* Label kecil huruf besar → lantai baru: 12px, .1em (bukan 9-10px lama). */
+html[data-tampilan='baru'] .lantai.hal-beranda .lbl,
+html[data-tampilan='baru'] .lantai.hal-watchlist .lbl,
+html[data-tampilan='baru'] .lantai.hal-radar .lbl,
+html[data-tampilan='baru'] .lantai.kalkulator-view .lbl,
+html[data-tampilan='baru'] .lantai.kuli-papan .lbl,
+html[data-tampilan='baru'] .lantai.hal-feedback .lbl {
+  font-size: 12px; letter-spacing: .1em; color: var(--text3);
+}
+
+/* Lencana kecil (badge/bchip/chip/rdr-chip) — lantai lama 9.5-11.5px. */
+html[data-tampilan='baru'] .lantai.hal-beranda .badge,
+html[data-tampilan='baru'] .lantai.hal-watchlist .bchip,
+html[data-tampilan='baru'] .lantai.hal-radar .bchip,
+html[data-tampilan='baru'] .lantai.hal-radar .rdr-chip,
+html[data-tampilan='baru'] .lantai.hal-watchlist .chip,
+html[data-tampilan='baru'] .lantai.kalkulator-view .chip,
+html[data-tampilan='baru'] .lantai.kuli-papan .chip {
+  font-size: 11.5px;
+}
+
+/* Tab & tombol: tinggi 36px laptop, 44px di ≤860px — kendali #170. */
+html[data-tampilan='baru'] .lantai.hal-beranda .tab,
+html[data-tampilan='baru'] .lantai.hal-watchlist .tab,
+html[data-tampilan='baru'] .lantai.hal-radar .tab,
+html[data-tampilan='baru'] .lantai.kalkulator-view .tab,
+html[data-tampilan='baru'] .lantai.kuli-papan .tab,
+html[data-tampilan='baru'] .lantai.hal-feedback .tab,
+html[data-tampilan='baru'] .lantai.hal-beranda .btn-p,
+html[data-tampilan='baru'] .lantai.hal-watchlist .btn-p,
+html[data-tampilan='baru'] .lantai.hal-radar .btn-p,
+html[data-tampilan='baru'] .lantai.kalkulator-view .btn-p,
+html[data-tampilan='baru'] .lantai.kuli-papan .btn-p,
+html[data-tampilan='baru'] .lantai.hal-feedback .btn-p {
+  height: 36px; font-size: 12px;
+}
+html[data-tampilan='baru'] .lantai.hal-beranda .tabs,
+html[data-tampilan='baru'] .lantai.hal-watchlist .tabs,
+html[data-tampilan='baru'] .lantai.hal-radar .tabs,
+html[data-tampilan='baru'] .lantai.kalkulator-view .tabs,
+html[data-tampilan='baru'] .lantai.kuli-papan .tabs,
+html[data-tampilan='baru'] .lantai.hal-feedback .tabs {
+  min-height: 36px; flex-wrap: wrap;
+}
+/* Bilah tab "Kalkulator/Kuli Papan" di BagianHalaman.tsx (komponen bersama,
+   TIDAK boleh disunting) hidup sebagai .lantai polos, sibling SEBELUM
+   .kalkulator-view/.kuli-papan — dijangkau lewat :has() supaya tak bocor ke
+   halaman lain yang juga memakai BagianHalaman (Broker Pasar, Sektor & Indeks). */
+html[data-tampilan='baru'] .lantai:has(+ .kalkulator-view) .tab,
+html[data-tampilan='baru'] .lantai:has(+ .kuli-papan) .tab {
+  height: 36px; font-size: 12px;
+}
+@media (max-width: 860px) {
+  html[data-tampilan='baru'] .lantai.hal-beranda .tab,
+  html[data-tampilan='baru'] .lantai.hal-watchlist .tab,
+  html[data-tampilan='baru'] .lantai.hal-radar .tab,
+  html[data-tampilan='baru'] .lantai.kalkulator-view .tab,
+  html[data-tampilan='baru'] .lantai.kuli-papan .tab,
+  html[data-tampilan='baru'] .lantai.hal-feedback .tab,
+  html[data-tampilan='baru'] .lantai.hal-beranda .btn-p,
+  html[data-tampilan='baru'] .lantai.hal-watchlist .btn-p,
+  html[data-tampilan='baru'] .lantai.hal-radar .btn-p,
+  html[data-tampilan='baru'] .lantai.kalkulator-view .btn-p,
+  html[data-tampilan='baru'] .lantai.kuli-papan .btn-p,
+  html[data-tampilan='baru'] .lantai.hal-feedback .btn-p,
+  html[data-tampilan='baru'] .lantai:has(+ .kalkulator-view) .tab,
+  html[data-tampilan='baru'] .lantai:has(+ .kuli-papan) .tab {
+    height: 44px; font-size: 12.5px;
+  }
+}
+
+/* Input teks di dalam form (bukan sel tabel — .wl-avg sengaja tetap ringkas,
+   lihat Watchlist.css baris 10-24). */
+html[data-tampilan='baru'] .lantai.hal-watchlist .af-cari .inp,
+html[data-tampilan='baru'] .lantai.hal-radar .field .inp,
+html[data-tampilan='baru'] .lantai.kalkulator-view .field .inp,
+html[data-tampilan='baru'] .lantai.kuli-papan .field .inp,
+html[data-tampilan='baru'] .lantai.kuli-papan .kp-bar .inp,
+html[data-tampilan='baru'] .lantai.hal-feedback .field .inp {
+  min-height: 38px; font-size: 13px;
+}
+@media (max-width: 860px) {
+  html[data-tampilan='baru'] .lantai.hal-watchlist .af-cari .inp,
+  html[data-tampilan='baru'] .lantai.hal-radar .field .inp,
+  html[data-tampilan='baru'] .lantai.kalkulator-view .field .inp,
+  html[data-tampilan='baru'] .lantai.kuli-papan .field .inp,
+  html[data-tampilan='baru'] .lantai.kuli-papan .kp-bar .inp,
+  html[data-tampilan='baru'] .lantai.hal-feedback .field .inp {
+    min-height: 44px;
+  }
+}
+
+/* Tabel — kepala 10px & sel 12px lama, dinaikkan supaya di atas batas 12px
+   dan baris lebih longgar (keluhan "huruf kecil-kecil" persis di sini). */
+html[data-tampilan='baru'] .lantai.hal-watchlist .tbl th,
+html[data-tampilan='baru'] .lantai.hal-radar .tbl th {
+  font-size: 11.5px; padding: 8px 10px;
+}
+html[data-tampilan='baru'] .lantai.hal-watchlist .tbl td,
+html[data-tampilan='baru'] .lantai.hal-radar .tbl td {
+  font-size: 12.5px; padding: 9px 10px;
+}
+
+/* Narasi/keterangan (.muted, .rdr-catatan, .rdr-kaki, .wl-catatan, .konteks-data)
+   → lantai baru 12px lebar baca terbatas, bukan 10.5-11px yang sulit dibaca. */
+html[data-tampilan='baru'] .lantai.hal-beranda p.muted,
+html[data-tampilan='baru'] .lantai.hal-watchlist .wl-catatan,
+html[data-tampilan='baru'] .lantai.hal-radar .rdr-catatan,
+html[data-tampilan='baru'] .lantai.hal-radar .rdr-kaki,
+html[data-tampilan='baru'] .lantai.hal-radar .konteks-data,
+html[data-tampilan='baru'] .lantai.kalkulator-view .v-note,
+html[data-tampilan='baru'] .lantai.kuli-papan .v-note,
+html[data-tampilan='baru'] .lantai.kalkulator-view .pilih-k .p-d,
+html[data-tampilan='baru'] .lantai.kuli-papan .kp-kv > span {
+  font-size: 12px; max-width: 72ch;
+}
+
+/* ============================================================
+   1. BERANDA
+   ============================================================ */
+/* Ringkasan Pasar — kartu aksen kiri sudah benar (§spek: warna arah boleh
+   tetap); yang dirapikan cuma katalis di dalamnya (kartu-dalam-kartu). */
+html[data-tampilan='baru'] .lantai.hal-beranda .brd-ringkas {
+  padding: 18px 20px;
+}
+html[data-tampilan='baru'] .lantai.hal-beranda .brd-ringkas-judul {
+  font-size: clamp(16px, 1.6vw, 21px);
+}
+html[data-tampilan='baru'] .lantai.hal-beranda .brd-ringkas-isi {
+  font-size: 14px; color: var(--text2);
+}
+/* Katalis: kartu di dalam kartu → bingkai dalam dibuang, latar bg2, hanya
+   garis aksen kiri (arah) yang dipertahankan sebagai penanda warna. */
+html[data-tampilan='baru'] .lantai.hal-beranda .brd-katalis-it {
+  border: 0; border-left: 3px solid var(--line2); background: var(--bg2);
+  padding: 10px 14px;
+}
+html[data-tampilan='baru'] .lantai.hal-beranda .brd-katalis-it.up { border-left-color: var(--green); }
+html[data-tampilan='baru'] .lantai.hal-beranda .brd-katalis-it.dn { border-left-color: var(--red); }
+html[data-tampilan='baru'] .lantai.hal-beranda .brd-katalis-it.netral { border-left-color: var(--amber); }
+html[data-tampilan='baru'] .lantai.hal-beranda .brd-katalis-it b { font-size: 13.5px; }
+html[data-tampilan='baru'] .lantai.hal-beranda .brd-katalis-it span { font-size: 12px; }
+
+/* Pintu Kerja — empat kartu ke halaman kerja utama: judul & angka lebih besar. */
+html[data-tampilan='baru'] .lantai.hal-beranda .brd-pintu-it { padding: 14px 16px; gap: 6px; }
+html[data-tampilan='baru'] .lantai.hal-beranda .brd-pintu-jdl { font-size: 15px; }
+html[data-tampilan='baru'] .lantai.hal-beranda .brd-pintu-isi { font-size: 12.5px; }
+
+/* Kartu menu "Jelajahi data" — kode kecil & kunci naik ke atas batas 12px. */
+html[data-tampilan='baru'] .lantai.hal-beranda .brd-kartu { padding: 16px 17px; }
+html[data-tampilan='baru'] .lantai.hal-beranda .brd-kartu-judul { font-size: 15px; }
+html[data-tampilan='baru'] .lantai.hal-beranda .brd-kartu-ringkas { font-size: 12.5px; }
+html[data-tampilan='baru'] .lantai.hal-beranda .brd-kartu-kode,
+html[data-tampilan='baru'] .lantai.hal-beranda .brd-kartu-kunci { font-size: 10.5px; }
+
+/* Kabar pasar — kartu edisi & baris kabar sedikit lebih lega, tanpa mengubah
+   susunan kolom (auto-fit/2/4 kolom di Beranda.css tetap dipakai). */
+html[data-tampilan='baru'] .lantai.hal-beranda .brd-kabar-it { padding: 13px 15px; }
+html[data-tampilan='baru'] .lantai.hal-beranda .brd-kabar-tgl { font-size: 13px; }
+html[data-tampilan='baru'] .lantai.hal-beranda .brd-tipe { font-size: 10.5px; }
+html[data-tampilan='baru'] .lantai.hal-beranda .brd-tick,
+html[data-tampilan='baru'] .lantai.hal-beranda .brd-lebih { font-size: 11px; }
+
+/* Diary Pasar — .dia-detail duduk di dalam panel Diary (kartu di dalam
+   kartu): bingkai dibuang, tetap dibedakan lewat latar. */
+html[data-tampilan='baru'] .lantai.hal-beranda .dia-detail {
+  border: 0; background: var(--bg2); padding: 11px 13px;
+}
+html[data-tampilan='baru'] .lantai.hal-beranda .dia-pil { font-size: 12px; }
+html[data-tampilan='baru'] .lantai.hal-beranda .dia-bulan-nama { font-size: 13px; }
+html[data-tampilan='baru'] .lantai.hal-beranda .dia-live { font-size: 12px; }
+
+/* Kartu pengunjung (.kjg) — baris keterangan kaki, dinaikkan ke atas 12px. */
+html[data-tampilan='baru'] .lantai.hal-beranda .kjg,
+html[data-tampilan='baru'] .lantai.hal-beranda .kjg-batas,
+html[data-tampilan='baru'] .lantai.hal-beranda .kjg-daftar .num,
+html[data-tampilan='baru'] .lantai.hal-beranda .kjg-nm {
+  font-size: 12px;
+}
+
+/* ============================================================
+   2. WATCHLIST
+   ============================================================ */
+html[data-tampilan='baru'] .lantai.hal-watchlist .bilah-kendali { padding: 10px 12px; }
+html[data-tampilan='baru'] .lantai.hal-watchlist .wl-nama { font-size: 12px; }
+html[data-tampilan='baru'] .lantai.hal-watchlist .wl-ema,
+html[data-tampilan='baru'] .lantai.hal-watchlist .wl-ad,
+html[data-tampilan='baru'] .lantai.hal-watchlist .wl-n { font-size: 11.5px; }
+html[data-tampilan='baru'] .lantai.hal-watchlist .wl-broker .chip { font-size: 10.5px; padding: 3px 8px; }
+/* Vonis Akum/Dist — warna arah tetap (§spek hijau/merah hanya arah), cuma
+   ditebalkan supaya konsisten dgn sel tabel lain. */
+html[data-tampilan='baru'] .lantai.hal-watchlist .wl-ad { font-weight: 700; }
+
+/* ============================================================
+   3. RADAR WATCHLIST
+   ============================================================ */
+html[data-tampilan='baru'] .lantai.hal-radar .rdr-skor b { font-size: 12.5px; }
+html[data-tampilan='baru'] .lantai.hal-radar .rdr-rankrow .t { font-size: 13px; }
+html[data-tampilan='baru'] .lantai.hal-radar .rdr-rankrow .t small { font-size: 11px; }
+html[data-tampilan='baru'] .lantai.hal-radar .rdr-rankrow .v { font-size: 13px; }
+html[data-tampilan='baru'] .lantai.hal-radar .rdr-leg .b { font-size: 12px; }
+html[data-tampilan='baru'] .lantai.hal-radar .rdr-leg > b { font-size: 12px; }
+/* Chart RBU — kartu gambar duduk di dalam panel (kartu di dalam kartu):
+   bingkai dibuang, hanya garis pemisah kepala/gambar yang dipertahankan. */
+html[data-tampilan='baru'] .lantai.hal-radar .rdr-rbu-c {
+  border: 0; background: var(--bg2);
+}
+html[data-tampilan='baru'] .lantai.hal-radar .rdr-rbu-c .h { padding: 10px 14px; }
+html[data-tampilan='baru'] .lantai.hal-radar .rdr-rbu-c .h span { font-size: 11.5px; }
+
+/* ============================================================
+   4. KALKULATOR (.kalkulator-view) & KULI PAPAN (.kuli-papan)
+   Pola berulang di 8 sub-kalkulator (AvgDown, ProfitAra, RiskReward, dst.):
+   .vcard & .pilih-k duduk di dalam .panel-b > .panel — kartu di dalam
+   kartu, persis keluhan Johan "kotak bertumpuk berbingkai ramai". Satu
+   aturan di sini merapikan SEMUANYA sekaligus karena kedelapannya memakai
+   kelas generik yang sama (§170 prinsip 2/4 — bukan kelas per-halaman).
+   ============================================================ */
+html[data-tampilan='baru'] .lantai.kalkulator-view .vcard,
+html[data-tampilan='baru'] .lantai.kuli-papan .kp-hasil,
+html[data-tampilan='baru'] .lantai.kuli-papan .kp-catatan,
+html[data-tampilan='baru'] .lantai.kuli-papan .kp-peringatan {
+  border: 0; background: var(--bg2);
+}
+html[data-tampilan='baru'] .lantai.kalkulator-view .vcard .v-num { font-size: 23px; }
+/* Kotak "peringatan" Kuli Papan (kuning) → hanya labelnya yang berwarna,
+   latar netral bg2 (§spek "kotak peringatan… hanya labelnya berwarna"). */
+html[data-tampilan='baru'] .lantai.kuli-papan .kp-peringatan {
+  color: var(--text2);
+}
+html[data-tampilan='baru'] .lantai.kuli-papan .kp-peringatan strong,
+html[data-tampilan='baru'] .lantai.kuli-papan .kp-peringatan b {
+  color: var(--amber);
+}
+/* Pilihan strategi (radio kartu) — bingkai dalam dibuang; hanya status
+   terpilih (.on) yang tetap bergaris amber, supaya tak jadi pil-di-dalam-
+   kartu yang ramai saat belum dipilih. */
+html[data-tampilan='baru'] .lantai.kalkulator-view .pilih-k {
+  border-color: transparent; background: var(--bg2);
+}
+html[data-tampilan='baru'] .lantai.kalkulator-view .pilih-k.on {
+  border-color: var(--amber); background: var(--amber-dim);
+}
+html[data-tampilan='baru'] .lantai.kalkulator-view .pilih-k .p-t { font-size: 12.5px; }
+html[data-tampilan='baru'] .lantai.kuli-papan .kp-kv > b { font-size: 13px; }
+html[data-tampilan='baru'] .lantai.kuli-papan .kp-grid { gap: 10px; }
+
+/* ============================================================
+   5. FEEDBACK
+   ============================================================ */
+html[data-tampilan='baru'] .lantai.hal-feedback textarea.inp { min-height: 120px; }
+html[data-tampilan='baru'] .lantai.hal-feedback .vcard { border: 0; background: var(--bg2); }
+html[data-tampilan='baru'] .lantai.hal-feedback .vcard .num { font-size: 16px; }
+html[data-tampilan='baru'] .lantai.hal-feedback p.muted { font-size: 12px; }
+@media (max-width: 860px) {
+  html[data-tampilan='baru'] .lantai.hal-feedback .grid2 { grid-template-columns: minmax(0, 1fr); }
+}

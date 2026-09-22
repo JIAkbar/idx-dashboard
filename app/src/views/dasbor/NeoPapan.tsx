@@ -55,7 +55,7 @@ export function NeoPapan() {
   const [rentang, setRentang] = useState<RentangNp>('b3')
 
   return (
-    <div className="lantai neo-papan">
+    <div className="lantai neo-papan hal-neo">
       <div className="vhead">
         <h1>Inventory Broker</h1>
       </div>

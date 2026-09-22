@@ -827,7 +827,7 @@ export function KartuAnalisa() {
   }, [indeks, filter])
 
   return (
-    <div className="lantai">
+    <div className="lantai hal-kartu">
       <div className="vhead">
         <h1>Kartu Analisa Emiten</h1>
         <span className="sub">

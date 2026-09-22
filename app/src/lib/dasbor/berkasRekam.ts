@@ -106,6 +106,38 @@ export function ringkasRekam(strategi: string, trades: Trade[], kode: string): R
   }
 }
 
+const NAMA_IND: Record<string, string> = {
+  sma: 'SMA', ema: 'EMA', rsi: 'RSI', macd: 'MACD', stochastic: 'Stochastic', bollinger: 'Bollinger',
+  adx_dmi: 'ADX/DMI', parabolic_sar: 'Parabolic SAR', supertrend: 'Supertrend', ichimoku: 'Ichimoku',
+  obv: 'OBV', vwap: 'VWAP',
+}
+const NAMA_TF: Record<string, string> = { '1H': 'per jam', D: 'harian', W: 'mingguan', M: 'bulanan' }
+const NAMA_SEMESTA: Record<string, string> = { semua: 'semua saham', lq45: 'LQ45', nonlikuid: 'saham kurang likuid' }
+const NAMA_POLA: Record<string, string> = {
+  'pivot_cpr.posisi_di_atas': 'Harga di atas pivot',
+  'pivot_cpr.posisi_di_bawah': 'Harga di bawah pivot',
+  'pivot_cpr.relasi_higher_value': 'Pivot naik dari periode lalu',
+  'pivot_cpr.relasi_lower_value': 'Pivot turun dari periode lalu',
+  'pivot_cpr.relasi_overlapping_higher': 'Pivot bertumpuk, condong naik',
+  'pivot_cpr.relasi_overlapping_lower': 'Pivot bertumpuk, condong turun',
+  'rr_setup.target_before_stop': 'Target tercapai sebelum batas rugi',
+}
+const NAMA_TETAP: Record<string, string> = {
+  'gap-naik': 'Gap naik', 'preset-swing': 'Rencana swing', 'preset-scalping': 'Rencana scalping',
+  rbs: 'Resisten jadi support', 'rbs-tpsl': 'Resisten jadi support (target & batas rugi)',
+}
+
+/** Nama strategi yang bisa dibaca manusia (#225) — kunci arsip seperti
+ *  `ind-obv-D-lq45` tak boleh tampil mentah. Yang tak dikenal dikembalikan apa adanya. */
+export function namaStrategi(s: string): string {
+  if (NAMA_TETAP[s]) return NAMA_TETAP[s]
+  const ind = /^ind-([a-z_]+)-(1H|D|W|M)-([a-z0-9]+)$/.exec(s)
+  if (ind) return `${NAMA_IND[ind[1]] ?? ind[1]} ${NAMA_TF[ind[2]]} · ${NAMA_SEMESTA[ind[3]] ?? ind[3]}`
+  const pola = /^([a-z_]+\.[a-z_]+)-(D|W|M)$/.exec(s)
+  if (pola && NAMA_POLA[pola[1]]) return `${NAMA_POLA[pola[1]]} · ${NAMA_TF[pola[2]]}`
+  return s
+}
+
 /** Berkas backtest yang ada di arsip, seperti dicatat `bt/index.json`. */
 export interface RunBacktest {
   strategi: string
@@ -130,7 +162,9 @@ export async function muatRekam(kode: string): Promise<RekamStrategi[]> {
   } catch {
     return []
   }
-  const run = indeks?.run ?? []
+  // #225: run berawalan `broker-` adalah RISET #217/#580 (gagal kriteria),
+  // bukan strategi PAPAN yang tayang — tak ikut dimuat ke rekam jejak emiten.
+  const run = (indeks?.run ?? []).filter((x) => !x.strategi.startsWith('broker-'))
   const hasil = await Promise.all(
     run.map(async (x) => {
       try {

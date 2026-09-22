@@ -187,7 +187,7 @@ export default function TraderPapan() {
   }, [hasil])
 
   return (
-    <div className="lantai">
+    <div className="lantai hal-trader">
       <div className="vhead">
         <h1>Trader Papan</h1>
       </div>

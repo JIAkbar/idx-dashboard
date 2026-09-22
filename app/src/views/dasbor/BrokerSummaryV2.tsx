@@ -178,7 +178,7 @@ export function BrokerSummaryV2() {
   const gerak = ohlcvAktif.length && ohlcvAktif[0].buka ? (hargaKini! / ohlcvAktif[0].buka - 1) * 100 : null
 
   return (
-    <div className="lantai">
+    <div className="lantai hal-broker-summary">
       <div className="vhead">
         <h1>Arus Broker</h1>
         <span className="sub">pasar reguler · semua investor · arsip harian PAPAN</span>

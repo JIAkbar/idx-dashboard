@@ -3,6 +3,8 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from '
 export type Theme = 'light' | 'dark'
 /** Pilihan yang dibuat orang — beda dari tema yang akhirnya tampil. */
 export type ModeTema = Theme | 'sistem'
+/** Rupa aplikasi (#223): 'lama' = PAPAN seperti biasa, 'baru' = gaya PAPAN Baru. */
+export type Tampilan = 'lama' | 'baru'
 
 interface ThemeContextValue {
   /** Tema yang benar-benar tampil sekarang. */
@@ -11,12 +13,23 @@ interface ThemeContextValue {
   mode: ModeTema
   setMode: (m: ModeTema) => void
   toggleTheme: () => void
+  tampilan: Tampilan
+  toggleTampilan: () => void
 }
 
 const ThemeContext = createContext<ThemeContextValue | undefined>(undefined)
 
 const KUNCI = 'papan-tema'
 const KUERI = '(prefers-color-scheme: dark)'
+const KUNCI_TAMPILAN = 'papan-tampilan'
+
+function bacaTampilan(): Tampilan {
+  try {
+    return localStorage.getItem(KUNCI_TAMPILAN) === 'baru' ? 'baru' : 'lama'
+  } catch {
+    return 'lama'
+  }
+}
 
 function bacaMode(): ModeTema {
   try {
@@ -80,6 +93,19 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     document.documentElement.dataset.tema = theme
   }, [theme])
 
+  // #223: rupa dipasang di <html data-tampilan>, jadi SEMUA halaman (termasuk
+  // modal & laci di luar .dasbor-shell) bisa digayai dari satu atribut.
+  const [tampilan, setTampilan] = useState<Tampilan>(bacaTampilan)
+  useEffect(() => {
+    document.documentElement.dataset.tampilan = tampilan
+    try {
+      localStorage.setItem(KUNCI_TAMPILAN, tampilan)
+    } catch {
+      /* abaikan */
+    }
+  }, [tampilan])
+  const toggleTampilan = () => setTampilan((t) => (t === 'baru' ? 'lama' : 'baru'))
+
   function setMode(m: ModeTema) {
     setModeState(m)
   }
@@ -92,7 +118,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <ThemeContext.Provider value={{ theme, mode, setMode, toggleTheme }}>
+    <ThemeContext.Provider value={{ theme, mode, setMode, toggleTheme, tampilan, toggleTampilan }}>
       {children}
     </ThemeContext.Provider>
   )

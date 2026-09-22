@@ -494,7 +494,7 @@
   gap: 10px;
   font-size: 12.5px;
 }
-.lantai .be-rekam-kepala b { font-family: var(--disp); text-transform: uppercase; letter-spacing: .06em; font-size: 11px; }
+.lantai .be-rekam-kepala b { font-family: var(--disp); font-size: 13px; font-weight: 700; }
 .lantai .be-rekam-kepala span { color: var(--text2); }
 .lantai .be-rekam-tipis { color: var(--amber); }
 .lantai .be-rekam-angka { display: flex; flex-wrap: wrap; gap: 7px; }
@@ -514,6 +514,9 @@
 .lantai .be-prob { display: grid; gap: 12px; margin-top: 12px; }
 .lantai .be-prob-jarak { color: var(--text3); font-size: 10.5px; font-family: var(--mono); }
 .lantai .be-prob-naik { display: grid; gap: 5px; }
+/* #224: kalimat biasa yang membaca angka di sebelahnya untuk pembaca awam. */
+.lantai .be-prob-kalimat { margin: 0; font-size: 12.5px; line-height: 1.55; color: var(--text2); max-width: 72ch; }
+.lantai .be-prob-kalimat b { color: var(--text); }
 .lantai .be-prob-uji {
   margin: 0;
   padding: 9px 12px;

@@ -25,7 +25,7 @@ const ActivityTab = lazy(() => import('./neo-papan/ActivityTab').then((m) => ({ 
 export function SektorPasar() {
   const dariNeo = (isi: ReactNode) => (
     <PenjagaHalaman kunci="neo-papan">
-      <div className="lantai neo-papan">
+      <div className="lantai neo-papan hal-sektor">
         <Suspense fallback={<PemuatHalaman />}>{isi}</Suspense>
       </div>
     </PenjagaHalaman>

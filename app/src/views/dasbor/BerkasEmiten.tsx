@@ -30,6 +30,7 @@ import { susunRasio, muatRasio, NAMA_CADANGAN } from '../../lib/dasbor/berkasRas
 import {
   muatRekam, muatRekomendasi, muatProb, layakSinyal, MIN_SAMPEL_PERSEN,
   type RekamStrategi, type RekomendasiEmiten, type ProbEmiten, type EvaluasiProb,
+  namaStrategi,
 } from '../../lib/dasbor/berkasRekam'
 import { muatCandle, type DataCandle } from '../../lib/dasbor/candleStockbit'
 import { fetchAsing, type AsingData } from '../../lib/dasbor/stockDetailData'
@@ -675,8 +676,13 @@ export default function BerkasEmiten() {
         )}
       </section>
 
+      {/* C dan D sebaris, E berdiri sendiri selebar penuh (#224, Johan 23 Sep
+          2026: "section C dan D bisa jadi 1 baris dan Section E bisa berdiri
+          sendiri"). Sebelumnya C selebar penuh dan D berbagi baris dengan E,
+          sehingga D menyisakan ruang kosong besar di bawahnya. */}
+      <div className="be-duo-kartu">
       {/* ── BLOK C · ALIRAN ASING ──────────────────────────────────────── */}
-      <section className="be-kartu" style={{ marginTop: 14 }}>
+      <section className="be-kartu">
         <div className="be-kartu-kepala">
           <span className="be-blok">C</span>
           <div>
@@ -749,11 +755,6 @@ export default function BerkasEmiten() {
         )}
       </section>
 
-      {/* D dan E berdampingan (Johan: "D dan E bisa ini jadi 2 kolom"). Dua
-          kartu yang sama-sama menjawab "boleh dipercaya sejauh mana", jadi
-          dibaca bersisian: likuiditas menakar bahan bakunya, probabilitas
-          menakar rekam jejaknya. */}
-      <div className="be-duo-kartu">
         {/* ── BLOK D · LIKUIDITAS ────────────────────────────────────────── */}
         <section className="be-kartu">
           <div className="be-kartu-kepala">
@@ -822,6 +823,8 @@ export default function BerkasEmiten() {
           )}
         </section>
 
+      </div>
+
         {/* BLOK E — rekam jejak, bukan ramalan. Aturan yang ditegakkan modulnya
             dan bukan di sini: persentase cuma dicetak kalau sampelnya cukup.
             Rancangan menyebutnya sebagai satu kalimat — "3 dari 4 bukan 75%" —
@@ -830,17 +833,21 @@ export default function BerkasEmiten() {
           <div className="be-kartu-kepala">
             <span className="be-blok">E</span>
             <div>
-              <h2>Probabilitas &amp; rekam jejak — dengan angka kejujurannya</h2>
+              <h2>Peluang &amp; rekam jejak</h2>
               <p className="be-ket">
-                Bukan ramalan. Seberapa sering strategi PAPAN benar di emiten ini menurut ujinya
-                sendiri, lengkap dengan seberapa sering ia meleset.
+                Bukan ramalan. Ini catatan seberapa sering hitungan PAPAN benar di saham ini,
+                termasuk seberapa sering meleset.
               </p>
             </div>
           </div>
 
           {prob && (
             <div className="be-prob">
-              <span className="be-lbl">Peluang menyentuh level esok</span>
+              <span className="be-lbl">Peluang harga besok menyentuh level ini</span>
+              <p className="be-prob-kalimat">
+                R1 dan R2 = batas atas terdekat, S1 = batas bawah terdekat. Angka kecil di sampingnya
+                = jaraknya dari harga sekarang. Level yang dekat wajar punya peluang tinggi.
+              </p>
               <div className="be-tangga-baris">
                 {([['R1', prob.pR1, prob.jarak?.R1], ['R2', prob.pR2, prob.jarak?.R2],
                    ['S1', prob.pS1, prob.jarak?.S1]] as const).map(([nama, p, jarak]) => (
@@ -863,6 +870,17 @@ export default function BerkasEmiten() {
 
               <div className="be-prob-naik">
                 <span className="be-lbl">Peluang naik dalam 5 hari</span>
+                {prob.p5 != null && prob.base5 != null && (
+                  <p className="be-prob-kalimat">
+                    Pada {prob.n != null ? `${prob.n.toLocaleString('id-ID')} hari yang mirip` : 'hari-hari yang mirip'},
+                    saham ini naik dalam 5 hari sebanyak {persen(prob.p5 * 100, 1)}. Rata-rata semua
+                    saham {persen(prob.base5 * 100, 1)}. {Math.abs((prob.p5 - prob.base5) * 100) < 2
+                      ? <b>Praktis sama dengan pasar, jadi jangan dipakai sebagai sinyal.</b>
+                      : prob.p5 > prob.base5
+                        ? <>Sedikit lebih sering naik daripada pasar.</>
+                        : <>Sedikit lebih jarang naik daripada pasar.</>}
+                  </p>
+                )}
                 <div className="be-tangga-baris">
                   <span className="be-pil">
                     emiten ini<b>{prob.p5 == null ? '—' : `${persen(prob.p5 * 100, 1)}`}</b>
@@ -876,7 +894,9 @@ export default function BerkasEmiten() {
                   <span className="be-pil">
                     selisih
                     <b className={(prob.lift5 ?? 0) > 0 ? 'up' : (prob.lift5 ?? 0) < 0 ? 'dn' : ''}>
-                      {prob.lift5 == null ? '—' : `${prob.lift5 > 0 ? '+' : ''}${prob.lift5.toFixed(2)} pp`}
+                      {/* lift5 disimpan sebagai PECAHAN (0,0165 = 1,65 poin persen); dulu
+                          dicetak apa adanya berlabel "pp" sehingga tampil 100x terlalu kecil. */}
+                      {prob.lift5 == null ? '—' : `${prob.lift5 > 0 ? '+' : ''}${(prob.lift5 * 100).toLocaleString('id-ID', { maximumFractionDigits: 1 })} poin`}
                     </b>
                   </span>
                   {prob.n != null && (
@@ -894,17 +914,17 @@ export default function BerkasEmiten() {
                 <p className={`be-prob-uji${layakSinyal(evaluasiProb) ? '' : ' be-prob-gagal'}`}>
                   {layakSinyal(evaluasiProb) ? (
                     <>
-                      Diuji pada {evaluasiProb.n_uji} titik di luar sampel sejak{' '}
-                      {evaluasiProb.mulai_uji}: penaksir ini <b>lebih baik</b> daripada sekadar
-                      memakai rata-rata pasar.
+                      Hitungan ini sudah diuji ke {evaluasiProb.n_uji} hari sejak{' '}
+                      {evaluasiProb.mulai_uji} yang tidak dipakai saat menyusunnya, dan hasilnya
+                      <b> lebih jitu</b> daripada sekadar memakai rata-rata pasar.
                     </>
                   ) : (
                     <>
-                      <b>Baca peluang 5 hari itu sebagai konteks, bukan sinyal.</b> Diuji pada{' '}
-                      {evaluasiProb.n_uji} titik di luar sampel sejak {evaluasiProb.mulai_uji},
-                      penaksir ini <b>tidak</b> lebih baik daripada sekadar memakai rata-rata pasar.
-                      Peluang menyentuh level di atas berdiri terpisah — ia menghitung jarak, bukan
-                      menebak arah.
+                      <b>Peluang 5 hari ini hanya konteks, bukan sinyal.</b> Hitungan ini sudah diuji
+                      ke {evaluasiProb.n_uji} hari sejak {evaluasiProb.mulai_uji} yang tidak dipakai saat
+                      menyusunnya, dan hasilnya <b>tidak</b> lebih jitu daripada sekadar memakai
+                      rata-rata pasar. Peluang menyentuh level di atas terpisah: ia mengukur jarak,
+                      bukan menebak arah.
                     </>
                   )}
                 </p>
@@ -912,14 +932,14 @@ export default function BerkasEmiten() {
 
               {prob.faktor && prob.faktor.length > 0 && (
                 <div className="be-prob-faktor">
-                  <span className="be-lbl">Yang mendorong &amp; menekan hari ini</span>
+                  <span className="be-lbl">Yang menaikkan &amp; menurunkan peluang hari ini</span>
                   <ul>
                     {prob.faktor.slice(0, 5).map((f, i) => (
                       <li key={i}>
                         <span>{f.nama}</span>
                         <em>{f.nilai}</em>
                         <b className={f.delta_pp >= 0 ? 'up' : 'dn'}>
-                          {f.delta_pp >= 0 ? '+' : ''}{f.delta_pp.toFixed(1)} pp
+                          {f.delta_pp >= 0 ? '+' : ''}{f.delta_pp.toLocaleString('id-ID', { maximumFractionDigits: 1 })} poin
                         </b>
                       </li>
                     ))}
@@ -940,7 +960,7 @@ export default function BerkasEmiten() {
               {rekamAda.map((r) => (
                 <div key={r.strategi} className="be-rekam-grup">
                   <div className="be-rekam-kepala">
-                    <b>{r.strategi}</b>
+                    <b>{namaStrategi(r.strategi)}</b>
                     <span className={r.layakPersen ? '' : 'be-rekam-tipis'}>{r.label}</span>
                   </div>
                   <div className="be-rekam-angka">
@@ -968,9 +988,9 @@ export default function BerkasEmiten() {
                 </div>
               ))}
               <p className="be-rasio-kosong">
-                Tingkat menang hanya dinyatakan dalam persen bila ada minimal {MIN_SAMPEL_PERSEN} kali
-                — di bawah itu satu kejadian menggeser angkanya lebih dari lima poin, dan persentase
-                dari sampel sekecil itu terbaca setara dengan persentase dari dua ratus kejadian.
+                Tingkat menang baru ditulis dalam persen kalau strateginya sudah muncul minimal{' '}
+                {MIN_SAMPEL_PERSEN} kali. Di bawah itu, satu kejadian saja bisa menggeser angkanya
+                lebih dari lima poin.
               </p>
             </div>
           )}
@@ -991,7 +1011,6 @@ export default function BerkasEmiten() {
             </div>
           )}
         </section>
-      </div>
 
       {/* BLOK F — yang sudah dihitung halaman lain, dikumpulkan jadi satu
           layar. Tangga harga datang dari kartu yang SUDAH dimuat blok G;

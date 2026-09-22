@@ -1,0 +1,138 @@
+/* #223 Tampilan Baru — kelompok pasar-peringkat. Semua aturan WAJIB diawali html[data-tampilan="baru"]. */
+
+/* Halaman: TopStocks (/stocks → .hal-top-stocks), BrokerPasar (/broker —
+   akar sebenarnya dirender oleh TopBroker.tsx dan BrokerSummary.tsx, kelas
+   penanda ditaruh di kedua akar itu → .hal-broker-pasar), StatistikBerkala
+   (/statistik → .hal-statistik-berkala). Acuan artboard: L2-Peringkat dan
+   L2-Berkala (laptop 1440 + -Tel 390) — susunan & irama ditiru, isi tidak,
+   karena ketiga halaman render Top Gainers/Losers/Kontribusi IHSG, Top
+   Stock/Broker Trading, dan edisi Mingguan/Bulanan — bukan konsentrasi nilai
+   transaksi seperti di artboard. */
+
+/* ===== 1. Lantai huruf bersama — tak ada teks < 12px ===== */
+html[data-tampilan='baru'] .lantai:is(.hal-top-stocks, .hal-broker-pasar, .hal-statistik-berkala) .lbl {
+  font-size: 12px; letter-spacing: .1em;
+}
+html[data-tampilan='baru'] .lantai:is(.hal-top-stocks, .hal-broker-pasar, .hal-statistik-berkala) .tbl th {
+  font-size: 12px; letter-spacing: .08em; padding: 7px 10px;
+}
+html[data-tampilan='baru'] .lantai:is(.hal-top-stocks, .hal-broker-pasar, .hal-statistik-berkala) .tbl td {
+  font-size: 13px; padding: 8px 10px;
+}
+html[data-tampilan='baru'] .lantai:is(.hal-top-stocks, .hal-broker-pasar, .hal-statistik-berkala) .tick,
+html[data-tampilan='baru'] .lantai:is(.hal-top-stocks, .hal-broker-pasar, .hal-statistik-berkala) .bchip,
+html[data-tampilan='baru'] .lantai:is(.hal-top-stocks, .hal-broker-pasar, .hal-statistik-berkala) .ytd-bdg,
+html[data-tampilan='baru'] .lantai:is(.hal-top-stocks, .hal-broker-pasar, .hal-statistik-berkala) .chip,
+html[data-tampilan='baru'] .lantai:is(.hal-top-stocks, .hal-broker-pasar, .hal-statistik-berkala) .th-sort,
+html[data-tampilan='baru'] .lantai:is(.hal-top-stocks, .hal-broker-pasar, .hal-statistik-berkala) .rk {
+  font-size: 12px;
+}
+/* Beberapa label diberi ukuran inline langsung di TSX (fontSize:11, di luar
+   cakupan berkas ini) — dipaksa naik lewat !important, satu-satunya jalan
+   CSS mengalahkan inline style tanpa menyunting tsx-nya. */
+html[data-tampilan='baru'] .lantai:is(.hal-top-stocks, .hal-broker-pasar, .hal-statistik-berkala) .muted {
+  font-size: 12px !important;
+}
+
+/* ===== 2. Kendali — tinggi ≥36px laptop, ≥44px ≤860px ===== */
+html[data-tampilan='baru'] .lantai:is(.hal-top-stocks, .hal-broker-pasar, .hal-statistik-berkala) .tab,
+html[data-tampilan='baru'] .lantai:is(.hal-top-stocks, .hal-broker-pasar, .hal-statistik-berkala) .dd-btn,
+html[data-tampilan='baru'] .lantai:is(.hal-top-stocks, .hal-broker-pasar, .hal-statistik-berkala) .chip-t,
+html[data-tampilan='baru'] .lantai:is(.hal-top-stocks, .hal-broker-pasar, .hal-statistik-berkala) .btn-p,
+html[data-tampilan='baru'] .lantai:is(.hal-top-stocks, .hal-broker-pasar, .hal-statistik-berkala) .inp {
+  height: 36px; font-size: 13px;
+}
+html[data-tampilan='baru'] .lantai:is(.hal-top-stocks, .hal-broker-pasar, .hal-statistik-berkala) .tabs {
+  min-height: 40px;
+}
+@media (max-width: 860px) {
+  html[data-tampilan='baru'] .lantai:is(.hal-top-stocks, .hal-broker-pasar, .hal-statistik-berkala) .tab,
+  html[data-tampilan='baru'] .lantai:is(.hal-top-stocks, .hal-broker-pasar, .hal-statistik-berkala) .dd-btn,
+  html[data-tampilan='baru'] .lantai:is(.hal-top-stocks, .hal-broker-pasar, .hal-statistik-berkala) .chip-t,
+  html[data-tampilan='baru'] .lantai:is(.hal-top-stocks, .hal-broker-pasar, .hal-statistik-berkala) .btn-p,
+  html[data-tampilan='baru'] .lantai:is(.hal-top-stocks, .hal-broker-pasar, .hal-statistik-berkala) .inp {
+    height: 44px;
+  }
+  html[data-tampilan='baru'] .lantai:is(.hal-top-stocks, .hal-broker-pasar, .hal-statistik-berkala) .tabs {
+    min-height: 48px;
+  }
+}
+
+/* ===== 3. Kotak peringatan — latar rata, bukan pil amber menyala ===== */
+html[data-tampilan='baru'] .lantai:is(.hal-top-stocks, .hal-broker-pasar) .chip.warn {
+  display: flex; align-items: flex-start; gap: 8px;
+  background: var(--bg2); border: 1px solid var(--line); border-radius: var(--r-kecil);
+  padding: 10px 14px; color: var(--text2); font-size: 13px; line-height: 1.5;
+}
+html[data-tampilan='baru'] .lantai:is(.hal-top-stocks, .hal-broker-pasar) .chip.warn strong {
+  color: var(--amber);
+}
+html[data-tampilan='baru'] .lantai:is(.hal-top-stocks, .hal-broker-pasar) .chip.warn .dasbor-ikon {
+  color: var(--amber); flex: none; margin-top: 1px;
+}
+
+/* ===== 4. Angka KPI (.vcard, .tile) — 22-26px, seperti hero number artboard ===== */
+html[data-tampilan='baru'] .lantai:is(.hal-top-stocks, .hal-broker-pasar) .vcard .v-num {
+  font-size: 26px;
+}
+html[data-tampilan='baru'] .lantai:is(.hal-top-stocks, .hal-broker-pasar) .vcard .v-note {
+  font-size: 12px;
+}
+html[data-tampilan='baru'] .lantai.hal-statistik-berkala .tile .t-val {
+  font-size: 22px;
+}
+html[data-tampilan='baru'] .lantai.hal-statistik-berkala .tile .t-code {
+  font-size: 12px;
+}
+html[data-tampilan='baru'] .lantai.hal-statistik-berkala .tile .t-name {
+  font-size: 13px;
+}
+
+/* ===== 5. /stocks — Top 10 Market Cap: badge peringkat & nilai naik ke 12px ===== */
+html[data-tampilan='baru'] .lantai.hal-top-stocks .mc-row {
+  grid-template-columns: 26px 56px minmax(0, 1fr) 84px 68px; gap: 12px;
+}
+html[data-tampilan='baru'] .lantai.hal-top-stocks .mc-rk {
+  font-size: 12px; width: 24px; height: 24px; line-height: 24px;
+}
+html[data-tampilan='baru'] .lantai.hal-top-stocks .mc-v {
+  font-size: 14px;
+}
+html[data-tampilan='baru'] .lantai.hal-top-stocks .grid2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+@media (max-width: 860px) {
+  html[data-tampilan='baru'] .lantai.hal-top-stocks .mc-row {
+    grid-template-columns: 24px 48px minmax(0, 1fr) 64px 56px; gap: 8px;
+  }
+  html[data-tampilan='baru'] .lantai.hal-top-stocks .grid2 {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* ===== 6. /broker — tiga tabel/panel sebaris seperti "Peringkat" artboard;
+   grup-kanan (dropdown Rincian broker) TIDAK flex:none supaya bilah kendali
+   boleh membungkus di layar sempit (lihat catatan flex:none di CLAUDE.md). */
+html[data-tampilan='baru'] .lantai.hal-broker-pasar .grid3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+html[data-tampilan='baru'] .lantai.hal-broker-pasar .bilah-kendali .grup-kanan {
+  flex: 1 1 auto; min-width: 0; justify-content: flex-end;
+}
+html[data-tampilan='baru'] .lantai.hal-broker-pasar .bilah-kendali .grup-kanan > * {
+  min-width: 0;
+}
+@media (max-width: 860px) {
+  html[data-tampilan='baru'] .lantai.hal-broker-pasar .grid3 {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* ===== 7. /statistik — kartu pekan/bulan kembali 1 kolom di bawah 860px
+   (base lantai.css memutus di 820px; digenapkan di sini untuk halaman ini). */
+@media (max-width: 860px) {
+  html[data-tampilan='baru'] .lantai.hal-statistik-berkala .grid2,
+  html[data-tampilan='baru'] .lantai.hal-statistik-berkala .grid3 {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

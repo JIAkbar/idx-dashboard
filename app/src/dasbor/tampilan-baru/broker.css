@@ -1,0 +1,297 @@
+/* #223 Tampilan Baru — kelompok broker. Semua aturan WAJIB diawali html[data-tampilan="baru"].
+   Halaman: Bandarmologi (.hal-bandarmologi), Whales Papan (.hal-whales),
+   Trader Papan (.hal-trader), Neo Papan/Inventory Broker (.hal-neo, akar juga
+   punya .neo-papan yang dipakai SektorPasar — jangan pernah selektor tanpa
+   .hal-neo), Broker Summary v2/Arus Broker (.hal-broker-summary).
+
+   Acuan rupa: artboard L3-SudutBroker & L3-BrokerSummary (kartu bersudut,
+   label kecil huruf besar 11-12px, angka KPI besar var(--mono), narasi 13-14px
+   var(--text2)). Bandarmologi/Whales/Trader/Neo tak punya artboard sendiri —
+   bahasa rupa yang sama diterapkan ke kelas halaman masing-masing. */
+
+/* ============================================================
+   BERSAMA — komponen kanonis (tabs/tab, chip-t, lbl, tbl, vcard,
+   badge) dipakai lintas kelima halaman ini. Discope per halaman
+   supaya tak bocor ke kelompok lain yang memakai kelas sama.
+   ============================================================ */
+html[data-tampilan='baru'] .lantai.hal-bandarmologi .tabs .tab,
+html[data-tampilan='baru'] .lantai.hal-whales .tabs .tab,
+html[data-tampilan='baru'] .lantai.hal-trader .tabs .tab,
+html[data-tampilan='baru'] .lantai.hal-neo .tabs .tab,
+html[data-tampilan='baru'] .lantai.hal-broker-summary .tabs .tab {
+  height: 36px;
+  font-size: 12.5px;
+}
+@media (max-width: 860px) {
+  html[data-tampilan='baru'] .lantai.hal-bandarmologi .tabs .tab,
+  html[data-tampilan='baru'] .lantai.hal-whales .tabs .tab,
+  html[data-tampilan='baru'] .lantai.hal-trader .tabs .tab,
+  html[data-tampilan='baru'] .lantai.hal-neo .tabs .tab,
+  html[data-tampilan='baru'] .lantai.hal-broker-summary .tabs .tab {
+    height: 44px;
+    font-size: 12px;
+  }
+}
+html[data-tampilan='baru'] .lantai.hal-bandarmologi .chip-t,
+html[data-tampilan='baru'] .lantai.hal-whales .chip-t,
+html[data-tampilan='baru'] .lantai.hal-trader .chip-t,
+html[data-tampilan='baru'] .lantai.hal-neo .chip-t,
+html[data-tampilan='baru'] .lantai.hal-broker-summary .chip-t {
+  min-height: 36px;
+  font-size: 12.5px;
+}
+@media (max-width: 860px) {
+  html[data-tampilan='baru'] .lantai.hal-bandarmologi .chip-t,
+  html[data-tampilan='baru'] .lantai.hal-whales .chip-t,
+  html[data-tampilan='baru'] .lantai.hal-trader .chip-t,
+  html[data-tampilan='baru'] .lantai.hal-neo .chip-t,
+  html[data-tampilan='baru'] .lantai.hal-broker-summary .chip-t {
+    min-height: 44px;
+  }
+}
+html[data-tampilan='baru'] .lantai.hal-bandarmologi .lbl,
+html[data-tampilan='baru'] .lantai.hal-whales .lbl,
+html[data-tampilan='baru'] .lantai.hal-trader .lbl,
+html[data-tampilan='baru'] .lantai.hal-neo .lbl,
+html[data-tampilan='baru'] .lantai.hal-broker-summary .lbl {
+  font-size: 12px;
+  letter-spacing: .1em;
+  color: var(--text3);
+}
+html[data-tampilan='baru'] .lantai.hal-bandarmologi .badge,
+html[data-tampilan='baru'] .lantai.hal-whales .badge,
+html[data-tampilan='baru'] .lantai.hal-trader .badge,
+html[data-tampilan='baru'] .lantai.hal-neo .badge,
+html[data-tampilan='baru'] .lantai.hal-broker-summary .badge {
+  font-size: 12px;
+}
+html[data-tampilan='baru'] .lantai.hal-bandarmologi .tbl th,
+html[data-tampilan='baru'] .lantai.hal-whales .tbl th,
+html[data-tampilan='baru'] .lantai.hal-trader .tbl th,
+html[data-tampilan='baru'] .lantai.hal-neo .tbl th,
+html[data-tampilan='baru'] .lantai.hal-broker-summary .tbl th {
+  font-size: 12px;
+  letter-spacing: .08em;
+}
+html[data-tampilan='baru'] .lantai.hal-bandarmologi .tbl td,
+html[data-tampilan='baru'] .lantai.hal-whales .tbl td,
+html[data-tampilan='baru'] .lantai.hal-trader .tbl td,
+html[data-tampilan='baru'] .lantai.hal-neo .tbl td,
+html[data-tampilan='baru'] .lantai.hal-broker-summary .tbl td {
+  font-size: 13px;
+}
+/* Angka KPI di kartu `.vcard` — dari 21px jadi rentang KPI spek (24-32px). */
+html[data-tampilan='baru'] .lantai.hal-bandarmologi .vcard .v-num,
+html[data-tampilan='baru'] .lantai.hal-whales .vcard .v-num,
+html[data-tampilan='baru'] .lantai.hal-trader .vcard .v-num,
+html[data-tampilan='baru'] .lantai.hal-neo .vcard .v-num,
+html[data-tampilan='baru'] .lantai.hal-broker-summary .vcard .v-num {
+  font-size: clamp(22px, 2vw, 26px);
+  letter-spacing: -.01em;
+}
+html[data-tampilan='baru'] .lantai.hal-bandarmologi .vcard .v-note,
+html[data-tampilan='baru'] .lantai.hal-whales .vcard .v-note,
+html[data-tampilan='baru'] .lantai.hal-trader .vcard .v-note,
+html[data-tampilan='baru'] .lantai.hal-neo .vcard .v-note,
+html[data-tampilan='baru'] .lantai.hal-broker-summary .vcard .v-note {
+  font-size: 12px;
+}
+
+/* ============================================================
+   BANDARMOLOGI (/bandarmologi)
+   ============================================================ */
+html[data-tampilan='baru'] .lantai.hal-bandarmologi .bm-pengantar {
+  font-size: 14px;
+  max-width: 72ch;
+}
+/* Angka ringkas — label huruf besar 12px, angka jadi ukuran KPI. */
+html[data-tampilan='baru'] .lantai.hal-bandarmologi .bm-angka {
+  border-radius: var(--r);
+  margin: 18px 0 6px;
+}
+html[data-tampilan='baru'] .lantai.hal-bandarmologi .bm-angka b {
+  font-size: clamp(22px, 2.4vw, 28px);
+}
+html[data-tampilan='baru'] .lantai.hal-bandarmologi .bm-angka span {
+  font-size: 12px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+html[data-tampilan='baru'] .lantai.hal-bandarmologi .bm-angka small {
+  font-size: 12px;
+}
+/* Kartu teori — sudut & narasi selaras rancangan baru. */
+html[data-tampilan='baru'] .lantai.hal-bandarmologi .bm-teori {
+  border-radius: var(--r);
+  padding: 18px 20px;
+}
+html[data-tampilan='baru'] .lantai.hal-bandarmologi .bm-teori-n,
+html[data-tampilan='baru'] .lantai.hal-bandarmologi .bm-teori-src {
+  font-size: 12px;
+}
+html[data-tampilan='baru'] .lantai.hal-bandarmologi .bm-bunyi {
+  font-size: 14px;
+}
+html[data-tampilan='baru'] .lantai.hal-bandarmologi .bm-cara,
+html[data-tampilan='baru'] .lantai.hal-bandarmologi .bm-batas {
+  font-size: 14px;
+  color: var(--text2);
+}
+/* Kotak "Batasnya" — sebelumnya latar+bingkai amber menyala; disamakan
+   dengan aturan kotak peringatan spek: latar bg2, bingkai line, hanya
+   ikonnya yang tetap berwarna. */
+html[data-tampilan='baru'] .lantai.hal-bandarmologi .bm-batas {
+  background: var(--bg2);
+  border: 1px solid var(--line);
+  border-radius: var(--r-kecil);
+}
+html[data-tampilan='baru'] .lantai.hal-bandarmologi .bm-hint {
+  font-size: 12px;
+}
+html[data-tampilan='baru'] .lantai.hal-bandarmologi .bm-tbl .bm-med,
+html[data-tampilan='baru'] .lantai.hal-bandarmologi .bm-tbl .bm-lbl {
+  font-size: 12px;
+}
+html[data-tampilan='baru'] .lantai.hal-bandarmologi .bm-brk {
+  font-size: 12px;
+}
+html[data-tampilan='baru'] .lantai.hal-bandarmologi .bm-daftar b {
+  font-size: 14px;
+}
+html[data-tampilan='baru'] .lantai.hal-bandarmologi .bm-sumber {
+  font-size: 12px;
+}
+html[data-tampilan='baru'] .lantai.hal-bandarmologi .bm-daftar p {
+  font-size: 13px;
+}
+html[data-tampilan='baru'] .lantai.hal-bandarmologi .bm-kaki {
+  font-size: 12.5px;
+}
+@media (max-width: 640px) {
+  html[data-tampilan='baru'] .lantai.hal-bandarmologi .bm-angka b {
+    font-size: 22px;
+  }
+}
+
+/* ============================================================
+   WHALES PAPAN (/whales-papan)
+   ============================================================ */
+html[data-tampilan='baru'] .lantai.hal-whales .wp-kanvas-bungkus,
+html[data-tampilan='baru'] .lantai.hal-whales .wp-hasil {
+  border-radius: var(--r);
+}
+html[data-tampilan='baru'] .lantai.hal-whales .wp-kartu-judul {
+  font-size: 14px;
+}
+html[data-tampilan='baru'] .lantai.hal-whales .wp-kartu-judul .muted {
+  font-size: 12px;
+}
+html[data-tampilan='baru'] .lantai.hal-whales .wp-hasil h3 {
+  font-size: 12.5px;
+}
+html[data-tampilan='baru'] .lantai.hal-whales .wp-kuadran {
+  font-size: 12px;
+}
+html[data-tampilan='baru'] .lantai.hal-whales .wp-sisi-judul {
+  font-size: 12.5px;
+}
+html[data-tampilan='baru'] .lantai.hal-whales .wp-lagi,
+html[data-tampilan='baru'] .lantai.hal-whales .wp-batas {
+  font-size: 12.5px;
+}
+html[data-tampilan='baru'] .lantai.hal-whales .wp-tx-umur {
+  font-size: 12px;
+}
+html[data-tampilan='baru'] .lantai.hal-whales .wp-tx-baris {
+  font-size: 12.5px;
+}
+html[data-tampilan='baru'] .lantai.hal-whales .wp-live .wp-live-tanda {
+  font-size: 11px;
+}
+
+/* ============================================================
+   TRADER PAPAN (/trader-papan)
+   ============================================================ */
+html[data-tampilan='baru'] .lantai.hal-trader .tp-gulung {
+  border-radius: var(--r);
+}
+html[data-tampilan='baru'] .lantai.hal-trader .tp-tabel thead th {
+  font-size: 12px;
+}
+html[data-tampilan='baru'] .lantai.hal-trader .tp-tabel td {
+  font-size: 13px;
+}
+html[data-tampilan='baru'] .lantai.hal-trader .tp-status {
+  font-size: 12px;
+}
+html[data-tampilan='baru'] .lantai.hal-trader .tp-batas,
+html[data-tampilan='baru'] .lantai.hal-trader .tp-kosong {
+  border-radius: var(--r-kecil);
+}
+
+/* ============================================================
+   NEO PAPAN / INVENTORY BROKER (/neo-papan)
+   Kelas .np-* didefinisikan di lantai.css (dipakai bersama SektorPasar),
+   jadi tak boleh disunting di sana — seluruh polesan di sini, digembok
+   .hal-neo supaya SektorPasar (yang tak punya kelas itu) tak ikut berubah.
+   ============================================================ */
+html[data-tampilan='baru'] .lantai.hal-neo .np-sub,
+html[data-tampilan='baru'] .lantai.hal-neo .np-sumber,
+html[data-tampilan='baru'] .lantai.hal-neo .np-kosong,
+html[data-tampilan='baru'] .lantai.hal-neo .np-kv > span,
+html[data-tampilan='baru'] .lantai.hal-neo .np-lbl,
+html[data-tampilan='baru'] .lantai.hal-neo .np-rrg-legenda,
+html[data-tampilan='baru'] .lantai.hal-neo .np-rrg-nama,
+html[data-tampilan='baru'] .lantai.hal-neo .np-rrg-emiten-judul,
+html[data-tampilan='baru'] .lantai.hal-neo .np-rrg-kode,
+html[data-tampilan='baru'] .lantai.hal-neo .np-n-sel,
+html[data-tampilan='baru'] .lantai.hal-neo .np-parsial,
+html[data-tampilan='baru'] .lantai.hal-neo .np-broker-badges {
+  font-size: 12px;
+}
+/* Kotak "catatan/peringatan" — latar kuning menyala disamakan dengan aturan
+   kotak batas: latar bg2, bingkai line, teksnya sendiri yang tetap berwarna. */
+html[data-tampilan='baru'] .lantai.hal-neo .np-catatan,
+html[data-tampilan='baru'] .lantai.hal-neo .np-peringatan {
+  background: var(--bg2);
+  border: 1px solid var(--line);
+  border-radius: var(--r-kecil);
+}
+html[data-tampilan='baru'] .lantai.hal-neo .np-kv {
+  border-radius: var(--r-kecil);
+}
+html[data-tampilan='baru'] .lantai.hal-neo .np-hasil {
+  border-radius: var(--r);
+}
+
+/* ============================================================
+   BROKER SUMMARY V2 / ARUS BROKER (/broker-summary-v2)
+   Delapan tab (Overview/Inventory/FlowNetGross/VsIhsg/TimelineForeign/
+   Shareholders/Nego/Quadrant) berbagi `.panel`, `.grid2/3`, `.vcard`,
+   `.tbl`, `.chip` — sudah dibereskan blok BERSAMA di atas. Sisanya kelas
+   khas `.bs2-*` (lantai.css, dipakai bersama /broker-summary lama —
+   digembok .hal-broker-summary supaya halaman lama tak ikut berubah).
+   ============================================================ */
+html[data-tampilan='baru'] .lantai.hal-broker-summary .bs2-legenda {
+  font-size: 12.5px;
+}
+html[data-tampilan='baru'] .lantai.hal-broker-summary .bs2-metrik .k small,
+html[data-tampilan='baru'] .lantai.hal-broker-summary .bs2-kat-baris .nama small,
+html[data-tampilan='baru'] .lantai.hal-broker-summary .bs2-flow-row .nama small,
+html[data-tampilan='baru'] .lantai.hal-broker-summary .bs2-na {
+  font-size: 12px;
+}
+html[data-tampilan='baru'] .lantai.hal-broker-summary .bs2-metrik .v {
+  font-size: clamp(18px, 1.6vw, 22px);
+}
+@media (max-width: 860px) {
+  html[data-tampilan='baru'] .lantai.hal-broker-summary .bs-h > .tabs .tab {
+    font-size: 12px;
+  }
+  html[data-tampilan='baru'] .lantai.hal-broker-summary .bs-stat > .vcard .lbl {
+    font-size: 12px;
+  }
+  html[data-tampilan='baru'] .lantai.hal-broker-summary .bs-stat > .vcard .v-note {
+    font-size: 12px;
+  }
+}

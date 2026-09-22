@@ -55,7 +55,7 @@ export function AliranAsing() {
 
   if (!data) {
     return (
-      <div className="lantai">
+      <div className="lantai hal-aliran-asing">
         <div className="vhead"><h1>Aliran Asing</h1></div>
         <div className="panel panel-b" style={{ textAlign: 'center', padding: '40px 20px' }}>
           <p><IkonMenu d={IKON_PERINGATAN} size={28} /></p>
@@ -66,7 +66,7 @@ export function AliranAsing() {
   }
 
   return (
-    <div className="lantai">
+    <div className="lantai hal-aliran-asing">
       <div className="vhead">
         <h1>Aliran Asing</h1>
         <span className="sub">Emiten diurut net asing — pilih baris untuk arus harian, grafik kumulatif, dan persentilnya.</span>
