@@ -579,6 +579,7 @@ def jalankan(a) -> int:
             raise SystemExit(f"varian tak dikenal: {v} (pilihan: {', '.join(VARIAN)})")
 
     paralel = max(1, int(getattr(a, "paralel", 1) or 1))
+    varian_aktif: list[str] = list(varian_semua)
     _kunci_proses()
     tok = {"v": token_segar()}
     if len(kode_semua) > 1:
@@ -626,7 +627,7 @@ def jalankan(a) -> int:
       # "belum siap", lima varian sisanya PASTI menjawab hal yang sama -
       # memanggilnya tetap cuma membeli jawaban yang sudah diketahui.
       reguler_belum_siap = False
-      for varian in varian_semua:
+      for varian in varian_aktif:
         if henti.is_set() or reguler_belum_siap:
             break
         pasar, investor, transaksi = VARIAN[varian]
@@ -786,14 +787,29 @@ def jalankan(a) -> int:
       if i % 100 == 0:
         print(f"  ...{i}/{len(kode_semua)} ({time.time()-mulai:.0f}s)")
 
-    if paralel == 1:
-        for kode in kode_semua:
-            satu_emiten(kode)
-    else:
-        from concurrent.futures import ThreadPoolExecutor
-        with ThreadPoolExecutor(max_workers=paralel) as kolam:
-            for _ in kolam.map(satu_emiten, kode_semua):
-                pass
+    # Urutan PER VARIAN, bukan per emiten (#218, Johan 22 Sep 2026: "kerjakan
+    # #218"). Sumber memberi jatah JUMLAH panggilan per periode (21-22 Sep:
+    # 1 panggilan/detik pun berhenti di ±280 emiten). Dengan urutan lama tiap
+    # emiten memakai 6 panggilan berurutan, jadi jatah habis di emiten ke-300
+    # dan 660 emiten tak punya reguler sama sekali. Sekarang `reguler` untuk
+    # SEMUA emiten dulu (dasar semua halaman dan wasit kesiapan), baru asing,
+    # lalu nego/tunai; yang belum kebagian disusul jalan berikutnya. Isi
+    # `varian_aktif` diganti per putaran; `satu_emiten` membacanya lewat closure.
+    varian_urut = list(varian_semua)
+    for v_giliran in varian_urut:
+        varian_aktif[:] = [v_giliran]
+        if henti.is_set():
+            break
+        if paralel == 1:
+            for kode in kode_semua:
+                satu_emiten(kode)
+        else:
+            from concurrent.futures import ThreadPoolExecutor
+            with ThreadPoolExecutor(max_workers=paralel) as kolam:
+                for _ in kolam.map(satu_emiten, kode_semua):
+                    pass
+        if len(varian_urut) > 1:
+            print(f"  varian {v_giliran} selesai: {n['ok']} tersimpan, {n['kosong']} kosong ({time.time()-mulai:.0f}s)")
 
     n_ok, n_lewat, n_kosong = n["ok"], n["lewat"], n["kosong"]
     n_gagal, n_meleset = n["gagal"], n["meleset"]
