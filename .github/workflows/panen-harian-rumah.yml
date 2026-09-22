@@ -302,6 +302,11 @@ jobs:
       - name: 3d · Broker summary per emiten (Stockbit, 6 varian GROSS)
         if: steps.token.outputs.hidup == '1'
         continue-on-error: true
+        # Pemanen dibatasi 1 panggilan/detik sejak #215 (jatah sumber), jadi
+        # satu hari penuh ±1,5 jam dan hari bolong bisa menumpuk. Tanpa batas
+        # langkah, job 150 menit mati sebelum commit dan SEMUA data run itu
+        # hilang. Yang belum terpanen disusul run berikutnya (tgl_broker_lubang).
+        timeout-minutes: 60
         run: |
           & "${{ steps.py.outputs.exe }}" scripts/stockbit_token.py --status
           $tanggal = @(& "${{ steps.py.outputs.exe }}" scripts/tgl_broker_lubang.py)
