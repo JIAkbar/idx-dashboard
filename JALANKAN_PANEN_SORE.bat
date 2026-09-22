@@ -244,7 +244,10 @@ REM dan angka 8 jatuh jadi KODE EMITEN - itu asal broker_tahunan/8 pada
 REM 6 Sep 18:27. Baris kembar di JALANKAN_BUKA_LAPTOP.bat sudah berpagar
 REM sejak awal; yang ini tertinggal.
 if "%TAHUN_KINI%"=="" (echo   [E] PERINGATAN: tahun tak terbaca, memakai 2026 ^& lanjut) & if "%TAHUN_KINI%"=="" set TAHUN_KINI=2026
-"%PYEXE%" scripts\bangun_broker_tahunan.py --tahun %TAHUN_KINI% --paralel 16
+REM --inkremental (#219, Johan 22 Sep 2026): hanya emiten yang arsipnya berubah
+REM sejak berkas tahunan ditulis; sama dengan CI (#204). Jalan penuh 962 emiten
+REM +-75 menit (22 Sep 21:04-22:2x), inkremental +-3 menit.
+"%PYEXE%" scripts\bangun_broker_tahunan.py --tahun %TAHUN_KINI% --paralel 16 --inkremental
 "%PYEXE%" scripts\bangun_kategori_broker.py
 "%PYEXE%" scripts\riset\kartu_analisa.py --semua --tulis
 REM Peluang historis seluruh emiten. Dulu YATIM: nol pemanggil di bat
