@@ -611,7 +611,8 @@
 .lantai .brd-papan-ringkas .brd-nama { font-size: clamp(26px, 3.4vw, 38px); }
 .lantai .brd-papan-ringkas .brd-tagline { font-size: 12.5px; }
 
-/* Kartu pengunjung (#112 A) — satu baris tipis di kaki halaman depan.
+/* Kartu pengunjung (#112 A) — di kaki halaman depan; sejak #213 ikut
+   memuat peta dan daftar negara.
    Sengaja tanpa bingkai kartu: ia keterangan, bukan panel data, dan di
    bawah deretan kartu menu satu kotak lagi akan terbaca sebagai menu. */
 .lantai .kjg {
@@ -627,6 +628,32 @@
    di layar sentuh, dan angka pengunjung tanpa batasnya gampang dibaca
    lebih besar daripada yang sebenarnya diukur. */
 .lantai .kjg-batas { flex: 1 1 100%; font-size: 11px; opacity: .8; }
+
+/* Sebaran negara (#213): peta satu rona + daftar negara. Dua kolom di layar
+   lebar, bertumpuk di ponsel. Tinggi peta dipesan lewat aspect-ratio supaya
+   halaman tak melompat saat batas negara selesai dimuat. */
+.lantai .kjg-negara {
+  flex: 1 1 100%;
+  display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr);
+  gap: 16px; align-items: start; margin-top: 8px;
+}
+.lantai .kjg-peta { width: 100%; height: auto; aspect-ratio: 960 / 470; display: block; }
+.lantai .kjg-peta path { stroke: var(--bg0, #fff); stroke-width: .5; }
+.lantai .kjg-tanah { fill: var(--bg3, #ccc); }
+.lantai .kjg-ada { fill: var(--amber, #c9a227); }
+.lantai .kjg-sub { font-weight: 700; color: var(--text2); margin-bottom: 6px; }
+.lantai .kjg-daftar { list-style: none; margin: 0; padding: 0; }
+.lantai .kjg-daftar li {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto 52px; gap: 10px;
+  padding: 3px 0; border-bottom: 1px solid var(--line);
+}
+.lantai .kjg-nm { color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lantai .kjg-daftar .num { font-family: var(--mono, ui-monospace, monospace); text-align: right; font-variant-numeric: tabular-nums; }
+.lantai .kjg-pct { color: var(--text3); }
+.lantai .kjg-kosong-teks, .lantai .kjg-batas-negara { font-size: 11px; opacity: .8; margin: 6px 0 0; }
+@media (max-width: 640px) {
+  .lantai .kjg-negara { grid-template-columns: minmax(0, 1fr); }
+}
 
 /* Jeda terbitan (#139 B) — dinyatakan, bukan disembunyikan. Ukurannya sama
    dengan keterangan kecil lain di kartu ini supaya ia terbaca sebagai

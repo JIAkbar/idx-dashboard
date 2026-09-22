@@ -19,6 +19,42 @@ export interface AngkaKunjungan {
   hari_ini: number
   bulan_ini: number
   total: number
+  /** #213: hitungan per negara seluruh riwayat; null kalau server gagal membacanya. */
+  negara?: { daftar: { kode: string; n: number }[]; tak_diketahui: number } | null
+}
+
+export interface BarisNegara {
+  kode: string
+  nama: string
+  n: number
+  /** Persen dari kunjungan yang negaranya DIKETAHUI, bukan dari total. */
+  persen: number
+}
+
+/** Tanggal kolom negara mulai diisi (#213). Kunjungan sebelumnya tak punya negara. */
+export const MULAI_NEGARA = '2026-09-22'
+
+const namaWilayah = (() => {
+  try { return new Intl.DisplayNames(['id'], { type: 'region' }) } catch { return null }
+})()
+
+/** Nama negara berbahasa Indonesia dari kode ISO; kodenya sendiri kalau peramban tak tahu. */
+export function namaNegara(kode: string): string {
+  try { return namaWilayah?.of(kode) ?? kode } catch { return kode }
+}
+
+/** Urutkan negara menurun, hitung persen dari yang diketahui, dan ringkas
+ *  sisanya jadi satu baris "Lainnya" sesudah `batas` negara teratas. */
+export function ringkasNegara(daftar: { kode: string; n: number }[], batas = 10): BarisNegara[] {
+  const sah = daftar.filter((d) => d.n > 0)
+  const total = sah.reduce((a, d) => a + d.n, 0)
+  if (!total) return []
+  const urut = [...sah].sort((a, b) => b.n - a.n || a.kode.localeCompare(b.kode))
+  const nama = namaNegara
+  const baris = urut.slice(0, batas).map((d) => ({ kode: d.kode, nama: nama(d.kode), n: d.n, persen: (d.n / total) * 100 }))
+  const sisa = urut.slice(batas).reduce((a, d) => a + d.n, 0)
+  if (sisa) baris.push({ kode: '', nama: `Lainnya (${urut.length - batas} negara)`, n: sisa, persen: (sisa / total) * 100 })
+  return baris
 }
 
 /** Kirim satu kunjungan — sekali per tab, gagal diam-diam. */

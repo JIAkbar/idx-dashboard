@@ -15,6 +15,13 @@
  * Yang TIDAK pernah dicetak ke log: ip, user-agent, garam, sidik. Kegagalan
  * dilaporkan sebagai nama tahap, sama seperti `live-harga.js`.
  *
+ * ## Negara (#213)
+ *
+ * Kolom `negara` diisi dari kepala `x-vercel-ip-country` (dua huruf ISO
+ * 3166-1) yang dipasang Vercel. Itu satu-satunya turunan IP yang disimpan,
+ * dan ia tak cukup untuk mengenali siapa pun. VPN menggeser negaranya; baris
+ * sebelum 22 Sep 2026 tak punya negara dan tampil "tak diketahui".
+ *
  * ## Kejujuran angkanya
  *
  * "Unik per hari" di sini = perangkat + jaringan, BUKAN orang. Satu orang
@@ -59,6 +66,35 @@ export function sidikKunjungan(ip, userAgent, tanggal, garam) {
   return createHash('sha256')
     .update(`${ip}|${userAgent}|${tanggal}|${garam}`)
     .digest('hex')
+}
+
+/** Kode negara dua huruf dari kepala Vercel, atau null kalau tak ada/tak sah.
+ *  Vercel memakai nilai non-ISO untuk alamat yang tak dikenalnya, jadi hanya
+ *  dua huruf A-Z yang diterima. */
+export function negaraDariKepala(req) {
+  const v = String(req?.headers?.['x-vercel-ip-country'] ?? '').trim().toUpperCase()
+  return /^[A-Z]{2}$/.test(v) ? v : null
+}
+
+/** Hitungan per negara seluruh riwayat lewat fungsi SQL `kunjungan_per_negara`.
+ *  null kalau gagal: kartu tetap menampilkan angka harian tanpa peta. */
+async function perNegara(url, kunci) {
+  const r = await fetch(`${url}/rest/v1/rpc/kunjungan_per_negara`, {
+    method: 'POST',
+    headers: { apikey: kunci, Authorization: `Bearer ${kunci}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ dari: '2000-01-01' }),
+  })
+  if (!r.ok) return null
+  const baris = await r.json()
+  if (!Array.isArray(baris)) return null
+  let tak_diketahui = 0
+  const daftar = []
+  for (const b of baris) {
+    const n = Number(b?.n) || 0
+    if (b?.negara) daftar.push({ kode: String(b.negara).trim(), n })
+    else tak_diketahui += n
+  }
+  return { daftar, tak_diketahui }
 }
 
 /** Jumlah baris lewat PostgREST tanpa menarik isinya (`count=exact`, limit 0).
@@ -106,7 +142,7 @@ export default async function handler(req, res) {
           // Idempoten: memuat ulang halaman di hari yang sama tak menambah baris.
           Prefer: 'resolution=ignore-duplicates,return=minimal',
         },
-        body: JSON.stringify({ tanggal: hariIni, sidik }),
+        body: JSON.stringify({ tanggal: hariIni, sidik, negara: negaraDariKepala(req) }),
       })
       if (!r.ok) {
         console.error('kunjungan: tulis ditolak HTTP', r.status)
@@ -124,10 +160,11 @@ export default async function handler(req, res) {
   if (req.method === 'GET') {
     try {
       const bulan = hariIni.slice(0, 7)
-      const [hari_ini, bulan_ini, total] = await Promise.all([
+      const [hari_ini, bulan_ini, total, negara] = await Promise.all([
         hitung(url, kunci, `&tanggal=eq.${hariIni}`),
         hitung(url, kunci, `&tanggal=gte.${bulan}-01`),
         hitung(url, kunci, ''),
+        perNegara(url, kunci).catch(() => null),
       ])
       if (hari_ini === null || bulan_ini === null || total === null) {
         return res.status(503).json({ galat: 'tertunda', tahap: 'tabel-tak-terbaca' })
@@ -135,7 +172,7 @@ export default async function handler(req, res) {
       // Satu menit di CDN: angka pengunjung tak perlu lebih segar dari itu, dan
       // ini yang menjaga tiap pemuatan halaman tidak jadi satu kueri basis data.
       res.setHeader('Cache-Control', 's-maxage=60, stale-while-revalidate=60')
-      return res.status(200).json({ tanggal: hariIni, hari_ini, bulan_ini, total })
+      return res.status(200).json({ tanggal: hariIni, hari_ini, bulan_ini, total, negara })
     } catch (e) {
       console.error('kunjungan: gagal membaca:', e?.name ?? 'galat')
       return res.status(503).json({ galat: 'tertunda', tahap: 'jaringan' })

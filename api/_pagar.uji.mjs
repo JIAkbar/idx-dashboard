@@ -10,7 +10,7 @@
  * siapa pun — pagar yang terbaca ketat tapi praktis terbuka.
  */
 import { asalDiizinkan, catatLaju, ipPemanggil, periksaPagar, tglWib } from './_pagar.js'
-import { sidikKunjungan, garamEfektif } from './kunjungan.js'
+import { sidikKunjungan, garamEfektif, negaraDariKepala } from './kunjungan.js'
 import yahoo from './yahoo.js'
 
 let gagal = 0
@@ -59,6 +59,10 @@ cek('sidik berbeda antar-IP', s1 !== s4)
 cek('sidik tak memuat bahan bakunya', !s1.includes('1.1.1.1') && !s1.includes('UA') && !s1.includes('garam'))
 cek('sidik panjang sha256', /^[0-9a-f]{64}$/.test(s1))
 cek('garam: env dipakai lebih dulu', garamEfektif({ KUNJUNGAN_GARAM: 'X', SUPABASE_SERVICE_ROLE_KEY: 'Y' }).asal === 'env')
+cek('negara: kode Vercel dua huruf diterima', negaraDariKepala({ headers: { 'x-vercel-ip-country': 'ID' } }) === 'ID')
+cek('negara: huruf kecil dinaikkan', negaraDariKepala({ headers: { 'x-vercel-ip-country': 'sg' } }) === 'SG')
+cek('negara: tanpa kepala -> null', negaraDariKepala({ headers: {} }) === null)
+cek('negara: nilai non-ISO -> null', negaraDariKepala({ headers: { 'x-vercel-ip-country': 'XX1' } }) === null)
 cek('garam: jatuh ke turunan kunci server', garamEfektif({ SUPABASE_SERVICE_ROLE_KEY: 'Y' }).asal === 'turunan-kunci-server')
 cek('garam: tanpa keduanya -> tidak ada', garamEfektif({}).garam === null)
 
