@@ -168,6 +168,9 @@ export const PETA_MENU_KUNCI: Record<string, string> = {
   // sendiri, jadi keduanya tidak bertabrakan. Sempat salah tafsir sehingga
   // halaman ini terbuka untuk siapa saja padahal setelannya "perlu login".
   radar: 'radar',
+  // PAPAN Baru (#586, 23 Sep 2026): satu kunci untuk /baru + seluruh lapisannya,
+  // baris akses_halaman dibuat bersamaan (publik). Meja redaksi terpisah, superadmin.
+  baru: 'papan-baru',
   stocks: 'stocks',
   broker: 'topbroker',
   kalkulator: 'kalkulator',

@@ -63,6 +63,27 @@ const AktivitasAdmin = lazy(() => import('./views/admin/AktivitasAdmin').then((m
 const RakTerbitan = lazy(() => import('./views/admin/RakTerbitan').then((m) => ({ default: m.RakTerbitan })))
 const ChangelogAdmin = lazy(() => import('./views/admin/ChangelogAdmin').then((m) => ({ default: m.ChangelogAdmin })))
 const ChangelogPanel = lazy(() => import('./views/admin/ChangelogAdmin').then((m) => ({ default: m.ChangelogPanel })))
+// PAPAN Baru (#586): 5 layar, 18 lapisan re-imagined. Halaman lama tak disentuh.
+const BaruLayout = lazy(() => import('./views/baru/BaruLayout').then((m) => ({ default: m.BaruLayout })))
+const BaruBaruBeranda = lazy(() => import('./views/baru/BaruBeranda'))
+const BaruL1Bukti = lazy(() => import('./views/baru/L1Bukti'))
+const BaruL1Metodologi = lazy(() => import('./views/baru/L1Metodologi'))
+const BaruL2Indeks = lazy(() => import('./views/baru/L2Indeks'))
+const BaruL2Arus = lazy(() => import('./views/baru/L2Arus'))
+const BaruL2Peringkat = lazy(() => import('./views/baru/L2Peringkat'))
+const BaruL2HariIni = lazy(() => import('./views/baru/L2HariIni'))
+const BaruL2Berkala = lazy(() => import('./views/baru/L2Berkala'))
+const BaruL3Harga = lazy(() => import('./views/baru/L3Harga'))
+const BaruL3Berkas = lazy(() => import('./views/baru/L3Berkas'))
+const BaruL3SudutBroker = lazy(() => import('./views/baru/L3SudutBroker'))
+const BaruL3BrokerSummary = lazy(() => import('./views/baru/L3BrokerSummary'))
+const BaruL3Musiman = lazy(() => import('./views/baru/L3Musiman'))
+const BaruL3Ipo = lazy(() => import('./views/baru/L3Ipo'))
+const BaruL4Jago = lazy(() => import('./views/baru/L4Jago'))
+const BaruL4Terbitan = lazy(() => import('./views/baru/L4Terbitan'))
+const BaruL4Screener = lazy(() => import('./views/baru/L4Screener'))
+const BaruL4Redaksi = lazy(() => import('./views/baru/L4Redaksi'))
+const BaruL5Watchlist = lazy(() => import('./views/baru/L5Watchlist'))
 const EdisiUjicoba = lazy(() => import('./views/EdisiUjicoba').then((m) => ({ default: m.EdisiUjicoba })))
 
 /**
@@ -194,6 +215,30 @@ function App() {
                   Kunci 'watchlist' belum ada baris di `akses_halaman` (pola
                   sama 'kta'/'statistik') -> publik sampai diatur dari tab
                   Akses, tapi kuncinya sudah terpasang di sini & PETA_MENU_KUNCI. */}
+              {/* PAPAN Baru (#586) — satu kunci akses untuk seluruh bagian; Meja redaksi superadmin. */}
+              <Route path="/baru" element={<PenjagaHalaman kunci="papan-baru"><BaruLayout /></PenjagaHalaman>}>
+                <Route index element={<BaruBaruBeranda />} />
+                <Route path="bukti" element={<BaruL1Bukti />} />
+                <Route path="metodologi" element={<BaruL1Metodologi />} />
+                <Route path="indeks" element={<BaruL2Indeks />} />
+                <Route path="arus" element={<BaruL2Arus />} />
+                <Route path="peringkat" element={<BaruL2Peringkat />} />
+                <Route path="hari-ini" element={<BaruL2HariIni />} />
+                <Route path="berkala" element={<BaruL2Berkala />} />
+                <Route path="ipo" element={<BaruL3Ipo />} />
+                <Route path="jago" element={<BaruL4Jago />} />
+                <Route path="terbitan" element={<BaruL4Terbitan />} />
+                <Route path="screener" element={<BaruL4Screener />} />
+                <Route path="watchlist" element={<BaruL5Watchlist />} />
+                <Route path="redaksi" element={<PenjagaHalaman kunci="papan-baru-redaksi"><BaruL4Redaksi /></PenjagaHalaman>} />
+                <Route path="emiten" element={<Navigate to="/baru/emiten/BBCA/harga" replace />} />
+                <Route path="emiten/:kode" element={<Navigate to="harga" replace />} />
+                <Route path="emiten/:kode/harga" element={<BaruL3Harga />} />
+                <Route path="emiten/:kode/berkas" element={<BaruL3Berkas />} />
+                <Route path="emiten/:kode/broker" element={<BaruL3SudutBroker />} />
+                <Route path="emiten/:kode/broker-summary" element={<BaruL3BrokerSummary />} />
+                <Route path="emiten/:kode/musiman" element={<BaruL3Musiman />} />
+              </Route>
               <Route path="/watchlist" element={<PenjagaHalaman kunci="watchlist"><Watchlist /></PenjagaHalaman>} />
               <Route path="/seasonality" element={<PenjagaHalaman kunci="seasonality"><Seasonality /></PenjagaHalaman>} />
               {/* Chart PAPAN (bukan /chart TradingView) — lilin+volume dari

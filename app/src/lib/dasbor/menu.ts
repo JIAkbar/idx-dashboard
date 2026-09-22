@@ -105,6 +105,14 @@ export const MENU_ITEMS: MenuItem[] = [
     ikon: 'M12 3a9 9 0 100 18 9 9 0 000-18zM3 12h18M12 3c2.5 2.4 3.8 5.6 3.8 9s-1.3 6.6-3.8 9c-2.5-2.4-3.8-5.6-3.8-9s1.3-6.6 3.8-9z',
   },
   {
+    // PAPAN Baru (#586, Johan 23 Sep 2026: "kerjakan nomor 2 semua page"): 5
+    // layar, 18 lapisan re-imagined. Tab di pintu Pasar supaya menu utama
+    // tetap <= 10; navigasi layar/lapisannya sendiri ada di dalam halaman.
+    id: 'baru', path: '/baru', label: 'PAPAN Baru', kode: 'BRU', tabLabel: 'PAPAN Baru', induk: '/indeks', grup: 'pasar',
+    ringkas: 'Tampilan baru: lima layar (Tanya, Peta pasar, Emiten, Rekam jejak, Kartu pagi) dengan kalimat yang menyimpulkan tiap angka.',
+    ikon: 'M4 5h16v14H4zM4 10h16M10 10v9',
+  },
+  {
     id: 'sector', path: '/sector', label: 'Sektor & Indeks', kode: 'SEK', tabLabel: 'Sektor', induk: '/indeks', grup: 'pasar',
     ringkas: 'Sebelas sektor IDX dan indeks tematik diurut kinerja, plus rotasi sektor dan aktivitas sektor/indeks.',
     ikon: 'M4 4h7v7H4zM13 4h7v4h-7zM13 10h7v10h-7zM4 13h7v7H4z',

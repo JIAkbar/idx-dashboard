@@ -1,0 +1,75 @@
+/* Baris kepala emiten (kode + nama + pemilih) — layar Emiten, semua lapisan.
+   Kelas StockAutocomplete (`.inp`, `.dd-menu`, `.dd-it`, `.tick`) biasanya
+   datang dari lantai.css (scoped `.lantai`), yang TIDAK dipakai di dunia
+   visual PAPAN Baru (`.baru`). Diberi ulang di sini, scoped `.l3-pilih-cari`,
+   memakai token `--bb-*` yang sudah didefinisikan di `.baru` (baru.css) —
+   bukan `var(--bg2)` dkk yang tak berarti apa-apa di luar `.lantai`. */
+.l3-pilih {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  margin-bottom: 4px;
+}
+.l3-pilih-kode {
+  font-size: 15px;
+  font-weight: 600;
+}
+.l3-pilih-nama {
+  font-size: 13px;
+  color: var(--bb-redup);
+  overflow-wrap: anywhere;
+}
+.l3-pilih-cari {
+  position: relative;
+  flex: 1 1 200px;
+  min-width: 160px;
+  max-width: 280px;
+  margin-left: auto;
+}
+@media (max-width: 480px) {
+  .l3-pilih-cari { flex-basis: 100%; max-width: none; margin-left: 0; }
+}
+.l3-pilih-cari .inp {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 44px;
+  padding: 0 14px;
+  background: var(--bb-panel2);
+  border: 1px solid var(--bb-garis);
+  border-radius: 10px;
+  color: var(--bb-teks);
+  font-family: var(--bb-sans);
+  font-size: 14px;
+}
+.l3-pilih-cari .inp::placeholder { color: var(--bb-redup); }
+.l3-pilih-cari .inp:focus { outline: none; border-color: var(--bb-emas); }
+.l3-pilih-cari .dd-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  background: var(--bb-panel);
+  border: 1px solid var(--bb-garis);
+  border-radius: 10px;
+  padding: 4px;
+  z-index: 30;
+}
+.l3-pilih-cari .dd-it {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 36px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  color: var(--bb-teks);
+  cursor: pointer;
+}
+.l3-pilih-cari .dd-it:hover,
+.l3-pilih-cari .dd-it.sel { background: var(--bb-garis); }
+.l3-pilih-cari .tick {
+  font-family: var(--bb-mono);
+  font-weight: 600;
+  font-size: 13px;
+}
