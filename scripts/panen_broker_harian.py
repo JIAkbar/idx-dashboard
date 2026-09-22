@@ -432,7 +432,10 @@ COBA_KONEKSI = 3
 # berselang-seling kosong, dan sesudah ±15 ribu panggilan sehari bahkan
 # 0,5/detik kosong. Besarnya belum terukur; 1/detik = satu panen 962 x 6
 # varian ±1,5 jam, masih di dalam batas waktu CI 150 menit.
-LAJU_MAKS = 1.0
+# 22 Sep 2026 (#216, Johan: "kerjakan #216"): dinaikkan ke 2/detik, batas
+# jangka pendek yang terukur bersih, supaya satu hari ±45 menit. Kalau kanari
+# kembali berselang-seling kosong, turunkan lagi ke 1.
+LAJU_MAKS = 2.0
 _kunci_laju = threading.Lock()
 _giliran = [0.0]
 
