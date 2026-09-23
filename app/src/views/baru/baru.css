@@ -139,3 +139,15 @@
 /* ---- Kaki ---- */
 .bb-kaki { margin-top: 28px; padding-top: 16px; border-top: 1px solid var(--bb-garis); display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 16px; font-size: 13px; color: var(--bb-redup); }
 .baru .bb-kaki a { min-height: 44px; display: inline-flex; align-items: center; }
+
+/* #228: lapisan kanvas yang ditanam di halaman lama (mis. Berkas Emiten di
+   tampilan Baru) — tanpa latar, bantalan, dan tinggi minimum halaman penuh. */
+.baru.be-kanvas { background: transparent; padding: 0; min-height: 0; }
+/* Token kanvas yang ditanam mengikuti token halaman induk (.lantai), jadi ikut
+   tema terang/gelap — .baru mandiri sengaja gelap tunggal, sisipan tidak. */
+.lantai .baru.be-kanvas {
+  --bb-latar: var(--bg0); --bb-panel: var(--bg1); --bb-panel2: var(--bg2);
+  --bb-garis: var(--line); --bb-teks: var(--text); --bb-redup: var(--text2);
+  --bb-emas: var(--amber); --bb-naik: var(--green); --bb-turun: var(--red); --bb-biru: var(--blue);
+  color: var(--text);
+}

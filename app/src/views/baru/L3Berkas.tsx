@@ -1,9 +1,10 @@
 import { Fragment, useMemo } from 'react'
 import { useParams } from 'react-router-dom'
 import { Blok, Keadaan } from './ui'
-import { useJson, angka, rupiah, bertanda } from './data'
+import { useJson, angka, rupiah, bertanda, tanggalPendek } from './data'
 import { EMITEN_BAWAAN } from './peta'
 import { PilihEmiten } from './l3-pilih'
+import './baru.css'
 import { KakiBaru } from './KakiBaru'
 
 interface Kartu {
@@ -50,9 +51,12 @@ function sahamFmt(v: number | undefined): string {
 
 interface BarisRasio { nama: string; satuan: 'x' | '%' | 'rp'; utama: number | null; cadangan: number | null }
 
-export default function L3Berkas() {
+/** `kodeTetap` + `sisip`: dipakai Berkas Emiten di tampilan Baru (#228) —
+ *  kode datang dari halaman induk, tanpa pemilih emiten dan kaki sendiri. */
+export default function L3Berkas({ kodeTetap, sisip = false }: { kodeTetap?: string; sisip?: boolean } = {}) {
   const { kode: kodeParam } = useParams()
-  const kode = (kodeParam ?? EMITEN_BAWAAN).toUpperCase()
+  const kode = (kodeTetap ?? kodeParam ?? EMITEN_BAWAAN).toUpperCase()
+  const pilih = sisip ? null : <PilihEmiten slug="berkas" />
   const { data: kartu, galat: gk } = useJson<Kartu>(`/data-idx/json/kartu/${kode}.json`)
   const { data: fundamental, galat: gf } = useJson<Fundamental>(`/data-idx/json/fundamental/${kode}.json`)
   const { data: keystats, galat: gks } = useJson<Keystats>(`/data-idx/json/keystats_stockbit/${kode}.json`)
@@ -79,8 +83,8 @@ export default function L3Berkas() {
 
   // Laporan keuangan tak wajib: emiten tanpa XBRL (mis. IPO baru) tetap tampil tanpa blok kuartal.
   const galat = gk ?? gf ?? gks
-  if (galat) return <div className="bb-isi"><PilihEmiten slug="berkas" /><Keadaan galat={galat} /><KakiBaru sumber="Statistik resmi bursa." /></div>
-  if (!kartu || !fundamental || !keystats || (!keuangan && !gkeu)) return <div className="bb-isi"><PilihEmiten slug="berkas" /><Keadaan /></div>
+  if (galat) return <div className="bb-isi">{pilih}<Keadaan galat={galat} />{!sisip && <KakiBaru sumber="Statistik resmi bursa." />}</div>
+  if (!kartu || !fundamental || !keystats || (!keuangan && !gkeu)) return <div className="bb-isi">{pilih}<Keadaan /></div>
 
   const per = parseRasio(keystats.rasio['Current PE Ratio (TTM)'])
   const perIhsg = parseRasio(keystats.rasio['IHSG PE Ratio TTM (Median)'])
@@ -102,14 +106,14 @@ export default function L3Berkas() {
 
   return (
     <div className="bb-isi">
-      <PilihEmiten slug="berkas" />
+      {pilih}
       <div className="bb-dua">
         <div className="bb-kolom">
           <div className="bb-blok panel">
             <span className="bb-label">Profil emiten</span>
             <span className="bb-judul" style={{ fontSize: 19 }}>{kartu.sektor.nama}</span>
             <p className="bb-narasi" style={{ margin: 0 }}>
-              {kartu.sektor.sektor} · {kartu.sektor.subsektor} · papan {kartu.sektor.papan} · tercatat {kartu.sektor.tercatat}
+              {kartu.sektor.sektor} · {kartu.sektor.subsektor} · papan {kartu.sektor.papan} · tercatat {tanggalPendek(kartu.sektor.tercatat)}
             </p>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '6px 10px', fontSize: 13, paddingTop: 10, borderTop: '1px solid var(--bb-garis)', marginTop: 4 }}>
               <span style={{ color: 'var(--bb-redup)' }}>Kapitalisasi</span><span className="bb-mono">{rupiah(fundamental.market_cap)}</span>
@@ -225,7 +229,7 @@ export default function L3Berkas() {
           )}
         </div>
       </div>
-      <KakiBaru sumber="Valuasi dari statistik resmi bursa, cadangan dari penyedia data pasar independen. Laporan keuangan dari laporan resmi bursa." />
+      {!sisip && <KakiBaru sumber="Valuasi dari statistik resmi bursa, cadangan dari penyedia data pasar independen. Laporan keuangan dari laporan resmi bursa." />}
     </div>
   )
 }

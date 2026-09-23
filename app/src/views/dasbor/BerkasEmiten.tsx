@@ -12,12 +12,16 @@ import { persen } from '../../lib/dasbor/format'
  * Tingkat akses `superadmin` (terdaftar di PETA_MENU_KUNCI DAN di tabel
  * `akses_halaman` pada hari yang sama — aturan dua tempat).
  */
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { Suspense, lazy, useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { StockAutocomplete } from '../../components/dasbor/StockAutocomplete'
 import { InfoIndikator, type ItemInfoIndikator } from '../../components/dasbor/InfoIndikator'
 import { ModalSetorTesis } from '../../components/tesis/ModalSetorTesis'
 import { useAuth } from '../../context/AuthContext'
+import { useTheme } from '../../context/ThemeContext'
+
+// #228: ringkasan susunan kanvas PAPAN Baru — dimuat hanya di tampilan Baru.
+const RingkasKanvas = lazy(() => import('../baru/L3Berkas'))
 import { useStockIndex } from '../../lib/dasbor/stockDetailData'
 import { useBrokerTahunan } from '../../lib/dasbor/brokerTahunanData'
 import { PanelBrokerDominan } from '../../components/dasbor/PanelBrokerDominan'
@@ -95,6 +99,7 @@ export default function BerkasEmiten() {
   // hanya untuk yang sudah masuk: tesis itu rekam jejak bernama, bukan
   // masukan anonim.
   const { session } = useAuth()
+  const { tampilan } = useTheme()
   const [setorTesis, setSetorTesis] = useState(false)
   const kode = (params.get('kode') || 'BBRI').toUpperCase()
   const [ketik, setKetik] = useState(kode)
@@ -334,6 +339,19 @@ export default function BerkasEmiten() {
       <div className="vhead">
         <h1>Berkas Emiten</h1>
       </div>
+
+      {/* #228 (Johan 23 Sep 2026: "kerjakan #228 mulai dari Berkas Emiten"):
+          di tampilan Baru, susunan kanvas (profil, valuasi PER vs median
+          IHSG, kartu analisa, musiman, delapan rasio dua sumber, empat
+          kuartal) tampil sebagai ringkasan di atas. Blok A-G tetap di
+          bawahnya sebagai rincian — tak ada fitur yang hilang. */}
+      {tampilan === 'baru' && (
+        <section className="baru be-kanvas" aria-label="Ringkasan emiten">
+          <Suspense fallback={null}>
+            <RingkasKanvas kodeTetap={kode} sisip />
+          </Suspense>
+        </section>
+      )}
 
       {/* BLOK G — di ATAS, bukan di urutan hurufnya. Letak itu bagian dari
           isinya: penanda kualitas yang sama sudah ada di Kartu Analisa, tapi

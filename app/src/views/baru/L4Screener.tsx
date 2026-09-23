@@ -1,6 +1,7 @@
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useJson, angka, bertanda, tanggalPendek } from './data'
-import { Blok, Keadaan, Arah } from './ui'
+import { Blok, Keadaan, Arah, Pil } from './ui'
 import { KakiBaru } from './KakiBaru'
 import { ruteLapisan } from './peta'
 
@@ -24,7 +25,10 @@ interface KandidatDeepdive { tanggal: string; ambang: { skor_min: number; likuid
 type PolaBaris = [string, string, string, number, number]
 interface PolaScreener { akhir: string; n: number; d: Record<string, PolaBaris> }
 
-interface RekSaham { kode: string; close: number; entry: [number, number] | null; ringkas: { freq: number } }
+interface RekSaham {
+  kode: string; close: number; entry: [number, number] | null; tp1?: number | null; sl?: number | null; skor?: number | null
+  ringkas: { freq: number; label_accdist?: string | null }
+}
 interface RekPreset { preset: string; saham: RekSaham[]; n_lolos: number }
 interface Rekomendasi { tanggal: string; presets: RekPreset[] }
 interface RekIndex { tanggal: string[] }
@@ -51,6 +55,9 @@ const LABEL_PRESET_PIL: Record<string, string> = {
 }
 
 export default function L4Screener() {
+  // #230: pil preset dulu <span> statis. Sekarang pilihan aktif mengganti
+  // daftar teratas (kanan) dan angka ringkas (kiri).
+  const [pilihan, setPilihan] = useState<string>('kandidat')
   const { data: screener, galat: gS } = useJson<ScreenerData>('/data-idx/json/screener.json')
   const { data: kandidat, galat: gK } = useJson<KandidatDeepdive>('/data-idx/json/kandidat_deepdive.json')
   const { data: pola, galat: gP } = useJson<PolaScreener>('/data-idx/json/pola_screener.json')
@@ -92,6 +99,10 @@ export default function L4Screener() {
     .sort((a, b) => b[1][2].localeCompare(a[1][2]))
     .slice(0, 5)
 
+  const preset = pilihan === 'kandidat' ? null : rek.presets.find((p) => p.preset === pilihan) ?? null
+  const labelPreset = preset ? (LABEL_PRESET_PIL[preset.preset] ?? preset.preset) : ''
+  const presetTop = preset ? [...preset.saham].sort((a, b) => (b.skor ?? 0) - (a.skor ?? 0)).slice(0, 10) : []
+  const maxSkorPreset = Math.max(0, ...presetTop.map((e) => e.skor ?? 0))
   const whaleTiket = rek.presets.find((p) => p.preset === 'whale-tiket')
   const whaleTop5 = whaleTiket ? [...whaleTiket.saham].sort((a, b) => b.ringkas.freq - a.ringkas.freq).slice(0, 5) : []
   const maxFreq = Math.max(1, ...whaleTop5.map((s) => s.ringkas.freq))
@@ -100,6 +111,15 @@ export default function L4Screener() {
     <div className="bb-isi">
       <div className="bb-dua">
         <div className="bb-kolom">
+          {preset ? (
+          <Blok label={`${labelPreset} · rencana dagang otomatis`} judul={undefined}>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 12 }}>
+              <span style={{ fontSize: 'clamp(44px,6vw,64px)', fontWeight: 800, lineHeight: 0.95 }}>{preset.n_lolos}</span>
+              <span style={{ fontSize: 20, color: 'var(--bb-redup)' }}>dari {totalEmiten}</span>
+            </div>
+            <p className="bb-narasi">{preset.n_lolos} emiten lolos saringan {labelPreset} pada {tanggalPendek(rek.tanggal)}. Daftar di kanan menampilkan {presetTop.length} dengan skor tertinggi. Ini rencana otomatis, bukan rekomendasi beli.</p>
+          </Blok>
+          ) : (<>
           <Blok label="Kandidat Deep Dive · penyaring otomatis" judul={undefined}>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 12 }}>
               <span style={{ fontSize: 'clamp(44px,6vw,64px)', fontWeight: 800, lineHeight: 0.95 }}>{kandidat.n}</span>
@@ -148,14 +168,41 @@ export default function L4Screener() {
               ))}
             </div>
           </Blok>
+          </>)}
         </div>
 
         <div className="bb-kolom">
-          <div className="bb-pils">
-            <span className="bb-pil aktif">Kandidat Deep Dive</span>
-            {rek.presets.map((p) => <span key={p.preset} className="bb-pil">{LABEL_PRESET_PIL[p.preset] ?? p.preset}</span>)}
+          <div className="bb-pils" role="group" aria-label="Pilih daftar">
+            <Pil aktif={pilihan === 'kandidat'} onClick={() => setPilihan('kandidat')}>Kandidat Deep Dive</Pil>
+            {rek.presets.map((p) => (
+              <Pil key={p.preset} aktif={pilihan === p.preset} onClick={() => setPilihan(p.preset)}>{LABEL_PRESET_PIL[p.preset] ?? p.preset}</Pil>
+            ))}
           </div>
 
+          {preset ? (
+          <Blok label={undefined} judul={`${labelPreset} · ${presetTop.length} teratas`} catatan={`dari ${preset.n_lolos} lolos · ${tanggalPendek(rek.tanggal)}`}>
+            <div className="bb-daftar">
+              {presetTop.map((e) => (
+                <div key={e.kode} style={{ display: 'flex', flexDirection: 'column', gap: 6, padding: '10px 0', borderBottom: '1px solid var(--bb-garis)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+                    <span className="bb-mono" style={{ fontWeight: 600, fontSize: 15, minWidth: 52 }}>{e.kode}</span>
+                    <span className="bb-mono" style={{ fontSize: 14, minWidth: 60 }}>{angka(e.close)}</span>
+                    <span className="bb-bb-rel" style={{ flex: '1 1 100px', minWidth: 60 }}>
+                      <span className="bb-bb-isi biru" style={{ width: `${maxSkorPreset > 0 ? ((e.skor ?? 0) / maxSkorPreset) * 100 : 0}%` }} />
+                    </span>
+                    <Link to={ruteLapisan('harga', e.kode)} className="bb-tombol" style={{ fontSize: 12, padding: '0 14px' }}>jadikan tesis</Link>
+                  </div>
+                  <span className="bb-mono teks-11" style={{ color: 'var(--bb-redup)' }}>
+                    {e.entry ? `masuk ${angka(e.entry[0])}–${angka(e.entry[1])}` : 'masuk tidak tersedia'}
+                    {e.tp1 != null ? ` · target ${angka(e.tp1)}` : ''}{e.sl != null ? ` · batas rugi ${angka(e.sl)}` : ''}
+                    {` · frekuensi ${angka(e.ringkas.freq)}`}{e.ringkas.label_accdist === 'Acc' ? ' · akumulasi' : e.ringkas.label_accdist === 'Dist' ? ' · distribusi' : ''}
+                  </span>
+                </div>
+              ))}
+            </div>
+            <p className="bb-narasi">Urut skor saringan {labelPreset}. Rencana dagang otomatis dari harga penutupan terakhir, bukan jaminan.</p>
+          </Blok>
+          ) : (
           <Blok label={undefined} judul={`${top10.length} skor tertinggi`} catatan="urut skor · batang = skor">
             <div className="bb-daftar">
               {top10.map((e) => (
@@ -176,6 +223,7 @@ export default function L4Screener() {
             </div>
             <p className="bb-narasi">Skor tertinggi {maxSkor} dari 6 sinyal ({nSkorMaks} emiten). Kandidat, bukan jaminan · tetap perlu Deep Dive.</p>
           </Blok>
+          )}
 
           <div className="bb-dua-rata">
             <Blok label={undefined} judul={`Pola teknikal terbanyak · ${pola.n} emiten`}>

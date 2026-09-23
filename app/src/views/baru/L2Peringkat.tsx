@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useDsTerbaru, useJson, angka, tanggalPendek } from './data'
 import { Hero, Blok, BarisBatang, Pil, Keadaan } from './ui'
 import { KakiBaru } from './KakiBaru'
@@ -46,7 +47,10 @@ function DaftarBroker({ item, terbesar }: { item: ItemBroker[]; terbesar: number
 
 export default function L2Peringkat() {
   const { data: d, tanggal, galat } = useDsTerbaru<DsPeringkat>()
-  const { data: w1 } = useJson<BrokerRentang>('/data-idx/json/broker_rentang/w1.json')
+  // #230: pil rentang dulu mati (tanpa onClick). Data rentang hanya ada untuk
+  // broker, jadi pilihnya duduk di blok broker: 5 hari, 1 bulan, 3 bulan.
+  const [rentang, setRentang] = useState<'w1' | 'b1' | 'b3'>('w1')
+  const { data: w1 } = useJson<BrokerRentang>(`/data-idx/json/broker_rentang/${rentang}.json`)
 
   if (!d || !tanggal) return <Keadaan galat={galat} />
 
@@ -64,12 +68,6 @@ export default function L2Peringkat() {
           angka={`${angka(konsentrasi, 1)}%`}
           sub={`${d.top_val.length} saham teratas memegang ${angka(konsentrasi, 1)}% nilai transaksi hari ini, ${tanggalPendek(tanggal)}.`}
         />
-        <div className="bb-pils">
-          <Pil aktif>Hari ini</Pil>
-          <Pil>5 hari</Pil>
-          <Pil>20 hari</Pil>
-          <Pil>60 hari</Pil>
-        </div>
       </div>
 
       <div className="bb-tiga">
@@ -80,11 +78,16 @@ export default function L2Peringkat() {
           <DaftarBroker item={d.broker_val} terbesar={d.broker_val[0].p} />
         </Blok>
         {w1 ? (
-          <Blok judul="Broker pasar · 5 hari" catatan={`${tanggalPendek(w1.mulai)} – ${tanggalPendek(w1.akhir)} · % dari nilai transaksi periode`} narasi={`Tiga broker teratas menyerap ${angka(w1.broker_val.slice(0, 3).reduce((s, x) => s + x.p, 0), 1)}% dari total periode ${w1.n_hari} hari.`}>
+          <Blok judul={`Broker pasar · ${w1.n_hari} hari bursa`} catatan={`${tanggalPendek(w1.mulai)} – ${tanggalPendek(w1.akhir)} · % dari nilai transaksi periode`} narasi={`Tiga broker teratas menyerap ${angka(w1.broker_val.slice(0, 3).reduce((s, x) => s + x.p, 0), 1)}% dari total periode ${w1.n_hari} hari.`}>
+            <div className="bb-pils" role="group" aria-label="Rentang">
+              <Pil aktif={rentang === 'w1'} onClick={() => setRentang('w1')}>5 hari</Pil>
+              <Pil aktif={rentang === 'b1'} onClick={() => setRentang('b1')}>1 bulan</Pil>
+              <Pil aktif={rentang === 'b3'} onClick={() => setRentang('b3')}>3 bulan</Pil>
+            </div>
             <DaftarBroker item={w1.broker_val} terbesar={w1.broker_val[0].p} />
           </Blok>
         ) : (
-          <Blok judul="Broker pasar · 5 hari"><Keadaan /></Blok>
+          <Blok judul="Broker pasar"><Keadaan /></Blok>
         )}
       </div>
 
