@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { LAYAR, ruteLapisan } from './peta'
+import { LAYAR, ruteLapisan, ruteLayar } from './peta'
 import { KakiBaru } from './KakiBaru'
 
 /** /baru — pintu masuk: lima layar dan lapisannya. */
@@ -16,6 +16,7 @@ export default function BaruBeranda() {
           <div key={l.id} className="bb-kartu">
             <span className="bb-label">{l.label}</span>
             <div className="bb-pils">
+              <Link to={ruteLayar(l.id)} className="aktif">Ikhtisar</Link>
               {l.lapisan.map((p) => (
                 <Link key={p.slug} to={ruteLapisan(p.slug)}>{p.label}</Link>
               ))}

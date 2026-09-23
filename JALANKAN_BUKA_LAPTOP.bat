@@ -231,6 +231,11 @@ REM --inkremental (#219, Johan 22 Sep 2026): hanya emiten yang arsipnya berubah
 REM sejak berkas tahunan ditulis; sama dengan CI (#204). Jalan penuh 962 emiten
 REM +-75 menit (22 Sep 21:04-22:2x), inkremental +-3 menit.
 "%PYEXE%" scripts\bangun_broker_tahunan.py --tahun %TAHUN_KINI% --paralel 16 --inkremental
+REM #231: ringkasan broker harian (arus sektor x kelompok broker + pembeli/penjual
+REM terbesar 10 hari per emiten) untuk layar Peta Pasar, Kartu Pagi, Emiten cerita.
+REM WAJIB sesudah broker_tahunan di atas. Nol jaringan.
+"%PYEXE%" scripts\riset\ringkas_broker_harian.py --tulis
+if errorlevel 1 echo   (ringkas broker harian gagal - lanjut)
 if errorlevel 1 echo   (bangun tahunan gagal - lanjut)
 
 echo.
@@ -425,7 +430,7 @@ REM hanya mengambil jalur yang disebut, jadi dua daftar yang berbeda
 REM berarti berkas yang sudah di-add tak pernah terdorong dan tertahan
 REM di index tanpa satu pun galat - terjadi pada profil_stockbit, dan
 REM sebelumnya pada gudang broker tahunan.
-set "DATA_JALUR=data-idx/json/ohlc data-idx/json/ohlcv_stockbit data-idx/json/asing data-idx/json/intraday_1h data-idx/json/kartu data-idx/json/ihsg_ohlc_ringkas.json data-idx/json/info_stockbit data-idx/json/keystats_stockbit data-idx/json/profil_stockbit data-idx/json/prob data-idx/json/winrate data-idx/json/screener.json data-idx/json/bandarmologi.json data-idx/json/daftar_emiten.json data-idx/json/broker_harian data-idx/json/broker_tahunan data-idx/json/broker_pivot data-idx/json/broker_rentang data-idx/json/bt data-idx/json/rbs_kandidat.json data-idx/json/harian_papan data-idx/json/jago_papan data-idx/json/ipo.json data-idx/json/pola_screener.json data-idx/json/kategori_broker.json data-idx/json/rekomendasi data-idx/json/rezim_pasar.json data-idx/json/nilai_jejak.json data-idx/json/penilaian data-idx/json/tinjauan_deepdive.json data-idx/json/selisih_terkunci.json data-idx/json/rencana_saham.json data-idx/json/aliran_investor.json data-idx/json/bidoffer.json data-idx/json/harga_terakhir.json data-idx/json/grup_konglomerat.json data-idx/json/tesis_vonis.json data-idx/json/penilaian_tesis data-idx/json/seasonality data-idx/json/rapor_uji data-idx/json/rapor_uji.json"
+set "DATA_JALUR=data-idx/json/ohlc data-idx/json/ohlcv_stockbit data-idx/json/asing data-idx/json/intraday_1h data-idx/json/kartu data-idx/json/ihsg_ohlc_ringkas.json data-idx/json/info_stockbit data-idx/json/keystats_stockbit data-idx/json/profil_stockbit data-idx/json/prob data-idx/json/winrate data-idx/json/screener.json data-idx/json/bandarmologi.json data-idx/json/daftar_emiten.json data-idx/json/broker_harian data-idx/json/broker_tahunan data-idx/json/broker_pivot data-idx/json/broker_rentang data-idx/json/bt data-idx/json/rbs_kandidat.json data-idx/json/harian_papan data-idx/json/jago_papan data-idx/json/ipo.json data-idx/json/pola_screener.json data-idx/json/kategori_broker.json data-idx/json/rekomendasi data-idx/json/rezim_pasar.json data-idx/json/nilai_jejak.json data-idx/json/penilaian data-idx/json/tinjauan_deepdive.json data-idx/json/selisih_terkunci.json data-idx/json/rencana_saham.json data-idx/json/aliran_investor.json data-idx/json/bidoffer.json data-idx/json/harga_terakhir.json data-idx/json/grup_konglomerat.json data-idx/json/tesis_vonis.json data-idx/json/penilaian_tesis data-idx/json/seasonality data-idx/json/rapor_uji data-idx/json/rapor_uji.json data-idx/json/peta_arus.json data-idx/json/broker_puncak"
 git add %DATA_JALUR% 2>nul
 git commit -m "data: panen buka-laptop otomatis (%date%)" -- %DATA_JALUR%
 set COMMIT_RC=%errorlevel%

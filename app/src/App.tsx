@@ -85,6 +85,11 @@ const BaruL4Terbitan = lazy(() => import('./views/baru/L4Terbitan'))
 const BaruL4Screener = lazy(() => import('./views/baru/L4Screener'))
 const BaruL4Redaksi = lazy(() => import('./views/baru/L4Redaksi'))
 const BaruL5Watchlist = lazy(() => import('./views/baru/L5Watchlist'))
+const BaruLayarTanya = lazy(() => import('./views/baru/LayarTanya'))
+const BaruLayarPasar = lazy(() => import('./views/baru/LayarPasar'))
+const BaruLayarEmiten = lazy(() => import('./views/baru/LayarEmiten'))
+const BaruLayarRekam = lazy(() => import('./views/baru/LayarRekam'))
+const BaruLayarPagi = lazy(() => import('./views/baru/LayarPagi'))
 const EdisiUjicoba = lazy(() => import('./views/EdisiUjicoba').then((m) => ({ default: m.EdisiUjicoba })))
 
 /**
@@ -219,6 +224,11 @@ function App() {
               {/* PAPAN Baru (#586) — satu kunci akses untuk seluruh bagian; Meja redaksi superadmin. */}
               <Route path="/baru" element={<PenjagaHalaman kunci="papan-baru"><BaruLayout /></PenjagaHalaman>}>
                 <Route index element={<BaruBaruBeranda />} />
+                {/* #231: lima layar utama kanvas */}
+                <Route path="tanya" element={<BaruLayarTanya />} />
+                <Route path="pasar" element={<BaruLayarPasar />} />
+                <Route path="rekam" element={<BaruLayarRekam />} />
+                <Route path="pagi" element={<BaruLayarPagi />} />
                 <Route path="bukti" element={<BaruL1Bukti />} />
                 <Route path="metodologi" element={<BaruL1Metodologi />} />
                 <Route path="indeks" element={<BaruL2Indeks />} />
@@ -232,8 +242,8 @@ function App() {
                 <Route path="screener" element={<BaruL4Screener />} />
                 <Route path="watchlist" element={<BaruL5Watchlist />} />
                 <Route path="redaksi" element={<PenjagaHalaman kunci="papan-baru-redaksi"><BaruL4Redaksi /></PenjagaHalaman>} />
-                <Route path="emiten" element={<Navigate to="/baru/emiten/BBCA/harga" replace />} />
-                <Route path="emiten/:kode" element={<Navigate to="harga" replace />} />
+                <Route path="emiten" element={<Navigate to="/baru/emiten/BBCA" replace />} />
+                <Route path="emiten/:kode" element={<BaruLayarEmiten />} />
                 <Route path="emiten/:kode/harga" element={<BaruL3Harga />} />
                 <Route path="emiten/:kode/berkas" element={<BaruL3Berkas />} />
                 <Route path="emiten/:kode/broker" element={<BaruL3SudutBroker />} />

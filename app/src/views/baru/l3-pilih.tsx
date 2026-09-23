@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useJson } from './data'
-import { EMITEN_BAWAAN, ruteLapisan } from './peta'
+import { EMITEN_BAWAAN, ruteLapisan, ruteLayar } from './peta'
 import { StockAutocomplete } from '../../components/dasbor/StockAutocomplete'
 import { useStockIndex } from '../../lib/dasbor/stockDetailData'
 import './l3-pilih.css'
@@ -12,8 +12,10 @@ interface KartuNama { sektor?: { nama?: string } }
  * Baris kepala emiten: kode + nama (dari kartu.sektor.nama) + pemilih emiten.
  * Dipakai semua lapisan layar Emiten (Harga, Berkas, Sudut broker, Broker
  * summary, Musiman) — satu komponen, bukan ditulis ulang tiap halaman.
+ * `slug` kosong = dipakai di layar Emiten sendiri (bukan satu lapisan):
+ * ganti emiten membuka `/baru/emiten/<KODE>`, bukan satu lapisan tetap.
  */
-export function PilihEmiten({ slug }: { slug: string }) {
+export function PilihEmiten({ slug }: { slug?: string }) {
   const { kode: kodeParam } = useParams()
   const kode = (kodeParam ?? EMITEN_BAWAAN).toUpperCase()
   const navigate = useNavigate()
@@ -23,7 +25,7 @@ export function PilihEmiten({ slug }: { slug: string }) {
 
   function pilih(kodeBaru: string) {
     setCari('')
-    if (kodeBaru) navigate(ruteLapisan(slug, kodeBaru.toUpperCase()))
+    if (kodeBaru) navigate(slug ? ruteLapisan(slug, kodeBaru.toUpperCase()) : ruteLayar('emiten', kodeBaru.toUpperCase()))
   }
 
   return (

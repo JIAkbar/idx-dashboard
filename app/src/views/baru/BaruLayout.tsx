@@ -1,6 +1,6 @@
 import { Component, type ReactNode } from 'react'
 import { Link, NavLink, Outlet, useLocation, useParams } from 'react-router-dom'
-import { LAYAR, EMITEN_BAWAAN, layarDari, ruteLapisan } from './peta'
+import { LAYAR, EMITEN_BAWAAN, layarDari, ruteLapisan, ruteLayar } from './peta'
 import './baru.css'
 
 /** Slug lapisan aktif dari rute: segmen terakhir (/baru/indeks, /baru/emiten/BBCA/harga). */
@@ -31,8 +31,11 @@ export function BaruLayout() {
   const { pathname } = useLocation()
   const { kode } = useParams()
   const kodeAktif = (kode ?? EMITEN_BAWAAN).toUpperCase()
-  const slug = slugAktif(pathname)
+  // Layar utama Emiten berada di /baru/emiten/:kode (segmen terakhir = kode).
+  const diIkhtisarEmiten = /^\/baru\/emiten\/[^/]+\/?$/.test(pathname)
+  const slug = diIkhtisarEmiten ? 'emiten' : slugAktif(pathname)
   const layar = layarDari(slug)
+  const diIkhtisar = !!layar && slug === layar.id
   return (
     <div className="baru">
       <header className="bb-kepala">
@@ -40,14 +43,15 @@ export function BaruLayout() {
           <Link to="/baru" className="bb-induk">← PAPAN Baru</Link>
           <nav className="bb-pils layar" aria-label="Layar">
             {LAYAR.map((l) => (
-              <NavLink key={l.id} to={ruteLapisan(l.lapisan[0].slug, kodeAktif)} className={() => (layar?.id === l.id ? 'aktif' : '')}>
+              <NavLink key={l.id} to={ruteLayar(l.id, kodeAktif)} className={() => (layar?.id === l.id ? 'aktif' : '')}>
                 {l.label}
               </NavLink>
             ))}
           </nav>
         </div>
-        {layar && layar.lapisan.length > 1 && (
+        {layar && (
           <nav className="bb-pils" aria-label="Lapisan">
+            <Link to={ruteLayar(layar.id, kodeAktif)} className={diIkhtisar ? 'aktif' : ''} aria-current={diIkhtisar ? 'page' : undefined}>Ikhtisar</Link>
             {layar.lapisan.map((p) => (
               <Link key={p.slug} to={ruteLapisan(p.slug, kodeAktif)} className={p.slug === slug ? 'aktif' : ''} aria-current={p.slug === slug ? 'page' : undefined}>
                 {p.label}

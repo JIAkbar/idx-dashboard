@@ -57,5 +57,10 @@ export function ruteLapisan(slug: string, kode: string = EMITEN_BAWAAN): string 
 }
 
 export function layarDari(slug: string): Layar | undefined {
-  return LAYAR.find((l) => l.lapisan.some((p) => p.slug === slug))
+  return LAYAR.find((l) => l.id === slug || l.lapisan.some((p) => p.slug === slug))
+}
+
+/** Rute layar utama (#231). Layar Emiten per kode: /baru/emiten/:kode. */
+export function ruteLayar(id: Layar['id'], kode: string = EMITEN_BAWAAN): string {
+  return id === 'emiten' ? `/baru/emiten/${kode}` : `/baru/${id}`
 }

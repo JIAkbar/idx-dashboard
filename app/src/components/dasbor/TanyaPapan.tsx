@@ -1,93 +1,14 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { useDataHarian } from '../../lib/dasbor/dataHarian'
-import { useBulletinList } from '../../lib/dasbor/bulletin'
-import { useKabar } from '../../lib/dasbor/kabar'
-import { useKamusEmiten } from '../../lib/dasbor/kamusEmiten'
-import { fetchFundamental } from '../../lib/dasbor/stockDetailData'
-import { loadInvestorMap } from '../../lib/dasbor/petaInvestorData'
-import { muatTambahanKeystats } from '../../lib/dasbor/rasioTambahanKeystats'
-import { jawab, CONTOH_TANYA, type Jawaban, type Topik, type DataButuh, type OhlcRingkas } from '../../lib/dasbor/tanyaPapan'
-import { useTopBrokerHari } from '../../lib/dasbor/brokerHarian'
-import { tanyaAI, rakitKonteks } from '../../lib/dasbor/tanyaAI'
-import { useAuth } from '../../context/AuthContext'
+import { CONTOH_TANYA } from '../../lib/dasbor/tanyaPapan'
+import { useTanyaPapan } from '../../lib/dasbor/useTanyaPapan'
 import { IkonMenu, IKON_SILANG } from './IkonMenu'
 import './TanyaPapan.css'
-import { urlData } from '../../lib/dasbor/baseData'
 
 /** Kunci localStorage pilihan "tepikan tombol". */
 const KUNCI_TEPI = 'papan:tanya-tepi'
 /** Panah ke kanan — menepikan tombol ke pinggir layar. */
 const IKON_TEPIKAN = 'M9 6l6 6-6 6'
-
-/** Cache modul berkas OHLC per emiten dipakai Tanya PAPAN — sama pola dengan
- *  `fundamentalCache`/`loadInvestorMap`, tapi belum ada pemakai lain yang
- *  butuh cache imperatif untuk berkas ini, jadi ditaruh lokal di sini saja
- *  (bukan lib bersama) sampai ada pemakai kedua. `null` = 404 (emiten tak
- *  punya berkas OHLC), dicache juga supaya tak fetch ulang percuma. */
-const ohlcCache = new Map<string, OhlcRingkas | null>()
-function fetchOhlcRingkas(kode: string): Promise<OhlcRingkas | null> {
-  const cached = ohlcCache.get(kode)
-  if (cached !== undefined) return Promise.resolve(cached)
-  return fetch(urlData(`/data-idx/json/ohlc/${kode}.json`))
-    .then((r) => (r.ok ? (r.json() as Promise<OhlcRingkas>) : Promise.reject(new Error('not found'))))
-    .then((d) => {
-      ohlcCache.set(kode, d)
-      return d
-    })
-    .catch(() => {
-      ohlcCache.set(kode, null)
-      return null
-    })
-}
-
-/** Tahap-2 mekanisme dua-langkah (lihat komentar `jawab()`/`Jawaban.butuh`
- *  di tanyaPapan.ts): ambil berkas PER-EMITEN yang diminta, sesuai jenisnya.
- *  `jawab()` sendiri sengaja tak fetch apa pun — ini satu-satunya tempat
- *  fetch untuk fitur Tanya PAPAN terjadi. */
-async function ambilButuh(butuh: NonNullable<Jawaban['butuh']>): Promise<DataButuh> {
-  if (butuh.jenis === 'fundamental') {
-    // Rasio sumber utama ikut ditarik (#143) supaya jawaban valuasi memakai
-    // angka yang sama dengan Stock Detail. Berkasnya di-cache modul, jadi
-    // tanya kedua tentang emiten yang sama tak menariknya lagi.
-    const [payload, tambahan] = await Promise.all([
-      fetchFundamental(butuh.kode),
-      muatTambahanKeystats(butuh.kode).catch(() => null),
-    ])
-    return { jenis: 'fundamental', kode: butuh.kode, payload, rasio: tambahan?.rasio ?? null }
-  }
-  if (butuh.jenis === 'ohlc') {
-    return { jenis: 'ohlc', kode: butuh.kode, payload: await fetchOhlcRingkas(butuh.kode) }
-  }
-  // investor_map.json satu berkas untuk SEMUA emiten (584 KB) — di-fetch
-  // sekali lewat cache modul `loadInvestorMap` (dipakai bareng halaman Peta
-  // Investor), lalu disaring ke satu kode di sini.
-  const daftar = await loadInvestorMap().catch(() => [])
-  return { jenis: 'investor', kode: butuh.kode, payload: daftar.find((e) => e.code === butuh.kode) ?? null }
-}
-
-interface Baris {
-  dari: 'orang' | 'papan'
-  teks: string
-  ke?: string
-  keLabel?: string
-  /** Jawaban ini datang dari model bahasa, bukan dari data yang dihitung.
-   *  Bedanya WAJIB terlihat pembaca — itu inti janji panel ini. */
-  dariAI?: boolean
-  /** Pertanyaan lanjutan yang ditawarkan sebagai chip (lihat `Jawaban.saran`
-   *  di tanyaPapan.ts) — klik langsung mengirim teksnya, sama seperti chip
-   *  "Coba tanya" di layar kosong. */
-  saran?: string[]
-}
-
-/** Jeda minimum sebelum jawaban muncul.
- *
- *  Jawaban aturan datang dalam hitungan milidetik, dan itu justru terbaca
- *  seperti templat yang sudah disiapkan, bukan seperti sesuatu yang membaca
- *  pertanyaannya. Jedanya bukan kepura-puraan berpikir — panel memang sedang
- *  menunggu (berkas per-emiten, kadang lapis AI), dan jeda seragam membuat
- *  yang cepat dan yang lambat terasa satu perilaku, bukan dua. */
-const JEDA_MIN = 520
 
 /**
  * "Tanya PAPAN" — tombol mengambang berlambang P + panel percakapan.
@@ -102,11 +23,6 @@ const JEDA_MIN = 520
  * Dipasang di DasborLayout supaya ikut ke semua halaman publik.
  */
 export function TanyaPapan() {
-  // Lapis AI berbiaya per pertanyaan, jadi hanya untuk yang sudah masuk.
-  // Ini penjaga KENYAMANAN — supaya tamu tak menunggu jeda lalu dapat
-  // penolakan; gerbang yang sebenarnya ada di Edge Function, karena
-  // fungsi itu bisa dipanggil langsung tanpa lewat halaman ini.
-  const { session } = useAuth()
   const [buka, setBuka] = useState(false)
   /** Tombol ditepikan ke pinggir layar — disimpan supaya pilihannya
    *  bertahan antar halaman dan antar kunjungan. */
@@ -117,25 +33,7 @@ export function TanyaPapan() {
     try { localStorage.setItem(KUNCI_TEPI, tepi ? '1' : '0') } catch { /* mode privat */ }
   }, [tepi])
   const [teks, setTeks] = useState('')
-  const [riwayat, setRiwayat] = useState<Baris[]>([])
-  const [berpikir, setBerpikir] = useState(false)
-  // Topik jawaban terakhir — bahan sambungan untuk pertanyaan sependek
-  // "kenapa?". Disimpan di ref, bukan state: nilainya tak menggambar apa pun,
-  // dan menaruhnya di state berarti satu render tambahan tiap tanya.
-  const topikRef = useRef<Topik>(null)
-  // Emiten yang sedang dibicarakan — pasangan `topikRef`. Tanpa ini "berapa?"
-  // sesudah "harga BBCA" tak tahu emitennya (topik cuma menyimpan JENIS
-  // jawaban), dan panel terpaksa balik bertanya padahal orangnya jelas masih
-  // membicarakan BBCA.
-  const subjekRef = useRef<string | null>(null)
-  const { hari, tanggalTersedia, tanggalAktif } = useDataHarian()
-  // Peringkat broker dari sumber yang SAMA dengan halaman Top Broker (#78):
-  // panel ini dan halamannya menjawab pertanyaan yang sama, dan sebelum ini
-  // keduanya memakai basis papan yang berbeda.
-  const { val: topBroker } = useTopBrokerHari(tanggalAktif ?? null)
-  const { daftar: edisi } = useBulletinList()
-  const { kabar } = useKabar()
-  const kamus = useKamusEmiten()
+  const { riwayat, berpikir, kirim: kirimHook } = useTanyaPapan()
   const akhirRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -151,75 +49,12 @@ export function TanyaPapan() {
   // terasa seperti tak menjawab.
   useEffect(() => { akhirRef.current?.scrollIntoView({ block: 'end' }) }, [riwayat, berpikir])
 
-  async function kirim(pertanyaan: string) {
-    const q = pertanyaan.trim()
-    if (!q) return
-    // Pertanyaan orang tampil SEGERA (tak menunggu fetch tahap-2 kalau ada)
-    // — jeda satu-dua berkas kecil tak boleh terasa seperti panel diam.
-    setRiwayat((r) => [...r, { dari: 'orang', teks: q }])
+  // Pertanyaan orang tampil SEGERA lewat hook (tak menunggu fetch tahap-2
+  // kalau ada); di sini cuma mengosongkan kotak ketik begitu terkirim.
+  function kirim(pertanyaan: string) {
+    if (!pertanyaan.trim()) return
     setTeks('')
-
-    const ctx = {
-      hari: hari ?? null,
-      topBroker: topBroker ?? null,
-      seri: tanggalTersedia ?? null,
-      edisi: edisi ?? null,
-      kabar: kabar?.item ?? null,
-      topik: topikRef.current,
-      subjek: subjekRef.current,
-      kamus,
-    }
-    setBerpikir(true)
-    const mulai = Date.now()
-
-    let j: Jawaban = jawab(q, ctx)
-    // Mekanisme dua-langkah (#lihat tanyaPapan.ts): jawab() minta berkas
-    // PER-EMITEN yang belum ada di konteks, di sini diambil, lalu jawab()
-    // dipanggil ULANG dengan pertanyaan yang SAMA dan `data` terisi.
-    if (j.butuh) {
-      const data = await ambilButuh(j.butuh)
-      j = jawab(q, { ...ctx, data })
-    }
-
-    // Lapis AI cuma dipanggil kalau mesin aturan MENYERAH. Urutannya begitu
-    // supaya pertanyaan yang punya jawaban pasti di data kita tak pernah
-    // dilempar ke model bahasa — itu membayar token untuk angka yang sudah
-    // kita hitung sendiri, sekaligus membuka pintu jawaban yang mengarang.
-    let dariAI = false
-    if (j.takPaham && session) {
-      const ai = await tanyaAI(q, rakitKonteks(hari ?? null, edisi ?? null, kabar?.item ?? null))
-      if (ai) {
-        j = { ...j, teks: ai.teks, takPaham: false }
-        dariAI = ai.dariAI
-      }
-    } else if (j.takPaham) {
-      // Tamu tetap mendapat seluruh mesin aturan — yang ditahan cuma lapis AI.
-      // Kalimatnya menyebut sebabnya (berbiaya), bukan sekadar "tidak boleh".
-      j = {
-        ...j,
-        teks: `${j.teks}
-
-Lapis AI-nya khusus yang sudah masuk — tiap pertanyaan ke sana ` +
-          'berbiaya, jadi jatahnya dipegang kontributor. Pertanyaan soal angka pasar tetap ' +
-          'dijawab dari data tanpa perlu masuk.',
-      }
-    }
-
-    // Jeda seragam — lihat JEDA_MIN.
-    const sisa = JEDA_MIN - (Date.now() - mulai)
-    if (sisa > 0) await new Promise((r) => setTimeout(r, sisa))
-    setBerpikir(false)
-
-    // Topik hanya diperbarui kalau jawabannya memang mengenali sesuatu —
-    // jawaban "tak paham" tak boleh menghapus konteks yang masih berguna.
-    if (j.topik) {
-      topikRef.current = j.topik
-      // Subjek ikut topiknya: jawaban market-wide (tanpa emiten) MENGHAPUS
-      // subjek lama, supaya "berapa?" sesudah pindah topik tak menjawab emiten
-      // yang sudah tak dibicarakan.
-      subjekRef.current = j.subjek ?? null
-    }
-    setRiwayat((r) => [...r, { dari: 'papan', teks: j.teks, ke: j.ke, keLabel: j.keLabel, dariAI, saran: j.saran }])
+    void kirimHook(pertanyaan)
   }
 
   return (
