@@ -46,7 +46,7 @@ function topBroker(h: BrokerHari, field: 2 | 4): { kode: string; nilai: number }
   return top
 }
 
-export default function L5Watchlist() {
+export default function L5Watchlist({ sisip = false }: { sisip?: boolean } = {}) {
   const [{ kodes, contoh }] = useState<{ kodes: string[]; contoh: boolean }>(() => {
     const item = muatWatchlist()
     return item.length > 0 ? { kodes: item.map((i) => i.kode), contoh: false } : { kodes: CONTOH, contoh: true }
@@ -114,7 +114,7 @@ export default function L5Watchlist() {
     <div className="bb-isi">
       <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
         <h1 className="bb-judul">Watchlist <span className="bb-catatan" style={{ fontSize: 15, fontWeight: 400 }}>· {kodes.length} emiten{contoh ? ' · contoh' : ''}</span></h1>
-        <Link to="/watchlist" className="bb-tombol utama">+ Tambah emiten</Link>
+        {!sisip && <Link to="/watchlist" className="bb-tombol utama">+ Tambah emiten</Link>}
       </div>
 
       <div className="bb-dua-rata">
@@ -180,7 +180,7 @@ export default function L5Watchlist() {
         </div>
       </div>
 
-      <KakiBaru sumber={`Harga & pemicu dari statistik resmi bursa, ${tanggalPendek(ds.tanggal)}. Broker per hari terakhir yang tersedia per emiten. ${contoh ? 'Watchlist contoh, bukan milik pengguna.' : ''}`} />
+      {!sisip && <KakiBaru sumber={`Harga & pemicu dari statistik resmi bursa, ${tanggalPendek(ds.tanggal)}. Broker per hari terakhir yang tersedia per emiten. ${contoh ? 'Watchlist contoh, bukan milik pengguna.' : ''}`} />}
     </div>
   )
 }

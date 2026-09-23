@@ -56,9 +56,11 @@ function tandaRupiah(v: number): string {
   return `${v >= 0 ? '+' : '−'}${rupiah(Math.abs(v))}`
 }
 
-export default function L3BrokerSummary() {
+/** `kodeTetap` + `sisip`: dipakai Broker Summary v2 di tampilan Baru (#228) —
+ *  kode datang dari halaman induk, tanpa pemilih emiten dan kaki sendiri. */
+export default function L3BrokerSummary({ kodeTetap, sisip = false }: { kodeTetap?: string; sisip?: boolean } = {}) {
   const { kode: kodeParam } = useParams<{ kode: string }>()
-  const kode = (kodeParam ?? EMITEN_BAWAAN).toUpperCase()
+  const kode = (kodeTetap ?? kodeParam ?? EMITEN_BAWAAN).toUpperCase()
   const [varian, setVarian] = useState<'reguler' | 'asing' | 'nego'>('reguler')
 
   const { data: ds } = useDsTerbaru<DsBrokerVal>()
@@ -103,7 +105,7 @@ export default function L3BrokerSummary() {
 
   return (
     <div className="bb-isi">
-      <PilihEmiten slug="broker-summary" />
+      {!sisip && <PilihEmiten slug="broker-summary" />}
 
       <Blok kelas="polos" label={`Broker summary · ${VARIAN.find((v) => v.slug === varian)?.label}`} catatan={`${tanggalPendek(tgl)} · penutupan`}>
         <div className="bb-pils">
@@ -215,7 +217,7 @@ export default function L3BrokerSummary() {
         </Blok>
       </div>
 
-      <KakiBaru sumber={`Broker summary papan reguler · nilai rupiah · lot = 100 lembar · ${tanggalPendek(tgl)}`} />
+      {!sisip && <KakiBaru sumber={`Broker summary papan reguler · nilai rupiah · lot = 100 lembar · ${tanggalPendek(tgl)}`} />}
     </div>
   )
 }

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { lazy, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { IkonMenu, IKON_PERINGATAN } from '../../components/dasbor/IkonMenu'
 import { BedaSkor } from '../../components/dasbor/BedaSkor'
@@ -22,12 +22,16 @@ import { bolehLihatRapor, hitungForm } from '../../lib/dasbor/raporBadge'
 import { fp } from '../../lib/dasbor/format'
 import { fRingkas } from '../../lib/dasbor/stockDetailFormat'
 import { keFraksi } from '../../lib/fraksiHarga'
+import { useTheme } from '../../context/ThemeContext'
+import { SisipKanvas } from '../baru/SisipKanvas'
 import {
   barisUntukTab, keCsvHarianPapan, sektorUnikHarianPapan,
   useHarianPapan, useHarianPapanRentang, useTanggalHarianPapan,
   type BarisHarianPapan, type TabHarianPapan,
 } from '../../lib/dasbor/harianPapan'
 import './HarianPapan.css'
+
+const RingkasKanvas = lazy(() => import('../baru/L2HariIni'))
 
 const TAB_LABEL: Record<TabHarianPapan, string> = {
   gainer: 'Stock Gainer',
@@ -123,6 +127,7 @@ function unduhCsv(baris: BarisHarianPapan[], tanggal: string, tab: TabHarianPapa
  * pola sama Screener.tsx.
  */
 export function HarianPapan() {
+  const { tampilan } = useTheme()
   const tanggalData = useTanggalHarianPapan()
   const sempit = useLayarSempit()
   const { profil } = useProfilSaya()
@@ -244,6 +249,13 @@ export function HarianPapan() {
         <h1>Harian Papan</h1>
         <BedaSkor halaman="harian" />
       </div>
+
+      {/* #228: ringkasan kanvas PAPAN Baru (tampilan Baru saja); fitur lama tetap di bawah. */}
+      {tampilan === 'baru' && (
+        <SisipKanvas kunci="hari-ini" label="Ringkasan Harian Papan">
+          <RingkasKanvas sisip />
+        </SisipKanvas>
+      )}
 
       <div className="panel">
         <div className="panel-b">

@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useState } from 'react'
+import { Fragment, lazy, useEffect, useState } from 'react'
 import {
   muatTinjauanDeepDive, petaTinjauan, ringkasTinjauan,
   type TinjauanTerbitan, type WarnaTinjauan,
@@ -8,9 +8,14 @@ import { Link } from 'react-router-dom'
 import { tipeEdisi, useBulletinList, LABEL_TIPE_EDISI, type TipeEdisi } from '../../lib/dasbor/bulletin'
 import { muatEvaluasiProb, layakSinyal, type EvaluasiProb } from '../../lib/dasbor/berkasRekam'
 import { useAksesHalaman } from '../../context/AksesHalamanContext'
+import { useTheme } from '../../context/ThemeContext'
+import { SisipKanvas } from '../baru/SisipKanvas'
 import { TombolIkon } from '../../components/dasbor/TombolIkon'
 import { IkonMenu, IKON_KUNCI, IKON_SILANG, IKON_MATA } from '../../components/dasbor/IkonMenu'
 import { urlData } from '../../lib/dasbor/baseData'
+
+// #228: ringkasan susunan kanvas PAPAN Baru — dimuat hanya di tampilan Baru.
+const RingkasKanvas = lazy(() => import('../baru/L4Terbitan'))
 
 /** Panah unduh ke tray — lokal view ini, belum ada padanannya di IkonMenu.tsx. */
 const IKON_UNDUH = 'M12 4v10M7.5 10.5L12 15l4.5-4.5M5 19h14'
@@ -205,6 +210,7 @@ function TabelProbabilitasTerkunci({ alasan }: { alasan: { judul: string; kalima
  * edisi), dan IHSG + Δ% digabung satu kolom (badge pola .ytd-bdg).
  */
 export function Bulletin() {
+  const { tampilan } = useTheme()
   /**
    * Hasil H+5 tiap terbitan Deep Dive (#20 B, Johan 7 Sep 2026:
    * "Kerjakan A dan B sekalian"). Ditarik sekali per kunjungan; berkasnya
@@ -276,6 +282,13 @@ export function Bulletin() {
       <div className="vhead">
         <h1>Bulletin Arus Pasar</h1>
       </div>
+
+      {/* #228: ringkasan kanvas PAPAN Baru (tampilan Baru saja); fitur lama tetap di bawah. */}
+      {tampilan === 'baru' && (
+        <SisipKanvas kunci="terbitan" label="Ringkasan Bulletin Arus Pasar">
+          <RingkasKanvas sisip />
+        </SisipKanvas>
+      )}
 
       <div className="panel">
         <div className="panel-h blt-h">

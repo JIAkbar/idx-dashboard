@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { lazy, useMemo, useState } from 'react'
 import { IkonMenu, IKON_PERINGATAN } from '../../components/dasbor/IkonMenu'
 import { Dropdown } from '../../components/dasbor/Dropdown'
 import { StockAutocomplete } from '../../components/dasbor/StockAutocomplete'
@@ -11,7 +11,11 @@ import { useStockIndex } from '../../lib/dasbor/stockDetailData'
 import { fp } from '../../lib/dasbor/format'
 import { fRingkas } from '../../lib/dasbor/stockDetailFormat'
 import { keFraksi } from '../../lib/fraksiHarga'
+import { useTheme } from '../../context/ThemeContext'
+import { SisipKanvas } from '../baru/SisipKanvas'
 import './AliranAsing.css'
+
+const RingkasKanvas = lazy(() => import('../baru/L2Arus'))
 
 type UrutState = { kunci: keyof BarisScreener; arah: 'naik' | 'turun'; klik: (k: keyof BarisScreener) => void }
 
@@ -42,6 +46,7 @@ function thSort(s: UrutState, k: keyof BarisScreener, label: string, kanan = fal
  * sungguhan ada, tapi cuma untuk SATU emiten sekaligus.
  */
 export function AliranAsing() {
+  const { tampilan } = useTheme()
   const data = useScreener()
   const { index } = useStockIndex()
   const [cari, setCari] = useState('')
@@ -71,6 +76,13 @@ export function AliranAsing() {
         <h1>Aliran Asing</h1>
         <span className="sub">Emiten diurut net asing — pilih baris untuk arus harian, grafik kumulatif, dan persentilnya.</span>
       </div>
+
+      {/* #228: ringkasan kanvas PAPAN Baru (tampilan Baru saja); fitur lama tetap di bawah. */}
+      {tampilan === 'baru' && (
+        <SisipKanvas kunci="arus" label="Ringkasan aliran asing">
+          <RingkasKanvas sisip />
+        </SisipKanvas>
+      )}
 
       <div className="panel">
         <div className="panel-b">

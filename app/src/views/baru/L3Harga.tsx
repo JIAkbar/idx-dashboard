@@ -54,9 +54,11 @@ const W = 640
 const HP = 220
 const HV = 66
 
-export default function L3Harga() {
+/** `kodeTetap` + `sisip`: dipakai StockDetail di tampilan Baru (#228) — kode
+ *  datang dari halaman induk, tanpa pemilih emiten dan kaki sendiri. */
+export default function L3Harga({ kodeTetap, sisip = false }: { kodeTetap?: string; sisip?: boolean } = {}) {
   const { kode: kodeParam } = useParams()
-  const kode = (kodeParam ?? EMITEN_BAWAAN).toUpperCase()
+  const kode = (kodeTetap ?? kodeParam ?? EMITEN_BAWAAN).toUpperCase()
   const { data: kartu, galat: gk } = useJson<Kartu>(`/data-idx/json/kartu/${kode}.json`)
   const { data: ohlcv, galat: go } = useJson<Ohlcv>(`/data-idx/json/ohlcv_stockbit/${kode}.json`)
 
@@ -80,9 +82,10 @@ export default function L3Harga() {
     return { iO, iH, iL, iC, iV, vis, visEma20, visEma50, hi52, lo52, cukup52: w.length >= 200 }
   }, [ohlcv])
 
+  const pilih = sisip ? null : <PilihEmiten slug="harga" />
   const galat = gk ?? go
-  if (galat) return <div className="bb-isi"><PilihEmiten slug="harga" /><Keadaan galat={galat} /><KakiBaru sumber="Data bursa." /></div>
-  if (!kartu || !ohlcv || !olah) return <div className="bb-isi"><PilihEmiten slug="harga" /><Keadaan /></div>
+  if (galat) return <div className="bb-isi">{pilih}<Keadaan galat={galat} />{!sisip && <KakiBaru sumber="Data bursa." />}</div>
+  if (!kartu || !ohlcv || !olah) return <div className="bb-isi">{pilih}<Keadaan /></div>
 
   const { iO, iH, iL, iC, iV, vis, visEma20, visEma50, hi52, lo52, cukup52 } = olah
   const hi = cukup52 ? hi52 : (kartu.fundamental?.week52_high ?? hi52)
@@ -159,7 +162,7 @@ export default function L3Harga() {
 
   return (
     <div className="bb-isi">
-      <PilihEmiten slug="harga" />
+      {pilih}
       <div className="bb-dua">
         <div className="bb-kolom">
           <Hero
@@ -297,7 +300,7 @@ export default function L3Harga() {
           </Blok>
         </div>
       </div>
-      <KakiBaru sumber={`Harga tersesuaikan aksi korporasi, data bursa. ${vis.length} lilin terakhir sejak ${tglSingkat(String(vis[0][0]))}.`} />
+      {!sisip && <KakiBaru sumber={`Harga tersesuaikan aksi korporasi, data bursa. ${vis.length} lilin terakhir sejak ${tglSingkat(String(vis[0][0]))}.`} />}
     </div>
   )
 }

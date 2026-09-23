@@ -61,7 +61,7 @@ function Peringkat({ judul, catatan, baris, arah, narasi }: {
   )
 }
 
-export default function L2HariIni() {
+export default function L2HariIni({ sisip = false }: { sisip?: boolean } = {}) {
   const idx = useJson<IndeksHarianPapan>('/data-idx/json/harian_papan/index.json')
   const tanggal = idx.data?.tanggal_tersedia[0] ?? null
   const hp = useJson<HarianPapan>(tanggal ? `/data-idx/json/harian_papan/${tanggal}.json` : null)
@@ -163,7 +163,7 @@ export default function L2HariIni() {
         </div>
       </div>
 
-      <KakiBaru sumber={`Peringkat harian dari statistik resmi bursa, ${tanggalPendek(hp.data.tanggal)}, ${total} emiten dengan data lengkap.`} />
+      {!sisip && <KakiBaru sumber={`Peringkat harian dari statistik resmi bursa, ${tanggalPendek(hp.data.tanggal)}, ${total} emiten dengan data lengkap.`} />}
     </div>
   )
 }

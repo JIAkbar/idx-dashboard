@@ -44,14 +44,15 @@ function tanggalSingkat(iso: string): string {
 
 const TINGGI_BATANG = 64
 
-export default function L4Jago() {
+/** `sisip`: dipakai Jago Papan di tampilan Baru (#228) — kaki sendiri disembunyikan. */
+export default function L4Jago({ sisip = false }: { sisip?: boolean } = {}) {
   const { data: nj, galat: gNj } = useJson<NilaiJejak>('/data-idx/json/nilai_jejak.json')
   const { data: jp, galat: gJp } = useJson<JagoPapan>('/data-idx/json/jago_papan/terbaru.json')
   const { data: wr, galat: gWr } = useJson<WinrateData>(`/data-idx/json/winrate/${EMITEN_BAWAAN}.json`)
 
   const galat = gNj ?? gJp ?? gWr
   const kaki = `Kohort dari hakim jejak otomatis, dikunci saat terbit dan dinilai H+${nj?.horizon ?? 5}. Win rate ${EMITEN_BAWAAN} dari sinyal historis per horizon.`
-  if (galat) return <div className="bb-isi"><Keadaan galat={galat} /><KakiBaru sumber={kaki} /></div>
+  if (galat) return <div className="bb-isi"><Keadaan galat={galat} />{!sisip && <KakiBaru sumber={kaki} />}</div>
   if (!nj || !jp || !wr) return <div className="bb-isi"><Keadaan /></div>
 
   const perTanggal = nj.perTanggal
@@ -192,7 +193,7 @@ export default function L4Jago() {
         </Blok>
       </div>
 
-      <KakiBaru sumber={kaki} />
+      {!sisip && <KakiBaru sumber={kaki} />}
     </div>
   )
 }

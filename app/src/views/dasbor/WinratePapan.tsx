@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { lazy, useEffect, useMemo, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { StockAutocomplete } from '../../components/dasbor/StockAutocomplete'
 import { useStockIndex } from '../../lib/dasbor/stockDetailData'
@@ -8,7 +8,12 @@ import {
   lencanaSaringan, posisi52, tickPersen, useIndexWinrate, useWinrate,
   type BerkasWinrate, type Jendela, type RingkasWinrate,
 } from '../../lib/dasbor/winratePapan'
+import { useTheme } from '../../context/ThemeContext'
+import { SisipKanvas } from '../baru/SisipKanvas'
 import './WinratePapan.css'
+
+// #228: ringkasan susunan kanvas PAPAN Baru — dimuat hanya di tampilan Baru.
+const RingkasKanvas = lazy(() => import('../baru/L1Bukti'))
 
 /**
  * Winrate PAPAN (#91, Johan 8 Sep 2026: "artifact nya bagus nih untuk BNBR
@@ -65,6 +70,7 @@ function Kpi({ label, nilai, ket, kelas }: { label: string; nilai: string; ket: 
 }
 
 export function WinratePapan() {
+  const { tampilan } = useTheme()
   const [param, setParam] = useSearchParams()
   const kode = useMemo(() => {
     const q = (param.get('kode') ?? '').trim().toUpperCase()
@@ -93,6 +99,13 @@ export function WinratePapan() {
           ekspektansi per sinyal (fee diabaikan, fraksi BEI), dan kondisi teknikal yang membedakannya.
         </span>
       </div>
+
+      {/* #228: ringkasan kanvas PAPAN Baru (tampilan Baru saja); fitur lama tetap di bawah. */}
+      {tampilan === 'baru' && (
+        <SisipKanvas kunci="bukti" label="Ringkasan Winrate PAPAN">
+          <RingkasKanvas sisip />
+        </SisipKanvas>
+      )}
 
       <div className="panel">
         <div className="panel-b">

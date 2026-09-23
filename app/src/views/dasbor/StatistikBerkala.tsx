@@ -1,10 +1,12 @@
-import { useMemo, useState } from 'react'
+import { lazy, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { DatePicker } from '../../components/dasbor/DatePicker'
 import { TautanBroker, useBrokerBerhalaman } from '../../components/dasbor/TautanBroker'
 import { PemilihRentang } from '../../components/dasbor/PemilihRentang'
 import { IkonMenu, IKON_PERINGATAN } from '../../components/dasbor/IkonMenu'
 import { LABEL_RENTANG } from '../../lib/dasbor/periode'
+import { useTheme } from '../../context/ThemeContext'
+import { SisipKanvas } from '../baru/SisipKanvas'
 import {
   angka,
   belahDua,
@@ -26,6 +28,9 @@ import {
   type RuasBulanan,
 } from '../../lib/dasbor/statistikBerkala'
 import './StatistikBerkala.css'
+
+// #228: ringkasan susunan kanvas PAPAN Baru — dimuat hanya di tampilan Baru.
+const RingkasKanvas = lazy(() => import('../baru/L2Berkala'))
 
 /**
  * Statistik Berkala — satu pekan ATAU satu bulan bursa dari terbitan resmi
@@ -237,6 +242,7 @@ export function StatistikBerkala() {
   const [jenis, setJenis] = useState<JenisPeriode>('minggu')
   const [tab, setTab] = useState<Tab>('ringkas')
   const { daftar, idx, edisi, galat, pilih } = useStatistikBerkala(jenis)
+  const { tampilan } = useTheme()
 
   // Bulanan dan mingguan punya bentuk berkas yang beda (lihat statistikBerkala.ts),
   // jadi tab di bawah bercabang lewat `edisiBulanan` — bukan berarti chipnya
@@ -319,6 +325,12 @@ export function StatistikBerkala() {
   return (
     <div className="lantai hal-statistik-berkala">
       {kepala}
+      {/* #228: ringkasan kanvas PAPAN Baru (tampilan Baru saja); fitur lama tetap di bawah. */}
+      {tampilan === 'baru' && (
+        <SisipKanvas kunci="berkala" label="Ringkasan statistik berkala">
+          <RingkasKanvas sisip />
+        </SisipKanvas>
+      )}
 
       <div className="stb-kepala">
         <div className="tabs" role="tablist" aria-label="Bagian statistik">

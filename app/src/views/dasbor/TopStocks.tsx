@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type CSSProperties } from 'react'
+import { lazy, useEffect, useMemo, useState, type CSSProperties } from 'react'
 import { Link } from 'react-router-dom'
 import { BilahTanggal } from '../../components/dasbor/BilahTanggal'
 import { fmtTanggalPendek } from '../../components/dasbor/Kalender'
@@ -10,6 +10,11 @@ import { ringkasDariIndex } from '../../lib/dasbor/rentangPasar'
 import { fN, fp, persen } from '../../lib/dasbor/format'
 import type { StockContribRow, StockMoveRow } from '../../lib/dasbor/dataHarian'
 import { IkonMenu, IKON_PERINGATAN } from '../../components/dasbor/IkonMenu'
+import { useTheme } from '../../context/ThemeContext'
+import { SisipKanvas } from '../baru/SisipKanvas'
+
+// #228: ringkasan susunan kanvas PAPAN Baru — dimuat hanya di tampilan Baru.
+const RingkasKanvas = lazy(() => import('../baru/L2Peringkat'))
 
 /**
  * Reset tombol judul kolom ke tampilan teks polos — padanan `button{font:
@@ -61,6 +66,7 @@ function thSort<T extends object>(s: UrutState<T>, k: keyof T, label: string, ka
  */
 export function TopStocks() {
   const { tanggalTersedia, hari, tanggalAktif, pilihTanggal, loading, error } = useDataHarian()
+  const { tampilan } = useTheme()
 
   // ─── Mode RENTANG (#75) — JUJUR: daftar top-10 adalah snapshot per-hari
   // (IDX tidak menerbitkan top-10 agregat lintas hari), jadi yang diagregat
@@ -192,6 +198,12 @@ export function TopStocks() {
   return (
     <div className="lantai hal-top-stocks">
       {vhead(tanggalAktif, hari?.sementara === true)}
+      {/* #228: ringkasan kanvas PAPAN Baru (tampilan Baru saja); fitur lama tetap di bawah. */}
+      {tampilan === 'baru' && (
+        <SisipKanvas kunci="peringkat" label="Ringkasan peringkat">
+          <RingkasKanvas sisip />
+        </SisipKanvas>
+      )}
       <BilahTanggal tanggalTersedia={tanggalTersedia} tanggalAktif={tanggalAktif} onPilih={pilihTanggal} onRentang={gantiRentang} rentangAktif={rentang} />
 
       {hari.sementara === true && (

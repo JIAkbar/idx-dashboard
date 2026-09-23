@@ -62,7 +62,7 @@ function useSempit(): boolean {
   return sempit
 }
 
-export default function L2Berkala() {
+export default function L2Berkala({ sisip = false }: { sisip?: boolean } = {}) {
   const [aktif, setAktif] = useState<'mingguan' | 'bulanan'>('mingguan')
   const sempit = useSempit()
 
@@ -207,7 +207,7 @@ export default function L2Berkala() {
         )}
       </div>
 
-      <KakiBaru sumber={`Mingguan: statistik resmi bursa ${tanggalPendek(w.tanggal_edisi_iso)}. Bulanan: statistik resmi bursa ${m.periode_id}. Top saham/broker bulanan diambil dari 15 peringkat teratas laporan resmi.`} />
+      {!sisip && <KakiBaru sumber={`Mingguan: statistik resmi bursa ${tanggalPendek(w.tanggal_edisi_iso)}. Bulanan: statistik resmi bursa ${m.periode_id}. Top saham/broker bulanan diambil dari 15 peringkat teratas laporan resmi.`} />}
     </div>
   )
 }

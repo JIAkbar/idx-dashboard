@@ -1,5 +1,7 @@
-import { useEffect, useMemo, useState } from 'react'
+import { lazy, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { useTheme } from '../../context/ThemeContext'
+import { SisipKanvas } from '../baru/SisipKanvas'
 import { IkonMenu, IKON_PERINGATAN } from '../../components/dasbor/IkonMenu'
 import { BedaSkor } from '../../components/dasbor/BedaSkor'
 import { UjiAturan } from '../../components/dasbor/UjiAturan'
@@ -32,6 +34,9 @@ import {
   type BarisJejakSaham, type BerkasJejak, type DefinisiId, type KoreksiJejak, type RingkasH1, type RingkasTpSl,
 } from '../../lib/dasbor/nilaiJejak'
 import './Screener.css'
+
+// #228: ringkasan susunan kanvas PAPAN Baru — dimuat hanya di tampilan Baru.
+const RingkasKanvas = lazy(() => import('../baru/L4Screener'))
 
 /** Tiga preset Whale saja (adendum_preset_whale.md) — Scalping/Swing di luar
  *  cakupan Paket D, biar tak diam-diam ikut tampil sebelum datanya diperiksa. */
@@ -95,6 +100,7 @@ function Panah({ posisi, label }: { posisi: 'atas' | 'bawah' | null; label: stri
  * banyak", pola sama `TabelScreenerKartu` di KartuAnalisa.tsx.
  */
 export function Screener() {
+  const { tampilan } = useTheme()
   const data = useScreener()
   const polaData = usePolaScreener()
   const kandidatData = useKandidatDeepDive()
@@ -230,6 +236,13 @@ export function Screener() {
         <span className="sub">{data.n} emiten, satu baris per emiten</span>
         <BedaSkor halaman="screener" />
       </div>
+
+      {/* #228: ringkasan kanvas PAPAN Baru (tampilan Baru saja); fitur lama tetap di bawah. */}
+      {tampilan === 'baru' && (
+        <SisipKanvas kunci="screener" label="Ringkasan Screener">
+          <RingkasKanvas sisip />
+        </SisipKanvas>
+      )}
 
       <div className="tabs" role="tablist">
         <button type="button" role="tab" aria-selected={mode === 'tabel'} className={'tab' + (mode === 'tabel' ? ' on' : '')} onClick={() => setMode('tabel')}>

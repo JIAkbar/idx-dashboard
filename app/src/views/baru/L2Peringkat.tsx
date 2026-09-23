@@ -45,7 +45,7 @@ function DaftarBroker({ item, terbesar }: { item: ItemBroker[]; terbesar: number
   )
 }
 
-export default function L2Peringkat() {
+export default function L2Peringkat({ sisip = false }: { sisip?: boolean } = {}) {
   const { data: d, tanggal, galat } = useDsTerbaru<DsPeringkat>()
   // #230: pil rentang dulu mati (tanpa onClick). Data rentang hanya ada untuk
   // broker, jadi pilihnya duduk di blok broker: 5 hari, 1 bulan, 3 bulan.
@@ -103,7 +103,7 @@ export default function L2Peringkat() {
         </Blok>
       </div>
 
-      <KakiBaru sumber="Peringkat dari ringkasan harian resmi bursa. Broker 5 hari dari rekap resmi periode berjalan. Nilai dalam rupiah; M = miliar." />
+      {!sisip && <KakiBaru sumber="Peringkat dari ringkasan harian resmi bursa. Broker 5 hari dari rekap resmi periode berjalan. Nilai dalam rupiah; M = miliar." />}
     </div>
   )
 }

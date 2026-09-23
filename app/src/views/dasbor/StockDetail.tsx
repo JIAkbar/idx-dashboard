@@ -1,5 +1,5 @@
 import { persen } from '../../lib/dasbor/format'
-import { useEffect, useMemo, useState, type ReactNode } from 'react'
+import { lazy, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { StockAutocomplete } from '../../components/dasbor/StockAutocomplete'
 import { useStockFundamental, useStockIndex } from '../../lib/dasbor/stockDetailData'
@@ -26,10 +26,15 @@ import { muatTambahanKeystats, type TambahanKeystats } from '../../lib/dasbor/ra
 import { NilaiRotasi } from '../../components/dasbor/NilaiRotasi'
 import { JUDUL_ASAL, pilihRasio } from '../../lib/dasbor/rasioUtamaKeystats'
 import { useKabar, kabarEmiten, waktuKabar } from '../../lib/dasbor/kabar'
+import { useTheme } from '../../context/ThemeContext'
+import { SisipKanvas } from '../baru/SisipKanvas'
 import './StockDetail.css'
 // Baris kabar (.kbr-*) hidup di Kabar.css dan dipakai juga di sini —
 // pola yang sama dengan Beranda, bukan kelas baru.
 import './Kabar.css'
+
+// #228: ringkasan susunan kanvas PAPAN Baru — dimuat hanya di tampilan Baru.
+const RingkasKanvas = lazy(() => import('../baru/L3Harga'))
 
 type Tab = 'statistik' | 'valuasi' | 'banding'
 
@@ -206,6 +211,7 @@ function PanelProfilPerusahaan({ profil }: { profil: TambahanKeystats['profil'] 
  * modal akan membuang hasil simulasi saat ditutup.
  */
 export function StockDetail() {
+  const { tampilan } = useTheme()
   const { index } = useStockIndex()
   const [inputVal, setInputVal] = useState('')
   // Emiten boleh datang dari URL. Tanpa ini, `?sym=BBCA` diabaikan dan halaman
@@ -379,6 +385,13 @@ export function StockDetail() {
 
       {activeTicker && !loading && !error && fd && (
         <>
+          {/* #228: ringkasan kanvas PAPAN Baru (tampilan Baru saja); fitur lama tetap di bawah. */}
+          {tampilan === 'baru' && (
+            <SisipKanvas kunci={fd.ticker} label="Ringkasan harga">
+              <RingkasKanvas kodeTetap={fd.ticker} sisip />
+            </SisipKanvas>
+          )}
+
           {/* Hero 3 zona: identitas | harga + rentang 52 minggu | grid 6 stat */}
           <div className="panel hero">
             <div className="ident">

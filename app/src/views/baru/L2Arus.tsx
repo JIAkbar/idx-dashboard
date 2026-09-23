@@ -13,7 +13,7 @@ interface AliranInvestor {
 interface Pemegang { holders: { lf: string; pct: number }[] }
 interface PemegangMeta { updated: string; n_emiten: number }
 
-export default function L2Arus() {
+export default function L2Arus({ sisip = false }: { sisip?: boolean } = {}) {
   const { data: ai, galat: galatAi } = useJson<AliranInvestor>('/data-idx/json/aliran_investor.json')
   const { data: peta } = useJson<Pemegang[]>('/data-idx/json/investor_map.json')
   const { data: petaMeta } = useJson<PemegangMeta>('/data-idx/json/investor_map.meta.json')
@@ -150,7 +150,7 @@ export default function L2Arus() {
         </div>
       </div>
 
-      <KakiBaru sumber="Semua angka dari ringkasan resmi bursa, dijumlah per tanggal sejak 2020. Nilai dalam rupiah; T = triliun, M = miliar." />
+      {!sisip && <KakiBaru sumber="Semua angka dari ringkasan resmi bursa, dijumlah per tanggal sejak 2020. Nilai dalam rupiah; T = triliun, M = miliar." />}
     </div>
   )
 }

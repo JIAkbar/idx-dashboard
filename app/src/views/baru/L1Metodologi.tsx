@@ -7,7 +7,7 @@ interface Ds { nf_today_idr: number; trading_day: number }
 type AliranRow = [string, number, number, number, number, number, number, number, number, number, number, number, number]
 interface AliranInvestor { mulai: string; akhir: string; n: number; d: AliranRow[] }
 
-export default function L1Metodologi() {
+export default function L1Metodologi({ sisip = false }: { sisip?: boolean } = {}) {
   const ds = useDsTerbaru<Ds>()
   const aliran = useJson<AliranInvestor>('/data-idx/json/aliran_investor.json')
 
@@ -95,7 +95,7 @@ export default function L1Metodologi() {
         </div>
       </div>
 
-      <KakiBaru sumber="Metode ini berlaku untuk semua angka asing di PAPAN, bukan cuma yang di layar ini." />
+      {!sisip && <KakiBaru sumber="Metode ini berlaku untuk semua angka asing di PAPAN, bukan cuma yang di layar ini." />}
     </div>
   )
 }

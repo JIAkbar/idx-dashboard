@@ -1,11 +1,15 @@
-import { useMemo, useState } from 'react'
+import { lazy, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { GLOSARIUM } from '../../lib/dasbor/glosarium'
 import { saringGlosarium, urutkanGlosarium, OPSI_URUTAN, type UrutanGlosarium } from '../../lib/dasbor/metodologi'
 import { MENU_ITEMS } from '../../lib/dasbor/menu'
 import { PemilihRentang } from '../../components/dasbor/PemilihRentang'
 import { IkonMenu, IKON_PANAH_KANAN } from '../../components/dasbor/IkonMenu'
+import { useTheme } from '../../context/ThemeContext'
+import { SisipKanvas } from '../baru/SisipKanvas'
 import './Metodologi.css'
+
+const RingkasKanvas = lazy(() => import('../baru/L1Metodologi'))
 
 /** Label halaman tujuan dari sebuah rute `ke` — dibaca dari `MENU_ITEMS`
  *  (satu-satunya sumber nama halaman), bukan diketik ulang di sini. Rute
@@ -53,6 +57,7 @@ function labelRute(path: string): string {
  * lihat rujukan inline tiap bagian. Tak ada yang ditulis dari ingatan.
  */
 export function Metodologi() {
+  const { tampilan } = useTheme()
   const [cari, setCari] = useState('')
   const [urutan, setUrutan] = useState<UrutanGlosarium>('abjad')
 
@@ -65,6 +70,14 @@ export function Metodologi() {
           {/* h1, bukan span: nama halaman sudah tercetak di sini (#24). */}
           <h1 className="lbl">Metodologi</h1>
         </div>
+
+        {/* #228: ringkasan kanvas PAPAN Baru (tampilan Baru saja); fitur lama tetap di bawah. */}
+        {tampilan === 'baru' && (
+          <SisipKanvas kunci="metodologi" label="Ringkasan metodologi">
+            <RingkasKanvas sisip />
+          </SisipKanvas>
+        )}
+
         <div className="panel-b">
           <p className="muted mtd-intro">
             Cara PAPAN menghitung angka yang ditampilkan.

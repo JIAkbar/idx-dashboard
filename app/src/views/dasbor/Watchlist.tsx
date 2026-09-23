@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { lazy, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import type { ChartConfiguration } from 'chart.js/auto'
 import { IKON_TONG } from '../../components/dasbor/IkonMenu'
@@ -31,7 +31,10 @@ import {
   tanggalUmumWatchlist, hitungIndeksWatchlist, fetchSahamMap, fetchTopBrokerHarian,
   type AnggotaIndeks, type TopBrokerHarian, type MetrikIndeks,
 } from '../../lib/dasbor/watchlistIndeks'
+import { SisipKanvas } from '../baru/SisipKanvas'
 import './Watchlist.css'
+
+const RingkasKanvas = lazy(() => import('../baru/L5Watchlist'))
 
 type UrutState<T> = { kunci: keyof T; arah: 'naik' | 'turun'; klik: (k: keyof T) => void }
 
@@ -137,6 +140,7 @@ interface BarisTabel {
  * halaman: tak berpindah antar peranti.
  */
 export function Watchlist() {
+  const { tampilan } = useTheme()
   const kamus = useKamusEmiten()
   const [items, setItems] = useState<WatchlistItem[]>(() => muatWatchlist())
   const [deret, setDeret] = useState<Record<string, {
@@ -277,6 +281,13 @@ export function Watchlist() {
       <div className="vhead">
         <h1>Watchlist</h1>
       </div>
+
+      {/* #228: ringkasan kanvas PAPAN Baru (tampilan Baru saja); fitur lama tetap di bawah. */}
+      {tampilan === 'baru' && (
+        <SisipKanvas kunci="watchlist" label="Ringkasan watchlist">
+          <RingkasKanvas sisip />
+        </SisipKanvas>
+      )}
 
       <div className="panel">
         <div className="panel-b">

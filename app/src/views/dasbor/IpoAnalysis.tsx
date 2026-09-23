@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { lazy, useMemo, useState } from 'react'
 import { IkonMenu, IKON_PERINGATAN } from '../../components/dasbor/IkonMenu'
 import { KonteksData } from '../../components/dasbor/KonteksData'
 import { Dropdown } from '../../components/dasbor/Dropdown'
@@ -9,7 +9,11 @@ import { fRingkas } from '../../lib/dasbor/stockDetailFormat'
 import {
   useIpo, agregatPerTahun, agregatKeseluruhan, tahunUnik,
   type BarisIpo, type HorizonAgregat, type UnderwriterRapor } from '../../lib/dasbor/ipo'
+import { useTheme } from '../../context/ThemeContext'
+import { SisipKanvas } from '../baru/SisipKanvas'
 import './IpoAnalysis.css'
+
+const RingkasKanvas = lazy(() => import('../baru/L3Ipo'))
 
 /** Fraksi (0..1) → persen TANPA tanda plus — win rate itu proporsi, bukan
  *  perubahan; `+55%` terbaca seperti return (temuan review visual 27 Agu). */
@@ -41,6 +45,7 @@ type Tab = 'tabel' | 'penjamin'
  * `Screener.tsx`.
  */
 export function IpoAnalysis() {
+  const { tampilan } = useTheme()
   const data = useIpo()
   const [tab, setTab] = useState<Tab>('tabel')
   const [tahunAktif, setTahunAktif] = useState('semua')
@@ -83,6 +88,13 @@ export function IpoAnalysis() {
         <span className="sub">{data.n} emiten tercatat sejak listing perdana, dengan rapor penjamin emisi.</span>
         <KonteksData tanggal={data.tanggal} />
       </div>
+
+      {/* #228: ringkasan kanvas PAPAN Baru (tampilan Baru saja); fitur lama tetap di bawah. */}
+      {tampilan === 'baru' && (
+        <SisipKanvas kunci="ipo" label="Ringkasan IPO">
+          <RingkasKanvas sisip />
+        </SisipKanvas>
+      )}
 
       <div className="panel">
         <div className="panel-b">

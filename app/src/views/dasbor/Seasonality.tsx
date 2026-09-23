@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { lazy, useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { BULAN, ringkasEmiten, vonisUji, type RingkasBulan, type RingkasEmiten, type SeriImbal } from '../../lib/seasonality'
 import { muatIndeks, muatIhsg, muatSeri, muatBelum, type BarisIndeks, type BarisBelum } from '../../lib/seasonalityData'
@@ -11,6 +11,11 @@ import { useJarakJenjang } from '../../lib/jarakJenjang'
 import { PenunjukJarak } from '../../components/dasbor/PenunjukJarak'
 import { PemilihRentang } from '../../components/dasbor/PemilihRentang'
 import { persen } from '../../lib/dasbor/format'
+import { useTheme } from '../../context/ThemeContext'
+import { SisipKanvas } from '../baru/SisipKanvas'
+
+// #228: ringkasan susunan kanvas PAPAN Baru — dimuat hanya di tampilan Baru.
+const RingkasKanvas = lazy(() => import('../baru/L3Musiman'))
 
 const MAKS = 5
 /** Tahun awal perbandingan musiman — empat pilihan, jadi menu sendiri di
@@ -31,6 +36,7 @@ function tingkat(p: number, n: number): string {
 }
 
 export function Seasonality() {
+  const { tampilan } = useTheme()
   const [indeks, setIndeks] = useState<BarisIndeks[] | null>(null)
   const [ihsg, setIhsg] = useState<SeriImbal>({})
   const [galat, setGalat] = useState<string | null>(null)
@@ -186,6 +192,18 @@ export function Seasonality() {
       ))}
 
       {tab === 'bulan' && <>
+      {/* #228: ringkasan kanvas PAPAN Baru (tampilan Baru saja); fitur lama tetap di bawah.
+          Tab ini satu-satunya yang per emiten (tab Harian level-IHSG, tanpa kode) — tapi
+          halaman ini boleh membandingkan sampai 5 emiten sekaligus tanpa "yang sedang aktif"
+          tunggal. Dipakai emiten PERTAMA yang dipilih (`dipilih[0]`) sebagai kode ringkasan;
+          kosong = belum ada yang dipilih, ringkasan tidak tampil (jangan diam-diam
+          memakai emiten bawaan yang tak dipilih pembaca). */}
+      {tampilan === 'baru' && dipilih.length > 0 && (
+        <SisipKanvas kunci={dipilih[0]} label="Ringkasan musiman">
+          <RingkasKanvas kodeTetap={dipilih[0]} sisip />
+        </SisipKanvas>
+      )}
+
       {galat && <div className="panel panel-b"><p className="muted">{galat}</p></div>}
 
       <section className="panel">

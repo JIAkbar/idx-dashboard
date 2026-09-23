@@ -39,9 +39,11 @@ function labelBulanTahun(ym: string): string {
   return `${BULAN_PENDEK[m - 1]} ${y}`
 }
 
-export default function L3Musiman() {
+/** `kodeTetap` + `sisip`: dipakai Seasonality (tab Bulanan) di tampilan Baru
+ *  (#228) — kode datang dari halaman induk, tanpa pemilih emiten sendiri. */
+export default function L3Musiman({ kodeTetap, sisip = false }: { kodeTetap?: string; sisip?: boolean } = {}) {
   const { kode: kodeParam } = useParams<{ kode: string }>()
-  const kode = (kodeParam ?? EMITEN_BAWAAN).toUpperCase()
+  const kode = (kodeTetap ?? kodeParam ?? EMITEN_BAWAAN).toUpperCase()
   const huruf = kode[0]
 
   const kartu = useJson<Kartu>(`/data-idx/json/kartu/${kode}.json`)
@@ -105,7 +107,7 @@ export default function L3Musiman() {
 
   return (
     <div className="bb-isi">
-      <PilihEmiten slug="musiman" />
+      {!sisip && <PilihEmiten slug="musiman" />}
 
       <div className="bb-dua">
         <Blok kelas="polos panel" label={`Bulan berjalan · ${NAMA_BULAN[bulanIni - 1]}, ${musiman.n} tahun`}
@@ -197,7 +199,7 @@ export default function L3Musiman() {
       <Blok kelas="panel" label="Catatan sampel"
         narasi={`${sampelTicker.map((t) => t.s ? `${t.kode} sejak ${labelBulanTahun(t.s.mulai)} (${t.s.n} bulan)` : `${t.kode} tidak tersedia`).join(' · ')} · IHSG sejak ${labelBulanTahun(sampelIhsg.mulai)} (${sampelIhsg.n} bulan). Musiman di sini adalah frekuensi historis, bukan peluang — pola bisa berubah kapan saja.`} />
 
-      <KakiBaru sumber={`Imbal bulanan historis data bursa. Bulan berjalan (${NAMA_BULAN[bulanIni - 1]}) memuat data belum lengkap.`} />
+      {!sisip && <KakiBaru sumber={`Imbal bulanan historis data bursa. Bulan berjalan (${NAMA_BULAN[bulanIni - 1]}) memuat data belum lengkap.`} />}
     </div>
   )
 }

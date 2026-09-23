@@ -1,5 +1,5 @@
 import { persen } from '../../lib/dasbor/format'
-import { useEffect, useMemo, useState } from 'react'
+import { lazy, useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { PemilihRentang } from '../../components/dasbor/PemilihRentang'
 import { DatePicker } from '../../components/dasbor/DatePicker'
@@ -19,6 +19,11 @@ import { Shareholders } from './broker-summary-v2/Shareholders'
 import { Nego } from './broker-summary-v2/Nego'
 import { Quadrant } from './broker-summary-v2/Quadrant'
 import { InfoIndikator, type ItemInfoIndikator } from '../../components/dasbor/InfoIndikator'
+import { useTheme } from '../../context/ThemeContext'
+import { SisipKanvas } from '../baru/SisipKanvas'
+
+// #228: ringkasan susunan kanvas PAPAN Baru — dimuat hanya di tampilan Baru.
+const RingkasKanvas = lazy(() => import('../baru/L3BrokerSummary'))
 
 type Tab = 'overview' | 'quadrant' | 'inventory' | 'flow' | 'vsihsg' | 'foreign' | 'shareholders' | 'nego'
 const TABS: { id: Tab; label: string }[] = [
@@ -102,6 +107,7 @@ const INFO_BSV2: ItemInfoIndikator[] = [
  * terpisah dari `st.dari/st.sampai`).
  */
 export function BrokerSummaryV2() {
+  const { tampilan } = useTheme()
   const { index } = useStockIndex()
   // Emiten dibaca dari alamat lebih dulu (#140). Dulu `useState('BBCA')`
   // polos: tiap tautan ke halaman ini mendarat di BBCA tanpa satu pun galat,
@@ -183,6 +189,13 @@ export function BrokerSummaryV2() {
         <h1>Arus Broker</h1>
         <span className="sub">pasar reguler · semua investor · arsip harian PAPAN</span>
       </div>
+
+      {/* #228: ringkasan kanvas PAPAN Baru (tampilan Baru saja); fitur lama tetap di bawah. */}
+      {tampilan === 'baru' && (
+        <SisipKanvas kunci={kode} label="Ringkasan broker summary">
+          <RingkasKanvas kodeTetap={kode} sisip />
+        </SisipKanvas>
+      )}
 
       <header className="panel" style={{ marginBottom: 14 }}>
         <div className="panel-b">

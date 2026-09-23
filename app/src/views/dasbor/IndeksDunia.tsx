@@ -2,7 +2,7 @@ import {
   LABEL_RENTANG, RENTANG_BAKU, jendelaBaku, opsiRentangBaku, type KunciBaku,
 } from '../../lib/dasbor/periode'
 import { PemilihRentang } from '../../components/dasbor/PemilihRentang'
-import { useEffect, useMemo, useState, type CSSProperties, type ReactNode } from 'react'
+import { lazy, useEffect, useMemo, useState, type CSSProperties, type ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
 import type { ChartConfiguration } from 'chart.js/auto'
 import { BatangPeringkat } from '../../components/dasbor/BatangPeringkat'
@@ -25,6 +25,10 @@ import { IkonMenu, IKON_PERINGATAN, IKON_GLOBE, IKON_PENGGARIS, IKON_GRAFIK_BATA
 import { LilinHarian } from '../../components/dasbor/LilinHarian'
 import { LabelRentang } from '../../components/dasbor/LabelRentang'
 import { urlData } from '../../lib/dasbor/baseData'
+import { SisipKanvas } from '../baru/SisipKanvas'
+
+// #228: ringkasan susunan kanvas PAPAN Baru — dimuat hanya di tampilan Baru.
+const RingkasKanvas = lazy(() => import('../baru/L2Indeks'))
 
 /**
  * Grafik mini board-side (Fix #27) — pakai tanggalTersedia (data-idx/json/index.json)
@@ -726,6 +730,7 @@ function PanelRentangPasar({ r }: { r: NonNullable<ReturnType<typeof ringkasDari
 export function IndeksDunia() {
   const { tanggalTersedia, hari, tanggalAktif, pilihTanggal, loading, error } = useDataHarian()
   const navigate = useNavigate()
+  const { tampilan } = useTheme()
   // Dipanggil SEBELUM early-return loading/error — hook tak boleh dilewati di
   // sebagian render. `null` kalau tanggalnya belum dipanen Yahoo (panen jalan
   // sore); lilin lalu mundur ke penutupan kemarin seperti sebelum #108.
@@ -804,6 +809,12 @@ export function IndeksDunia() {
   return (
     <div className="lantai hal-indeks">
       {vhead(tanggalAktif, hari?.sementara === true)}
+      {/* #228: ringkasan kanvas PAPAN Baru (tampilan Baru saja); fitur lama tetap di bawah. */}
+      {tampilan === 'baru' && (
+        <SisipKanvas kunci="indeks" label="Ringkasan indeks">
+          <RingkasKanvas sisip />
+        </SisipKanvas>
+      )}
       <BilahTanggal
         tanggalTersedia={tanggalTersedia}
         tanggalAktif={tanggalAktif}

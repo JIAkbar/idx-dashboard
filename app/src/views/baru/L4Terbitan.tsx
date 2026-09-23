@@ -49,14 +49,15 @@ function tanggalSingkat(iso: string): string {
   return tanggalPendek(iso).replace(/ \d{4}$/, '')
 }
 
-export default function L4Terbitan() {
+/** `sisip`: dipakai Bulletin di tampilan Baru (#228) — kaki sendiri disembunyikan. */
+export default function L4Terbitan({ sisip = false }: { sisip?: boolean } = {}) {
   const { data: idx, galat: gIdx } = useJson<KeluaranIndex>('/arus-pasar/keluaran/index.json')
   const { data: tj, galat: gTj } = useJson<TinjauanDeepdive>('/data-idx/json/tinjauan_deepdive.json')
   const { data: tv, galat: gTv } = useJson<TesisVonis>('/data-idx/json/tesis_vonis.json')
 
   const galat = gIdx ?? gTj ?? gTv
   const kaki = `Terbitan dinilai H+${tj?.horizon_hari ?? 5} dari harga penutupan resmi; PDF tetap seperti saat terbit, tidak diedit ulang.`
-  if (galat) return <div className="bb-isi"><Keadaan galat={galat} /><KakiBaru sumber={kaki} /></div>
+  if (galat) return <div className="bb-isi"><Keadaan galat={galat} />{!sisip && <KakiBaru sumber={kaki} />}</div>
   if (!idx || !tj || !tv) return <div className="bb-isi"><Keadaan /></div>
 
   const terbukti = tj.terbitan.filter((t) => t.status === 'terbukti')
@@ -193,7 +194,7 @@ export default function L4Terbitan() {
         </Blok>
       </div>
 
-      <KakiBaru sumber={kaki} />
+      {!sisip && <KakiBaru sumber={kaki} />}
     </div>
   )
 }

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { lazy, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { bandingkanBaris } from '../../lib/dasbor/useUrut'
 import { fp, persen } from '../../lib/dasbor/format'
@@ -8,7 +8,12 @@ import {
   useJagoPapan, saringTab, konfigTab, keCsvJagoPapan, TAB_JAGO_PAPAN, TAB_JAGO_PAPAN_BAWAAN,
   type RowJagoPapan, type TabJagoPapan,
 } from '../../lib/dasbor/jagoPapan'
+import { useTheme } from '../../context/ThemeContext'
+import { SisipKanvas } from '../baru/SisipKanvas'
 import './JagoPapan.css'
+
+// #228: ringkasan susunan kanvas PAPAN Baru — dimuat hanya di tampilan Baru.
+const RingkasKanvas = lazy(() => import('../baru/L4Jago'))
 
 type UrutState = { kunci: keyof RowJagoPapan; arah: 'naik' | 'turun'; klik: (k: keyof RowJagoPapan) => void }
 
@@ -49,6 +54,7 @@ const fmtPct = (v: number | null) => (v == null ? '—' : `${persen(v * 100, 0)}
  * Harian Papan).
  */
 export function JagoPapan() {
+  const { tampilan } = useTheme()
   const data = useJagoPapan()
   const [tab, setTab] = useState<TabJagoPapan>(TAB_JAGO_PAPAN_BAWAAN)
   const cfg = konfigTab(tab)
@@ -91,6 +97,13 @@ export function JagoPapan() {
         <h1>Jago Papan</h1>
         <span className="sub">Empat screener siap-pakai bertema momentum — bukan rekomendasi beli.</span>
       </div>
+
+      {/* #228: ringkasan kanvas PAPAN Baru (tampilan Baru saja); fitur lama tetap di bawah. */}
+      {tampilan === 'baru' && (
+        <SisipKanvas kunci="jago" label="Ringkasan Jago Papan">
+          <RingkasKanvas sisip />
+        </SisipKanvas>
+      )}
 
       <div className="panel">
         <div className="panel-b jgp-kepala">

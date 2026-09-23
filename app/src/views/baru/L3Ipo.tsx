@@ -22,7 +22,7 @@ function tglRingkas(iso: string): string {
   return `${String(d).padStart(2, '0')} ${BULAN_PENDEK[m - 1]} ${String(y).slice(2)}`
 }
 
-export default function L3Ipo() {
+export default function L3Ipo({ sisip = false }: { sisip?: boolean } = {}) {
   const { data, galat } = useJson<IpoJson>('/data-idx/json/ipo.json')
   if (galat) return <Keadaan galat={galat} />
   if (!data) return <Keadaan />
@@ -200,7 +200,7 @@ export default function L3Ipo() {
         </div>
       </Blok>
 
-      <KakiBaru sumber={`Harga tak tersesuaikan aksi korporasi. Return kini per ${tanggalPendek(data.tanggal)}, dari statistik resmi bursa.`} />
+      {!sisip && <KakiBaru sumber={`Harga tak tersesuaikan aksi korporasi. Return kini per ${tanggalPendek(data.tanggal)}, dari statistik resmi bursa.`} />}
     </div>
   )
 }

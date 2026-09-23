@@ -52,7 +52,7 @@ function namaSektor(n: string): string {
 const NAMA_NEGARA: Record<string, string> = { Japan: 'Jepang', Philippines: 'Filipina', Singapore: 'Singapura' }
 function namaNegara(c: string): string { return NAMA_NEGARA[c] ?? c }
 
-export default function L2Indeks() {
+export default function L2Indeks({ sisip = false }: { sisip?: boolean } = {}) {
   const { data: d, tanggal, galat } = useDsTerbaru<DsIndeks>()
   if (!d || !tanggal) return <Keadaan galat={galat} />
 
@@ -172,7 +172,7 @@ export default function L2Indeks() {
         </div>
       </div>
 
-      <KakiBaru sumber="Statistik harian resmi bursa. Sektor mengikuti klasifikasi resmi 11 sektor. Nilai dalam rupiah; T = triliun, M = miliar." />
+      {!sisip && <KakiBaru sumber="Statistik harian resmi bursa. Sektor mengikuti klasifikasi resmi 11 sektor. Nilai dalam rupiah; T = triliun, M = miliar." />}
     </div>
   )
 }

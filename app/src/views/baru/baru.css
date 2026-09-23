@@ -142,10 +142,10 @@
 
 /* #228: lapisan kanvas yang ditanam di halaman lama (mis. Berkas Emiten di
    tampilan Baru) — tanpa latar, bantalan, dan tinggi minimum halaman penuh. */
-.baru.be-kanvas { background: transparent; padding: 0; min-height: 0; }
+.baru.kanvas-sisip { background: transparent; padding: 0; min-height: 0; }
 /* Token kanvas yang ditanam mengikuti token halaman induk (.lantai), jadi ikut
    tema terang/gelap — .baru mandiri sengaja gelap tunggal, sisipan tidak. */
-.lantai .baru.be-kanvas {
+.lantai .baru.kanvas-sisip {
   --bb-latar: var(--bg0); --bb-panel: var(--bg1); --bb-panel2: var(--bg2);
   --bb-garis: var(--line); --bb-teks: var(--text); --bb-redup: var(--text2);
   --bb-emas: var(--amber); --bb-naik: var(--green); --bb-turun: var(--red); --bb-biru: var(--blue);

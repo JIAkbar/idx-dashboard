@@ -54,7 +54,8 @@ const LABEL_PRESET_PIL: Record<string, string> = {
   'whale-tiket': 'Whale tiket', 'whale-akdis': 'Whale akdis', 'whale-asing': 'Whale asing', scalping: 'Scalping', swing: 'Swing',
 }
 
-export default function L4Screener() {
+/** `sisip`: dipakai Screener di tampilan Baru (#228) — kaki sendiri disembunyikan. */
+export default function L4Screener({ sisip = false }: { sisip?: boolean } = {}) {
   // #230: pil preset dulu <span> statis. Sekarang pilihan aktif mengganti
   // daftar teratas (kanan) dan angka ringkas (kiri).
   const [pilihan, setPilihan] = useState<string>('kandidat')
@@ -67,7 +68,7 @@ export default function L4Screener() {
 
   const galat = gS ?? gK ?? gP ?? gR
   const kaki = `Screener dari statistik resmi bursa; kandidat Deep Dive dari perhitungan sebelumnya. Nilai dalam rupiah; M = miliar, jt = juta lembar.`
-  if (galat) return <div className="bb-isi"><Keadaan galat={galat} /><KakiBaru sumber={kaki} /></div>
+  if (galat) return <div className="bb-isi"><Keadaan galat={galat} />{!sisip && <KakiBaru sumber={kaki} />}</div>
   if (!screener || !kandidat || !pola || !rek) return <div className="bb-isi"><Keadaan /></div>
 
   const totalEmiten = screener.n
@@ -259,7 +260,7 @@ export default function L4Screener() {
         </div>
       </div>
 
-      <KakiBaru sumber={kaki} />
+      {!sisip && <KakiBaru sumber={kaki} />}
     </div>
   )
 }

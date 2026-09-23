@@ -42,7 +42,8 @@ const PAPAN_LABEL: Record<string, string> = {
   'Acceleration Board': 'Akselerasi',
 }
 
-export default function L1Bukti() {
+/** `sisip`: dipakai Winrate PAPAN di tampilan Baru (#228) — kaki sendiri disembunyikan. */
+export default function L1Bukti({ sisip = false }: { sisip?: boolean } = {}) {
   const ds = useDsTerbaru<Ds>()
   const kabar = useJson<Kabar>('/data-idx/json/kabar.json')
   const kandidat = useJson<KandidatDeepdive>('/data-idx/json/kandidat_deepdive.json')
@@ -175,7 +176,7 @@ export default function L1Bukti() {
         </div>
       </div>
 
-      <KakiBaru sumber="Jawaban ini dirakit dari statistik resmi bursa dan kabar yang dipanen hari ini." />
+      {!sisip && <KakiBaru sumber="Jawaban ini dirakit dari statistik resmi bursa dan kabar yang dipanen hari ini." />}
     </div>
   )
 }
