@@ -317,7 +317,10 @@ jobs:
           foreach ($t in $tanggal) {
             $argTgl = @()
             if ($t) { $argTgl = @('--tanggal', $t); Write-Host "broker harian: $t" }
-            & "${{ steps.py.outputs.exe }}" scripts/panen_broker_harian.py @argTgl --jeda 0.4 --paralel 48 `
+            # --maks-tunda 0 (#233): tanpa jeda 5 menit + putaran ulang di CI -
+            # batas langkah 60 menit; sisanya disusul run berikutnya lewat
+            # tgl_broker_lubang.py yang kini menghitung semua emiten.
+            & "${{ steps.py.outputs.exe }}" scripts/panen_broker_harian.py @argTgl --jeda 0.4 --paralel 48 --maks-tunda 0 `
               --varian reguler,asing,nego,nego-asing,tunai,tunai-asing
             if ($LASTEXITCODE -ne 0) { Write-Host "::warning::panen_broker_harian $t gagal" }
           }

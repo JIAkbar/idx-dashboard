@@ -172,6 +172,13 @@ AMBANG_KOSONG = 12       # jawaban "nol broker padahal ada volume" beruntun
 # ke-20. Angkanya 20, bukan 5: emiten sepi memang wajar kosong, dan
 # dua puluh berturut-turut TANPA satu pun berhasil baru berarti sumbernya.
 AMBANG_BELUM_TERBIT = 20
+# #233: sesudah satu putaran penuh, bila > BATAS_TUNDA emiten masih tanpa
+# reguler padahal IDX bervolume, jeda lalu ulangi (berkas yang sudah ada
+# dilewati, jadi yang diminta hanya sisanya). Sumber memberi jatah panggilan
+# per periode (#218); jeda memberi jatah itu waktu pulih. Tetap tersisa =
+# keluar non-nol supaya bat/CI mencatat gagal, bukan "962 tersimpan".
+BATAS_TUNDA = 0.10
+MIN_EMITEN_ULANG = 50   # putaran ulang hanya untuk panen massal, bukan --hanya satu emiten
 KANARI_COBA = 5
 KANARI_JEDA = 60         # detik antar percobaan kanari
 
@@ -530,6 +537,25 @@ def volume_idx(kode: str, tanggal: str):
     return None
 
 
+def status_cakram(kode_semua: list[str], tanggal: str) -> dict[str, int]:
+    """Hitung dari BERKAS, bukan dari pencacah permintaan (#233): `n["ok"]`
+    menghitung panggilan sukses per emiten-varian, jadi "962 tersimpan" bisa
+    tercetak walau 2/3 emiten tak punya reguler sama sekali (17 Sep 2026)."""
+    st = {"tersimpan": 0, "ditunda": 0, "tanpa_bar": 0}
+    for kode in kode_semua:
+        if (ARSIP / kode / nama_arsip(tanggal, "reguler")).exists():
+            st["tersimpan"] += 1
+            continue
+        vol = volume_idx(kode, tanggal)
+        if vol is None:
+            st["tanpa_bar"] += 1
+        else:
+            # vol == 0 diarsipkan pemanen (hari tak diperdagangkan), jadi yang
+            # sampai di sini dengan vol 0 pun memang belum tersimpan.
+            st["ditunda"] += 1
+    return st
+
+
 _berkas_kunci = None
 
 
@@ -796,20 +822,33 @@ def jalankan(a) -> int:
     # lalu nego/tunai; yang belum kebagian disusul jalan berikutnya. Isi
     # `varian_aktif` diganti per putaran; `satu_emiten` membacanya lewat closure.
     varian_urut = list(varian_semua)
-    for v_giliran in varian_urut:
-        varian_aktif[:] = [v_giliran]
-        if henti.is_set():
+    maks_tunda = max(0, int(getattr(a, "maks_tunda", 3) or 0))
+    jeda_tunda = max(0, int(getattr(a, "jeda_tunda", 300) or 0))
+    for putaran in range(maks_tunda + 1):
+        for v_giliran in varian_urut:
+            varian_aktif[:] = [v_giliran]
+            if henti.is_set():
+                break
+            if paralel == 1:
+                for kode in kode_semua:
+                    satu_emiten(kode)
+            else:
+                from concurrent.futures import ThreadPoolExecutor
+                with ThreadPoolExecutor(max_workers=paralel) as kolam:
+                    for _ in kolam.map(satu_emiten, kode_semua):
+                        pass
+            if len(varian_urut) > 1:
+                print(f"  varian {v_giliran} selesai: {n['ok']} panggilan sukses, {n['kosong']} kosong ({time.time()-mulai:.0f}s)")
+        if henti.is_set() or len(kode_semua) < MIN_EMITEN_ULANG or putaran == maks_tunda:
             break
-        if paralel == 1:
-            for kode in kode_semua:
-                satu_emiten(kode)
-        else:
-            from concurrent.futures import ThreadPoolExecutor
-            with ThreadPoolExecutor(max_workers=paralel) as kolam:
-                for _ in kolam.map(satu_emiten, kode_semua):
-                    pass
-        if len(varian_urut) > 1:
-            print(f"  varian {v_giliran} selesai: {n['ok']} tersimpan, {n['kosong']} kosong ({time.time()-mulai:.0f}s)")
+        st = status_cakram(kode_semua, tanggal)
+        if st["ditunda"] <= BATAS_TUNDA * len(kode_semua):
+            break
+        print(f"  putaran {putaran + 1}: {st['ditunda']} dari {len(kode_semua)} emiten masih tanpa reguler "
+              f"— jeda {jeda_tunda}s lalu ulangi sisanya ({putaran + 1}/{maks_tunda})", flush=True)
+        time.sleep(jeda_tunda)
+        with kunci:
+            n["kosong_menumpuk"] = 0
 
     n_ok, n_lewat, n_kosong = n["ok"], n["lewat"], n["kosong"]
     n_gagal, n_meleset = n["gagal"], n["meleset"]
@@ -818,8 +857,11 @@ def jalankan(a) -> int:
               "sumber belum terbit untuk tanggal ini.")
         return 2
 
-    print(f"Selesai {time.time()-mulai:.0f}s: {n_ok} tersimpan ({n_lewat} dari arsip), "
-          f"{n_kosong} kosong, {n_gagal} gagal, {n_meleset} volume meleset >{TOLERANSI_VOLUME:.0%}")
+    st = status_cakram(kode_semua, tanggal)
+    print(f"Selesai {time.time()-mulai:.0f}s: reguler {st['tersimpan']}/{len(kode_semua)} emiten tersimpan, "
+          f"{st['ditunda']} DITUNDA (sumber belum memberi), {st['tanpa_bar']} tanpa bar IDX | "
+          f"{n_ok} panggilan sukses ({n_lewat} dari arsip), {n_kosong} kosong, {n_gagal} gagal, "
+          f"{n_meleset} volume meleset >{TOLERANSI_VOLUME:.0%}")
     # Sukses = tak ada permintaan yang GAGAL, bukan "ada baris yang tersimpan".
     #
     # Bedanya lahir dari perubahan 23 Agu 2026 yang mengarsipkan hari tak
@@ -832,7 +874,16 @@ def jalankan(a) -> int:
     # pun galat jaringan, dan naiknya paling deras di emiten tidak likuid yang
     # justru paling banyak hari tak diperdagangkannya. Datanya tak pernah
     # hilang — hanya labelnya yang salah.
-    return 1 if n_gagal else 0
+    if n_gagal:
+        return 1
+    # #233: banyak emiten tertunda = panen belum selesai. Kode 3 supaya bat
+    # ("broker gagal") dan CI (::warning::) mencatatnya; hari itu disusul jalan
+    # berikutnya lewat tgl_broker_lubang.py yang kini menghitung semua emiten.
+    if len(kode_semua) >= MIN_EMITEN_ULANG and st["ditunda"] > BATAS_TUNDA * len(kode_semua):
+        print(f"TERTUNDA: {st['ditunda']} dari {len(kode_semua)} emiten ({st['ditunda'] / len(kode_semua):.0%}) "
+              f"belum punya broker reguler untuk {tanggal}.")
+        return 3
+    return 0
 
 
 def uji_bawaan() -> int:
@@ -914,7 +965,21 @@ def uji_bawaan() -> int:
     [u.start() for u in utas]; [u.join() for u in utas]
     assert time.monotonic() - t0 >= 7 / LAJU_MAKS - 0.05, "pembatas laju bocor"
 
-    print("15/15 lulus")
+    # #233: status dihitung dari BERKAS (tersimpan / ditunda / tanpa bar).
+    import tempfile
+    global ARSIP, volume_idx
+    asli_arsip, asli_vol = ARSIP, volume_idx
+    with tempfile.TemporaryDirectory() as tmp:
+        ARSIP = Path(tmp)
+        (ARSIP / "AAAA").mkdir()
+        (ARSIP / "AAAA" / nama_arsip("2026-09-17", "reguler")).write_text("{}", encoding="utf-8")
+        volume_idx = lambda kode, tgl: {"BBBB": 1000, "CCCC": None}.get(kode, 0)  # noqa: E731
+        try:
+            st = status_cakram(["AAAA", "BBBB", "CCCC"], "2026-09-17")
+        finally:
+            ARSIP, volume_idx = asli_arsip, asli_vol
+    assert st == {"tersimpan": 1, "ditunda": 1, "tanpa_bar": 1}, st
+    print("16/16 lulus")
     return 0
 
 
@@ -931,6 +996,9 @@ def main() -> int:
                          "(sumber mulai menjawab 200 dengan nol broker untuk tanggal yang "
                          "jelas berisi); 8 adalah angka yang dipakai pemanggil.")
     ap.add_argument("--ulang", action="store_true", help="ambil ulang walau arsip ada")
+    ap.add_argument("--maks-tunda", type=int, default=3,
+                    help="putaran ulang bila >10%% emiten tertunda (0 = tanpa putaran ulang)")
+    ap.add_argument("--jeda-tunda", type=int, default=300, help="detik jeda sebelum putaran ulang")
     ap.add_argument("--varian", default="reguler",
                     help=f"dipisah koma; pilihan: {', '.join(VARIAN)} (bawaan reguler saja)")
     ap.add_argument("--uji", action="store_true")
