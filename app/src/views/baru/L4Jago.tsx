@@ -113,7 +113,7 @@ export default function L4Jago() {
               <div style={{ width: `${(tr.gantung / tr.n) * 100}%`, background: '#5B6486' }} />
               <div style={{ width: `${(tr.tak_masuk / tr.n) * 100}%`, background: '#262B3D' }} />
             </div>
-            <div className="bb-mono" style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--bb-redup)' }}>
+            <div className="bb-mono teks-11" style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--bb-redup)' }}>
               <span>menang {tr.menang}</span><span>kalah {tr.kalah}</span><span>gantung {tr.gantung}</span><span>tak masuk {tr.tak_masuk}</span>
             </div>
           </Blok>
@@ -139,7 +139,7 @@ export default function L4Jago() {
                   <div style={{ width: '100%', height: hKalah, background: 'var(--bb-turun)' }} />
                   <div style={{ width: '100%', height: hMenang, background: 'var(--bb-naik)' }} />
                 </div>
-                <span style={{ fontSize: 10, color: 'var(--bb-redup)', height: 12, whiteSpace: 'nowrap' }}>{label}</span>
+                <span className="teks-10" style={{ color: 'var(--bb-redup)', height: 12, whiteSpace: 'nowrap' }}>{label}</span>
               </div>
             )
           })}

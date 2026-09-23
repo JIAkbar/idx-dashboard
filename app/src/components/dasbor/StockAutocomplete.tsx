@@ -126,10 +126,10 @@ export function StockAutocomplete({ stocks, value, onChange, onSelect, placehold
               onMouseDown={() => selectTicker(s.ticker)}
             >
               <span className="tick" style={{ minWidth: 52, flexShrink: 0 }}>{s.ticker}</span>
-              <span className="satu-baris" style={{ flex: 1, minWidth: 0, color: 'var(--text3)', fontSize: 11 }}>{s.name}</span>
+              <span className="satu-baris teks-11" style={{ flex: 1, minWidth: 0, color: 'var(--text3)' }}>{s.name}</span>
               {tandai?.has(s.ticker) && (
-                <span style={{
-                  flexShrink: 0, fontFamily: 'var(--mono)', fontSize: 9, fontWeight: 700,
+                <span className="teks-9" style={{
+                  flexShrink: 0, fontFamily: 'var(--mono)', fontWeight: 700,
                   background: 'var(--amber-dim)', color: 'var(--amber)', padding: '1px 6px', borderRadius: 3,
                 }}>{labelTanda}</span>
               )}

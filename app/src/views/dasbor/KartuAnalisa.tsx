@@ -245,7 +245,7 @@ function KartuSatuEmiten({ kode }: { kode: string }) {
             {resAsc.map((lv, i) => <BarisLevel key={`r${i}`} tipe="R" urutan={resAsc.length - i} lv={lv} />)}
             <div className="lvl lvl-acuan"><span><b>harga</b> {fmtHarga(k.harga)}</span><em>penutupan</em></div>
             {k.support.map((lv, i) => <BarisLevel key={`s${i}`} tipe="S" urutan={i + 1} lv={lv} />)}
-            {resAsc.length === 0 && k.support.length === 0 && <p style={{ fontSize: 11, color: 'var(--text3)', margin: 0 }}>Belum ada klaster yang cukup jauh dari harga sekarang.</p>}
+            {resAsc.length === 0 && k.support.length === 0 && <p className="teks-11" style={{ color: 'var(--text3)', margin: 0 }}>Belum ada klaster yang cukup jauh dari harga sekarang.</p>}
             <div className="asal"><b>Asal:</b> klaster pivot fraktal (jendela ±5 candle) dari 500 candle terakhir, digabung bila jaraknya &lt;0,75 ATR. Jumlah anggota klaster = &quot;n sentuhan&quot; — berapa kali harga benar-benar berbalik di level itu.</div>
           </div>
 
@@ -852,7 +852,7 @@ export function KartuAnalisa() {
                 <>
                   <span className="pemisah-v" aria-hidden="true" />
                   <div className="grup-k grup-kanan">
-                    <span style={{ fontSize: 11, color: 'var(--text3)' }}>{indeks.emiten.length} emiten tersedia · diperbarui {indeks.diperbarui}</span>
+                    <span className="teks-11" style={{ color: 'var(--text3)' }}>{indeks.emiten.length} emiten tersedia · diperbarui {indeks.diperbarui}</span>
                   </div>
                 </>
               )}

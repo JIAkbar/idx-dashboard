@@ -300,11 +300,11 @@ export function PanelAliranAsing({ ticker }: { ticker: string }) {
       </div>
       <div className="panel-b">
         {loading && (
-          <p style={{ fontSize: 11, color: 'var(--text3)' }}><IkonMenu d={IKON_JAM} size={12} /> Memuat aliran asing…</p>
+          <p className="teks-11" style={{ color: 'var(--text3)' }}><IkonMenu d={IKON_JAM} size={12} /> Memuat aliran asing…</p>
         )}
 
         {!loading && !data && (
-          <p style={{ fontSize: 11, color: 'var(--text3)' }}>Data aliran asing untuk {ticker} belum tersedia.</p>
+          <p className="teks-11" style={{ color: 'var(--text3)' }}>Data aliran asing untuk {ticker} belum tersedia.</p>
         )}
 
         {!loading && data && (
@@ -337,7 +337,7 @@ export function PanelAliranAsing({ ticker }: { ticker: string }) {
                 <span className="sub lbl-rentang">Persentil ke-{Math.round(pct.persentil)} — {fNet(pct.netHariIni)} lembar</span>
               </div>
             ) : (
-              <p style={{ fontSize: 10, color: 'var(--text3)', marginTop: 10 }}>Riwayat belum cukup (min. 5 hari bursa) untuk konteks persentil.</p>
+              <p className="teks-10" style={{ color: 'var(--text3)', marginTop: 10 }}>Riwayat belum cukup (min. 5 hari bursa) untuk konteks persentil.</p>
             )}
 
             {stockbit.mulai && (
@@ -351,11 +351,11 @@ export function PanelAliranAsing({ ticker }: { ticker: string }) {
                 <canvas ref={canvasRef} />
               </div>
             ) : (
-              <p style={{ fontSize: 10, color: 'var(--text3)', marginTop: 10 }}>Riwayat belum cukup untuk grafik net kumulatif.</p>
+              <p className="teks-10" style={{ color: 'var(--text3)', marginTop: 10 }}>Riwayat belum cukup untuk grafik net kumulatif.</p>
             )}
 
             {metrik === 'rupiah' && titik.some((_, i) => jahitan(i)) && (
-              <p style={{ fontSize: 10, color: 'var(--text3)', marginTop: -8, marginBottom: 10 }}>
+              <p className="teks-10" style={{ color: 'var(--text3)', marginTop: -8, marginBottom: 10 }}>
                 Garis putus-putus (sebelum {tanggalPendek(data.mulai)}) cuma dari satu sumber — belum ada pembanding resmi bursa untuk periode itu.
               </p>
             )}
@@ -396,7 +396,7 @@ export function PanelAliranAsing({ ticker }: { ticker: string }) {
                 </tbody>
               </table>
             </div>
-            <p style={{ fontSize: 10, color: 'var(--text3)', marginTop: 6 }}>
+            <p className="teks-10" style={{ color: 'var(--text3)', marginTop: 6 }}>
               Lembar (beli/jual/net asing) dari sumber resmi bursa. Rupiah aliran asing sebenarnya (bukan perkiraan) —
               riwayat sebelum {tanggalPendek(data.mulai)} cuma dari satu sumber, belum ada pembanding bursa.
             </p>

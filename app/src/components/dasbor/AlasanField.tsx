@@ -22,7 +22,7 @@ export function AlasanField({ value, onChange, superadmin }: { value: string; on
         placeholder={superadmin ? 'Opsional — catatan untuk arsip.' : `Mengapa emiten ini menarik disetor hari ini? (minimal ${ALASAN_MIN} karakter)`}
         style={{ resize: 'vertical', fontFamily: 'inherit' }}
       />
-      <p className={`af-alasan-cnt${kurang ? ' kurang' : ''}`} style={{ margin: '4px 0 0', fontSize: 10.5 }}>
+      <p className={`af-alasan-cnt teks-10-5${kurang ? ' kurang' : ''}`} style={{ margin: '4px 0 0' }}>
         {panjang} karakter{!superadmin && ` (minimal ${ALASAN_MIN})`}
       </p>
     </div>

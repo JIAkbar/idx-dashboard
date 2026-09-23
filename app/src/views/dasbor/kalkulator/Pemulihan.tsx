@@ -209,7 +209,7 @@ export function Pemulihan() {
             </div>
           )}
 
-          <p className="muted" style={{ fontSize: 11, lineHeight: 1.7, margin: 0 }}>
+          <p className="muted teks-11" style={{ lineHeight: 1.7, margin: 0 }}>
             <IkonMenu d={IKON_PERINGATAN} size={12} />{' '}
             Perhitungan ini mengabaikan fee dan dividen. Fee membuat pemulihan sedikit
             lebih berat; dividen sedikit lebih ringan.

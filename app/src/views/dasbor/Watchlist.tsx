@@ -356,7 +356,7 @@ export function Watchlist() {
                 {/* Keterangan Akum/Dist dulu hanya di title (mati di layar sentuh,
                     temuan sapuan pengawas 27 Agu #12) — dicetak juga di sini supaya
                     terbaca tanpa hover. */}
-                <p className="muted" style={{ margin: '6px 0 0', fontSize: 11 }}>
+                <p className="muted teks-11" style={{ margin: '6px 0 0' }}>
                   Akum/Dist: <b>Akumulasi</b> harga &amp; AD naik bersama ·{' '}
                   <b>Distribusi</b> harga &amp; AD turun bersama ·{' '}
                   <b>Akumulasi diam</b> AD naik walau harga turun ·{' '}

@@ -20,15 +20,15 @@ export function PanelAktivitasTransaksi({ ticker, fd }: { ticker: string; fd: St
     <div className="panel" style={{ marginBottom: 12 }}>
       <div className="panel-h"><span className="lbl">Aktivitas Transaksi</span></div>
       <div className="panel-b">
-        <p style={{ fontSize: 11, color: 'var(--text3)', marginBottom: 10, lineHeight: 1.6 }}>
+        <p className="teks-11" style={{ color: 'var(--text3)', marginBottom: 10, lineHeight: 1.6 }}>
           Seberapa ramai emiten ini benar-benar diperdagangkan — angka valuasi apa pun tak berarti
           kalau sahamnya tak bisa dilepas.
         </p>
 
-        {loading && <p style={{ fontSize: 11, color: 'var(--text3)' }}>Memuat riwayat transaksi…</p>}
+        {loading && <p className="teks-11" style={{ color: 'var(--text3)' }}>Memuat riwayat transaksi…</p>}
 
         {!loading && !r && (
-          <p style={{ fontSize: 11, color: 'var(--text3)' }}>
+          <p className="teks-11" style={{ color: 'var(--text3)' }}>
             Riwayat transaksi harian emiten ini belum dipanen. Panen berjalan bertahap dan belum
             menjangkau seluruh emiten.
           </p>
@@ -70,7 +70,7 @@ export function PanelAktivitasTransaksi({ ticker, fd }: { ticker: string; fd: St
                 <span className="sub">lembar tercatat di bursa</span>
               </div>
             </div>
-            <p style={{ fontSize: 10, color: 'var(--text3)', marginTop: 8, lineHeight: 1.6 }}>
+            <p className="teks-10" style={{ color: 'var(--text3)', marginTop: 8, lineHeight: 1.6 }}>
               Volume, nilai, dan frekuensi hari bursa terakhir yang terpanen. Jumlah saham beredar adalah
               jumlah saham tercatat menurut bursa, bukan dari agregator.
             </p>

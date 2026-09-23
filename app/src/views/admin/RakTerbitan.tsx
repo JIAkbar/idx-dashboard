@@ -15,7 +15,7 @@ function PanelKosong({ ikon, pesan, petunjuk }: { ikon: string; pesan: string; p
     <div className="fd-empty" style={{ padding: '28px 16px' }}>
       <p style={{ marginBottom: 8 }}><IkonMenu d={ikon} size={26} /></p>
       <p>{pesan}</p>
-      {petunjuk && <p style={{ fontSize: 10, marginTop: 6 }}>{petunjuk}</p>}
+      {petunjuk && <p className="teks-10" style={{ marginTop: 6 }}>{petunjuk}</p>}
     </div>
   )
 }
@@ -85,7 +85,7 @@ export function RakTerbitan() {
           </span>
         </div>
         <div className="panel-b">
-          <p className="muted" style={{ marginTop: 0, fontSize: 11 }}>
+          <p className="muted teks-11" style={{ marginTop: 0 }}>
             Arsip edisi bulletin yang sudah dirakit dari unggahan.
           </p>
           {err && <p className="muted" style={{ color: 'var(--red)' }}>Gagal memuat daftar: {err}</p>}

@@ -143,7 +143,7 @@ export function Kabar() {
             <div className="fd-empty" style={{ padding: '28px 16px' }}>
               <p style={{ marginBottom: 8 }}><IkonMenu d={IKON_KOTAK_ARSIP} size={26} /></p>
               <p>Kabar belum tersedia.</p>
-              <p style={{ fontSize: 10, marginTop: 6 }}>
+              <p className="teks-10" style={{ marginTop: 6 }}>
                 Kabar belum pernah dipanen.
               </p>
             </div>

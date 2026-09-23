@@ -154,11 +154,11 @@ export function PanelLaporanKeuangan({ ticker }: { ticker: string }) {
       </div>
       <div className="panel-b">
         {loading && (
-          <p style={{ fontSize: 11, color: 'var(--text3)' }}><IkonMenu d={IKON_JAM} size={12} /> Memuat laporan keuangan…</p>
+          <p className="teks-11" style={{ color: 'var(--text3)' }}><IkonMenu d={IKON_JAM} size={12} /> Memuat laporan keuangan…</p>
         )}
 
         {!loading && !adaData && (
-          <p style={{ fontSize: 11, color: 'var(--text3)' }}>Belum ada data laporan keuangan untuk emiten ini.</p>
+          <p className="teks-11" style={{ color: 'var(--text3)' }}>Belum ada data laporan keuangan untuk emiten ini.</p>
         )}
 
         {!loading && adaData && (
@@ -168,7 +168,7 @@ export function PanelLaporanKeuangan({ ticker }: { ticker: string }) {
             )}
 
             {periods.length === 0 && (
-              <p style={{ fontSize: 11, color: 'var(--text3)' }}>Tidak ada periode {periodMode === 'kuartal' ? 'kuartalan' : 'tahunan'} yang tersedia.</p>
+              <p className="teks-11" style={{ color: 'var(--text3)' }}>Tidak ada periode {periodMode === 'kuartal' ? 'kuartalan' : 'tahunan'} yang tersedia.</p>
             )}
 
             {periods.length > 0 && (
@@ -223,7 +223,7 @@ export function PanelLaporanKeuangan({ ticker }: { ticker: string }) {
                     </tbody>
                   </table>
                 </div>
-                <p style={{ fontSize: 10, color: 'var(--text3)', marginTop: 6 }}>
+                <p className="teks-10" style={{ color: 'var(--text3)', marginTop: 6 }}>
                   B = IDX (laporan resmi bursa) · B·YTD = IDX kumulatif tahun berjalan, kuartal pembanding belum tersedia · Y = Yahoo Finance · † = ditambal dari data fundamental (bukan laporan periode ini) · <span style={{ color: 'var(--red)' }}>!</span> di kepala kolom = laporan resmi periode itu sendiri janggal, arahkan kursor untuk alasannya. Arahkan kursor ke angka untuk detail asalnya.
                 </p>
               </>

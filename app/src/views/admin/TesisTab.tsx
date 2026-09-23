@@ -102,7 +102,7 @@ export function TesisTab() {
                 </tr>
               </tbody>
             </table>
-            <p className="muted" style={{ margin: '6px 0 0', fontSize: 11 }}>
+            <p className="muted teks-11" style={{ margin: '6px 0 0' }}>
               Penyebut akurasi = tesis yang <b>horizonnya sudah lewat</b>. Yang masih berjalan tidak dihitung —
               penyetor yang rajin tak boleh dihukum oleh hari yang belum terjadi.
             </p>
@@ -142,7 +142,7 @@ export function TesisTab() {
                         {LABEL_STATUS[t.status]}
                       </span>
                       {t.ambigu && (
-                        <span className="muted" style={{ fontSize: 11, marginLeft: 6 }}
+                        <span className="muted teks-11" style={{ marginLeft: 6 }}
                               title="Target dan batas rugi tersentuh di hari yang sama; data harian tak menyimpan urutannya, jadi dihitung kalah.">
                           ambigu
                         </span>
@@ -161,7 +161,7 @@ export function TesisTab() {
               </tbody>
             </table>
           </div>
-          <p className="muted" style={{ padding: '0 14px 12px', fontSize: 11 }}>
+          <p className="muted teks-11" style={{ padding: '0 14px 12px' }}>
             Pembatalan hanya berlaku sampai bursa berikutnya buka, dan tesis yang dibatalkan tak dihitung apa
             pun. Sesudah itu ia jadi rekam jejak — menang atau kalah, keduanya tetap tercatat.
           </p>

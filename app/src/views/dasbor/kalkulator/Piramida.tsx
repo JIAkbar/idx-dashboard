@@ -114,7 +114,7 @@ export function Piramida() {
             <div className="v-note">Isi modal, risiko%, harga masuk, dan stop loss (harus di bawah harga masuk).</div>
           )}
 
-          <p className="muted" style={{ fontSize: 11, lineHeight: 1.7, margin: 0 }}>
+          <p className="muted teks-11" style={{ lineHeight: 1.7, margin: 0 }}>
             <IkonMenu d={IKON_PERINGATAN} size={12} /> Estimasi perencanaan, bukan saran investasi (Not Financial Advice).
           </p>
         </div>

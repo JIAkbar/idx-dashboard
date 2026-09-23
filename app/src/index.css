@@ -13,3 +13,13 @@ body {
   font-synthesis: none;
   text-rendering: optimizeLegibility;
 }
+
+/* #226: ukuran teks kecil yang dulu ditulis inline (style={{fontSize:N}}).
+   Global (bukan di bawah .lantai) karena dipakai juga di admin dan /baru.
+   !important meniru prioritas gaya inline yang digantikannya, supaya mode
+   Lama tampil persis sama; mode Baru menimpanya di tampilan-baru.css. */
+.teks-9 { font-size: 9px !important; }
+.teks-10 { font-size: 10px !important; }
+.teks-10-5 { font-size: 10.5px !important; }
+.teks-11 { font-size: 11px !important; }
+.teks-11-5 { font-size: 11.5px !important; }

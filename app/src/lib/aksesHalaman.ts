@@ -224,4 +224,7 @@ export const PETA_MENU_KUNCI: Record<string, string> = {
   // tingkat awal 'publik'. Sampai baris itu ada, fail-open (jaring pengaman
   // yang disengaja, bukan izin melewatkan pendaftaran).
   ipo: 'ipo',
+  // Rapor Uji (#221 opsi a, 23 Sep 2026) — baris `akses_halaman` DITAMBAHKAN
+  // BERSAMAAN (migrasi akses_halaman_rapor_uji), tingkat awal 'publik'.
+  'rapor-uji': 'rapor-uji',
 }

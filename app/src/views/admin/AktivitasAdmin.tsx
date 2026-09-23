@@ -285,7 +285,7 @@ export function AktivitasAdmin() {
           <Dropdown opsi={JENDELA_OPSI} nilai={jendela} ariaLabel="Jendela waktu" onGanti={setJendela} />
         </div>
         <div className="panel-b">
-          <p className="muted" style={{ marginTop: 0, fontSize: 11 }}>
+          <p className="muted teks-11" style={{ marginTop: 0 }}>
             IP dengan 5 atau lebih percobaan masuk gagal dalam jendela waktu di atas —
             penanda dini kemungkinan serangan tebak sandi (bruteforce).
           </p>
@@ -352,8 +352,8 @@ export function AktivitasAdmin() {
                     <tr key={j.id}>
                       <td>{waktuManusiawi(j.waktu)}</td>
                       <td><span className={`chip ${j.jenis === 'login_gagal' ? 'dn' : 'up'}`}>{LABEL_JENIS_JEJAK[j.jenis]}</span></td>
-                      <td className="muted" style={{ fontSize: 11 }}>{j.email || '—'}</td>
-                      <td className="muted" style={{ fontSize: 11 }}>{j.ip || '—'}</td>
+                      <td className="muted teks-11">{j.email || '—'}</td>
+                      <td className="muted teks-11">{j.ip || '—'}</td>
                       <td className="af-ua" title={j.user_agent || undefined}>{j.user_agent || '—'}</td>
                     </tr>
                   ))}

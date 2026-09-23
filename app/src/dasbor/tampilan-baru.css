@@ -79,3 +79,30 @@ html[data-tampilan='baru'] .lantai .panel-b { padding: 10px 18px 18px; }
   font-size: 10px; font-weight: 700; padding: 3px 7px; border: 1px solid currentColor; border-radius: 999px;
 }
 html[data-tampilan='baru'] .dasbor-rail-tampilan { color: var(--accent); }
+
+/* Teks kecil inline (fontSize 9-11.5px) dipindah jadi kelas .teks-* (#226) —
+   mode Baru menyamakan semuanya ke satu ukuran lebih terbaca, mode Lama tak
+   berubah (nilai aslinya tetap di lantai.css). */
+html[data-tampilan='baru'] :is(.teks-9,.teks-10,.teks-10-5,.teks-11,.teks-11-5){font-size:12.5px !important}
+
+/* ---- Tab antar-halaman (#227) ----
+   Komponen TabHalaman.tsx dirender di dasbor-main, SATU TINGKAT DI ATAS
+   .lantai (lihat catatan di TabHalaman.css) — makanya tanpa prefiks .lantai
+   di sini. Garis bawah emas (.tab-halaman-it.on) dari CSS dasar tetap
+   berlaku apa adanya — keputusan Johan: tab antar-halaman bergaris bawah,
+   BUKAN pil, jadi tak ada background/border-radius ditambahkan. Area klik
+   dihitung dari tinggi kotak + ::after{inset:-7px -2px} (+14px vertikal). */
+html[data-tampilan='baru'] .tab-halaman-it {
+  font-size: 14px;
+  line-height: 1.2;
+}
+@media (max-width: 860px) {
+  html[data-tampilan='baru'] .tab-halaman-it { padding: 9px 2px 10px; }
+}
+
+/* ---- Pil penyaring kanonis (.chip-t) di semua halaman ----
+   Mode Lama 32px (keputusan #170). Mode Baru: 36px laptop, 44px telepon. */
+html[data-tampilan='baru'] .lantai .chip-t { min-height: 36px; font-size: 13px; }
+@media (max-width: 860px) {
+  html[data-tampilan='baru'] .lantai .chip-t { min-height: 44px; }
+}

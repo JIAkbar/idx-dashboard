@@ -223,9 +223,9 @@ function KartuKabar() {
           Belum ada edisi baru sejak {daftar![0].tanggal_id} — {jedaHari} hari.
         </p>
       )}
-      {daftar === null && <p className="muted" style={{ fontSize: 11.5 }}>Memuat…</p>}
+      {daftar === null && <p className="muted teks-11-5">Memuat…</p>}
       {daftar !== null && edisi.length === 0 && (
-        <p className="muted" style={{ fontSize: 11.5 }}>Belum ada edisi terbit.</p>
+        <p className="muted teks-11-5">Belum ada edisi terbit.</p>
       )}
       <div className="brd-dua-kolom">
         {edisi.map((e) => (

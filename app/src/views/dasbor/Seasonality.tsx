@@ -171,7 +171,7 @@ export function Seasonality() {
             <div className="fd-empty" style={{ padding: '40px 20px' }}>
               <p style={{ marginBottom: 10 }}><IkonMenu d={IKON_KUNCI} size={26} /></p>
               <p style={{ fontSize: 14 }}>{alasanHari.judul}</p>
-              <p style={{ fontSize: 11.5, marginTop: 8, maxWidth: '52ch', margin: '8px auto 0', lineHeight: 1.7 }}>
+              <p className="teks-11-5" style={{ marginTop: 8, maxWidth: '52ch', margin: '8px auto 0', lineHeight: 1.7 }}>
                 {/* Tanpa angka presisi (audit 26 Agu 2.1): "8.848" membeku sejak
                     ditulis dan basi tiap hari bursa; angka pastinya dihitung
                     SeasonalityHarian dari datanya sendiri saat tab terbuka. */}
@@ -252,7 +252,7 @@ export function Seasonality() {
                 {k} <IkonMenu d={IKON_SILANG} size={9} />
               </button>
             ))}
-            {dipilih.length === 0 && <span className="muted" style={{ fontSize: 11.5 }}>Belum ada emiten dipilih.</span>}
+            {dipilih.length === 0 && <span className="muted teks-11-5">Belum ada emiten dipilih.</span>}
           </div>
         </div>
       </section>
@@ -260,7 +260,7 @@ export function Seasonality() {
       {ringkas.length === 0 && !galat && (
         <div className="fd-empty" style={{ padding: '48px 20px' }}>
           <p style={{ fontSize: 14 }}>Cari emiten di atas untuk melihat pola bulanannya.</p>
-          <p style={{ fontSize: 11.5, marginTop: 6, maxWidth: '58ch', margin: '6px auto 0', lineHeight: 1.7 }}>
+          <p className="teks-11-5" style={{ marginTop: 6, maxWidth: '58ch', margin: '6px auto 0', lineHeight: 1.7 }}>
             Bisa sampai {MAKS} emiten sekaligus untuk dibandingkan. Angka yang ditampilkan
             adalah peluang <b>tersusut</b> — 4 dari 5 tahun tidak dibaca sebagai 80%.
           </p>
@@ -403,7 +403,7 @@ function LaciBulan({ kode, nama, b, onTutup }: {
 
         <div className="sea-tahun-bar">
           <span className="lbl">Tiap tahun</span>
-          {b.nilai.length === 0 && <span className="muted" style={{ fontSize: 11.5 }}>Belum pernah tercatat.</span>}
+          {b.nilai.length === 0 && <span className="muted teks-11-5">Belum pernah tercatat.</span>}
           {b.nilai.map((v) => (
             <div key={v.tahun} className="sea-bar-baris" title={`${nama} ${BULAN[b.bulan - 1]} ${v.tahun}: ${v.persen}%`}>
               <span className="th">{v.tahun}</span>

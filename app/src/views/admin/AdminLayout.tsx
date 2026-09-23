@@ -329,7 +329,7 @@ export function AdminLayout() {
               summary — ambang jenjangmu <b>{statusTerkunci.ambang} hari kerja</b>. Membuka halaman saja
               tidak menghentikan hitungan itu; yang menghentikannya adalah setoran.
             </p>
-            <p className="muted" style={{ margin: 0, fontSize: 11.5, lineHeight: 1.6 }}>
+            <p className="muted teks-11-5" style={{ margin: 0, lineHeight: 1.6 }}>
               Seluruh setoran yang pernah kamu kirim <b>tetap tercatat</b> — jenjang, jumlah setoran
               disetujui, dan kreditmu di edisi tidak hilang karena pembekuan ini. Hubungi
               <b> superadmin</b> untuk mengaktifkan kembali; begitu aktif, tiap setoran memperpanjang
@@ -355,7 +355,7 @@ export function AdminLayout() {
             <IkonMenu d={IKON_JAM} size={13} /> Sudah <b>{bekuInfo.hari} hari kerja</b> tanpa setoran
             broker summary — akun dibekukan otomatis kalau mencapai <b>{bekuInfo.ambang} hari kerja</b>.
           </p>
-          <p className="muted" style={{ margin: 0, fontSize: 11.5, lineHeight: 1.55 }}>
+          <p className="muted teks-11-5" style={{ margin: 0, lineHeight: 1.55 }}>
             Sisa <b>{Math.max(0, bekuInfo.ambang - bekuInfo.hari)} hari kerja</b> lagi. Yang menghentikan
             hitungan ini adalah <b>setoran</b> itu sendiri — bukan menunggu kurasinya, dan bukan sekadar
             membuka halaman. Tiap setoran memperpanjang masa aktif {bekuInfo.ambang} hari kerja
@@ -395,7 +395,7 @@ export function AdminLayout() {
                     Masuk sebagai <b>{namaTampil(profil, session)}</b>.
                   </p>
                 )}
-                <p className="muted" style={{ margin: 0, fontSize: 11.5, lineHeight: 1.55 }}>
+                <p className="muted teks-11-5" style={{ margin: 0, lineHeight: 1.55 }}>
                   {/* Antrean #3: kalimat ini dulu menyuruh mengunggah tangkapan
                       layar broker. Jalur itu beku — sumber brokernya kini panen
                       mesin — jadi sambutannya ikut berganti. Kalimat yang
@@ -425,7 +425,7 @@ export function AdminLayout() {
           <p style={{ margin: 0, fontSize: 12.5 }}>
             Keluar dari akun <b>{namaTampil(profil, session)}</b>?
           </p>
-          <p className="muted" style={{ margin: 0, fontSize: 11.5 }}>
+          <p className="muted teks-11-5" style={{ margin: 0 }}>
             Kamu harus masuk lagi untuk mengelola unggahan &amp; edisi.
           </p>
           <div style={{ display: 'flex', gap: 8 }}>
@@ -510,7 +510,7 @@ export function AksesDitolak({ pesan }: { pesan: string }) {
     <div className="fd-empty" style={{ padding: '60px 20px' }}>
       <p style={{ marginBottom: 8 }}><IkonMenu d={IKON_PERINGATAN} size={26} /></p>
       <p>{pesan}</p>
-      <p style={{ fontSize: 11, marginTop: 6 }}><Link to="/admin">← Kembali ke Admin</Link></p>
+      <p className="teks-11" style={{ marginTop: 6 }}><Link to="/admin">← Kembali ke Admin</Link></p>
     </div>
   )
 }

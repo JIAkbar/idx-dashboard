@@ -98,7 +98,7 @@ export function ChangelogPanel() {
     <section className="panel">
       <div className="panel-h">
         <span className="lbl">{judulBerkas}</span>
-        <span className="muted" style={{ fontSize: 11 }}>
+        <span className="muted teks-11">
           {blok.filter((b) => b.versi).length} versi tercatat
         </span>
       </div>

@@ -318,7 +318,7 @@ export function BrokerSummaryV2() {
               ))}
               {TABS_NONAKTIF.map((t) => (
                 <button key={t.label} type="button" role="tab" className="tab" disabled title={t.judul} style={{ opacity: .5 }}>
-                  {t.label} <small style={{ fontSize: 9 }}>menyusul</small>
+                  {t.label} <small className="teks-9">menyusul</small>
                 </button>
               ))}
             </div>

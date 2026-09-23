@@ -256,7 +256,7 @@ export function LoginModal({ onClose }: { onClose: () => void }) {
               <input className="inp" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoFocus />
             </div>
             <KolomSandi label="Kata sandi" nilai={password} onGanti={setPassword} autoComplete="current-password" />
-            {error && <p style={{ margin: 0, fontSize: 11, color: 'var(--red)' }}>{error}</p>}
+            {error && <p className="teks-11" style={{ margin: 0, color: 'var(--red)' }}>{error}</p>}
             <button type="submit" className="btn-p" disabled={submitting}>
               {submitting ? 'Memproses…' : 'Masuk'}
             </button>

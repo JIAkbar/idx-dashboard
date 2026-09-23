@@ -133,7 +133,7 @@ export default function L5Watchlist() {
                 </div>
                 <span style={{ fontSize: 12.5, lineHeight: 1.4, color: 'var(--bb-redup)' }}>{b.narasi}</span>
                 {b.kartu && (
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px 12px', paddingTop: 10, borderTop: '1px solid var(--bb-garis)', fontSize: 11 }}>
+                  <div className="teks-11" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px 12px', paddingTop: 10, borderTop: '1px solid var(--bb-garis)' }}>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}><span className="bb-catatan">Beli terbesar</span><span className="bb-mono">{b.beliTerbesar ? `${b.beliTerbesar.kode} · ${rupiah(b.beliTerbesar.nilai)}` : 'tidak tersedia'}</span></div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}><span className="bb-catatan">Jual terbesar</span><span className="bb-mono">{b.jualTerbesar ? `${b.jualTerbesar.kode} · ${rupiah(b.jualTerbesar.nilai)}` : 'tidak tersedia'}</span></div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>

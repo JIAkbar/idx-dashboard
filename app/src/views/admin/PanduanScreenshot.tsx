@@ -166,7 +166,7 @@ export function PanduanScreenshot({ superadmin, defaultBuka, bedah = false }: { 
         <div className="panel-b">
           <AturanScreenshot bedah={bedah} />
 
-          {contoh === null && <p className="muted" style={{ fontSize: 11 }}>Memuat contoh…</p>}
+          {contoh === null && <p className="muted teks-11">Memuat contoh…</p>}
 
           {contoh && contoh.length > 0 && (
             <div className="af-galeri-grid">

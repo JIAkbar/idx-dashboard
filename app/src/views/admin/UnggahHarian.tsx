@@ -182,7 +182,7 @@ function PanelKosong({ ikon, pesan, petunjuk }: { ikon: string; pesan: string; p
     <div className="fd-empty" style={{ padding: '28px 16px' }}>
       <p style={{ marginBottom: 8 }}><IkonMenu d={ikon} size={26} /></p>
       <p>{pesan}</p>
-      {petunjuk && <p style={{ fontSize: 10, marginTop: 6 }}>{petunjuk}</p>}
+      {petunjuk && <p className="teks-10" style={{ marginTop: 6 }}>{petunjuk}</p>}
     </div>
   )
 }
@@ -420,7 +420,7 @@ function KartuJenjang({ profil, superadmin }: { profil: ProfilSaya; superadmin: 
             yang sama. Kolom tier di basis data tetap terisi (dihitung dari
             setorannya sendiri), cuma tidak berarti apa-apa untuk peran ini. */}
         <div>
-          <span className="muted" style={{ fontSize: 10 }}>JENJANG</span><br />
+          <span className="muted teks-10">JENJANG</span><br />
           {superadmin ? (
             <span className="muted" title="Superadmin tidak dibatasi jenjang maupun kuota harian">Tanpa jenjang</span>
           ) : (
@@ -431,19 +431,19 @@ function KartuJenjang({ profil, superadmin }: { profil: ProfilSaya; superadmin: 
           )}
         </div>
         <div>
-          <span className="muted" style={{ fontSize: 10 }}>KUOTA EFEKTIF</span><br />
+          <span className="muted teks-10">KUOTA EFEKTIF</span><br />
           <b>{superadmin ? Math.max(profil.kuota_harian, 50) : r.kuotaEfektif}/hari</b>
         </div>
         <div>
-          <span className="muted" style={{ fontSize: 10 }}>SETORAN DISETUJUI</span><br />
+          <span className="muted teks-10">SETORAN DISETUJUI</span><br />
           <b>{r.disetujui}</b>
         </div>
         <div>
-          <span className="muted" style={{ fontSize: 10 }}>AKURASI</span><br />
+          <span className="muted teks-10">AKURASI</span><br />
           <b>{r.akurasiPersen == null ? '—' : `${Math.round(r.akurasiPersen)}%`}</b>
         </div>
         <div>
-          <span className="muted" style={{ fontSize: 10 }}>MENUJU JENJANG BERIKUTNYA</span><br />
+          <span className="muted teks-10">MENUJU JENJANG BERIKUTNYA</span><br />
           {superadmin ? (
             <span className="muted">Jenjang tidak membatasi kuota superadmin.</span>
           ) : !r.berikutnya ? (
@@ -462,7 +462,7 @@ function KartuJenjang({ profil, superadmin }: { profil: ProfilSaya; superadmin: 
       </div>
       {!superadmin && r.akurasiSejak && (
         <div className="panel-b" style={{ paddingTop: 0 }}>
-          <p className="muted" style={{ margin: 0, fontSize: 11.5 }}>
+          <p className="muted teks-11-5" style={{ margin: 0 }}>
             Akurasimu dihitung ulang mulai {tanggalPendek(r.akurasiSejak)} — catatan sebelumnya tidak lagi
             membebani, dan setoran disetujuimu tetap dihitung penuh seperti biasa.
           </p>
@@ -1073,7 +1073,7 @@ export function UnggahHarian() {
           )}
           {sudah.length > 0 && (
             <>
-              <p className="muted" style={{ marginTop: 0, fontSize: 11 }}>
+              <p className="muted teks-11" style={{ marginTop: 0 }}>
                 {sudah.length} emiten terunggah untuk tanggal ini.
               </p>
               {pilih.size > 0 && (
@@ -1178,7 +1178,7 @@ export function UnggahHarian() {
                             />
                           </td>
                           <td><TautanEmiten kode={b.ticker} punya={emitenAda} className="tick" /></td>
-                          <td className="muted" style={{ fontSize: 11 }}>
+                          <td className="muted teks-11">
                             {milikOrangLain
                               ? <span className="af-lain" title="Nama penyetor hanya terlihat oleh dirinya sendiri dan superadmin.">Kontributor lain</span>
                               : namaTampil(b.setoranOb?.profil ?? b.setoranCh?.profil, null)}
@@ -1232,7 +1232,7 @@ export function UnggahHarian() {
                               // urusan penyetornya dengan kurator.
                               <span className="chip" title="Emiten ini sudah disetor kontributor lain untuk tanggal ini.">Sudah disetor</span>
                             ) : (
-                              <span className="muted" style={{ fontSize: 10.5 }} title="Unggahan sebelum Fase 3 — tanpa data kurasi.">—</span>
+                              <span className="muted teks-10-5" title="Unggahan sebelum Fase 3 — tanpa data kurasi.">—</span>
                             )}
                           </td>
                           <td className="af-aksi">
@@ -1277,7 +1277,7 @@ export function UnggahHarian() {
       <section className="panel">
         <div className="panel-h"><span className="lbl">Kotak masuk</span></div>
         <div className="panel-b">
-          <p className="muted" style={{ marginTop: 0, fontSize: 11 }}>
+          <p className="muted teks-11" style={{ marginTop: 0 }}>
             Antrean tanggal yang punya unggahan &amp; menunggu dirakit jadi edisi —
             klik kartu untuk pindah ke tanggal itu.
           </p>
@@ -1340,7 +1340,7 @@ export function UnggahHarian() {
           label={editBaris ? `Ubah unggahan — ${editBaris.ticker}` : 'Tambah emiten — unggah screenshot'}
           onClose={() => { if (!mengunggah) tutupForm() }}
         >
-          <p className="muted" style={{ margin: 0, fontSize: 11 }}>
+          <p className="muted teks-11" style={{ margin: 0 }}>
             {editBaris
               ? 'Biarkan kolom gambar kosong kalau yang diubah hanya alasannya. Kalau gambar diganti, berkas lama dihapus lebih dulu — bila unggahan barunya gagal, setor ulang emiten ini.'
               : 'Jenis berkas diperiksa saat dipilih; isi gambar diverifikasi saat transkripsi.'}
@@ -1363,7 +1363,7 @@ export function UnggahHarian() {
                   </span>
                 </p>
               ) : (
-                <p className="muted" style={{ margin: '4px 0 0', fontSize: 10.5 }}>
+                <p className="muted teks-10-5" style={{ margin: '4px 0 0' }}>
                   Ikuti kalender bursa — hanya hari bursa yang punya broker summary.
                   Sabtu, Minggu, dan libur bursa tidak diterima, begitu juga tanggal di masa depan.
                 </p>
@@ -1453,7 +1453,7 @@ export function UnggahHarian() {
 
       {gerbangPanduan && (
         <ModalKecil className="af-form-modal" label="Baca dulu — cara screenshot broker summary" onClose={() => setGerbangPanduan(false)}>
-          <p className="muted" style={{ margin: 0, fontSize: 11.5 }}>
+          <p className="muted teks-11-5" style={{ margin: 0 }}>
             Setoran pertamamu. Lima aturan ini yang paling sering membuat unggahan
             diminta revisi — sesudah ini kamu tidak akan ditanya lagi.
           </p>
@@ -1480,7 +1480,7 @@ export function UnggahHarian() {
           <p style={{ margin: 0, fontSize: 12.5 }}>
             Kamu sudah menyetor <b>{kuotaHabis.terpakai} dari {kuotaHabis.batas}</b> broker summary untuk {tanggalManusiawi(tanggal)}.
           </p>
-          <p className="muted" style={{ margin: 0, fontSize: 11.5 }}>
+          <p className="muted teks-11-5" style={{ margin: 0 }}>
             Jatah baru terbuka untuk tanggal berikutnya, atau minta tambahan ke superadmin.
           </p>
           <button type="button" className="btn-p" style={{ width: '100%' }} onClick={() => setKuotaHabis(null)}>Tutup</button>

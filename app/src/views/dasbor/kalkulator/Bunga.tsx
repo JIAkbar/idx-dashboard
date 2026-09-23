@@ -133,7 +133,7 @@ export function Bunga() {
             <button className="btn-p btn-p-kecil" onClick={simpan} style={{ alignSelf: 'flex-start' }}>Simpan ke riwayat</button>
           )}
 
-          <p className="muted" style={{ fontSize: 11, lineHeight: 1.7, margin: 0 }}>
+          <p className="muted teks-11" style={{ lineHeight: 1.7, margin: 0 }}>
             <IkonMenu d={IKON_PERINGATAN} size={12} /> Estimasi perencanaan dengan imbal & inflasi TETAP tiap tahun. Bukan saran investasi (Not Financial Advice).
           </p>
         </div>

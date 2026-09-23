@@ -45,6 +45,7 @@ const Seasonality = lazy(() => import('./views/dasbor/Seasonality').then((m) => 
 const GrafikEmiten = lazy(() => import('./views/dasbor/GrafikEmiten').then((m) => ({ default: m.GrafikEmiten })))
 const KartuAnalisa = lazy(() => import('./views/dasbor/KartuAnalisa').then((m) => ({ default: m.KartuAnalisa })))
 const WinratePapan = lazy(() => import('./views/dasbor/WinratePapan').then((m) => ({ default: m.WinratePapan })))
+const RaporUji = lazy(() => import('./views/dasbor/RaporUji').then((m) => ({ default: m.RaporUji })))
 const Screener = lazy(() => import('./views/dasbor/Screener').then((m) => ({ default: m.Screener })))
 const Metodologi = lazy(() => import('./views/dasbor/Metodologi').then((m) => ({ default: m.Metodologi })))
 const StatistikBerkala = lazy(() => import('./views/dasbor/StatistikBerkala').then((m) => ({ default: m.StatistikBerkala })))
@@ -252,6 +253,10 @@ function App() {
                   tingkatnya dari tab Akses, tanpa perlu menyentuh kode lagi. */}
               <Route path="/kartu" element={<PenjagaHalaman kunci="kta"><KartuAnalisa /></PenjagaHalaman>} />
               <Route path="/winrate" element={<PenjagaHalaman kunci="winrate"><WinratePapan /></PenjagaHalaman>} />
+              {/* Rapor Uji (#221 opsi a) — pilihan & sinyal PAPAN dinilai
+                  sesudah kejadian. Baris `akses_halaman` sudah dibuat
+                  bersamaan (migrasi akses_halaman_rapor_uji), tingkat publik. */}
+              <Route path="/rapor-uji" element={<PenjagaHalaman kunci="rapor-uji"><RaporUji /></PenjagaHalaman>} />
               {/* Screener lembar-kerja (B31). Kunci `screener` sudah terdaftar
                   di `PETA_MENU_KUNCI` DAN di tabel `akses_halaman` sejak
                   rutenya dibuat — aturan wajib yang lahir 21 Agu 2026 sesudah

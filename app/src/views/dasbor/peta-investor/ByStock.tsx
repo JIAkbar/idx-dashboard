@@ -69,7 +69,7 @@ export function ByStock({ data, onSelect }: ByStockProps) {
           onChange={(e) => setQuery(e.target.value)}
         />
         <Dropdown opsi={TYPE_OPTIONS} nilai={typeFilter} onGanti={(v) => setTypeFilter(v as typeof typeFilter)} ariaLabel="Filter tipe holder" />
-        <span className="num" style={{ fontSize: 11, color: 'var(--text3)', marginLeft: 'auto' }}>{rows.length} emiten</span>
+        <span className="num teks-11" style={{ color: 'var(--text3)', marginLeft: 'auto' }}>{rows.length} emiten</span>
       </div>
       <div className="pi-tbl-wrap" style={{ border: 'none', borderRadius: 0 }}>
           <table className="pi-tbl">
@@ -124,7 +124,7 @@ export function ByStock({ data, onSelect }: ByStockProps) {
           </table>
           {/* #91: sentinel = baris "Memuat…" — diamati IO; fallback tombol lama bila IO gagal. */}
           {!habis && !ioGagal && (
-            <div ref={sentinelRef} style={{ textAlign: 'center', padding: 8, fontSize: 11, color: 'var(--text3)' }}>
+            <div className="teks-11" ref={sentinelRef} style={{ textAlign: 'center', padding: 8, color: 'var(--text3)' }}>
               Memuat…
             </div>
           )}
@@ -140,7 +140,7 @@ export function ByStock({ data, onSelect }: ByStockProps) {
           keterangan kecil di bawah tabel + title di header kolom OTH %.
           Substansi tetap: holder tanpa `cls` (1.138 dari 6.728 baris) jatuh ke
           OTH, jadi "OTH" berarti "tipe tidak terisi", bukan "tipe lain". */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, fontSize: 10, color: 'var(--text3)', padding: '7px 14px', borderTop: '1px solid var(--line)' }}>
+      <div className="teks-10" style={{ display: 'flex', justifyContent: 'space-between', gap: 8, color: 'var(--text3)', padding: '7px 14px', borderTop: '1px solid var(--line)' }}>
         <span>Tipe holder diturunkan dari teks bebas KSEI · OTH = tipe tak terisi</span>
         {/* #91 */}
         <span className="num">{visible.length} dari {rows.length}</span>

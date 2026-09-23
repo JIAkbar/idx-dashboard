@@ -24,7 +24,7 @@ function MosBadge({ val, price }: { val: number | null; price: number }) {
   return (
     <>
       <span style={{ color, fontWeight: 700 }}>{mos >= 0 ? '+' : ''}{persen(mos, 1)}</span>{' '}
-      <span style={{ fontSize: 9, color }}>{label}</span>
+      <span className="teks-9" style={{ color }}>{label}</span>
     </>
   )
 }
@@ -51,10 +51,10 @@ function RelRow({ label, val, secMed, fmt, invert, cadangan = false }: {
   const isCheap = invert ? diff > AMBANG_REL : diff < -AMBANG_REL
   const isPricey = invert ? diff < -AMBANG_REL : diff > AMBANG_REL
   const badge = isCheap
-    ? <span style={{ color: 'var(--green)', fontSize: 9, fontWeight: 700 }}>▼ Murah</span>
+    ? <span className="teks-9" style={{ color: 'var(--green)', fontWeight: 700 }}>▼ Murah</span>
     : isPricey
-      ? <span style={{ color: 'var(--red)', fontSize: 9, fontWeight: 700 }}>▲ Mahal</span>
-      : <span style={{ color: 'var(--text3)', fontSize: 9 }}>≈ Wajar</span>
+      ? <span className="teks-9" style={{ color: 'var(--red)', fontWeight: 700 }}>▲ Mahal</span>
+      : <span className="teks-9" style={{ color: 'var(--text3)' }}>≈ Wajar</span>
   const diffColor = isCheap ? 'var(--green)' : isPricey ? 'var(--red)' : 'var(--text3)'
   return (
     <tr>
@@ -137,9 +137,9 @@ export function PanelValuasiInteraktif({ fd, rasio = null }: { fd: StockFundamen
 
   return (
     <div style={{ marginTop: 8 }}>
-      <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text)', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 8 }}>
+      <div className="teks-11" style={{ fontWeight: 700, color: 'var(--text)', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 8 }}>
         <IkonMenu d={IKON_PENGGARIS} size={16} /> Analisis Valuasi — Estimasi Fair Value
-        <span style={{ fontSize: 9, fontWeight: 400, background: 'var(--red-bg)', color: 'var(--red-txt)', padding: '2px 7px', borderRadius: 10 }}>Bukan rekomendasi investasi</span>
+        <span className="teks-9" style={{ fontWeight: 400, background: 'var(--red-bg)', color: 'var(--red-txt)', padding: '2px 7px', borderRadius: 10 }}>Bukan rekomendasi investasi</span>
       </div>
 
       {/* Re-layout #81: panel anak langsung .duo (multicol) — kolom fluid +
@@ -171,7 +171,7 @@ export function PanelValuasiInteraktif({ fd, rasio = null }: { fd: StockFundamen
               <span className="v-num num">
                 {classic != null ? rp(classic) : <span style={{ color: 'var(--text3)', fontSize: 13 }}>EPS atau BV = 0</span>}
               </span>
-              <span style={{ fontSize: 11 }}><MosBadge val={classic} price={price} /></span>
+              <span className="teks-11"><MosBadge val={classic} price={price} /></span>
               <span className="v-note">√(22.5 × EPS × BV)</span>
             </div>
             <div className="vcard">
@@ -179,7 +179,7 @@ export function PanelValuasiInteraktif({ fd, rasio = null }: { fd: StockFundamen
               <span className="v-num num">
                 {growth != null ? rp(growth) : <span style={{ color: 'var(--text3)', fontSize: 13 }}>EPS = 0</span>}
               </span>
-              <span style={{ fontSize: 11 }}><MosBadge val={growth} price={price} /></span>
+              <span className="teks-11"><MosBadge val={growth} price={price} /></span>
               <span className="v-note">EPS × (8.5 + 2g) × 4.4/Y</span>
             </div>
             <div className="vcard">
@@ -188,7 +188,7 @@ export function PanelValuasiInteraktif({ fd, rasio = null }: { fd: StockFundamen
               <span className="v-note">(Aset Lancar − Utang Total) / Saham · Nilai likuidasi konservatif</span>
             </div>
           </div>
-          <div style={{ fontSize: 9, color: 'var(--text3)', marginTop: 8 }}>
+          <div className="teks-9" style={{ color: 'var(--text3)', marginTop: 8 }}>
             <IkonMenu d={IKON_LAMPU} size={11} /> Ubah angka di atas untuk simulasi skenario berbeda. g default dari CAGR EPS historis
             {fd.eps_cagr_3y != null ? ` (3Y: ${persen(fd.eps_cagr_3y, 1)})` : fd.eps_cagr_2y != null ? ` (2Y: ${persen(fd.eps_cagr_2y, 1)})` : ''}.
             {' '}Y = yield SBN 10 tahun Indonesia (default 6,75%).
@@ -217,7 +217,7 @@ export function PanelValuasiInteraktif({ fd, rasio = null }: { fd: StockFundamen
           <div className="panel">
             <div className="panel-h">
               <span className="lbl"><IkonMenu d={IKON_GRAFIK_BATANG} size={13} /> Relative Valuation</span>
-              <span style={{ fontSize: 9, color: 'var(--text3)' }}>vs median sektor ({secCnt} saham)</span>
+              <span className="teks-9" style={{ color: 'var(--text3)' }}>vs median sektor ({secCnt} saham)</span>
             </div>
             <div className="panel-b" style={{ overflowX: 'auto' }}>
               <table style={{ minWidth: 260 }}>
@@ -232,7 +232,7 @@ export function PanelValuasiInteraktif({ fd, rasio = null }: { fd: StockFundamen
                   <RelRow label="ROE" val={roePilih.nilai} cadangan={roePilih.asal === 'cadangan-lama'} secMed={secROE != null ? secROE * 100 : null} fmt={(v) => pctPlain(v)} invert={true} />
                 </tbody>
               </table>
-              <p style={{ fontSize: 9, color: 'var(--text3)', marginTop: 6 }}>
+              <p className="teks-9" style={{ color: 'var(--text3)', marginTop: 6 }}>
                 Murah/Mahal/Wajar dari selisih terhadap median sektor, ambang ±{AMBANG_REL}%.
               </p>
             </div>
@@ -243,9 +243,9 @@ export function PanelValuasiInteraktif({ fd, rasio = null }: { fd: StockFundamen
           <div className="panel">
             <div className="panel-h"><span className="lbl"><IkonMenu d={IKON_UANG} size={13} /> DDM — Dividend Discount</span></div>
             <div className="panel-b">
-              <div style={{ fontSize: 10, color: 'var(--text3)', marginBottom: 8 }}>
+              <div className="teks-10" style={{ color: 'var(--text3)', marginBottom: 8 }}>
                 Gordon Growth Model · Required Return ={' '}
-                <input className="inp" type="number" inputMode="decimal" value={ddmR} min={5} max={25} step={0.5} style={{ width: 44, padding: '1px 3px', textAlign: 'center', fontSize: 10 }} onChange={(e) => setDdmR(num(e.target.value))} />%
+                <input className="inp teks-10" type="number" inputMode="decimal" value={ddmR} min={5} max={25} step={0.5} style={{ width: 44, padding: '1px 3px', textAlign: 'center' }} onChange={(e) => setDdmR(num(e.target.value))} />%
               </div>
               <table>
                 <tbody>
@@ -255,14 +255,14 @@ export function PanelValuasiInteraktif({ fd, rasio = null }: { fd: StockFundamen
                   <tr><td>MOS vs Harga</td><td className="r"><MosBadge val={ddmVal} price={price} /></td></tr>
                 </tbody>
               </table>
-              <div style={{ fontSize: 9, color: 'var(--text3)', marginTop: 6 }}><IkonMenu d={IKON_PERINGATAN} size={11} /> DDM hanya akurat untuk saham rutin dividen</div>
+              <div className="teks-9" style={{ color: 'var(--text3)', marginTop: 6 }}><IkonMenu d={IKON_PERINGATAN} size={11} /> DDM hanya akurat untuk saham rutin dividen</div>
             </div>
           </div>
         ) : (
           <div className="panel" style={{ opacity: 0.5 }}>
             <div className="panel-h"><span className="lbl"><IkonMenu d={IKON_UANG} size={13} /> DDM</span></div>
             <div className="panel-b">
-              <p style={{ fontSize: 11, color: 'var(--text3)' }}>Data dividen tidak cukup (minimal 2 tahun)</p>
+              <p className="teks-11" style={{ color: 'var(--text3)' }}>Data dividen tidak cukup (minimal 2 tahun)</p>
             </div>
           </div>
         )}

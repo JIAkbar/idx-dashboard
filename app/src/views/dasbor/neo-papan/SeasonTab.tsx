@@ -136,7 +136,7 @@ export function SeasonTab({ kode }: { kode: string }) {
           {runMusiman ? (
             <BadgeRapor run={runMusiman} />
           ) : (
-            <span className="muted" style={{ fontSize: 11 }}>
+            <span className="muted teks-11">
               Pola historis deskriptif — belum ada uji mundur beku untuk strategi musiman;
               badge win-rate menyusul lewat BT Papan.
             </span>

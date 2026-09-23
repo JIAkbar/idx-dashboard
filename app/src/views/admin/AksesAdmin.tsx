@@ -142,7 +142,7 @@ export function AksesAdmin() {
       <section className="panel">
         <div className="panel-h"><span className="lbl">Halaman &amp; jenjang minimum</span></div>
         <div className="panel-b">
-          <p className="muted" style={{ marginTop: 0, fontSize: 11 }}>
+          <p className="muted teks-11" style={{ marginTop: 0 }}>
             Superadmin selalu bisa membuka semua halaman apa pun setelan di bawah ini. Jenjang
             minimum cuma berlaku utk tingkat "Perlu login".
           </p>
@@ -173,8 +173,8 @@ export function AksesAdmin() {
                       <tr key={h.kunci}>
                         <td style={indukLabel ? { paddingLeft: 24 } : undefined}>
                           {indukLabel && <span className="muted" title={`Turunan dari ${indukLabel} — mengunci ${indukLabel} otomatis mengunci ini juga`}>↳ </span>}
-                          {h.label} <span className="muted" style={{ fontSize: 10 }}>({h.kunci})</span>
-                          {indukLabel && <span className="muted" style={{ fontSize: 10, display: 'block' }}>turunan dari {indukLabel}</span>}
+                          {h.label} <span className="muted teks-10">({h.kunci})</span>
+                          {indukLabel && <span className="muted teks-10" style={{ display: 'block' }}>turunan dari {indukLabel}</span>}
                         </td>
                         <td>
                           <Dropdown
@@ -269,7 +269,7 @@ export function AksesAdmin() {
                         <td>{k.profil?.alias || k.profil?.email || k.profil_id}</td>
                         <td>{halaman?.find((h) => h.kunci === k.kunci)?.label ?? k.kunci}</td>
                         <td><span className={`chip ${k.izinkan ? 'up' : 'dn'}`}>{k.izinkan ? 'Diizinkan' : 'Dicabut'}</span></td>
-                        <td className="muted" style={{ fontSize: 11 }}>{k.catatan || '—'}</td>
+                        <td className="muted teks-11">{k.catatan || '—'}</td>
                         <td className="af-aksi">
                           <button type="button" className="dd-btn merah" disabled={sedangProses} onClick={() => hapusBarisKhusus(k)}>
                             <IkonMenu d={IKON_TONG} size={12} /> Hapus

@@ -159,7 +159,7 @@ export default function L3SudutBroker() {
             <div key={b.tgl} title={`${b.tgl} ${b.dist ? 'Dist' : 'Acc'} top1 ${angka(b.tinggi, 0)}%`} style={{ flex: 1, height: `${Math.max(2, (b.tinggi / maksBar) * 100)}%`, background: b.dist ? 'var(--bb-turun)' : 'var(--bb-naik)', borderRadius: '3px 3px 0 0' }} />
           ))}
         </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', fontFamily: 'var(--bb-mono)', fontSize: 11, color: 'var(--bb-redup)' }}>
+        <div className="teks-11" style={{ display: 'flex', justifyContent: 'space-between', fontFamily: 'var(--bb-mono)', color: 'var(--bb-redup)' }}>
           <span>{n20[0].slice(5)}</span><span>{n20[n20.length - 1].slice(5)}</span>
         </div>
       </Blok>
@@ -201,7 +201,7 @@ export default function L3SudutBroker() {
                 <div style={{ display: 'grid', gridTemplateColumns: '40px minmax(0,1fr) 30px 84px', columnGap: 8, alignItems: 'center', fontSize: 13 }}>
                   <span className="bb-mono" style={{ fontWeight: 600 }}>{k.broker}</span>
                   <span className="bb-bb-rel"><span className="bb-bb-isi emas" style={{ width: `${Math.min(100, (k.hari / maksKa) * 100)}%` }} /></span>
-                  <span className="bb-mono" style={{ fontSize: 11, color: 'var(--bb-redup)', textAlign: 'right' }}>{k.hari}h</span>
+                  <span className="bb-mono teks-11" style={{ color: 'var(--bb-redup)', textAlign: 'right' }}>{k.hari}h</span>
                   <span className={`bb-mono ${k.net < 0 ? 'turun' : 'naik'}`} style={{ textAlign: 'right' }}>{k.net < 0 ? '−' : '+'}{rupiah(Math.abs(k.net)).replace('Rp ', '')}</span>
                 </div>
               </Fragment>

@@ -161,8 +161,8 @@ export default function L3Berkas() {
               <div style={{ position: 'absolute', left: 0, right: 0, top: 11, height: 2, background: 'var(--bb-garis)' }} />
               <div style={{ position: 'absolute', left: `${posIhsg}%`, top: 6, width: 12, height: 12, borderRadius: 999, background: 'var(--bb-redup)' }} />
               <div style={{ position: 'absolute', left: `${posPer}%`, top: 4, width: 16, height: 16, borderRadius: 999, background: 'var(--bb-emas)' }} />
-              <span className="bb-mono" style={{ position: 'absolute', left: 0, top: -2, fontSize: 11, color: 'var(--bb-redup)' }}>0×</span>
-              <span className="bb-mono" style={{ position: 'absolute', right: 0, top: -2, fontSize: 11, color: 'var(--bb-redup)' }}>{skalaMax}×</span>
+              <span className="bb-mono teks-11" style={{ position: 'absolute', left: 0, top: -2, color: 'var(--bb-redup)' }}>0×</span>
+              <span className="bb-mono teks-11" style={{ position: 'absolute', right: 0, top: -2, color: 'var(--bb-redup)' }}>{skalaMax}×</span>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gap: 16, paddingTop: 12, borderTop: '1px solid var(--bb-garis)' }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}><span className="bb-label">PBV</span><span className="bb-mono" style={{ fontSize: 18 }}>{baris[1].utama != null ? `${angka(baris[1].utama, 2)}×` : '–'}</span></div>
@@ -213,7 +213,7 @@ export default function L3Berkas() {
                       <div style={{ width: '100%', height: 8, background: 'var(--bb-garis)', borderRadius: 3, overflow: 'hidden' }}>
                         {v != null && <div style={{ width: `${Math.max(2, (Math.abs(v) / maks) * 100)}%`, height: 8, background: 'var(--bb-biru)' }} />}
                       </div>
-                      <span className="bb-mono" style={{ fontSize: 11, whiteSpace: 'nowrap' }}>{v != null ? `${m.label} ${rupiah(v)}` : 'tidak tersedia'}</span>
+                      <span className="bb-mono teks-11" style={{ whiteSpace: 'nowrap' }}>{v != null ? `${m.label} ${rupiah(v)}` : 'tidak tersedia'}</span>
                     </div>
                   ))}
                 </div>

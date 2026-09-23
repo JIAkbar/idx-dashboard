@@ -19,7 +19,7 @@ export function PanelKhasPapan({ fd, rasio = null }: { fd: StockFundamental; ras
     <div className="panel" style={{ marginBottom: 12 }}>
       <div className="panel-h"><span className="lbl">Panel Khas PAPAN</span></div>
       <div className="panel-b">
-        <p style={{ fontSize: 11, color: 'var(--text3)', marginBottom: 10, lineHeight: 1.6 }}>
+        <p className="teks-11" style={{ color: 'var(--text3)', marginBottom: 10, lineHeight: 1.6 }}>
           Ruas yang tak dipunyai dasbor pembanding. Yang tak bisa dihitung dari data yang ada disebut
           apa adanya — tak pernah ditambal taksiran.
         </p>
@@ -36,7 +36,7 @@ export function PanelKhasPapan({ fd, rasio = null }: { fd: StockFundamental; ras
                     {b.nilai}
                     {b.cadangan && <sup title={JUDUL_ASAL['cadangan-lama']} style={{ color: 'var(--text3)' }}>c</sup>}
                   </td>
-                  <td style={{ fontSize: 10.5, lineHeight: 1.55, color: 'var(--text2)' }}>{b.baca ?? '—'}</td>
+                  <td className="teks-10-5" style={{ lineHeight: 1.55, color: 'var(--text2)' }}>{b.baca ?? '—'}</td>
                 </tr>
               ))}
             </tbody>

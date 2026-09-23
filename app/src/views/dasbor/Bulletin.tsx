@@ -95,7 +95,7 @@ function BlokHasilH5({ t }: { t: TinjauanTerbitan }) {
                 minimumFractionDigits: 2, maximumFractionDigits: 2,
               })}%`}
             </td>
-            <td style={{ fontSize: 11, color: 'var(--text2)' }}>
+            <td className="teks-11" style={{ color: 'var(--text2)' }}>
               {t.urutan_tersentuh.length === 0
                 ? 'belum ada'
                 : t.urutan_tersentuh.map((x) => `${x.level.toLocaleString('id-ID')} (${x.tanggal})`).join(' → ')}
@@ -106,7 +106,7 @@ function BlokHasilH5({ t }: { t: TinjauanTerbitan }) {
       {/* Level yang TIDAK tersentuh ikut disebut: tanpa itu tabelnya cuma
           bercerita soal yang kena, dan klaim terbitannya jadi terlihat
           lebih sering benar daripada sebenarnya. */}
-      <p className="muted" style={{ margin: '6px 0 0', fontSize: 11 }}>
+      <p className="muted teks-11" style={{ margin: '6px 0 0' }}>
         Level bullish di terbitan: {t.level_bull.length === 0 ? '—' : t.level_bull.map((x) => x.toLocaleString('id-ID')).join(' · ')}
         {' '}· batas invalidasi: {t.level_invalid.length === 0 ? '—' : t.level_invalid.map((x) => x.toLocaleString('id-ID')).join(' · ')}
       </p>
@@ -171,7 +171,7 @@ function TabelProbabilitasTerkunci({ alasan }: { alasan: { judul: string; kalima
             {['AAAA', 'BBBB', 'CCCC'].map((t) => (
               <tr key={t}>
                 <td><span className="tick">{t}</span></td>
-                <td style={{ fontSize: 11 }}>bullish</td>
+                <td className="teks-11">bullish</td>
                 <td className="r num">1.234</td>
                 <td className="r num up">+1,2%</td>
                 <td className="r num" style={{ fontWeight: 700 }}>72</td>
@@ -508,25 +508,25 @@ export function Bulletin() {
                                   {e.analisa.map((a) => (
                                     <tr key={a.ticker}>
                                       <td><Link className="tick" to={`/grafik?kode=${a.ticker}`}>{a.ticker}</Link></td>
-                                      <td style={{ fontSize: 11, color: 'var(--text2)' }}>{a.label}</td>
+                                      <td className="teks-11" style={{ color: 'var(--text2)' }}>{a.label}</td>
                                       <td className="r num">{a.close.toLocaleString('id-ID')}</td>
                                       <td className={`r num ${a.pct >= 0 ? 'up' : 'dn'}`}>{fmtPct(a.pct)}</td>
                                       <td className="r num" style={{ fontWeight: 700 }}>{a.skor}</td>
                                       <td className="r num">
                                         {a.p5 == null ? '—' : `${Math.round(a.p5 * 100)}%`}
                                         {a.pR1 != null && (
-                                          <div style={{ fontSize: 10, fontWeight: 400, color: 'var(--text3)' }}>
+                                          <div className="teks-10" style={{ fontWeight: 400, color: 'var(--text3)' }}>
                                             R1 {Math.round(a.pR1 * 100)}%
                                           </div>
                                         )}
                                       </td>
                                       <td className="r num">{a.p3 == null ? '—' : `${Math.round(a.p3 * 100)}%`}</td>
-                                      <td className="r num" style={{ color: 'var(--text3)', fontSize: 11 }}>
+                                      <td className="r num teks-11" style={{ color: 'var(--text3)' }}>
                                         {a.n == null ? '—' : a.n}
                                         {a.cocok != null && a.cocok < (a.total_fitur ?? 4) &&
                                           ` · ${a.cocok}/${a.total_fitur ?? 4}`}
                                       </td>
-                                      <td style={{ fontSize: 11 }}>
+                                      <td className="teks-11">
                                         {a.vv_z == null ? '—' : (
                                           <>
                                             <span className="num">z{a.vv_z >= 0 ? '+' : ''}{a.vv_z.toFixed(1)}</span>
@@ -547,8 +547,9 @@ export function Bulletin() {
                                 </tbody>
                               </table>
                               <div
+                                className="teks-10-5"
                                 style={{
-                                  margin: '10px 2px 0', padding: '8px 12px', fontSize: 10.5, lineHeight: 1.6,
+                                  margin: '10px 2px 0', padding: '8px 12px', lineHeight: 1.6,
                                   color: 'var(--text2)', background: 'var(--bg3)',
                                   borderLeft: '3px solid var(--amber)', borderRadius: 4 }}
                               >

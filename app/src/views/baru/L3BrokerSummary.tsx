@@ -41,7 +41,7 @@ function BarisBroker({ kode, nama, jenis, lebar, nilai, hargaR, warna }: {
       <span className="bb-bb-rel"><span className={`bb-bb-isi ${warna}`} style={{ width: `${Math.max(0, Math.min(100, lebar))}%` }} /></span>
       <span style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 1 }}>
         <span className="bb-bb-nilai">{nilai}</span>
-        <span className="bb-mono" style={{ fontSize: 10, color: 'var(--bb-redup)' }}>{hargaR}</span>
+        <span className="bb-mono teks-10" style={{ color: 'var(--bb-redup)' }}>{hargaR}</span>
       </span>
     </div>
   )

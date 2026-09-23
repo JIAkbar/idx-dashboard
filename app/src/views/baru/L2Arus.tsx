@@ -108,7 +108,7 @@ export default function L2Arus() {
               <div style={{ display: 'flex', width: '100%', height: 26, borderRadius: 6, overflow: 'hidden' }}>
                 <div className="bb-mono" style={{ width: `${rataLokal}%`, background: 'var(--bb-redup)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, color: 'var(--bb-latar)', fontWeight: 600 }}>{angka(rataLokal, 1)}%</div>
                 <div className="bb-mono" style={{ width: `${rataAsing}%`, background: 'var(--bb-biru)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, color: 'var(--bb-latar)', fontWeight: 600 }}>{angka(rataAsing, 1)}%</div>
-                <div className="bb-mono" style={{ width: `${rataLain}%`, background: 'var(--bb-garis)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, color: 'var(--bb-redup)' }}>{angka(rataLain, 1)}%</div>
+                <div className="bb-mono teks-11" style={{ width: `${rataLain}%`, background: 'var(--bb-garis)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--bb-redup)' }}>{angka(rataLain, 1)}%</div>
               </div>
               <div style={{ display: 'flex', gap: 16, fontSize: 12, color: 'var(--bb-redup)', flexWrap: 'wrap' }}>
                 <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><span style={{ width: 10, height: 10, borderRadius: 2, background: 'var(--bb-redup)', display: 'inline-block' }} />Lokal</span>

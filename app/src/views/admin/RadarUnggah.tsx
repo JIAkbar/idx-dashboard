@@ -137,7 +137,7 @@ export function RadarUnggah() {
     <section className="panel">
       <div className="panel-h"><span className="lbl">Radar WDWL — unggah sumber</span></div>
       <div className="panel-b">
-        <p className="muted" style={{ marginTop: 0, fontSize: 11 }}>
+        <p className="muted teks-11" style={{ marginTop: 0 }}>
           Screenshot tabel WD Watch List (PNG) dan PDF chart RBU per tanggal edisi.
           Berkas ditranskripsi jadi arsip halaman Radar di luar aplikasi ini.
         </p>
@@ -170,7 +170,7 @@ export function RadarUnggah() {
             {mengunggah ? 'Mengunggah…' : 'Unggah'}
           </button>
           {status && (
-            <p className={status.ok ? 'muted' : 'af-err'} style={{ margin: 0, fontSize: 11.5 }}>
+            <p className={`teks-11-5 ${status.ok ? 'muted' : 'af-err'}`} style={{ margin: 0 }}>
               {status.ok && <IkonMenu d={IKON_CENTANG} size={12} />} {status.pesan}
             </p>
           )}

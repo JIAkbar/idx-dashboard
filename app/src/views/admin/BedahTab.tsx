@@ -14,7 +14,7 @@ export function BedahTab() {
     <section className="panel">
       <div className="panel-h"><span className="lbl">Deep Dive — unggah sumber</span></div>
       <div className="panel-b">
-        <p className="muted" style={{ margin: 0, fontSize: 11 }}>
+        <p className="muted teks-11" style={{ margin: 0 }}>
           Hak akses analisa single-saham diberikan superadmin.
         </p>
       </div>

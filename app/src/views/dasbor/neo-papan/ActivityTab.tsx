@@ -176,7 +176,7 @@ export function ActivityTab() {
         <button type="button" className={'chip-t' + (jenis === 'papan' ? ' on' : '')} onClick={() => setJenis('papan')}>Papan pencatatan</button>
         <InfoIndikator judul="Indikator Sector/Papan Activity" item={INFO_ACTIVITY} />
         {jenis === 'papan' && uni && (
-          <span className="muted" style={{ fontSize: 11 }}>
+          <span className="muted teks-11">
             sampel {uni.perPapanJumlah} emiten terlikuid per papan · anggota sebenarnya:{' '}
             {Object.entries(uni.papanJumlah).sort((a, b) => b[1] - a[1]).map(([p, n]) => `${p} ${n}`).join(' · ')}
           </span>

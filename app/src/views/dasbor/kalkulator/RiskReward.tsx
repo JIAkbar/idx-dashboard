@@ -130,7 +130,7 @@ export function RiskReward() {
                   <div className="rr-bar-mid" />
                   <div className="rr-bar-tp" style={{ width: `${result.tpPct}%` }} />
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 9, color: 'var(--text3)', marginBottom: 10 }}>
+                <div className="teks-9" style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text3)', marginBottom: 10 }}>
                   <span>Stop Loss</span>
                   <span>Entry</span>
                   <span>Target</span>

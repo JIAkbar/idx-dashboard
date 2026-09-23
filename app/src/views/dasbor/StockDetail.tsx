@@ -110,7 +110,7 @@ function PanelPeringkatPeer({ rank }: { rank: TambahanKeystats['rank'] }) {
     <div className="panel">
       <div className="panel-h"><span className="lbl">Peringkat Antar Emiten IDX</span></div>
       <div className="panel-b">
-        <p style={{ fontSize: 10.5, color: 'var(--text3)', marginBottom: 8, lineHeight: 1.55 }}>
+        <p className="teks-10-5" style={{ color: 'var(--text3)', marginBottom: 8, lineHeight: 1.55 }}>
           Persentil dibanding seluruh emiten tercatat — 100% berarti paling tinggi di deretnya.
         </p>
         <table>
@@ -142,7 +142,7 @@ function PanelProfilPerusahaan({ profil }: { profil: TambahanKeystats['profil'] 
       <div className="panel-h"><span className="lbl">Profil Perusahaan</span></div>
       <div className="panel-b">
         {latarBelakang && (
-          <p style={{ fontSize: 11, color: 'var(--text2)', marginBottom: 10, lineHeight: 1.6, whiteSpace: 'pre-line' }}>
+          <p className="teks-11" style={{ color: 'var(--text2)', marginBottom: 10, lineHeight: 1.6, whiteSpace: 'pre-line' }}>
             {latarBelakang}
           </p>
         )}
@@ -150,7 +150,7 @@ function PanelProfilPerusahaan({ profil }: { profil: TambahanKeystats['profil'] 
           {(alamat || telepon || email || website) && (
             <div className="panel">
               <div className="panel-h"><span className="lbl">Kantor Pusat</span></div>
-              <div className="panel-b" style={{ fontSize: 11, color: 'var(--text2)', lineHeight: 1.7 }}>
+              <div className="panel-b teks-11" style={{ color: 'var(--text2)', lineHeight: 1.7 }}>
                 {alamat && <div style={{ whiteSpace: 'pre-line' }}>{alamat}</div>}
                 {telepon && <div>Telepon: {telepon}</div>}
                 {email && <div>Email: {email}</div>}
@@ -161,7 +161,7 @@ function PanelProfilPerusahaan({ profil }: { profil: TambahanKeystats['profil'] 
           {sekretaris && (
             <div className="panel">
               <div className="panel-h"><span className="lbl">Sekretaris Perusahaan</span></div>
-              <div className="panel-b" style={{ fontSize: 11, color: 'var(--text2)', lineHeight: 1.7 }}>
+              <div className="panel-b teks-11" style={{ color: 'var(--text2)', lineHeight: 1.7 }}>
                 <div>{sekretaris.nama}</div>
                 {sekretaris.telepon && <div>Telepon: {sekretaris.telepon}</div>}
                 {sekretaris.email && <div>Email: {sekretaris.email}</div>}
@@ -327,7 +327,7 @@ export function StockDetail() {
               "terakhir diperbarui 1 September". Keduanya memang ada di
               berkasnya dan iramanya memang berbeda: harga tiap hari bursa,
               laporan keuangan sebulan sekali. */}
-          <p style={{ fontSize: 10, color: 'var(--text3)', lineHeight: 1.6 }}>
+          <p className="teks-10" style={{ color: 'var(--text3)', lineHeight: 1.6 }}>
             Data delay, bukan harga real-time.{umurData}
           </p>
         </div>
@@ -373,7 +373,7 @@ export function StockDetail() {
         <div className="fd-empty">
           <p><IkonMenu d={IKON_PERINGATAN} size={28} /></p>
           <p>Data <strong>{activeTicker}</strong> tidak ditemukan.</p>
-          <p style={{ fontSize: 10, marginTop: 8 }}>Pastikan kode saham benar (contoh: BBCA, ASII, TLKM)</p>
+          <p className="teks-10" style={{ marginTop: 8 }}>Pastikan kode saham benar (contoh: BBCA, ASII, TLKM)</p>
         </div>
       )}
 

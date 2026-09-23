@@ -1,0 +1,29 @@
+/* Rapor Uji — hanya PENEMPATAN dan lebar (aturan #170: bentuk kendali dan
+   tabel milik lantai.css/.grid3/.tbl/.chip-t/.board-tbl-wrap). Kelas
+   ber-awalan .rpu- tak mendefinisikan bentuk baru. */
+
+.lantai.hal-rapor-uji .rpu-alat { align-items: center; }
+.lantai.hal-rapor-uji .rpu-kartu { margin-top: var(--j2, 16px); }
+
+.lantai.hal-rapor-uji .rpu-pf {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  padding-bottom: 8px;
+  margin-bottom: 8px;
+  border-bottom: 1px solid var(--line);
+}
+.lantai.hal-rapor-uji .rpu-pf .t-name { color: var(--text2); font-size: 12.5px; }
+.lantai.hal-rapor-uji .rpu-pf .t-val { font-size: 22px; }
+
+.lantai.hal-rapor-uji .rpu-tbl-mini { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+.lantai.hal-rapor-uji .rpu-tbl-mini td { padding: 3px 0; }
+.lantai.hal-rapor-uji .rpu-tbl-mini td:first-child { color: var(--text2); }
+
+.lantai.hal-rapor-uji .rpu-vonis { margin: 10px 0 0; font-size: 12.5px; line-height: 1.5; color: var(--text2); }
+
+.lantai.hal-rapor-uji .rpu-daftar { margin: 0; padding-left: 18px; font-size: 12.5px; line-height: 1.55; }
+.lantai.hal-rapor-uji .rpu-daftar li { margin-bottom: 5px; }
+
+.lantai.hal-rapor-uji .rpu-metode { margin: var(--j2, 16px) 0 0; font-size: 12px; line-height: 1.55; max-width: 92ch; }

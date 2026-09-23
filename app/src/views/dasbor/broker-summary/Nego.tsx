@@ -105,7 +105,7 @@ export function Nego({ tanggalAktif, rentang }: NegoProps) {
       <div className="chart-wrap chart-tinggi">
         <canvas ref={canvasRef} />
       </div>
-      <div style={{ marginTop: 8, fontSize: 11, color: 'var(--text3)' }}>
+      <div className="teks-11" style={{ marginTop: 8, color: 'var(--text3)' }}>
         * Agregat papan negosiasi (NG) dari IDX daily statistics — rincian transaksi nego per saham tidak tersedia dari sumber saat ini.
       </div>
     </>

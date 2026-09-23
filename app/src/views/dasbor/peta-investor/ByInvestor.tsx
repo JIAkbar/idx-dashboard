@@ -52,7 +52,7 @@ export function ByInvestor({ investorMap, onSelect }: ByInvestorProps) {
           onChange={(e) => setQuery(e.target.value)}
         />
         <Dropdown opsi={TYPE_OPTIONS} nilai={typeFilter} onGanti={(v) => setTypeFilter(v as typeof typeFilter)} ariaLabel="Filter tipe investor" />
-        <span className="num pi-inv-n" style={{ fontSize: 11, color: 'var(--text3)', marginLeft: 'auto' }}>{rows.length} investor</span>
+        <span className="num pi-inv-n teks-11" style={{ color: 'var(--text3)', marginLeft: 'auto' }}>{rows.length} investor</span>
       </div>
       <div className="pi-tbl-wrap" style={{ border: 'none', borderRadius: 0 }}>
           <table className="pi-tbl">
@@ -94,7 +94,7 @@ export function ByInvestor({ investorMap, onSelect }: ByInvestorProps) {
           </table>
           {/* #91: sentinel = baris "Memuat…" — diamati IO; fallback tombol lama bila IO gagal. */}
           {!habis && !ioGagal && (
-            <div ref={sentinelRef} style={{ textAlign: 'center', padding: 8, fontSize: 11, color: 'var(--text3)' }}>
+            <div className="teks-11" ref={sentinelRef} style={{ textAlign: 'center', padding: 8, color: 'var(--text3)' }}>
               Memuat…
             </div>
           )}
@@ -107,7 +107,7 @@ export function ByInvestor({ investorMap, onSelect }: ByInvestorProps) {
           )}
       </div>
       {/* #91: kaki tabel — info jumlah baris terpakai. */}
-      <div style={{ textAlign: 'right', fontSize: 10, color: 'var(--text3)', padding: '7px 14px', borderTop: '1px solid var(--line)' }}>
+      <div className="teks-10" style={{ textAlign: 'right', color: 'var(--text3)', padding: '7px 14px', borderTop: '1px solid var(--line)' }}>
         <span className="num">{visible.length} dari {rows.length}</span>
       </div>
     </div>

@@ -67,15 +67,15 @@ export function Forum() {
           />
         </span>
 
-        {galat && <p className="muted" style={{ fontSize: 11.5 }}>{galat}</p>}
-        {!galat && ruang === null && <p className="muted" style={{ fontSize: 11.5 }}>Memuat ruang…</p>}
+        {galat && <p className="muted teks-11-5">{galat}</p>}
+        {!galat && ruang === null && <p className="muted teks-11-5">Memuat ruang…</p>}
 
         {ruang !== null && (
           <>
             {topik.length > 0 && <BlokRel judul="Topik" daftar={topik} />}
             {emiten.length > 0 && <BlokRel judul="Ruang Emiten" daftar={emiten} />}
             {tersaring.length === 0 && (
-              <p className="muted" style={{ fontSize: 11.5 }}>Tidak ada ruang yang cocok.</p>
+              <p className="muted teks-11-5">Tidak ada ruang yang cocok.</p>
             )}
           </>
         )}
@@ -122,7 +122,7 @@ export function ForumSambutan() {
   return (
     <div className="fd-empty" style={{ padding: '56px 20px' }}>
       <p style={{ fontSize: 14 }}>Pilih ruang di sebelah kiri untuk mulai membaca.</p>
-      <p style={{ fontSize: 11.5, marginTop: 6 }}>
+      <p className="teks-11-5" style={{ marginTop: 6 }}>
         Ruang emiten juga terbuka dari tag <b>$KODE</b> di dalam pesan mana pun.
       </p>
     </div>

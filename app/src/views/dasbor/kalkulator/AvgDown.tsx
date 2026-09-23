@@ -229,7 +229,7 @@ export function AvgDown() {
                   {fetching ? <IkonMenu d={IKON_JAM} size={13} /> : <><IkonMenu d={IKON_CARI} size={13} /> Cari Harga</>}
                 </button>
               </div>
-              <div style={{ fontSize: 11, color: 'var(--text2)', marginTop: 4 }}>{name}</div>
+              <div className="teks-11" style={{ color: 'var(--text2)', marginTop: 4 }}>{name}</div>
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 10 }}>
@@ -238,12 +238,12 @@ export function AvgDown() {
                     dipendekkan, penjelasan pindah ke keterangan bawah. */}
                 <span className="lbl">Avg Cost (Rp)</span>
                 <input className="inp" type="number" inputMode="decimal" name="avg" placeholder="0" min={0} value={avg} onChange={(e) => setAvg(e.target.value)} />
-                <div style={{ fontSize: 10, color: 'var(--text3)', marginTop: 3 }}>Harga beli rata-rata per saham</div>
+                <div className="teks-10" style={{ color: 'var(--text3)', marginTop: 3 }}>Harga beli rata-rata per saham</div>
               </div>
               <div className="field">
                 <span className="lbl">Qty Balance</span>
                 <input className="inp" type="number" inputMode="decimal" name="qty" placeholder="0" min={0} value={qty} onChange={(e) => setQty(e.target.value)} />
-                <div style={{ fontSize: 10, color: 'var(--text3)', marginTop: 3 }}>Lot (1 lot = 100 saham)</div>
+                <div className="teks-10" style={{ color: 'var(--text3)', marginTop: 3 }}>Lot (1 lot = 100 saham)</div>
               </div>
             </div>
 
@@ -252,7 +252,7 @@ export function AvgDown() {
               <input className="inp" type="number" inputMode="decimal" name="last" placeholder="0" min={0} value={last} onChange={(e) => setLast(e.target.value)} />
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 5, flexWrap: 'wrap' }}>
                 <span className={`chip ${priceSrc.kind === 'auto' ? 'up' : 'warn'}`}>{priceSrc.label}</span>
-                <span style={{ fontSize: 10, color: 'var(--text3)' }}>atau klik <IkonMenu d={IKON_CARI} size={11} /> untuk ambil harga otomatis (delay ~15m)</span>
+                <span className="teks-10" style={{ color: 'var(--text3)' }}>atau klik <IkonMenu d={IKON_CARI} size={11} /> untuk ambil harga otomatis (delay ~15m)</span>
               </div>
             </div>
 
@@ -371,7 +371,7 @@ export function AvgDown() {
                 <span className="num">
                   {result ? `${fN(result.buyQty, 0)} Lot` : aboveAvg ? 'Sudah di atas avg' : '—'}
                 </span>
-                <div style={{ fontSize: 10, color: 'var(--text3)', marginTop: 2 }}>
+                <div className="teks-10" style={{ color: 'var(--text3)', marginTop: 2 }}>
                   {result ? `${fN(result.buyValue, 0)} IDR` : aboveAvg ? 'Tidak perlu average down' : '—'}
                 </div>
               </div>

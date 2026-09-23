@@ -162,7 +162,7 @@ export function ForumRuang() {
         <div className="fd-empty">
           <p><IkonMenu d={IKON_PERINGATAN} size={28} /></p>
           <p>Ruang <strong>{kunci}</strong> belum dibuka.</p>
-          <p style={{ fontSize: 11, marginTop: 8, lineHeight: 1.7 }}>
+          <p className="teks-11" style={{ marginTop: 8, lineHeight: 1.7 }}>
             Ruang diskusi emiten dibuka superadmin saat pertama kali dibutuhkan.{' '}
             <Link to="/feedback">Ajukan lewat Kritik &amp; Saran</Link> kalau Anda ingin ruang ini dibuka.
           </p>
@@ -222,7 +222,7 @@ export function ForumRuang() {
               placeholder={session ? 'Tulis pesan… ketik $ untuk menandai emiten' : 'Tulis sebagai tamu — ketik $ untuk menandai emiten…'}
             />
             <div className="forum-compose-bar">
-              <span className="muted" style={{ fontSize: 11 }}>
+              <span className="muted teks-11">
                 {session
                   ? 'Masuk sebagai anggota — tanpa batas kirim.'
                   : sisaKuota != null
@@ -234,10 +234,10 @@ export function ForumRuang() {
               </button>
             </div>
             {catatanTertahan && (
-              <p className="muted" style={{ fontSize: 11 }}>Pesan terkirim — ditahan untuk diperiksa: {catatanTertahan}</p>
+              <p className="muted teks-11">Pesan terkirim — ditahan untuk diperiksa: {catatanTertahan}</p>
             )}
             {kirimGalat && (
-              <p style={{ fontSize: 11, color: 'var(--red)', margin: 0 }}>
+              <p className="teks-11" style={{ color: 'var(--red)', margin: 0 }}>
                 {kirimGalat}
                 {kuotaHabis && loginModal && (
                   <> · <button type="button" className="dd-btn" onClick={() => loginModal.buka()}>Buat akun</button></>
@@ -294,7 +294,7 @@ export function ForumRuang() {
               sehari-hari seperti &ldquo;saya&rdquo; atau &ldquo;pagi&rdquo; ikut tertangkap dan
               seluruh percakapan berubah jadi ladang tautan.
             </p>
-            <p className="muted" style={{ fontSize: 11 }}>
+            <p className="muted teks-11">
               Ruang emiten dibuka superadmin saat pertama kali dibutuhkan — tag ke ruang yang belum
               dibuka tetap bisa ditulis, halamannya akan bilang ruang itu belum ada.
             </p>
@@ -335,7 +335,7 @@ function ModalLapor({ p, nama, onClose }: { p: Pesan; nama: string; onClose: () 
         </div>
       ) : (
         <div style={{ display: 'grid', gap: 12 }}>
-          <p className="muted" style={{ fontSize: 11.5, margin: 0, lineHeight: 1.7 }}>
+          <p className="muted teks-11-5" style={{ margin: 0, lineHeight: 1.7 }}>
             Laporan masuk ke <b>superadmin PAPAN</b>. Pesannya tidak langsung hilang — ditandai
             dulu, lalu diperiksa. Penulisnya tidak diberi tahu siapa yang melapor.
           </p>
@@ -345,7 +345,7 @@ function ModalLapor({ p, nama, onClose }: { p: Pesan; nama: string; onClose: () 
             <input className="inp" value={alasan} onChange={(e) => setAlasan(e.target.value)}
               placeholder="mis. spam, menyesatkan, kasar" maxLength={200} />
           </div>
-          {galat && <p style={{ fontSize: 11, color: 'var(--red)', margin: 0 }}>{galat}</p>}
+          {galat && <p className="teks-11" style={{ color: 'var(--red)', margin: 0 }}>{galat}</p>}
           <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
             <button type="button" className="dd-btn" onClick={onClose}>Batal</button>
             <button type="button" className="btn-p" disabled={kirim} onClick={() => void kirimLaporan()}>
@@ -378,10 +378,10 @@ function PesanBaris({ p, sesiId, alias, petaAlias, superadmin, onBalas, onLapor,
         {superadmin && p.laporan > 0 && (
           <span className="forum-lapor-badge" title="Jumlah laporan masuk">{p.laporan} laporan</span>
         )}
-        <span className="muted" style={{ fontSize: 10.5 }}>{waktuRelatif(p.dibuat_pada)}</span>
+        <span className="muted teks-10-5">{waktuRelatif(p.dibuat_pada)}</span>
       </div>
       {p.disembunyikan && (
-        <p className="muted" style={{ fontSize: 10.5, color: 'var(--amber)', margin: '2px 0' }}>
+        <p className="muted teks-10-5" style={{ color: 'var(--amber)', margin: '2px 0' }}>
           Ditahan untuk diperiksa{p.alasan_sembunyi ? `: ${p.alasan_sembunyi}` : ''}
         </p>
       )}

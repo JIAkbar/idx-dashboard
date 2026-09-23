@@ -99,7 +99,7 @@ export default function L3Ipo() {
               </g>
             ))}
           </svg>
-          <div className="bb-mono" style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--bb-redup)' }}>
+          <div className="bb-mono teks-11" style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--bb-redup)' }}>
             {titik.map((t) => <span key={t.label}>{t.label}</span>)}
           </div>
         </Blok>

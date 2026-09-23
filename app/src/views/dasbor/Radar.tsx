@@ -329,7 +329,7 @@ export function Radar() {
            meyakinkannya dengan edisi hari ini — pembaca tak punya cara tahu
            bahwa Radar sedang jeda. Ambangnya hari BURSA, bukan hari kalender:
            akhir pekan panjang bukan kemunduran. */
-        <p className="muted" style={{ margin: '4px 0 0', fontSize: 11 }}>
+        <p className="muted teks-11" style={{ margin: '4px 0 0' }}>
           Edisi terakhir {umurEdisi} hari bursa lalu — Radar belum terbit sejak itu.
         </p>
       )}
@@ -494,7 +494,7 @@ function GambarRbu({ src, tik, onBuka }: { src: string; tik: string; onBuka: () 
   // src berubah saat pindah edisi — reset status gagal.
   useEffect(() => setGagal(false), [src])
   if (gagal) {
-    return <p className="muted" style={{ margin: 0, padding: '28px 13px', fontSize: 11 }}>Gambar RBU {tik} belum tersedia untuk edisi ini.</p>
+    return <p className="muted teks-11" style={{ margin: 0, padding: '28px 13px' }}>Gambar RBU {tik} belum tersedia untuk edisi ini.</p>
   }
   return (
     <button type="button" className="g" title={`Perbesar chart RBU ${tik}`} onClick={onBuka}>

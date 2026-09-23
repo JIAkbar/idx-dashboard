@@ -518,7 +518,7 @@ function PanelPresetWhale({ presetAktif, presetId, setPresetId, hasil, petaBaris
                     return (
                       <td key={r.id}>
                         <GlyphKriteria h={r.hasil} />
-                        {top3 != null && <span className="muted" style={{ marginLeft: 4, fontSize: 11 }}>{Math.round(top3)}%</span>}
+                        {top3 != null && <span className="muted teks-11" style={{ marginLeft: 4 }}>{Math.round(top3)}%</span>}
                       </td>
                     )
                   })}
@@ -877,7 +877,7 @@ function PanelRiwayatWinRate({ presetId, setPresetId, jendela, setJendela, defin
                   <td>
                     {h.tanggal}
                     {!h.jendelaTutup && (
-                      <span className="muted" style={{ fontSize: 11, marginLeft: 6 }}>
+                      <span className="muted teks-11" style={{ marginLeft: 6 }}>
                         jendela {h.hariBursaTersedia}/{jejak.horizon}
                       </span>
                     )}
@@ -966,8 +966,8 @@ function PenandaKoreksi({ k }: { k: KoreksiJejak }) {
     .join(', ')
   return (
     <span
-      className="muted"
-      style={{ fontSize: 11, marginLeft: 6, borderBottom: '1px dotted currentColor', cursor: 'help' }}
+      className="muted teks-11"
+      style={{ marginLeft: 6, borderBottom: '1px dotted currentColor', cursor: 'help' }}
       title={`Dikoreksi ${k.dikoreksiPada.slice(0, 10)} — ${rinci}. ${k.alasan} Catatan aslinya tidak ditimpa; koreksinya berkas terpisah.`}
     >
       dikoreksi {k.dikoreksiPada.slice(0, 10)}

@@ -21,7 +21,7 @@ function TigaWarna({ naik, tetap, turun, total, tinggi = 12 }: { naik: number; t
         <span style={{ display: 'block', width: `${wD}%`, background: 'var(--bb-turun)' }} />
       </div>
       {tinggi >= 10 && (
-        <div className="bb-mono" style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11 }}>
+        <div className="bb-mono teks-11" style={{ display: 'flex', justifyContent: 'space-between' }}>
           <span className="naik">naik {angka(wN, 1)}%</span>
           <span className="datar">tetap {angka(wT, 1)}%</span>
           <span className="turun">turun {angka(wD, 1)}%</span>
@@ -126,7 +126,7 @@ export default function L2HariIni() {
                 <div key={s.id} style={{ display: 'grid', gridTemplateColumns: 'minmax(84px,140px) minmax(0,1fr) 36px', columnGap: 10, alignItems: 'center' }}>
                   <span style={{ fontSize: 12, color: 'var(--bb-redup)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{s.label}</span>
                   <TigaWarna naik={s.naik} tetap={s.tetap} turun={s.turun} total={s.total} tinggi={8} />
-                  <span className="bb-mono" style={{ fontSize: 11, textAlign: 'right' }}>{angka(s.persenTurun, 0)}%</span>
+                  <span className="bb-mono teks-11" style={{ textAlign: 'right' }}>{angka(s.persenTurun, 0)}%</span>
                 </div>
               ))}
             </div>

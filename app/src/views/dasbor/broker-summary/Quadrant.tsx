@@ -209,13 +209,13 @@ export function Quadrant({ brokers }: QuadrantProps) {
       </div>
       {/* #77 kontras: warna domain cuma di titik ●, teks legenda ikut warna
           teks tema (hex mentah 2.3–3.8:1 di light, tak terbaca). */}
-      <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', marginTop: 8, fontSize: 11, color: 'var(--text2)' }}>
+      <div className="teks-11" style={{ display: 'flex', gap: 16, flexWrap: 'wrap', marginTop: 8, color: 'var(--text2)' }}>
         <span><span style={{ color: '#3b82f6' }}>●</span> Nilai Besar · Frekuensi Rendah (tiket per transaksi besar)</span>
         <span><span style={{ color: '#22c55e' }}>●</span> Nilai Besar · Frekuensi Tinggi</span>
         <span><span style={{ color: '#ef4444' }}>●</span> Nilai Kecil · Frekuensi Tinggi</span>
         <span><span style={{ color: '#9ca3af' }}>●</span> Nilai Kecil · Frekuensi Rendah</span>
       </div>
-      <p className="muted" style={{ margin: '6px 0 0', fontSize: 11 }}>
+      <p className="muted teks-11" style={{ margin: '6px 0 0' }}>
         Pembagian kuadran = median nilai × median frekuensi hari itu — menurut konstruksi ±separuh broker
         selalu ada di tiap sisi, jadi ini deskripsi posisi relatif, bukan saringan dan bukan penggolongan
         resmi bursa. Data level pasar tidak menyebut identitas maupun niat broker.

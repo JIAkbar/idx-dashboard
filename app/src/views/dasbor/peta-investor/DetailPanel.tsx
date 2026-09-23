@@ -50,7 +50,7 @@ export function DetailPanel({ allData, selected, onClose }: DetailPanelProps) {
           ))}
           <div className="pi-panel-section-label" style={{ marginTop: 14 }}>BROKER TERAFILIASI</div>
           {afiliasi.length === 0 ? (
-            <p className="muted" style={{ fontSize: 10, lineHeight: 1.5, margin: '4px 0 0' }}>
+            <p className="muted teks-10" style={{ lineHeight: 1.5, margin: '4px 0 0' }}>
               Belum ada sekuritas yang tercatat satu grup usaha dengan {em.code} (kurasi redaksi
               — hanya afiliasi publik berkeyakinan tinggi yang dimasukkan).
             </p>
@@ -84,7 +84,7 @@ export function DetailPanel({ allData, selected, onClose }: DetailPanelProps) {
               {/* Nilai edukasinya: aktivitas broker segrup di saham grupnya sendiri
                   adalah jejak klasik penampung internal — pembaca diarahkan
                   mengeceknya di Broker Summary, bukan disimpulkan di sini. */}
-              <p className="muted" style={{ fontSize: 10, lineHeight: 1.5, margin: '8px 0 0' }}>
+              <p className="muted teks-10" style={{ lineHeight: 1.5, margin: '8px 0 0' }}>
                 Sekuritas satu grup usaha dengan {em.code} (kurasi redaksi). Pantau kode ini
                 di Broker Summary — akumulasi lewat broker segrup sering menandai penampungan internal.
               </p>

@@ -287,7 +287,7 @@ export function TopStocks() {
 
       <div className="grid2">
         <div className="panel">
-          <div className="panel-h"><span className="lbl">Top Gainers</span><span className="muted" style={{ fontSize: 11 }}>{labelTanggal}</span></div>
+          <div className="panel-h teks-11"><span className="lbl">Top Gainers</span><span className="muted">{labelTanggal}</span></div>
           <div className="board-tbl-wrap">
             <table className="tbl" style={tbl4}>
               {kol4}
@@ -311,7 +311,7 @@ export function TopStocks() {
           </div>
         </div>
         <div className="panel">
-          <div className="panel-h"><span className="lbl">Top Losers</span><span className="muted" style={{ fontSize: 11 }}>{labelTanggal}</span></div>
+          <div className="panel-h teks-11"><span className="lbl">Top Losers</span><span className="muted">{labelTanggal}</span></div>
           <div className="board-tbl-wrap">
             <table className="tbl" style={tbl4}>
               {kol4}
@@ -338,7 +338,7 @@ export function TopStocks() {
 
       <div className="grid2">
         <div className="panel">
-          <div className="panel-h"><span className="lbl">Top Leaders — Kontribusi IHSG</span><span className="muted" style={{ fontSize: 11 }}>{labelTanggal}</span></div>
+          <div className="panel-h teks-11"><span className="lbl">Top Leaders — Kontribusi IHSG</span><span className="muted">{labelTanggal}</span></div>
           <div className="panel-b">
             <div className="board-tbl-wrap">
               <table className="tbl" style={tbl3}>
@@ -367,7 +367,7 @@ export function TopStocks() {
           </div>
         </div>
         <div className="panel">
-          <div className="panel-h"><span className="lbl">Top Laggards — Kontribusi IHSG</span><span className="muted" style={{ fontSize: 11 }}>{labelTanggal}</span></div>
+          <div className="panel-h teks-11"><span className="lbl">Top Laggards — Kontribusi IHSG</span><span className="muted">{labelTanggal}</span></div>
           <div className="panel-b">
             <div className="board-tbl-wrap">
               <table className="tbl" style={tbl3}>

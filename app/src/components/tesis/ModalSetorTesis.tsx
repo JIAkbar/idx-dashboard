@@ -133,7 +133,7 @@ export function ModalSetorTesis({ kode, harga, onTutup, onTerkirim }: {
         </label>
       </div>
       {acuan != null && (
-        <p className="muted" style={{ fontSize: 11, margin: 0 }}>
+        <p className="muted teks-11" style={{ margin: 0 }}>
           Penutupan {tanggalSinyal}: <b>{keFraksi(acuan, 'dekat').toLocaleString('id-ID')}</b>
         </p>
       )}
@@ -153,7 +153,7 @@ export function ModalSetorTesis({ kode, harga, onTutup, onTerkirim }: {
           placeholder={`Kenapa kamu yakin — minimal ${ALASAN_MIN} karakter`}
         />
       </label>
-      <p className="muted" style={{ fontSize: 11, margin: 0 }}>{sisaHuruf} karakter tersisa</p>
+      <p className="muted teks-11" style={{ margin: 0 }}>{sisaHuruf} karakter tersisa</p>
 
       {salah && alasan.length + bawah.length > 0 && (
         <p className="dn" style={{ fontSize: 12, margin: 0 }}>{salah}</p>
@@ -167,7 +167,7 @@ export function ModalSetorTesis({ kode, harga, onTutup, onTerkirim }: {
         </button>
       </div>
       {sisaKuota === 0 && (
-        <p className="muted" style={{ fontSize: 11, margin: 0 }}>Kuota tesis hari ini sudah habis.</p>
+        <p className="muted teks-11" style={{ margin: 0 }}>Kuota tesis hari ini sudah habis.</p>
       )}
     </ModalKecil>
   )

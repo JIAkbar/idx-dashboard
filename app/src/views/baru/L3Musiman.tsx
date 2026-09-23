@@ -124,7 +124,7 @@ export default function L3Musiman() {
             <span style={{ position: 'absolute', left: `${musiman.bawah}%`, top: 0, height: 10, width: `${musiman.atas - musiman.bawah}%`, borderRadius: 999, background: 'var(--bb-biru)' }} />
             <span style={{ position: 'absolute', left: `${musiman.tersusut}%`, top: -5, width: 4, height: 20, marginLeft: -2, borderRadius: 2, background: 'var(--bb-emas)' }} />
           </div>
-          <div className="bb-mono" style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--bb-redup)' }}>
+          <div className="bb-mono teks-11" style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--bb-redup)' }}>
             <span>{angka(musiman.bawah, 1)}%</span><span>titik saat ini {angka(musiman.tersusut, 1)}%</span><span>{angka(musiman.atas, 1)}%</span>
           </div>
         </Blok>
@@ -137,7 +137,7 @@ export default function L3Musiman() {
                   {BULAN_PENDEK[i]}{i + 1 === bulanIni ? ' · kini' : ''}
                 </span>
                 <span className={`bb-mono ${s ? (s.avg >= 0 ? 'naik' : 'turun') : ''}`} style={{ fontSize: 15 }}>{s ? bertanda(s.avg, 2) : '–'}%</span>
-                <span style={{ fontSize: 11, color: 'var(--bb-redup)' }}>{s ? `${angka(s.naikPct, 1)}% · n${s.n}` : 'tidak tersedia'}</span>
+                <span className="teks-11" style={{ color: 'var(--bb-redup)' }}>{s ? `${angka(s.naikPct, 1)}% · n${s.n}` : 'tidak tersedia'}</span>
                 <div className="bb-bb-rel" style={{ height: 5 }}>
                   <span className={`bb-bb-isi ${s && s.avg < 0 ? 'turun' : 'naik'}`} style={{ width: `${s ? (Math.abs(s.avg) / maxAbsAvg) * 100 : 0}%` }} />
                 </div>
@@ -170,7 +170,7 @@ export default function L3Musiman() {
               )
             })}
           </div>
-          <div className="bb-mono" style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--bb-redup)' }}>
+          <div className="bb-mono teks-11" style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--bb-redup)' }}>
             {BULAN_PENDEK.map((b) => <span key={b}>{b}</span>)}
           </div>
         </Blok>

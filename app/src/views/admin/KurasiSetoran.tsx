@@ -428,8 +428,8 @@ export function KurasiSetoran() {
                         <TautanEmiten kode={s.ticker} punya={emitenAda} className="tick" />
                         <span className={`chip ks-jenis ks-jenis-${s.jenis}`}>{LABEL_JENIS[s.jenis]}</span>
                       </span>
-                      <span className="muted" style={{ fontSize: 10.5 }}>{nama}</span>
-                      <span className="muted" style={{ fontSize: 10 }}>{waktuManusiawi(s.dibuat_pada)}</span>
+                      <span className="muted teks-10-5">{nama}</span>
+                      <span className="muted teks-10">{waktuManusiawi(s.dibuat_pada)}</span>
                       <p className="ks-alasan">{s.alasan?.trim() || '(tanpa alasan — superadmin)'}</p>
                       {(s.status === 'dihapus' || s.status === 'revisi') && s.catatan_kurator && (
                         <p className="ks-catatan"><IkonMenu d={IKON_PERINGATAN} size={11} /> {s.catatan_kurator}</p>
@@ -665,7 +665,7 @@ function PindahTanggalModal({ setoran, sibuk, onClose, onKirim }: {
   return (
     <ModalKecil className="ks-pindah-modal" label={`Pindahkan ${setoran.ticker} ke tanggal lain?`} onClose={() => { if (!sibuk) onClose() }}>
       <div style={{ display: 'grid', gap: 12 }}>
-        <p className="muted" style={{ margin: 0, fontSize: 11, lineHeight: 1.6 }}>
+        <p className="muted teks-11" style={{ margin: 0, lineHeight: 1.6 }}>
           Berkas dan barisnya berpindah bersama — berkasnya dipindah lebih dulu,
           dan kalau barisnya gagal ikut, berkasnya dikembalikan. Status kurasi,
           kredit, dan kepemilikan tidak berubah: setoran ini tetap milik <b>{nama}</b>.

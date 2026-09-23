@@ -197,7 +197,7 @@ export function TopBroker() {
         </div>
       </div>
       {!rentang && (
-        <p className="muted" style={{ margin: '0 0 8px', fontSize: 11, lineHeight: 1.55 }}>
+        <p className="muted teks-11" style={{ margin: '0 0 8px', lineHeight: 1.55 }}>
           {bs.memuat && 'Memuat rekap broker…'}
           {!bs.memuat && bs.vol && (<>
             Peringkat broker dihitung dari rekap <b>seluruh papan</b> — reguler, negosiasi, dan tunai —
@@ -211,7 +211,7 @@ export function TopBroker() {
         </p>
       )}
       {rentang && (
-        <p className="muted" style={{ margin: '0 0 8px', fontSize: 11, lineHeight: 1.55 }}>
+        <p className="muted teks-11" style={{ margin: '0 0 8px', lineHeight: 1.55 }}>
           {memuatRentang && 'Menjumlah rentang…'}
           {!memuatRentang && !dataRentang && 'Rollup rentang ini belum tersedia — jalankan panen turunan.'}
           {!memuatRentang && dataRentang && (<>

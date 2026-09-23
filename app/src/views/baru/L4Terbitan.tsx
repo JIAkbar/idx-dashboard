@@ -124,7 +124,7 @@ export default function L4Terbitan() {
                 </div>
                 <span className="bb-mono" style={{ fontSize: 12, color: 'var(--bb-redup)' }}>{angka(t.harga_acuan)} → {angka(t.harga_h5)}</span>
                 <span className="bb-mono" style={{ fontSize: 20, color: t.gerak_pct >= 0 ? 'var(--bb-naik)' : 'var(--bb-turun)' }}>{bertanda(t.gerak_pct)}%</span>
-                <span style={{ fontSize: 11, color: 'var(--bb-redup)' }}>{bull ? `Bull ${bull}` : 'Bull —'} — Inv {inv || '—'}</span>
+                <span className="teks-11" style={{ color: 'var(--bb-redup)' }}>{bull ? `Bull ${bull}` : 'Bull —'} — Inv {inv || '—'}</span>
                 {pdf ? (
                   <a href={urlData('/arus-pasar/keluaran/' + pdf)} target="_blank" rel="noopener" className="bb-tombol" style={{ fontSize: 12 }}>Baca PDF</a>
                 ) : (

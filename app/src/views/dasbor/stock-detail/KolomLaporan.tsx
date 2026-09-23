@@ -145,7 +145,7 @@ export function PanelPerformance({ fd }: { fd: StockFundamental }) {
       <div className="panel">
         <div className="panel-h" style={{ borderBottom: 'none' }}>
           <span className="lbl">Price Performance</span>
-          <span style={{ fontSize: 10, color: 'var(--text3)', fontWeight: 400 }}>
+          <span className="teks-10" style={{ color: 'var(--text3)', fontWeight: 400 }}>
             Data belum tersedia — akan terisi saat pembaruan data bulanan
           </span>
         </div>

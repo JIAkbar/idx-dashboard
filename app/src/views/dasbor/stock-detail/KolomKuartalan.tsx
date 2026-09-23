@@ -200,7 +200,7 @@ function QuarterlyTable({ fd, mode, kd }: { fd: StockFundamental; mode: QMode; k
             {years.map((y) => <th key={y} className="r">{y}</th>)}
           </tr>
           <tr>
-            <td colSpan={years.length + 1} style={{ fontSize: 9, color: 'var(--text3)', padding: '2px 8px' }}>({suffix})</td>
+            <td className="teks-9" colSpan={years.length + 1} style={{ color: 'var(--text3)', padding: '2px 8px' }}>({suffix})</td>
           </tr>
         </thead>
         <tbody>

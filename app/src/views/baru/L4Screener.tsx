@@ -168,7 +168,7 @@ export default function L4Screener() {
                     </span>
                     <Link to={ruteLapisan('harga', e.kode)} className="bb-tombol" style={{ fontSize: 12, padding: '0 14px' }}>jadikan tesis</Link>
                   </div>
-                  <span className="bb-mono" style={{ fontSize: 11, color: 'var(--bb-redup)' }}>
+                  <span className="bb-mono teks-11" style={{ color: 'var(--bb-redup)' }}>
                     cocok {e.skor}/6 · likuiditas {angka(e.likuiditas / 1e9, 2)} M · ret10 <Arah v={e.ret10}>{bertanda(e.ret10)}%</Arah> · RVOL {angka(e.rvol_med, 2)}× · net asing <Arah v={e.net_asing_20h}>{bertanda(e.net_asing_20h / 1e6, 2)}</Arah> jt
                   </span>
                 </div>

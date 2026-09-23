@@ -367,7 +367,7 @@ function IhsgYtdChart({ dates }: { dates: TanggalIndex[] }) {
         <canvas ref={canvasRef} style={{ display: 'block', width: '100%', height: '100%' }} />
       </div>
       {info && (
-        <div className="num" style={{ display: 'flex', justifyContent: 'space-between', gap: 8, marginTop: 6, fontSize: 10, color: 'var(--text3)', flexWrap: 'wrap' }}>
+        <div className="num teks-10" style={{ display: 'flex', justifyContent: 'space-between', gap: 8, marginTop: 6, color: 'var(--text3)', flexWrap: 'wrap' }}>
           <span>Tertinggi <span className="up">{fN(info.hi.ihsg)}</span> · {(candleCocok ? tglSingkat : tglSingkatTahun)(info.hi.date_iso)}</span>
           <span>Terendah <span className="dn">{fN(info.lo.ihsg)}</span> · {(candleCocok ? tglSingkat : tglSingkatTahun)(info.lo.date_iso)}</span>
         </div>
@@ -859,7 +859,7 @@ export function IndeksDunia() {
         <div className="panel" style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
           <div className="panel-h">
             <span className="lbl"><IkonMenu d={IKON_PENGGARIS} size={13} /> Market Fundamental</span>
-            <span className="num" style={{ fontSize: 11, color: 'var(--text3)' }}>
+            <span className="num teks-11" style={{ color: 'var(--text3)' }}>
               ~ USD/IDR BI = {hari.usd_idr == null ? '—' : fN(hari.usd_idr, 0)}
             </span>
           </div>

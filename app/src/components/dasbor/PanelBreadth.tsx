@@ -246,13 +246,13 @@ export function PanelBreadth() {
             </div>
           </>
         ) : (
-          <p style={{ fontSize: 11, color: 'var(--text3)' }}>
+          <p className="teks-11" style={{ color: 'var(--text3)' }}>
             Sebaran gerak harga belum tersedia untuk {hari.date_id}.
           </p>
         )}
 
         {errorRentang && (
-          <p style={{ fontSize: 10, color: 'var(--text3)', marginTop: 10 }}>{errorRentang}</p>
+          <p className="teks-10" style={{ color: 'var(--text3)', marginTop: 10 }}>{errorRentang}</p>
         )}
         {!errorRentang && chartConfig ? (
           <>
@@ -264,12 +264,12 @@ export function PanelBreadth() {
             </div>
           </>
         ) : !errorRentang && (
-          <p style={{ fontSize: 10, color: 'var(--text3)', marginTop: 10 }}>
+          <p className="teks-10" style={{ color: 'var(--text3)', marginTop: 10 }}>
             Riwayat breadth belum cukup untuk grafik rentang ini.
           </p>
         )}
 
-        <p style={{ fontSize: 10, color: 'var(--text3)', marginTop: 6 }}>
+        <p className="teks-10" style={{ color: 'var(--text3)', marginTop: 6 }}>
           <IkonMenu d={IKON_JAM} size={10} /> Sebaran gerak harga seluruh saham di papan — bisa berlawanan
           dengan arah IHSG karena indeks berbobot kapitalisasi. Hari tanpa data dilompati, bukan dihitung nol.
         </p>

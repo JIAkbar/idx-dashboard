@@ -93,7 +93,7 @@ export function Dividen({ feeBeli, setFeeBeli, feeJual, setFeeJual }: DividenPro
               <div className="field">
                 <span className="lbl">Pajak Dividen (%)</span>
                 <input className="inp" type="number" inputMode="decimal" name="tax" value={tax} min={0} max={100} step={0.5} onChange={(e) => setTax(e.target.value)} />
-                <div style={{ fontSize: 9, color: 'var(--text3)', marginTop: 2 }}>WNI OP: 10% final</div>
+                <div className="teks-9" style={{ color: 'var(--text3)', marginTop: 2 }}>WNI OP: 10% final</div>
               </div>
               <div className="field">
                 <span className="lbl">Fee Beli (%)</span>
@@ -112,10 +112,10 @@ export function Dividen({ feeBeli, setFeeBeli, feeJual, setFeeJual }: DividenPro
                   aria-label="Fee jual (persen)"
                   onChange={(e) => setFeeJual(parseFloat(e.target.value) || 0)}
                 />
-                <div style={{ fontSize: 9, color: 'var(--text3)', marginTop: 2 }}>Dipakai di skenario jual di bawah</div>
+                <div className="teks-9" style={{ color: 'var(--text3)', marginTop: 2 }}>Dipakai di skenario jual di bawah</div>
               </div>
             </div>
-            <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 11, color: 'var(--text2)', cursor: 'pointer' }}>
+            <label className="teks-11" style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--text2)', cursor: 'pointer' }}>
               Sertakan fee beli dalam modal
               <input type="checkbox" name="incFee" checked={incFee} onChange={(e) => setIncFee(e.target.checked)} />
             </label>
@@ -170,7 +170,7 @@ export function Dividen({ feeBeli, setFeeBeli, feeJual, setFeeJual }: DividenPro
                         <div className={`num ${sc.netGL >= 0 ? 'up' : 'dn'}`} style={{ textAlign: 'right' }}>
                           {sc.netGL >= 0 ? '+' : ''}Rp {fN(sc.netGL, 0)}
                           <br />
-                          <span style={{ fontSize: 10 }}>
+                          <span className="teks-10">
                             ({sc.netGL >= 0 ? '+' : ''}
                             {persen(sc.netPct, 2)})
                           </span>

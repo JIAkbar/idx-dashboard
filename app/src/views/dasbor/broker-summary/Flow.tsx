@@ -122,7 +122,7 @@ export function Flow({ tanggalAktif, rentang }: FlowProps) {
       <div className="chart-wrap chart-tinggi">
         <canvas ref={canvasRef} />
       </div>
-      <div style={{ marginTop: 8, fontSize: 11, color: 'var(--text3)' }}>
+      <div className="teks-11" style={{ marginTop: 8, color: 'var(--text3)' }}>
         * Sumber (IDX daily statistics) hanya memuat NET foreign per hari — buy/sell terpisah tidak tersedia.
         {tanpaNf > 0 && ` ${tanpaNf} hari tanpa angka net foreign di sumber (celah pada chart).`}
       </div>

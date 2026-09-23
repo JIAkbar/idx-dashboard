@@ -73,17 +73,17 @@ export function AsingEmiten() {
         />
 
         {!kode && (
-          <p style={{ fontSize: 11, color: 'var(--text3)', marginTop: 10 }}>
+          <p className="teks-11" style={{ color: 'var(--text3)', marginTop: 10 }}>
             Pilih satu emiten untuk melihat net asing 5 &amp; 10 hari bursa terakhir.
           </p>
         )}
 
         {kode && loading && (
-          <p style={{ fontSize: 11, color: 'var(--text3)', marginTop: 10 }}><IkonMenu d={IKON_JAM} size={12} /> Memuat {kode}…</p>
+          <p className="teks-11" style={{ color: 'var(--text3)', marginTop: 10 }}><IkonMenu d={IKON_JAM} size={12} /> Memuat {kode}…</p>
         )}
 
         {kode && !loading && !data && (
-          <p style={{ fontSize: 11, color: 'var(--text3)', marginTop: 10 }}>Data aliran asing untuk {kode} belum tersedia.</p>
+          <p className="teks-11" style={{ color: 'var(--text3)', marginTop: 10 }}>Data aliran asing untuk {kode} belum tersedia.</p>
         )}
 
         {kode && !loading && data && (
@@ -92,7 +92,7 @@ export function AsingEmiten() {
               <Sel hariDiminta={5} lembar={n5} rupiah={n5r} />
               <Sel hariDiminta={10} lembar={n10} rupiah={n10r} />
             </div>
-            <p style={{ fontSize: 10, color: 'var(--text3)', marginTop: 8 }}>
+            <p className="teks-10" style={{ color: 'var(--text3)', marginTop: 8 }}>
               Net (beli-jual) lembar langsung dari sumber resmi bursa. Nilai rupiah aliran asing sebenarnya (bukan
               perkiraan) — kosong kalau harinya belum terpanen. Data s.d. {data.akhir}.
             </p>

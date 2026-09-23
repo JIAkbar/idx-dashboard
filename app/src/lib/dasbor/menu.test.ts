@@ -51,8 +51,9 @@ describe('pengelompokan menu', () => {
   it('gelombang 3 dan 4: Kuli Papan jadi bagian Kalkulator, Neo jadi Inventory Broker, 30 halaman (#200 A)', () => {
     expect(MENU_ITEMS.some((m) => m.path === '/kuli-papan')).toBe(false)
     expect(judulHalaman('/neo-papan')).toBe('Inventory Broker')
-    // 31 sejak PAPAN Baru (#586, 23 Sep 2026) masuk sebagai tab pintu Pasar.
-    expect(MENU_ITEMS).toHaveLength(31)
+    // 32 sejak Rapor Uji (#221 opsi a, 23 Sep 2026) masuk sebagai tab Screener
+    // (31 sejak PAPAN Baru #586 masuk sebagai tab pintu Pasar).
+    expect(MENU_ITEMS).toHaveLength(32)
   })
 
   it('pintu Alat & baca berinduk halaman tanpa kunci, supaya Kabar dan Metodologi tetap terbuka', () => {

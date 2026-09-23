@@ -37,13 +37,13 @@ export function PanelLimaLangkahUang({ fd, rasio = null }: { fd: StockFundamenta
     <div className="panel" style={{ marginBottom: 12 }}>
       <div className="panel-h"><span className="lbl">Lima Langkah Uang</span></div>
       <div className="panel-b">
-        <p style={{ fontSize: 11, color: 'var(--text3)', marginBottom: 10, lineHeight: 1.6 }}>
+        <p className="teks-11" style={{ color: 'var(--text3)', marginBottom: 10, lineHeight: 1.6 }}>
           Uang berjalan dari penjualan sampai rekening pemegang saham. Yang paling memberi tahu bukan
           kelima angkanya, melainkan rasio antar langkah di bawahnya.
         </p>
 
         {!adaIsi ? (
-          <p style={{ fontSize: 11, color: 'var(--text3)' }}>
+          <p className="teks-11" style={{ color: 'var(--text3)' }}>
             Ruas TTM emiten ini belum tersedia — lima langkahnya belum bisa dirangkai.
           </p>
         ) : (

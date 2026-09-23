@@ -83,7 +83,7 @@ export function Feedback() {
               </svg>
               Kirim via WhatsApp
             </a>
-            <span className="muted" style={{ fontSize: 11 }}>
+            <span className="muted teks-11">
               Tombol membuka WhatsApp dengan topik &amp; pesan di atas sudah terisi — tinggal tinjau lalu kirim.
             </span>
           </div>

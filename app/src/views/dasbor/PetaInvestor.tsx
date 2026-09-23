@@ -143,7 +143,7 @@ export function PetaInvestor() {
         <div className="fd-empty">
           <p><IkonMenu d={IKON_PERINGATAN} size={28} /></p>
           <p>Gagal memuat data investor.</p>
-          <p style={{ fontSize: 11, marginTop: 4 }}>{error}</p>
+          <p className="teks-11" style={{ marginTop: 4 }}>{error}</p>
           <button type="button" className="btn-p" style={{ marginTop: 12 }} onClick={retry}>
             <IkonMenu d={IKON_ULANG} size={13} /> Coba lagi
           </button>
@@ -251,7 +251,7 @@ export function PetaInvestor() {
                 </GrafikJaringan>
                 {selectedDetail && <DetailPanel allData={data} selected={selectedDetail} onClose={() => setSelectedDetail(null)} />}
               </div>
-              <div style={{ fontSize: 10, color: 'var(--text3)', textAlign: 'center' }}>
+              <div className="teks-10" style={{ color: 'var(--text3)', textAlign: 'center' }}>
                 Data bersumber dari KSEI (Kustodian Sentral Efek Indonesia) · Kepemilikan ≥1% · Bukan saran investasi
               </div>
             </>

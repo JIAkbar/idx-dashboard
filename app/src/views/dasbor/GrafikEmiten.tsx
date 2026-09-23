@@ -4866,7 +4866,7 @@ export function GrafikEmiten() {
           </div>
 
           {template.length === 0 && (
-            <p className="muted" style={{ margin: 0, fontSize: 11.5 }}>
+            <p className="muted teks-11-5" style={{ margin: 0 }}>
               Belum ada template. Susun indikator &amp; pola di kanvas, lalu beri nama di atas —
               emiten sengaja tidak ikut disimpan, jadi satu template bisa dipakai untuk saham mana pun.
             </p>

@@ -181,7 +181,7 @@ export function Quadrant({ agg, vwap, ukuran }: QuadrantProps) {
       <div className="chart-wrap chart-tinggi">
         <canvas ref={canvasRef} />
       </div>
-      <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', marginTop: 8, fontSize: 11, color: 'var(--text2)' }}>
+      <div className="teks-11" style={{ display: 'flex', gap: 16, flexWrap: 'wrap', marginTop: 8, color: 'var(--text2)' }}>
         <span><span style={{ color: WARNA_KUADRAN['Beli di Bawah VWAP'] }}>●</span> Beli di Bawah VWAP</span>
         <span><span style={{ color: WARNA_KUADRAN['Beli di Atas VWAP'] }}>●</span> Beli di Atas VWAP (mengejar harga)</span>
         <span><span style={{ color: WARNA_KUADRAN['Jual di Atas VWAP'] }}>●</span> Jual di Atas VWAP (melepas di harga baik)</span>

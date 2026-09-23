@@ -139,7 +139,7 @@ export function ProfitAra({ feeBeli, feeJual, setFeeBeli, setFeeJual }: ProfitAr
         <div className="panel">
           <div className="panel-h">
             <span className="lbl"><IkonMenu d={IKON_GRAFIK_NAIK} size={13} /> Proyeksi ARA / ARB</span>
-            <span className="num" style={{ fontSize: 10, color: 'var(--text3)' }}>
+            <span className="num teks-10" style={{ color: 'var(--text3)' }}>
               ARA = ARB, simetris sejak 4 Sep 2023
             </span>
           </div>
@@ -162,12 +162,12 @@ export function ProfitAra({ feeBeli, feeJual, setFeeBeli, setFeeJual }: ProfitAr
                       <td className="r num up">
                         {row.ap.toLocaleString('id-ID')}
                         <br />
-                        <span style={{ fontSize: 10 }}>+{araTable.ara}%</span>
+                        <span className="teks-10">+{araTable.ara}%</span>
                       </td>
                       <td className="r num dn">
                         {row.bp.toLocaleString('id-ID')}
                         <br />
-                        <span style={{ fontSize: 10 }}>-{araTable.arb}%</span>
+                        <span className="teks-10">-{araTable.arb}%</span>
                       </td>
                     </tr>
                   ))

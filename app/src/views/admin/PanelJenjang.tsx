@@ -37,12 +37,12 @@ export function PanelJenjang({ ringkas = false }: { ringkas?: boolean }) {
     <section className="panel">
       <div className="panel-h">
         <span className="lbl">Jenjang Kontributor</span>
-        <span className="muted" style={{ fontSize: 11 }}>
+        <span className="muted teks-11">
           naik otomatis dari setoran yang lolos kurasi
         </span>
       </div>
       <div className="panel-b">
-        <p className="muted" style={{ marginTop: 0, fontSize: 11.5, lineHeight: 1.6, maxWidth: '78ch' }}>
+        <p className="muted teks-11-5" style={{ marginTop: 0, lineHeight: 1.6, maxWidth: '78ch' }}>
           Kedua syarat harus terpenuhi bersamaan. Akurasi dihitung dari setoran yang sudah
           dikurasi saja — yang masih menunggu tidak ikut membagi, supaya kontributor tidak
           dirugikan oleh antrean kurasi. Kuota manual di kolom sebelah menimpa kuota jenjang;
@@ -72,7 +72,7 @@ export function PanelJenjang({ ringkas = false }: { ringkas?: boolean }) {
                       <IkonJenjang tier={j.tier} nama={j.nama} size={26} />
                       <span>
                         <b>{j.nama}</b>{' '}
-                        <span className="muted" style={{ fontSize: 10 }}>tier {j.tier}</span>
+                        <span className="muted teks-10">tier {j.tier}</span>
                       </span>
                     </span>
                   </td>

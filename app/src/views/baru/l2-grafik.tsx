@@ -97,7 +97,7 @@ export function LabelSumbu({ tanggal, setiap = 5 }: { tanggal: string[]; setiap?
   return (
     <div style={{ display: 'flex' }}>
       {tanggal.map((t, i) => (
-        <span key={t} className="bb-mono" style={{ flex: 1, textAlign: 'center', fontSize: 11, color: 'var(--bb-redup)' }}>
+        <span key={t} className="bb-mono teks-11" style={{ flex: 1, textAlign: 'center', color: 'var(--bb-redup)' }}>
           {i % setiap === 0 ? tglSingkat(t) : ''}
         </span>
       ))}

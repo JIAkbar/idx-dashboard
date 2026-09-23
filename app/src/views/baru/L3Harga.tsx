@@ -201,7 +201,7 @@ export default function L3Harga() {
                 <Fragment key={`r${r.harga}`}>
                   <span className="turun">R {angka(r.harga, 0)}</span>
                   <span className="bb-mono" style={{ textAlign: 'right', color: 'var(--bb-redup)' }}>{r.sentuhan}×</span>
-                  <span className="bb-mono" style={{ textAlign: 'right', color: 'var(--bb-redup)', fontSize: 11 }}>{tglSingkat(r.terakhir)}</span>
+                  <span className="bb-mono teks-11" style={{ textAlign: 'right', color: 'var(--bb-redup)' }}>{tglSingkat(r.terakhir)}</span>
                 </Fragment>
               ))}
               <span style={{ fontWeight: 600 }}>Harga {angka(kartu.harga, 0)}</span><span /><span />
@@ -209,7 +209,7 @@ export default function L3Harga() {
                 <Fragment key={`s${s.harga}`}>
                   <span className="naik">S {angka(s.harga, 0)}{s.harga === kartu.stop ? ' · stop' : ''}</span>
                   <span className="bb-mono" style={{ textAlign: 'right', color: 'var(--bb-redup)' }}>{s.sentuhan}×</span>
-                  <span className="bb-mono" style={{ textAlign: 'right', color: 'var(--bb-redup)', fontSize: 11 }}>{tglSingkat(s.terakhir)}</span>
+                  <span className="bb-mono teks-11" style={{ textAlign: 'right', color: 'var(--bb-redup)' }}>{tglSingkat(s.terakhir)}</span>
                 </Fragment>
               ))}
             </div>
@@ -244,7 +244,7 @@ export default function L3Harga() {
                   <rect key={i} x={i * slot + slot / 2 - bw / 2} y={HV - (v / maxVol) * HV} width={bw} height={Math.max(1, (v / maxVol) * HV)} rx={1} fill="var(--bb-biru)" />
                 ))}
               </svg>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontFamily: 'var(--bb-mono)', fontSize: 11, color: 'var(--bb-redup)' }}>
+              <div className="teks-11" style={{ display: 'flex', justifyContent: 'space-between', fontFamily: 'var(--bb-mono)', color: 'var(--bb-redup)' }}>
                 <span>{tglSingkat(String(vis[0][0]))}</span><span>volume {vis.length} hari, biru</span><span>{tglSingkat(String(vis[vis.length - 1][0]))}</span>
               </div>
               <p className="bb-narasi">
@@ -264,7 +264,7 @@ export default function L3Harga() {
                   <div style={{ height: 8, borderRadius: 999, background: 'var(--bb-garis)', overflow: 'hidden' }}>
                     <div style={{ width: `${Math.min(100, Math.max(0, t.fp.p_kena))}%`, height: 8, background: 'var(--bb-biru)' }} />
                   </div>
-                  <span className="bb-mono" style={{ fontSize: 11, color: 'var(--bb-redup)' }}>
+                  <span className="bb-mono teks-11" style={{ color: 'var(--bb-redup)' }}>
                     {angka(t.fp.p_kena, 1)}% kena · {angka(t.fp.p_stop, 1)}% stop dulu · median {angka(t.fp.median_hari, 0)} hari
                   </span>
                 </div>
@@ -272,12 +272,12 @@ export default function L3Harga() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: 4, paddingTop: 10, borderTop: '1px solid var(--bb-garis)' }}>
                 <span className="bb-label" style={{ textTransform: 'none', letterSpacing: 0 }}>Skor ekspektansi (ER)</span>
                 <span style={{ fontFamily: 'var(--bb-sans)', fontSize: 28, fontWeight: 700 }}>{angka(kartu.er, 2)}</span>
-                <span style={{ fontSize: 11, color: 'var(--bb-redup)' }}>persentil {Math.round(kartu.er_persentil)} dari {kartu.er_n_populasi} emiten</span>
+                <span className="teks-11" style={{ color: 'var(--bb-redup)' }}>persentil {Math.round(kartu.er_persentil)} dari {kartu.er_n_populasi} emiten</span>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 4, paddingTop: 10, borderTop: '1px solid var(--bb-garis)' }}>
                 <span className="bb-label" style={{ textTransform: 'none', letterSpacing: 0 }}>Jarak ke stop</span>
                 <span className={`bb-mono ${arah(jarakStop)}`} style={{ fontSize: 28, fontWeight: 700 }}>{bertanda(jarakStop, 1)}%</span>
-                <span style={{ fontSize: 11, color: 'var(--bb-redup)' }}>{angka(kartu.stop, 0)}</span>
+                <span className="teks-11" style={{ color: 'var(--bb-redup)' }}>{angka(kartu.stop, 0)}</span>
               </div>
             </div>
           </div>

@@ -320,7 +320,7 @@ export function BedahUnggah() {
         <section className="panel" style={{ marginBottom: 12 }}>
           <div className="panel-h"><span className="lbl">Kandidat Deep Dive hari ini</span></div>
           <div className="panel-b">
-            <p className="muted" style={{ marginTop: 0, fontSize: 11 }}>
+            <p className="muted teks-11" style={{ marginTop: 0 }}>
               Mesin sudah menandai emiten ini dari harga & volume sendiri — arus broker inilah lapis
               yang tak bisa dilihat mesin, setoranmu yang melengkapinya. Klik kode untuk mengisi
               kolom Emiten di form bawah.
@@ -344,12 +344,12 @@ export function BedahUnggah() {
       <section className="panel">
         <div className="panel-h"><span className="lbl">Deep Dive — unggah sumber</span></div>
         <div className="panel-b">
-        <p className="muted" style={{ marginTop: 0, fontSize: 11 }}>
+        <p className="muted teks-11" style={{ marginTop: 0 }}>
           Studi satu emiten <b>lintas waktu</b> — beda dari setoran harian (satu emiten, satu tanggal),
           di sini satu emiten boleh disetor untuk <b>beberapa tanggal</b>: rentang broker summary + done
           summary per tanggal jadi bahan produk PDF "Deep Dive" yang dirakit di luar aplikasi ini.
         </p>
-        <p className="muted" style={{ marginTop: 0, fontSize: 11 }}>
+        <p className="muted teks-11" style={{ marginTop: 0 }}>
           Hasilnya dikreditkan atas nama kontributor yang menyetornya — kredit &amp; jenjang ikut
           setoran yang <b>disetujui</b>, terlepas dari apakah akhirnya dimuat di edisi.
         </p>
@@ -359,7 +359,7 @@ export function BedahUnggah() {
             {!emitenBebas && terkunci ? (
               <div className="af-emiten-lock">
                 <span className="chip warn">Sedang mengerjakan: {terkunci}</span>
-                <span className="muted" style={{ fontSize: 11 }}>
+                <span className="muted teks-11">
                   {arsip?.find((b) => b.ticker === terkunci)?.tanggalList.length ?? 0} tanggal tersimpan
                 </span>
                 <button type="button" className="btn-p af-tambah" onClick={() => { setModeTambah(true); setTicker('') }}>
@@ -407,7 +407,7 @@ export function BedahUnggah() {
             {mengunggah ? 'Mengunggah…' : 'Unggah'}
           </button>
           {status && (
-            <p className={status.ok ? 'muted' : 'af-err'} style={{ margin: 0, fontSize: 11.5 }}>
+            <p className={`teks-11-5 ${status.ok ? 'muted' : 'af-err'}`} style={{ margin: 0 }}>
               {status.ok && <IkonMenu d={IKON_CENTANG} size={12} />} {status.pesan}
             </p>
           )}
@@ -469,7 +469,7 @@ export function BedahUnggah() {
                         <tr key={`${b.ticker}-${t.tanggal}`}>
                           <td colSpan={4} style={{ paddingLeft: 20 }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-                              <span className="muted" style={{ fontSize: 11, minWidth: 76 }}>{t.tanggal}</span>
+                              <span className="muted teks-11" style={{ minWidth: 76 }}>{t.tanggal}</span>
                               {t.paths.map((p) => (
                                 <span key={p} style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
                                   <button

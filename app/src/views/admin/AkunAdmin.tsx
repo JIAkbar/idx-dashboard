@@ -380,8 +380,8 @@ export function AkunAdmin() {
                                   di tabel. */}
                               {a.akurasi_sejak && (
                                 <div
-                                  className="muted aa-nowrap"
-                                  style={{ fontSize: 10, marginTop: 2 }}
+                                  className="muted aa-nowrap teks-10"
+                                  style={{ marginTop: 2 }}
                                   title={`Akurasi dihitung ulang sejak ${waktuManusiawi(a.akurasi_sejak)} — setoran disetujui sebelumnya tetap dihitung.`}
                                 >
                                   akurasi sejak {waktuManusiawi(a.akurasi_sejak).split(',')[0]}
@@ -403,7 +403,7 @@ export function AkunAdmin() {
                               disabled={sedangProses}
                               onGanti={(n) => ubahProfil(a, { kuota_manual: n === IKUT_JENJANG ? null : Number(n) })}
                             />
-                            <span className="muted" style={{ fontSize: 10 }}>efektif {kuotaEfektif}/hari</span>
+                            <span className="muted teks-10">efektif {kuotaEfektif}/hari</span>
                           </div>
                         </td>
                         <td>
@@ -721,7 +721,7 @@ function FormHapusAkun({ akun, onClose, onSukses }: { akun: AkunRow; onClose: ()
           <li>Tulisannya di Forum dan jejak aksesnya — tetap ada, cuma kehilangan nama penulis</li>
           <li>PDF edisi yang sudah terbit — dirakit dari angka hasil transkripsi, bukan dari akun ini</li>
         </ul>
-        <p className="muted" style={{ margin: '6px 0 0', fontSize: 11 }}>
+        <p className="muted teks-11" style={{ margin: '6px 0 0' }}>
           Kalau tujuannya cuma menghentikan akses, <b>nonaktifkan</b> saja — semua di atas tetap utuh.
         </p>
       </div>

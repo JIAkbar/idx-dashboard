@@ -123,7 +123,7 @@ export function PanelBandingEmiten({ awal }: { awal: string }) {
     <div className="panel">
       <div className="panel-h"><span className="lbl">Banding Emiten</span></div>
       <div className="panel-b">
-        <p style={{ fontSize: 11, color: 'var(--text3)', marginBottom: 10, lineHeight: 1.6 }}>
+        <p className="teks-11" style={{ color: 'var(--text3)', marginBottom: 10, lineHeight: 1.6 }}>
           Sampai lima emiten berdampingan, ruas yang dipilih karena artinya berubah ketika
           disandingkan. Yang berupa deret — lintasan laba, denyut kuartalan, laporan keuangan —
           sengaja tidak ikut: disandingkan sebagai satu angka, deret kehilangan bagian yang membuatnya
@@ -210,7 +210,7 @@ export function PanelBandingEmiten({ awal }: { awal: string }) {
         </div>
 
         {belumTerpanen.length > 0 && (
-          <p style={{ fontSize: 11, color: 'var(--text3)', marginTop: 10 }}>
+          <p className="teks-11" style={{ color: 'var(--text3)', marginTop: 10 }}>
             Berkas fundamental {belumTerpanen.join(', ')} belum tersedia — seluruh kolomnya ditulis
             "—". Itu berarti datanya belum terpanen, bukan angkanya nol.
           </p>
