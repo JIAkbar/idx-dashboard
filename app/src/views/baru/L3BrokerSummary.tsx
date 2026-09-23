@@ -17,12 +17,18 @@ interface HariBroker extends GrupBroker { asing?: GrupBroker; nego?: GrupBroker 
 interface BrokerTahunan { kode: string; tahun: number; hari: Record<string, HariBroker> }
 interface DsBrokerVal { broker_val?: { cd: string; nm: string }[] }
 
-const VARIAN: { slug: 'reguler' | 'asing' | 'nego'; label: string }[] = [
+type SlugVarian = 'reguler' | 'asing' | 'nego' | 'nego-asing' | 'tunai' | 'tunai-asing'
+/** #235 A: tiga varian terakhir tak dirakit arsip tahunan; dibaca dari jendela
+ *  20 hari bursa terakhir (berkas broker harian per emiten), tanggal yang sama. */
+const VARIAN: { slug: SlugVarian; label: string; jendela20?: boolean }[] = [
   { slug: 'reguler', label: 'Reguler' },
   { slug: 'asing', label: 'Asing' },
   { slug: 'nego', label: 'Nego' },
+  { slug: 'nego-asing', label: 'Nego-asing', jendela20: true },
+  { slug: 'tunai', label: 'Tunai', jendela20: true },
+  { slug: 'tunai-asing', label: 'Tunai-asing', jendela20: true },
 ]
-const SEGERA = ['Nego-asing', 'Tunai', 'Tunai-asing']
+interface BrokerHarian { hari: Record<string, Partial<Record<SlugVarian, GrupBroker>>> }
 
 function warnaJenis(j: string): string {
   return j === 'A' ? 'var(--bb-biru)' : j === 'P' ? 'var(--bb-emas)' : 'var(--bb-redup)'
@@ -61,13 +67,15 @@ function tandaRupiah(v: number): string {
 export default function L3BrokerSummary({ kodeTetap, sisip = false }: { kodeTetap?: string; sisip?: boolean } = {}) {
   const { kode: kodeParam } = useParams<{ kode: string }>()
   const kode = (kodeTetap ?? kodeParam ?? EMITEN_BAWAAN).toUpperCase()
-  const [varian, setVarian] = useState<'reguler' | 'asing' | 'nego'>('reguler')
+  const [varian, setVarian] = useState<SlugVarian>('reguler')
 
   const { data: ds } = useDsTerbaru<DsBrokerVal>()
   const namaBroker = new Map((ds?.broker_val ?? []).map((b) => [b.cd, b.nm] as const))
 
   const tahun = new Date().getFullYear()
   const { data, galat } = useJson<BrokerTahunan>(`/data-idx/json/broker_tahunan/${kode}/${tahun}.json`)
+  const pakaiJendela = VARIAN.find((v) => v.slug === varian)?.jendela20 ?? false
+  const { data: harian } = useJson<BrokerHarian>(pakaiJendela ? `/data-idx/json/broker_harian/${kode}.json` : null)
 
   if (galat) return <Keadaan galat={galat} />
   if (!data) return <Keadaan />
@@ -75,7 +83,14 @@ export default function L3BrokerSummary({ kodeTetap, sisip = false }: { kodeTeta
   const rec = tgl ? data.hari[tgl] : undefined
   if (!rec) return <Keadaan kosong={`Belum ada data broker summary ${kode} tahun ${tahun}.`} />
 
-  const grup: GrupBroker = varian === 'reguler' ? rec : (rec[varian] ?? { ringkas: rec.ringkas, broker: [] })
+  const kosongGrup: GrupBroker = { ringkas: { ...rec.ringkas, total_lot: 0, total_nilai: 0 }, broker: [] }
+  const grupJendela = pakaiJendela && tgl ? harian?.hari?.[tgl]?.[varian] : undefined
+  const grup: GrupBroker = varian === 'reguler' ? rec
+    : pakaiJendela ? (grupJendela ?? kosongGrup)
+      : (rec[varian as 'asing' | 'nego'] ?? { ringkas: rec.ringkas, broker: [] })
+  const catatanVarian = pakaiJendela
+    ? (!harian ? 'memuat…' : grupJendela ? 'dari 20 hari bursa terakhir' : 'tidak tersedia untuk tanggal ini')
+    : null
   const namaUtk = (kd: string) => namaBroker.get(kd) ?? kd
 
   const beli10 = [...grup.broker].sort((a, b) => b[2] - a[2]).slice(0, 10)
@@ -107,13 +122,10 @@ export default function L3BrokerSummary({ kodeTetap, sisip = false }: { kodeTeta
     <div className="bb-isi">
       {!sisip && <PilihEmiten slug="broker-summary" />}
 
-      <Blok kelas="polos" label={`Broker summary · ${VARIAN.find((v) => v.slug === varian)?.label}`} catatan={`${tanggalPendek(tgl)} · penutupan`}>
+      <Blok kelas="polos" label={`Broker summary · ${VARIAN.find((v) => v.slug === varian)?.label}`} catatan={`${tanggalPendek(tgl)} · penutupan${catatanVarian ? ` · ${catatanVarian}` : ''}`}>
         <div className="bb-pils">
           {VARIAN.map((v) => (
             <Pil key={v.slug} aktif={varian === v.slug} onClick={() => setVarian(v.slug)}>{v.label}</Pil>
-          ))}
-          {SEGERA.map((s) => (
-            <span key={s} className="bb-pil" style={{ opacity: 0.45, cursor: 'not-allowed' }}>{s} · segera</span>
           ))}
         </div>
       </Blok>

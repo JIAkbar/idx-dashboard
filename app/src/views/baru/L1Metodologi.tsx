@@ -74,24 +74,14 @@ export default function L1Metodologi({ sisip = false }: { sisip?: boolean } = {}
         </div>
 
         <div className="bb-kolom">
-          <Blok label="Forum · angka ini" catatan="contoh utas — forum belum berjalan">
-            <div className="bb-daftar">
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 4, paddingBottom: 12, borderBottom: '1px solid var(--bb-garis)' }}>
-                <span style={{ fontSize: 12, fontWeight: 600 }}>Kontributor Pemula</span>
-                <span className="bb-catatan" style={{ fontSize: 13, lineHeight: 1.45 }}>Kok selisih taksiran sama resmi bisa jauh banget?</span>
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 4, paddingBottom: 12, borderBottom: '1px solid var(--bb-garis)' }}>
-                <span style={{ fontSize: 12, fontWeight: 600 }}>Kontributor Diamond</span>
-                <span className="bb-catatan" style={{ fontSize: 13, lineHeight: 1.45 }}>Taksiran itu per emiten, gampang meleset sehari. Angka resmi pasar yang dipakai buat kesimpulan.</span>
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                <span style={{ fontSize: 12, fontWeight: 600 }}>Redaksi</span>
-                <span className="bb-catatan" style={{ fontSize: 13, lineHeight: 1.45 }}>Betul, taksiran hanya bantu lihat pola per saham — total pasar selalu pakai angka resmi bursa.</span>
-              </div>
-            </div>
-          </Blok>
+          {/* #237 A: forum dicabut atas permintaan Johan 18 Agu 2026 (b41fa7559) —
+              utas contoh dibuang; pertanyaan & koreksi lewat Kritik & Saran. */}
+          <Blok
+            label="Ada yang janggal dengan angka ini?"
+            narasi="Kirim pertanyaan atau koreksi lewat Kritik & Saran. Tiap laporan dibaca redaksi, dan angka yang terbukti salah dibetulkan di sumbernya."
+          />
           <Link to="/feedback" className="bb-tombol utama">Jawaban ini salah? Laporkan</Link>
-          <Link to="/feedback" className="bb-tombol">Tanya di forum</Link>
+          <Link to="/feedback" className="bb-tombol">Kirim pertanyaan</Link>
         </div>
       </div>
 

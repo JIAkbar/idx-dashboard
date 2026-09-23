@@ -1,4 +1,5 @@
 import type { BarisOhlc } from '../../lib/dasbor/ihsgOhlc'
+import type { BarisAsing } from './cerita-hitung'
 
 /** Satu hari `broker_puncak/<KODE>.json` (spek #231 D2). */
 export interface HariBrokerPuncak {
@@ -56,4 +57,54 @@ export function hitungLonjakan(bar: BarisOhlc[], ambangPct: number): LonjakanHas
   if (n === 0) return { n, medianH5: null }
   const medianH5 = n % 2 === 1 ? ret[(n - 1) / 2] : (ret[n / 2 - 1] + ret[n / 2]) / 2
   return { n, medianH5 }
+}
+
+/** #236 empat pemicu Kartu Pagi. Tiap fungsi murni, `menyala` + `kalimat`
+ *  berangka siap tampil (atau null kalau tak menyala / data kurang). */
+export interface HasilPemicu { menyala: boolean; kalimat: string | null }
+
+/** Wrapper tipis atas `cekWatchlistBerubah` — bentuk hasil seragam #236. */
+export function pemicuPembeliBerganti(hari: HariBrokerPuncak[]): HasilPemicu {
+  const r = cekWatchlistBerubah(hari)
+  return { menyala: r.berubah, kalimat: r.kalimat }
+}
+
+function ma20At(ohlc: BarisOhlc[], i: number): number {
+  let s = 0
+  for (let j = i - 19; j <= i; j++) s += ohlc[j][4]
+  return s / 20
+}
+
+/** Tutup vs MA20 berbalik arah dari kemarin ke hari terakhir. Butuh >= 21 bar. */
+export function pemicuTembusMa20(ohlc: BarisOhlc[]): HasilPemicu {
+  const n = ohlc.length
+  if (n < 21) return { menyala: false, kalimat: null }
+  const tutupKemarin = ohlc[n - 2][4]
+  const tutupTerakhir = ohlc[n - 1][4]
+  const ma20Kemarin = ma20At(ohlc, n - 2)
+  const ma20Terakhir = ma20At(ohlc, n - 1)
+  if (tutupKemarin <= ma20Kemarin && tutupTerakhir > ma20Terakhir) {
+    return { menyala: true, kalimat: 'Tutup tembus ke ATAS MA20.' }
+  }
+  if (tutupKemarin >= ma20Kemarin && tutupTerakhir < ma20Terakhir) {
+    return { menyala: true, kalimat: 'Tutup tembus ke BAWAH MA20.' }
+  }
+  return { menyala: false, kalimat: null }
+}
+
+/** Net asing (beli-jual lembar) searah >= `minHari` hari bursa terakhir berturut-turut. */
+export function pemicuAsingBeruntun(asing: BarisAsing[], minHari = 5): HasilPemicu {
+  if (asing.length < minHari) return { menyala: false, kalimat: null }
+  const net = asing.slice(-minHari).map((b) => b[1] - b[2])
+  if (net.every((x) => x > 0)) return { menyala: true, kalimat: `Asing net beli ${minHari} hari bursa berturut-turut.` }
+  if (net.every((x) => x < 0)) return { menyala: true, kalimat: `Asing net jual ${minHari} hari bursa berturut-turut.` }
+  return { menyala: false, kalimat: null }
+}
+
+/** Harga di atas stop dan jarak < 3%. */
+export function pemicuDekatStop(kartu: { harga: number; stop: number }): HasilPemicu {
+  if (!(kartu.stop > 0) || !(kartu.harga > kartu.stop)) return { menyala: false, kalimat: null }
+  const jarakPct = ((kartu.harga - kartu.stop) / kartu.stop) * 100
+  if (jarakPct < 3) return { menyala: true, kalimat: `Harga ${jarakPct.toFixed(1)}% di atas stop.` }
+  return { menyala: false, kalimat: null }
 }

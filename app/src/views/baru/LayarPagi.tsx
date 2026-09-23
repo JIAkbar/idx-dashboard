@@ -2,11 +2,16 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { urlData } from '../../lib/dasbor/baseData'
 import { muatWatchlist } from '../../lib/dasbor/watchlist'
+import { muatPemicu, LABEL_PEMICU, type Pemicu } from '../../lib/dasbor/pemicuPagi'
 import type { BarisOhlc } from '../../lib/dasbor/ihsgOhlc'
+import type { BarisAsing } from './cerita-hitung'
 import { useDsTerbaru, useJson, angka, bertanda, rupiah, tanggalPendek } from './data'
 import { KakiBaru } from './KakiBaru'
 import { ruteLayar } from './peta'
-import { cekWatchlistBerubah, hitungLonjakan, type HariBrokerPuncak } from './pagi-hitung'
+import {
+  hitungLonjakan, pemicuAsingBeruntun, pemicuDekatStop, pemicuPembeliBerganti, pemicuTembusMa20,
+  type HariBrokerPuncak,
+} from './pagi-hitung'
 
 /** #231 layar utama "Kartu Pagi" — tiga hal sebelum bursa buka. */
 
@@ -44,13 +49,38 @@ function useBrokerPuncakWatchlist(kodes: string[]): { data: Record<string, HariB
   return { data, dimuat }
 }
 
+interface KartuMini { harga: number; stop: number }
+interface DataPemicuEmiten { ohlc: BarisOhlc[] | null; asing: BarisAsing[] | null; kartu: KartuMini | null }
+
+/** OHLC + asing + kartu per kode watchlist — cuma untuk menilai pemicu (#236), satu efek untuk daftar. */
+function useDataPemicuWatchlist(kodes: string[]): { data: Record<string, DataPemicuEmiten>; dimuat: boolean } {
+  const [data, setData] = useState<Record<string, DataPemicuEmiten>>({})
+  const [dimuat, setDimuat] = useState(false)
+  useEffect(() => {
+    if (kodes.length === 0) { setDimuat(true); return }
+    let hidup = true
+    setDimuat(false)
+    Promise.all(kodes.map((kode) =>
+      Promise.all([
+        fetch(urlData(`/data-idx/json/ohlc/${kode}.json`)).then((r) => (r.ok ? (r.json() as Promise<{ d: BarisOhlc[] }>) : null)).then((j) => j?.d ?? null).catch(() => null),
+        fetch(urlData(`/data-idx/json/asing/${kode}.json`)).then((r) => (r.ok ? (r.json() as Promise<{ d: BarisAsing[] }>) : null)).then((j) => j?.d ?? null).catch(() => null),
+        fetch(urlData(`/data-idx/json/kartu/${kode}.json`)).then((r) => (r.ok ? (r.json() as Promise<KartuMini>) : null)).catch(() => null),
+      ]).then(([ohlc, asing, kartu]) => [kode, { ohlc, asing, kartu }] as const),
+    )).then((entries) => { if (hidup) { setData(Object.fromEntries(entries)); setDimuat(true) } })
+    return () => { hidup = false }
+  }, [kodes.join(',')])
+  return { data, dimuat }
+}
+
 export default function LayarPagi() {
   const [{ kodes, contoh }] = useState<{ kodes: string[]; contoh: boolean }>(() => {
     const item = muatWatchlist()
     return item.length > 0 ? { kodes: item.map((i) => i.kode), contoh: false } : { kodes: CONTOH_WATCHLIST, contoh: true }
   })
+  const [setelan] = useState(muatPemicu)
   const ds = useDsTerbaru<DsPagi>()
   const broker = useBrokerPuncakWatchlist(kodes)
+  const dataPemicu = useDataPemicuWatchlist(kodes)
 
   const gainerTerbesar = [...(ds.data?.gainers ?? [])].sort((a, b) => b.p - a.p)[0] ?? null
   const ohlcGainer = useJson<{ d: BarisOhlc[] }>(gainerTerbesar ? `/data-idx/json/ohlc/${gainerTerbesar.c}.json` : null)
@@ -65,14 +95,35 @@ export default function LayarPagi() {
       }`
     : null
 
-  // (b) watchlist berubah — kode pertama yang pembeli terbesarnya berbalik
+  // (b) pemicu watchlist yang menyala (#236) — semua emiten, semua pemicu aktif.
   // Tanggal data broker terbaru di watchlist — ditulis di layar supaya
   // arsip yang tertinggal (#232) tak terbaca sebagai "hari ini".
   const tglBroker = Object.values(broker.data).map((h) => h?.[h.length - 1]?.tanggal).filter(Boolean).sort().pop() ?? null
-  const kandidatBerubah = kodes
-    .map((kode) => ({ kode, hasil: broker.data[kode] ? cekWatchlistBerubah(broker.data[kode]!) : null }))
-    .find((x) => x.hasil?.berubah) ?? null
-  const adaBerkasBroker = kodes.some((k) => broker.data[k] != null)
+  const dimuatPemicu = broker.dimuat && dataPemicu.dimuat
+  const pemicuPerEmiten = kodes
+    .map((kode) => {
+      const d = dataPemicu.data[kode]
+      const brokerHari = broker.data[kode]
+      const menyala: { p: Pemicu; kalimat: string }[] = []
+      if (setelan['pembeli-berganti'] && brokerHari) {
+        const r = pemicuPembeliBerganti(brokerHari)
+        if (r.menyala && r.kalimat) menyala.push({ p: 'pembeli-berganti', kalimat: r.kalimat })
+      }
+      if (setelan['tembus-ma20'] && d?.ohlc) {
+        const r = pemicuTembusMa20(d.ohlc)
+        if (r.menyala && r.kalimat) menyala.push({ p: 'tembus-ma20', kalimat: r.kalimat })
+      }
+      if (setelan['asing-beruntun'] && d?.asing) {
+        const r = pemicuAsingBeruntun(d.asing)
+        if (r.menyala && r.kalimat) menyala.push({ p: 'asing-beruntun', kalimat: r.kalimat })
+      }
+      if (setelan['dekat-stop'] && d?.kartu) {
+        const r = pemicuDekatStop(d.kartu)
+        if (r.menyala && r.kalimat) menyala.push({ p: 'dekat-stop', kalimat: r.kalimat })
+      }
+      return { kode, menyala }
+    })
+    .filter((x) => x.menyala.length > 0)
 
   // (c) lonjakan — kejadian lampau serupa & return H+5
   const ambangPct = gainerTerbesar ? gainerTerbesar.p * 0.8 : null
@@ -101,26 +152,30 @@ export default function LayarPagi() {
           {kalimatIhsg ? <span style={{ fontSize: 14, lineHeight: 1.45 }}>{kalimatIhsg}</span> : <span className="bb-catatan">Data belum bisa dimuat.</span>}
         </div>
 
-        {/* (b) watchlist berubah */}
-        <div className={`bb-kartu ${kandidatBerubah ? 'sorot' : ''}`}>
+        {/* (b) pemicu watchlist */}
+        <div className={`bb-kartu ${pemicuPerEmiten.length > 0 ? 'sorot' : ''}`}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
             <span className="bb-mono" style={{ fontWeight: 600, fontSize: 16 }}>
-              {kandidatBerubah ? kandidatBerubah.kode : 'Watchlist'} <span style={{ fontWeight: 400, color: 'var(--bb-redup)', fontSize: 12 }}>{kandidatBerubah ? 'watchlist' : ''}{contoh ? ' · contoh' : ''}</span>
+              Watchlist <span style={{ fontWeight: 400, color: 'var(--bb-redup)', fontSize: 12 }}>pemicu{contoh ? ' · contoh' : ''}</span>
             </span>
-            {kandidatBerubah && <span className="bb-mono" style={{ color: 'var(--bb-emas)' }}>berubah</span>}
+            {pemicuPerEmiten.length > 0 && <span className="bb-mono" style={{ color: 'var(--bb-emas)' }}>{pemicuPerEmiten.length} menyala</span>}
           </div>
-          {!broker.dimuat
-            ? <span className="bb-catatan">Memuat data broker…</span>
-            : !adaBerkasBroker
-              ? <span className="bb-catatan">Data pergerakan broker watchlist belum tersedia.</span>
-              : kandidatBerubah
-                ? (
-                  <>
-                    <span style={{ fontSize: 14, lineHeight: 1.45 }}>{kandidatBerubah.hasil!.kalimat}</span>
-                    <Link to={ruteLayar('emiten', kandidatBerubah.kode)} style={{ fontSize: 13, minHeight: 44, display: 'inline-flex', alignItems: 'center' }}>buka ceritanya →</Link>
-                  </>
-                )
-                : <span className="bb-catatan">Tak ada watchlist yang berganti pembeli terbesarnya{tglBroker ? ` (data broker per ${tanggalPendek(tglBroker)})` : ''}.</span>}
+          {!dimuatPemicu
+            ? <span className="bb-catatan">Memuat data watchlist…</span>
+            : pemicuPerEmiten.length === 0
+              ? <span className="bb-catatan">Tak ada pemicu yang menyala untuk watchlist-mu{tglBroker ? ` (data broker per ${tanggalPendek(tglBroker)})` : ''}.</span>
+              : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  {pemicuPerEmiten.map(({ kode, menyala }) => (
+                    <div key={kode} style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                      <Link to={ruteLayar('emiten', kode)} className="bb-mono" style={{ fontWeight: 600, fontSize: 13, minHeight: 44, display: 'inline-flex', alignItems: 'center' }}>{kode} →</Link>
+                      {menyala.map((m) => (
+                        <span key={m.p} style={{ fontSize: 13, lineHeight: 1.4 }}>{LABEL_PEMICU[m.p]}: {m.kalimat}</span>
+                      ))}
+                    </div>
+                  ))}
+                </div>
+              )}
         </div>
 
         {/* (c) lonjakan */}

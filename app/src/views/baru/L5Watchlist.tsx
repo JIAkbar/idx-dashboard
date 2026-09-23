@@ -3,8 +3,9 @@ import { Link } from 'react-router-dom'
 import { urlData } from '../../lib/dasbor/baseData'
 import { keFraksi } from '../../lib/fraksiHarga'
 import { muatWatchlist } from '../../lib/dasbor/watchlist'
+import { muatPemicu, simpanPemicu, LABEL_PEMICU, URUTAN_PEMICU, type SetelanPemicu } from '../../lib/dasbor/pemicuPagi'
 import { useDsTerbaru, useJson, angka, bertanda, rupiah, tanggalPendek, arah } from './data'
-import { Hero, Blok, Keadaan } from './ui'
+import { Hero, Blok, Keadaan, Pil } from './ui'
 import { KakiBaru } from './KakiBaru'
 import { ruteLapisan } from './peta'
 
@@ -51,6 +52,7 @@ export default function L5Watchlist({ sisip = false }: { sisip?: boolean } = {})
     const item = muatWatchlist()
     return item.length > 0 ? { kodes: item.map((i) => i.kode), contoh: false } : { kodes: CONTOH, contoh: true }
   })
+  const [pemicu, setPemicu] = useState<SetelanPemicu>(muatPemicu)
   const ds = useDsTerbaru<Ds>()
   const jago = useJson<JagoTerbaru>('/data-idx/json/jago_papan/terbaru.json')
   const tahun = ds.tanggal ? ds.tanggal.slice(0, 4) : null
@@ -152,14 +154,18 @@ export default function L5Watchlist({ sisip = false }: { sisip?: boolean } = {})
         <div className="bb-kolom">
           <Blok kelas="panel" label="Pengaturan pemicu">
             <div className="bb-daftar">
-              {['Pembeli terbesar berganti', 'Tembus MA20', 'Asing beruntun ≥ 5 hari', 'Mendekati stop (< 3%)'].map((t) => (
-                <div key={t} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <span style={{ fontSize: 13 }}>{t}</span>
-                  <span className="bb-lencana">segera</span>
+              {URUTAN_PEMICU.map((p) => (
+                <div key={p} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', minHeight: 44 }}>
+                  <span style={{ fontSize: 13 }}>{LABEL_PEMICU[p]}</span>
+                  <Pil aktif={pemicu[p]} onClick={() => {
+                    const next = { ...pemicu, [p]: !pemicu[p] }
+                    setPemicu(next)
+                    simpanPemicu(next)
+                  }}>{pemicu[p] ? 'aktif' : 'nonaktif'}</Pil>
                 </div>
               ))}
             </div>
-            <p className="bb-narasi">Kartu pagi hanya dikirim kalau ada yang berubah — tak ada satu pun pemicu menyala berarti tak ada kartu besok pagi.</p>
+            <p className="bb-narasi">Pemicu dinilai tiap kali Kartu Pagi dibuka; PAPAN belum mengirim kartu lewat email/WA.</p>
           </Blok>
 
           {netAsing.length > 0 && (
