@@ -1,16 +1,16 @@
 {
  "kode": "DOOH",
- "tgl": "2026-09-23",
- "harga": 420.0,
- "prev": 378.0,
- "chg": 11.111111111111116,
- "n": 803,
+ "tgl": "2026-09-24",
+ "harga": 392.0,
+ "prev": 420.0,
+ "chg": -6.666666666666665,
+ "n": 804,
  "mulai": "2023-05-08",
- "ma20": 366.4,
- "ma50": 288.88,
- "ma200": 211.19,
- "atr": 28.119262876529113,
- "atr_pct": 6.695062589649789,
+ "ma20": 369.7,
+ "ma50": 294.24,
+ "ma200": 212.345,
+ "atr": 28.539315528205606,
+ "atr_pct": 7.280437634746328,
  "support": [
   {
    "level": 326.0,
@@ -34,29 +34,70 @@
    "harga": 228
   }
  ],
- "resistance": [],
+ "resistance": [
+  {
+   "level": 482.0,
+   "sentuhan": 1,
+   "terakhir": "2026-09-17",
+   "dalam_atr": false,
+   "harga": 482
+  }
+ ],
  "stop": 326,
  "stop_asal": "klaster",
- "stop_pct": 22.380952380952383,
+ "stop_pct": 16.83673469387755,
  "er": 0.29411764705882354,
- "er_persentil": 97.33333333333334,
- "er_n_populasi": 450,
- "likuiditas_median20": 17572154000.0,
+ "er_persentil": 97.10467706013362,
+ "er_n_populasi": 449,
+ "likuiditas_median20": 19997472000.0,
  "kualitas": {
   "riwayat": "cukup",
   "likuiditas": "cukup",
-  "lilin": 803,
-  "nilai20": 17572154000.0
+  "lilin": 804,
+  "nilai20": 19997472000.0
  },
  "beku": 0,
  "beku_sejak": null,
- "dihitung": "2026-09-23",
- "rsi": 63.65673943141383,
+ "dihitung": "2026-09-24",
+ "rsi": 57.17737990768231,
  "stochrsi": [
-  7.739915100456006,
-  9.730898295601433
+  8.4517407903195,
+  5.520733434566298
  ],
- "target": [],
+ "target": [
+  {
+   "harga": 482,
+   "pct": 22.95918367346939,
+   "sentuhan": 1,
+   "terakhir": "2026-09-17",
+   "fp": {
+    "n": 783,
+    "n_efektif": 39,
+    "kena": 303,
+    "stop": 252,
+    "lewat": 228,
+    "p_kena": 38.69731800766284,
+    "p_stop": 32.18390804597701,
+    "median_hari": 7,
+    "q1": 3,
+    "q3": 12,
+    "harapan": 3.465869106263196
+   },
+   "fp60": {
+    "n": 743,
+    "n_efektif": 12,
+    "kena": 398,
+    "stop": 274,
+    "lewat": 71,
+    "p_kena": 53.566621803499324,
+    "p_stop": 36.87752355316285,
+    "median_hari": 12.0,
+    "q1": 5,
+    "q3": 27,
+    "harapan": 6.089488285219876
+   }
+  }
+ ],
  "musiman": {
   "n": 4,
   "naik": 3,
@@ -64,7 +105,7 @@
   "tersusut": 57.00000000000001,
   "bawah": 30.063605244263663,
   "atas": 95.44139373553638,
-  "median": 24.148721538271502,
+  "median": 19.854243010664142,
   "dasar": 45.0,
   "total_bulan": 40
  },
@@ -82,10 +123,10 @@
  "fundamental": {
   "name": "PT Era Media Sejahtera Tbk",
   "updated": "2026-09-19 01:09",
-  "harga_pada": "2026-09-23",
-  "pe": 40.229885057471265,
+  "harga_pada": "2026-09-24",
+  "pe": 37.547892720306514,
   "pb": 10.2008,
-  "pbv": 10.50078755906693,
+  "pbv": 9.800735055129135,
   "eps": 10.44,
   "roe": 0.27622998,
   "der": 10.453,
@@ -132,41 +173,41 @@
    }
   }
  },
- "ma5": 408.0,
- "ma100": 212.32,
- "ma150": 193.62,
+ "ma5": 394.8,
+ "ma100": 214.56,
+ "ma150": 194.97333333333333,
  "bb20": {
-  "mid": 366.4,
-  "atas": 451.6253483419106,
-  "bawah": 281.1746516580894
+  "mid": 369.7,
+  "atas": 453.51193232469944,
+  "bawah": 285.88806767530053
  },
- "posisi_bb": 0.6289,
+ "posisi_bb": 0.2661,
  "ichimoku": {
   "tenkan": 421.0,
-  "kijun": 390.0,
-  "senkou_a": 405.5,
+  "kijun": 404.0,
+  "senkou_a": 412.5,
   "senkou_b": 296.5,
   "di_atas_kumo": true
  },
  "regresi60": {
-  "kemiringan": 5.739260905807169,
-  "tengah": 429.0415300546448,
-  "posisi": -0.3937
+  "kemiringan": 5.693831619894415,
+  "tengah": 432.4846994535519,
+  "posisi": -1.7217
  },
- "freq": 9240,
- "ukuran_order": 142.0814,
- "peringkat_value": 59,
- "peringkat_volume": 43,
- "peringkat_freq": 51,
- "porsi_asing": 0.0979,
- "net_asing_rp": -5769815200,
- "label_fd": "F 10% : D 90%",
- "tiket_avg": 5493879.59,
- "tiket_avg_med60": 3067041.79,
- "tiket_lonjakan": 1.7913,
- "asing_net_5h": -24884868600,
- "asing_net_20h": -26160698400,
- "asing_streak": -3,
+ "freq": 12842,
+ "ukuran_order": 142.6361,
+ "peringkat_value": 30,
+ "peringkat_volume": 26,
+ "peringkat_freq": 22,
+ "porsi_asing": 0.0816,
+ "net_asing_rp": -631194000,
+ "label_fd": "F 8% : D 92%",
+ "tiket_avg": 5705945.4,
+ "tiket_avg_med60": 3126662.56,
+ "tiket_lonjakan": 1.8249,
+ "asing_net_5h": -29109045200,
+ "asing_net_20h": -30384875000,
+ "asing_streak": -5,
  "tiket_broker_maks": null,
  "broker_tiket_maks_kode": null,
  "bval_maks": null,

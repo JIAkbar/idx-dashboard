@@ -1,16 +1,16 @@
 {
  "kode": "TRIM",
- "tgl": "2026-09-23",
- "harga": 845.0,
- "prev": 810.0,
- "chg": 4.320987654320985,
- "n": 6468,
+ "tgl": "2026-09-24",
+ "harga": 800.0,
+ "prev": 845.0,
+ "chg": -5.3254437869822535,
+ "n": 6469,
  "mulai": "2000-04-24",
- "ma20": 737.0,
- "ma50": 645.8,
- "ma200": 608.14,
- "atr": 58.64787868656695,
- "atr_pct": 6.940577359357035,
+ "ma20": 747.0,
+ "ma50": 650.5,
+ "ma200": 608.715,
+ "atr": 58.03017306609788,
+ "atr_pct": 7.253771633262235,
  "support": [
   {
    "level": 526.8888888888889,
@@ -20,36 +20,77 @@
    "harga": 525
   },
   {
-   "level": 310.51851851851853,
-   "sentuhan": 27,
+   "level": 312.46153846153845,
+   "sentuhan": 26,
    "terakhir": "2025-09-10",
    "dalam_atr": false,
-   "harga": 310
+   "harga": 312
   }
  ],
- "resistance": [],
+ "resistance": [
+  {
+   "level": 930.0,
+   "sentuhan": 1,
+   "terakhir": "2026-09-17",
+   "dalam_atr": false,
+   "harga": 930
+  }
+ ],
  "stop": 525,
  "stop_asal": "klaster",
- "stop_pct": 37.8698224852071,
+ "stop_pct": 34.375,
  "er": 0.17647058823529413,
- "er_persentil": 14.666666666666666,
- "er_n_populasi": 450,
- "likuiditas_median20": 829357750.0,
+ "er_persentil": 14.92204899777283,
+ "er_n_populasi": 449,
+ "likuiditas_median20": 877805000.0,
  "kualitas": {
   "riwayat": "cukup",
   "likuiditas": "cukup",
-  "lilin": 6468,
-  "nilai20": 829357750.0
+  "lilin": 6469,
+  "nilai20": 877805000.0
  },
  "beku": 0,
  "beku_sejak": null,
- "dihitung": "2026-09-23",
- "rsi": 72.39259309920169,
+ "dihitung": "2026-09-24",
+ "rsi": 61.80925448579226,
  "stochrsi": [
-  24.233283915738895,
-  39.470853808691224
+  7.279076889834179,
+  22.012059391295235
  ],
- "target": [],
+ "target": [
+  {
+   "harga": 930,
+   "pct": 16.25,
+   "sentuhan": 1,
+   "terakhir": "2026-09-17",
+   "fp": {
+    "n": 6448,
+    "n_efektif": 322,
+    "kena": 1497,
+    "stop": 98,
+    "lewat": 4853,
+    "p_kena": 23.21650124069479,
+    "p_stop": 1.5198511166253101,
+    "median_hari": 9,
+    "q1": 4,
+    "q3": 14,
+    "harapan": 3.2502326302729534
+   },
+   "fp60": {
+    "n": 6408,
+    "n_efektif": 107,
+    "kena": 2844,
+    "stop": 387,
+    "lewat": 3177,
+    "p_kena": 44.38202247191011,
+    "p_stop": 6.03932584269663,
+    "median_hari": 20.0,
+    "q1": 8,
+    "q3": 35,
+    "harapan": 5.136060393258426
+   }
+  }
+ ],
  "musiman": {
   "n": 27,
   "naik": 14,
@@ -75,10 +116,10 @@
  "fundamental": {
   "name": "PT Trimegah Sekuritas Indonesia Tbk",
   "updated": "2026-09-19 01:32",
-  "harga_pada": "2026-09-23",
-  "pe": 8.389594916600476,
+  "harga_pada": "2026-09-24",
+  "pe": 7.942811755361398,
   "pb": 2.5527,
-  "pbv": 2.5678583149987237,
+  "pbv": 2.4311084639041174,
   "eps": 100.72,
   "roe": 0.36033002,
   "der": 144.178,
@@ -125,41 +166,41 @@
    }
   }
  },
- "ma5": 838.0,
- "ma100": 592.53,
- "ma150": 581.1533333333333,
+ "ma5": 828.0,
+ "ma100": 595.13,
+ "ma150": 582.22,
  "bb20": {
-  "mid": 737.0,
-  "atas": 895.0,
-  "bawah": 579.0
+  "mid": 747.0,
+  "atas": 893.982992213385,
+  "bawah": 600.017007786615
  },
- "posisi_bb": 0.6835,
+ "posisi_bb": 0.3606,
  "ichimoku": {
-  "tenkan": 815.0,
-  "kijun": 757.5,
-  "senkou_a": 786.25,
+  "tenkan": 820.0,
+  "kijun": 760.0,
+  "senkou_a": 790.0,
   "senkou_b": 732.5,
   "di_atas_kumo": true
  },
  "regresi60": {
-  "kemiringan": 4.284801333703807,
-  "tengah": 759.5683060109288,
-  "posisi": 1.8154
+  "kemiringan": 4.502083912197833,
+  "tengah": 769.311475409836,
+  "posisi": 0.6735
  },
- "freq": 278,
- "ukuran_order": 123.7806,
- "peringkat_value": 275,
- "peringkat_volume": 414,
- "peringkat_freq": 517,
- "porsi_asing": 0.0174,
- "net_asing_rp": 13457000,
- "label_fd": "F 2% : D 98%",
- "tiket_avg": 10252120.5,
- "tiket_avg_med60": 1172853.45,
- "tiket_lonjakan": 8.7412,
- "asing_net_5h": 223386500,
- "asing_net_20h": 121067500,
- "asing_streak": 3,
+ "freq": 346,
+ "ukuran_order": 32.5838,
+ "peringkat_value": 366,
+ "peringkat_volume": 493,
+ "peringkat_freq": 449,
+ "porsi_asing": 0.0428,
+ "net_asing_rp": -57141000,
+ "label_fd": "F 4% : D 96%",
+ "tiket_avg": 2650466.76,
+ "tiket_avg_med60": 1193358.21,
+ "tiket_lonjakan": 2.221,
+ "asing_net_5h": 213734000,
+ "asing_net_20h": 85108500,
+ "asing_streak": -1,
  "tiket_broker_maks": null,
  "broker_tiket_maks_kode": null,
  "bval_maks": null,
