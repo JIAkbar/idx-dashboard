@@ -1,16 +1,16 @@
 {
  "kode": "SRSN",
- "tgl": "2026-09-24",
- "harga": 133.0,
- "prev": 131.0,
- "chg": 1.526717557251911,
- "n": 6134,
+ "tgl": "2026-09-25",
+ "harga": 123.0,
+ "prev": 133.0,
+ "chg": -7.518796992481203,
+ "n": 6135,
  "mulai": "2001-08-06",
- "ma20": 107.25,
- "ma50": 84.28,
- "ma200": 68.82,
- "atr": 10.267791149194336,
- "atr_pct": 7.72014372119875,
+ "ma20": 109.7,
+ "ma50": 85.44,
+ "ma200": 69.105,
+ "atr": 10.677234638537598,
+ "atr_pct": 8.680678567916747,
  "support": [
   {
    "level": 92.0,
@@ -27,29 +27,70 @@
    "harga": 51
   }
  ],
- "resistance": [],
+ "resistance": [
+  {
+   "level": 143.0,
+   "sentuhan": 1,
+   "terakhir": "2026-09-18",
+   "dalam_atr": false,
+   "harga": 143
+  }
+ ],
  "stop": 92,
  "stop_asal": "klaster",
- "stop_pct": 30.82706766917293,
+ "stop_pct": 25.203252032520325,
  "er": 0.14285714285714285,
  "er_persentil": 1.55902004454343,
  "er_n_populasi": 449,
- "likuiditas_median20": 34340556000.0,
+ "likuiditas_median20": 39747759000.0,
  "kualitas": {
   "riwayat": "cukup",
   "likuiditas": "cukup",
-  "lilin": 6134,
-  "nilai20": 34340556000.0
+  "lilin": 6135,
+  "nilai20": 39747759000.0
  },
  "beku": 0,
  "beku_sejak": null,
- "dihitung": "2026-09-24",
- "rsi": 74.86605611762448,
+ "dihitung": "2026-09-25",
+ "rsi": 64.24811115557166,
  "stochrsi": [
-  71.45505885943005,
-  62.151198270308754
+  57.178293256892424,
+  61.9852856109753
  ],
- "target": [],
+ "target": [
+  {
+   "harga": 143,
+   "pct": 16.260162601626014,
+   "sentuhan": 1,
+   "terakhir": "2026-09-18",
+   "fp": {
+    "n": 6114,
+    "n_efektif": 306,
+    "kena": 1398,
+    "stop": 387,
+    "lewat": 4329,
+    "p_kena": 22.865554465161924,
+    "p_stop": 6.329735034347399,
+    "median_hari": 7.0,
+    "q1": 3,
+    "q3": 13,
+    "harapan": 2.1226772621013748
+   },
+   "fp60": {
+    "n": 6074,
+    "n_efektif": 101,
+    "kena": 2441,
+    "stop": 674,
+    "lewat": 2959,
+    "p_kena": 40.18768521567336,
+    "p_stop": 11.096476786302272,
+    "median_hari": 17,
+    "q1": 6,
+    "q3": 34,
+    "harapan": 3.737909950716234
+   }
+  }
+ ],
  "musiman": {
   "n": 26,
   "naik": 9,
@@ -75,10 +116,10 @@
  "fundamental": {
   "name": "PT Indo Acidatama Tbk",
   "updated": "2026-09-19 01:30",
-  "harga_pada": "2026-09-24",
-  "pe": 6.42512077294686,
+  "harga_pada": "2026-09-25",
+  "pe": 5.942028985507247,
   "pb": 0.8873,
-  "pbv": 0.9147620586960857,
+  "pbv": 0.8459829565384853,
   "eps": 20.7,
   "roe": 0.15269,
   "der": 1.609,
@@ -125,41 +166,41 @@
    }
   }
  },
- "ma5": 129.2,
- "ma100": 75.37,
- "ma150": 70.52666666666667,
+ "ma5": 128.0,
+ "ma100": 75.9,
+ "ma150": 70.94,
  "bb20": {
-  "mid": 107.25,
-  "atas": 137.04848989462386,
-  "bawah": 77.45151010537614
+  "mid": 109.7,
+  "atas": 136.01425469208658,
+  "bawah": 83.38574530791342
  },
- "posisi_bb": 0.8641,
+ "posisi_bb": 0.5054,
  "ichimoku": {
-  "tenkan": 118.0,
+  "tenkan": 119.5,
   "kijun": 105.0,
-  "senkou_a": 111.5,
+  "senkou_a": 112.25,
   "senkou_b": 102.0,
   "di_atas_kumo": true
  },
  "regresi60": {
-  "kemiringan": 1.005112531258683,
-  "tengah": 110.85081967213115,
-  "posisi": 2.0521
+  "kemiringan": 1.0478744095582107,
+  "tengah": 113.06229508196722,
+  "posisi": 0.9286
  },
- "freq": 19132,
- "ukuran_order": 278.5854,
- "peringkat_value": 32,
- "peringkat_volume": 8,
- "peringkat_freq": 14,
- "porsi_asing": 0.2544,
- "net_asing_rp": 3739453300,
+ "freq": 12820,
+ "ukuran_order": 276.527,
+ "peringkat_value": 45,
+ "peringkat_volume": 12,
+ "peringkat_freq": 27,
+ "porsi_asing": 0.2495,
+ "net_asing_rp": -9467312700,
  "label_fd": "F 25% : D 75%",
- "tiket_avg": 3738561.33,
+ "tiket_avg": 3534278.32,
  "tiket_avg_med60": 2830257.48,
- "tiket_lonjakan": 1.3209,
- "asing_net_5h": 7683949300,
- "asing_net_20h": 5830521300,
- "asing_streak": 2,
+ "tiket_lonjakan": 1.2487,
+ "asing_net_5h": -9086336900,
+ "asing_net_20h": -4635050800,
+ "asing_streak": -1,
  "tiket_broker_maks": null,
  "broker_tiket_maks_kode": null,
  "bval_maks": null,
