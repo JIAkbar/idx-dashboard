@@ -142,6 +142,11 @@ goto keluar_tanpa_kunci
 :kunci_bebas
 if defined PAPAN_TUNGGU_KUNCI echo Kunci dilepas sesudah menunggu %PAPAN_TUNGGU_KUNCI% x 30 detik - lanjut.
 mkdir "%~dp0.panen.lock" 2>nul
+REM #238 A: berkas ringkasan jalan ini - satu baris "GAGAL: ..." per langkah gagal.
+for /f %%t in ('call "%PYEXE%" -c "import datetime;print(datetime.date.today().isoformat())"') do set TGL_RINGKAS=%%t
+set "RINGKAS=%~dp0logs\ringkasan_panen_sore_%TGL_RINGKAS%.txt"
+if not exist "%~dp0logs" mkdir "%~dp0logs"
+> "%RINGKAS%" echo PAPAN sore - mulai %date% %time%
 REM Sejak titik ini kunci MILIK proses ini, jadi :akhir boleh melepasnya.
 set PAPAN_KUNCI_MILIK=1
 
@@ -163,6 +168,7 @@ REM  Kuncinya TIDAK diambil ulang - bat ini sudah memegangnya di atas, dan
 REM  JALANKAN_OTOMATIS memang tak pernah mengambil kunci sendiri.
 set LEWATI_OHLC_YAHOO=1
 call "%~dp0JALANKAN_OTOMATIS.bat" auto
+if errorlevel 1 call :gagal "jalur IDX dan Yahoo - JALANKAN_OTOMATIS"
 set LEWATI_OHLC_YAHOO=
 
 echo.
@@ -176,15 +182,19 @@ set TOKEN_MATI=
 "%PYEXE%" scripts\cek_token.py
 if errorlevel 1 set TOKEN_MATI=1
 if defined TOKEN_MATI set PAPAN_RC=1
+if defined TOKEN_MATI call :gagal "TOKEN STOCKBIT DITOLAK - harga, broker, intraday, keystats, info dilewati - perlu semai ulang"
 if defined TOKEN_MATI echo   TOKEN DITOLAK - harga Stockbit, broker, intraday, keystats, dan info dilewati hari ini.
 
 echo.
 echo [B] OHLCV Stockbit --paksa (bar hari ini) + IHSG + gabung + jahit
 if not defined TOKEN_MATI "%PYEXE%" scripts\panen_ohlcv_stockbit.py --semua --paksa
-if not defined TOKEN_MATI if errorlevel 1 echo   (OHLCV gagal - lanjut)
+if not defined TOKEN_MATI if errorlevel 1 call :gagal "OHLCV"
 if not defined TOKEN_MATI "%PYEXE%" scripts\panen_ohlcv_stockbit.py IHSG --paksa
+if not defined TOKEN_MATI if errorlevel 1 call :gagal "OHLCV IHSG"
 "%PYEXE%" scripts\gabung_ohlc_stockbit.py
+if errorlevel 1 call :gagal "gabung OHLC"
 "%PYEXE%" scripts\jahit_ihsg.py
+if errorlevel 1 call :gagal "jahit IHSG"
 REM Gerbang #102 A: emiten yang arsip gabungannya sudah sampai hari bursa
 REM terakhir tapi berkas sumbernya belum. Panen 8 Sep 2026 melewatkan 99
 REM emiten sambil melaporkan sukses; ini yang membuatnya terlihat pada menit
@@ -196,6 +206,7 @@ REM tapi sejak #146 A ia menentukan kode keluar bat — supaya Task Scheduler
 REM mencatat kegagalannya walau tak ada yang membaca lognya malam itu.
 if errorlevel 1 set PAPAN_RC=1
 if errorlevel 1 echo   [B] PERINGATAN: ada emiten tertinggal - lihat logs\panen_tertinggal.txt
+if "%PAPAN_RC%"=="1" if not defined TOKEN_MATI call :gagal "ada emiten OHLCV tertinggal - daftar di logs\panen_tertinggal.txt"
 
 echo.
 echo [B2] Broker hari-tuntas - 6 varian bentuk PERSIS CI, 8 utas
@@ -220,20 +231,22 @@ if defined TOKEN_MATI goto broker_lewat
 for /f %%d in ('"%PYEXE%" scripts\tgl_broker_lubang.py') do (
   echo      target: %%d
   "%PYEXE%" scripts\panen_broker_harian.py --tanggal %%d --jeda 0.4 --paralel 48 --varian reguler,asing,nego,nego-asing,tunai,tunai-asing
-  if errorlevel 1 echo   broker %%d gagal - lanjut
+  if errorlevel 1 if not errorlevel 3 call :gagal "broker %%d"
+  if errorlevel 3 call :gagal "broker %%d tertunda - jatah sumber habis, disusul panen berikutnya"
 )
 :broker_lewat
 
 echo.
 echo [C] Aliran asing
 "%PYEXE%" scripts\panen_asing.py
-if errorlevel 1 echo   (asing gagal - lanjut)
+if errorlevel 1 call :gagal "asing"
 
 echo.
 echo [D] Intraday 1 menit + bangun 1H
 if not defined TOKEN_MATI "%PYEXE%" scripts\panen_intraday_stockbit.py
-if not defined TOKEN_MATI if errorlevel 1 echo   (intraday gagal - lanjut)
+if not defined TOKEN_MATI if errorlevel 1 call :gagal "intraday"
 "%PYEXE%" scripts\bangun_intraday_1h.py
+if errorlevel 1 call :gagal "intraday 1 jam"
 
 echo.
 echo [E] Turunan: tahunan + kategori + kartu + screener + penjaga radar
@@ -248,13 +261,16 @@ REM --inkremental (#219, Johan 22 Sep 2026): hanya emiten yang arsipnya berubah
 REM sejak berkas tahunan ditulis; sama dengan CI (#204). Jalan penuh 962 emiten
 REM +-75 menit (22 Sep 21:04-22:2x), inkremental +-3 menit.
 "%PYEXE%" scripts\bangun_broker_tahunan.py --tahun %TAHUN_KINI% --paralel 16 --inkremental
+if errorlevel 1 call :gagal "bangun tahunan"
 REM #231: ringkasan broker harian (arus sektor x kelompok broker + pembeli/penjual
 REM terbesar 10 hari per emiten) untuk layar Peta Pasar, Kartu Pagi, Emiten cerita.
 REM WAJIB sesudah broker_tahunan di atas. Nol jaringan.
 "%PYEXE%" scripts\riset\ringkas_broker_harian.py --tulis
-if errorlevel 1 echo   (ringkas broker harian gagal - lanjut)
+if errorlevel 1 call :gagal "ringkas broker harian"
 "%PYEXE%" scripts\bangun_kategori_broker.py
+if errorlevel 1 call :gagal "kategori broker"
 "%PYEXE%" scripts\riset\kartu_analisa.py --semua --tulis
+if errorlevel 1 call :gagal "kartu analisa"
 REM Peluang historis seluruh emiten. Dulu YATIM: nol pemanggil di bat
 REM maupun CI, jadi angkanya membeku dan tak seorang pun tahu - stempel
 REM `harga_pada` yang dipasang 6 Sep 2026 langsung memperlihatkannya
@@ -263,77 +279,82 @@ REM Statistik RBS per kerangka + pemasok kandidat Deep Dive (#49). Angka
 REM yang dipajang chart datang dari berkas ini; kalau ia tak jalan, chart
 REM DIAM soal statistik alih-alih memajang angka basi.
 "%PYEXE%" scripts\riset\rbs_statistik.py --kerangka D W M --tulis
-if errorlevel 1 echo   (statistik RBS gagal - lanjut)
+if errorlevel 1 call :gagal "statistik RBS"
 REM Statistik Gap per kerangka (#50). Node, bukan Python: skripnya
 REM MENGIMPOR mesin gap yang sama dengan yang menggambar zonanya, jadi
 REM angka layar dan zona layar tak mungkin berbeda diam-diam.
-for %%T in (D W M) do node app\scripts\gap-statistik.ts --tf=%%T --tulis
+for %%T in (D W M) do (
+  node app\scripts\gap-statistik.ts --tf=%%T --tulis
+  if errorlevel 1 call :gagal "statistik gap %%T"
+)
 REM Backtest kelas Pivot/CPR + setup R:R (#63) - angka di balik badge rapor
 REM panel analitik chart. Node, alasan sama seperti Gap: skripnya MENGIMPOR
 REM mesin klasifikasi yang dipakai layar. D, W, M sekali jalan (~15 detik).
 node app\scripts\bt-pivot-cpr.ts --tulis
+if errorlevel 1 call :gagal "backtest pivot CPR"
 REM Rollup Top Broker lintas hari (#29). Dijumlah dari rekap broker harian
 REM resmi yang SUDAH dibaca halaman itu - sumber sama, bukan jahitan.
 "%PYEXE%" scripts\bangun_broker_rentang.py --tulis
-if errorlevel 1 echo   (rollup broker rentang gagal - lanjut)
+if errorlevel 1 call :gagal "rollup broker rentang"
 REM Pivot broker -> emiten (#30). Membalik arsip per-emiten jadi satu
 REM berkas per broker; sumber sama, cuma arah bacanya yang dibalik.
 "%PYEXE%" scripts\bangun_broker_pivot.py --tulis
-if errorlevel 1 echo   (pivot broker gagal - lanjut)
+if errorlevel 1 call :gagal "pivot broker"
 "%PYEXE%" scripts\bangun_prob.py
-if errorlevel 1 echo   (peluang gagal - lanjut)
+if errorlevel 1 call :gagal "peluang"
 REM Rezim pasar: dulu HANYA di bat buka-laptop. Hari Johan tak membuka
 REM laptop, halaman Rezim Pasar diam memakai angka kemarin tanpa satu pun
 REM galat. Membaca ohlc/ + ohlc/IHSG.json yang baru dijahit langkah [B].
 "%PYEXE%" scripts\bangun_rezim_pasar.py
-if errorlevel 1 echo   (rezim pasar gagal - lanjut)
+if errorlevel 1 call :gagal "rezim pasar"
 node app\scripts\bangun-screener.mjs
+if errorlevel 1 call :gagal "screener"
 "%PYEXE%" scripts\riset\rekap_preset.py
-if errorlevel 1 echo   (rekap preset gagal - lanjut)
+if errorlevel 1 call :gagal "rekap preset"
 rem -- Penilai jejak. Menutup celah yang ditemukan 1 Sep 2026: keduanya
 rem -- ditulis hari itu tapi tak dipanggil di mana pun, jadi baris TERKUNCI
 rem -- hari berikutnya tak akan pernah lahir -- dan tak ada satu pun galat
 rem -- yang memberitahu, persis bentuk lima alarm senyap yang sudah dibayar.
 rem -- WAJIB sesudah rekap_preset: keduanya membaca jejak yang ia tulis.
 "%PYEXE%" scripts\riset\nilai_jejak.py
-if errorlevel 1 echo   (nilai jejak gagal - lanjut)
+if errorlevel 1 call :gagal "nilai jejak"
 "%PYEXE%" scripts\riset\selisih_terkunci.py
+if errorlevel 1 call :gagal "selisih terkunci"
 REM Rencana dagang per emiten (area beli, TP1/TP2, batas rugi) yang dibaca
 REM blok rencana di Kartu Analisa. Dulu YATIM di sini: pemanggilnya cuma ada
 REM di JALANKAN_BUKA_LAPTOP, jadi berkasnya basi tiap kali laptop tak dibuka
 REM -- terukur 3 hari basi pada 8 Sep 2026, batas 0, tanpa satu pun galat.
 REM Nol jaringan, +-40 detik, membaca ohlc/ yang baru dipanen di atas.
 "%PYEXE%" scripts\riset\rencana_saham.py
-if errorlevel 1 echo   (rencana dagang gagal - lanjut)
+if errorlevel 1 call :gagal "rencana dagang"
 REM Winrate PAPAN per emiten (#91): aturan rencana dagang yang sama, enam
 REM horizon, saringan teknikal, pembanding pasar. Membaca arsip harga + gudang
 REM Stockbit + rencana_saham.json yang baru ditulis di atas -- WAJIB sesudahnya.
 REM Nol jaringan, +-40 detik, keluaran data-idx/json/winrate/ (ikut commit [F]).
 "%PYEXE%" scripts\riset\winrate_emiten.py
-if errorlevel 1 echo   (winrate gagal - lanjut)
+if errorlevel 1 call :gagal "winrate"
 REM Rapor Uji (#221): catat sinyal OBV/RBS hari ini ke log append-only
 REM (uji ke depan, baris lama tak pernah ditulis ulang), lalu nilai semua
 REM pilihan H+5/H+20 vs acak & IHSG. Nol jaringan. Keluaran ikut commit.
 "%PYEXE%" scripts\riset\rapor_uji.py --catat
-if errorlevel 1 echo   (rapor uji catat gagal - lanjut)
+if errorlevel 1 call :gagal "rapor uji catat"
 "%PYEXE%" scripts\riset\rapor_uji.py --nilai
-if errorlevel 1 echo   (rapor uji nilai gagal - lanjut)
+if errorlevel 1 call :gagal "rapor uji nilai"
 REM Tinjauan H+5 tiap Deep Dive - menutup lingkaran Analisa PAPAN v1 bagian 5.
 REM Dulu YATIM: keluarannya efek samping tanpa jadwal, jadi kelima barisnya
 REM berhenti di 3/5 dan 4/5 hari sejak 22 Agu tanpa satu pun galat. Nol
 REM jaringan, jalannya sepersekian detik.
 "%PYEXE%" scripts\riset\tinjau_deepdive.py
-if errorlevel 1 echo   (tinjauan H+5 gagal - lanjut)
-if errorlevel 1 echo   (selisih terkunci gagal - lanjut)
+if errorlevel 1 call :gagal "tinjauan H+5"
 node app\scripts\bangun-harian-papan.mjs
-if errorlevel 1 echo   (harian papan gagal - lanjut)
+if errorlevel 1 call :gagal "harian papan"
 node app\scripts\bangun-jago-papan.mjs
-if errorlevel 1 echo   (jago papan gagal - lanjut)
+if errorlevel 1 call :gagal "jago papan"
 node app\scripts\bangun-ipo.mjs
-if errorlevel 1 echo   (ipo gagal - lanjut)
+if errorlevel 1 call :gagal "ipo"
 pushd app
 call npx vite-node scripts/pola-screener.ts
-if errorlevel 1 echo   (pola screener gagal - lanjut)
+if errorlevel 1 call :gagal "pola screener"
 popd
 REM [E2] Turunan halaman yang KEMARIN yatim (audit 28 Agu atas keluhan
 REM Johan "bnyk yang setelah panen data, page-page itu tidak saling
@@ -345,18 +366,18 @@ REM disengaja (#182 A, keputusan Johan 13 Sep 2026): P/BV, P/S, dan
 REM kelompok laba TTM di Stock Detail dibaca dari keystats, dan semuanya
 REM bergerak mengikuti harga. Profil tetap bulanan di blok Buka Laptop.
 "%PYEXE%" scripts\bangun_aliran_investor.py
-if errorlevel 1 echo   (aliran investor gagal - lanjut)
+if errorlevel 1 call :gagal "aliran investor"
 "%PYEXE%" scripts\bangun_bidoffer.py
-if errorlevel 1 echo   (bidoffer gagal - lanjut)
+if errorlevel 1 call :gagal "bidoffer"
 REM Bandarmologi: sama - dulu HANYA di bat buka-laptop, jadi Whales/Neo
 REM memakai angka kemarin diam-diam. Membaca asing/ [C], broker_harian/
 REM [B2], dan ohlc/ [B] - ketiganya sudah turun di atas.
 "%PYEXE%" scripts\bangun_bandarmologi.py
-if errorlevel 1 echo   (bandarmologi gagal - lanjut)
+if errorlevel 1 call :gagal "bandarmologi"
 "%PYEXE%" scripts\bangun_harga_terakhir.py
-if errorlevel 1 echo   (harga terakhir gagal - lanjut)
+if errorlevel 1 call :gagal "harga terakhir"
 "%PYEXE%" scripts\petakan_grup.py
-if errorlevel 1 echo   (peta grup gagal - lanjut)
+if errorlevel 1 call :gagal "peta grup"
 REM [E4] Seasonality HILIR. Pemanen hulunya (~20 menit ke Yahoo, 963
 REM emiten) SENGAJA tidak ikut ke bat - ia terjadwal di CI
 REM panen-harian-rumah.yml, dan menambahkannya di sini berarti dua sapuan
@@ -367,14 +388,15 @@ REM keduanya tak dipanggil dari MANA PUN (grep seluruh repo: cuma
 REM docstring-nya sendiri), jadi hulunya segar tiap hari sementara
 REM hilirnya berhenti di 19 Agustus - nol galat, angkanya salah di layar.
 "%PYEXE%" scripts\bangun_ihsg_bulanan.py
-if errorlevel 1 echo   (ihsg bulanan gagal - lanjut)
+if errorlevel 1 call :gagal "ihsg bulanan"
 "%PYEXE%" scripts\siapkan_seasonality.py
-if errorlevel 1 echo   (siapkan seasonality gagal - lanjut)
+if errorlevel 1 call :gagal "siapkan seasonality"
 if not defined TOKEN_MATI "%PYEXE%" scripts\panen_keystats_stockbit.py --semua --jeda 0.4
-if not defined TOKEN_MATI if errorlevel 1 echo   (keystats gagal - lanjut)
+if not defined TOKEN_MATI if errorlevel 1 call :gagal "keystats"
 if not defined TOKEN_MATI "%PYEXE%" scripts\panen_info_stockbit.py --semua --jeda 0.4
-if not defined TOKEN_MATI if errorlevel 1 echo   (info stockbit gagal - lanjut)
+if not defined TOKEN_MATI if errorlevel 1 call :gagal "info stockbit"
 "%PYEXE%" scripts\cek_radar_basi.py
+if errorlevel 1 call :gagal "radar WDWL tertinggal - peringatan"
 
 echo.
 REM Gerbang kesegaran (#101 A): seluruh turunan diperiksa terhadap hari
@@ -383,6 +405,7 @@ REM sudah benar tetap layak didorong - tapi angkanya masuk log panen, jadi
 REM turunan yang diam-diam tertinggal punya baris yang bisa dibaca besok.
 "%PYEXE%" scripts\cek_kesegaran.py
 if errorlevel 1 echo   PERINGATAN: ada turunan basi/kosong - lihat keluaran di atas
+if errorlevel 1 call :gagal "ada turunan basi atau kosong - lihat log panen sore"
 
 echo [F] Commit data hasil panen
 REM SATU daftar jalur untuk add DAN commit (#148). Commit ber-pathspec
@@ -415,6 +438,7 @@ set DORONG_ADA_KONFLIK=
 for /f "delims=" %%f in ('git diff --name-only --diff-filter=U') do set DORONG_ADA_KONFLIK=1
 if not defined DORONG_ADA_KONFLIK goto dorong_tanpa_konflik
 echo   PERINGATAN: suntingan belum di-commit bentrok dengan commit dari GitHub. Berkas dikembalikan ke versi HEAD,
+call :gagal "suntingan lokal bentrok saat tarik - tersimpan di git stash"
 echo   suntingannya tersimpan di git stash - periksa dengan: git stash list
 for /f "delims=" %%f in ('git diff --name-only --diff-filter=U') do (
   echo      %%f
@@ -434,6 +458,7 @@ if %DORONG_COBA% GEQ 3 goto dorong_menyerah
 goto dorong_ulang
 :dorong_menyerah
 echo   PERINGATAN: push data gagal 3 kali - data sudah di-commit di laptop tapi BELUM tayang.
+call :gagal "push data gagal 3 kali - data di-commit di laptop tapi BELUM tayang"
 set PAPAN_RC=1
 goto dorong_selesai
 :dorong_ok
@@ -441,6 +466,8 @@ echo   Data ter-push ke GitHub pada percobaan %DORONG_COBA%.
 :dorong_selesai
 
 :akhir
+REM #238 A: ringkasan + notifikasi. Selalu keluar 0, jadi tak mengubah kode keluar bat.
+if defined RINGKAS "%PYEXE%" scripts\ringkas_panen.py "%RINGKAS%" "Panen Sore"
 if defined PAPAN_KUNCI_MILIK rmdir "%~dp0.panen.lock" 2>nul
 :keluar_tanpa_kunci
 REM Kode keluar dititipkan ke berkas untuk induk di :TEE (#146 A) — lihat
@@ -453,6 +480,16 @@ if not "%1"=="auto" pause
 REM Batas alur: tanpa exit di sini, bat jatuh ke :TEE sesudah pause dan
 REM menjalankan dirinya sekali lagi.
 exit /b %PAPAN_RC%
+
+REM -- #238 A (Johan 23 Sep 2026: "kalau gagal ya kasih tau, biar tidak
+REM -- diam-diam saja"). Tiap langkah gagal dicatat ke berkas ringkasan;
+REM -- scripts\ringkas_panen.py di ujung bat menambah kelengkapan broker,
+REM -- memunculkan notifikasi Windows, dan membuka Notepad bila ada masalah.
+REM -- Teks pesan tanpa tanda kurung/persen: dipanggil juga dari blok for.
+:gagal
+echo   [GAGAL] %~1
+if defined RINGKAS echo GAGAL: %~1>> "%RINGKAS%"
+goto :eof
 
 :TEE
 REM Dipanggil sekali dari blok log di atas; `PAPAN_LOG` sudah terpasang di
