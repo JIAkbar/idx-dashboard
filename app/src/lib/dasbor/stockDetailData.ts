@@ -457,15 +457,21 @@ export interface AsingHarian {
   volume: number
   value: number
   frekuensi: number
+  /** Hadir hanya kalau baris ini taksiran (#253, isi_asing_stockbit.py) —
+   *  bursa sedang tak bisa diambil dan lembarnya dihitung dari nilai
+   *  rupiah Stockbit dibagi harga rata-rata hari itu. `undefined` untuk
+   *  baris resmi bursa. */
+  sumber?: 'stockbit'
 }
 
-/** Bentuk mentah berkas — baris `d` array posisional sesuai `ruas`. */
+/** Bentuk mentah berkas — baris `d` array posisional sesuai `ruas`, dengan
+ *  kolom ke-7 opsional "stockbit" pada baris isian (#253). */
 interface AsingRaw {
   kode: string
   mulai: string
   akhir: string
   n: number
-  d: [string, number, number, number, number, number][]
+  d: [string, number, number, number, number, number, string?][]
 }
 
 export interface AsingData {
@@ -503,7 +509,8 @@ export function fetchAsing(ticker: string): Promise<AsingData | null> {
         mulai: raw.mulai,
         akhir: raw.akhir,
         n: raw.n,
-        d: raw.d.map(([tanggal, beli, jual, volume, value, frekuensi]) => ({ tanggal, beli, jual, volume, value, frekuensi })),
+        d: raw.d.map(([tanggal, beli, jual, volume, value, frekuensi, sumber]) =>
+          (sumber === 'stockbit' ? { tanggal, beli, jual, volume, value, frekuensi, sumber } : { tanggal, beli, jual, volume, value, frekuensi })),
       }
       asingCache.set(ticker, parsed)
       return parsed

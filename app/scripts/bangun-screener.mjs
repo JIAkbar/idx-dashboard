@@ -146,6 +146,11 @@ function posisiHarga(harga, v) {
 
 const emiten = []
 const dilewati = { ohlcKosong: 0 }
+// Tanggal yang diisi dari Stockbit karena IDX tertinggal (#253,
+// scripts/isi_asing_stockbit.py menandai baris begitu dengan kolom ke-7
+// "stockbit") — dikumpulkan lintas emiten, hanya yang jatuh di jendela
+// ASING_N yang benar-benar dipakai net_asing_lembar.
+const isianStockbit = new Set()
 
 for (const f of fileOhlc) {
   const kode = f.replace(/\.json$/, '')
@@ -240,6 +245,7 @@ for (const f of fileOhlc) {
     // jumlah parsial tetap informasi asli, bukan angka yang diarang.
     const jendela = asingBaris.slice(-ASING_N)
     netAsingLembar = jendela.reduce((a, b) => a + (b[1] - b[2]), 0)
+    for (const b of jendela) if (b[6] === 'stockbit') isianStockbit.add(b[0])
   }
 
   const fund = bacaJson(join(DIR_FUND, `${kode}.json`))
@@ -280,6 +286,7 @@ writeFileSync(KELUARAN, JSON.stringify({
   tanggal: tanggalTerakhir,
   n: emiten.length,
   emiten,
+  asing_isian_stockbit: [...isianStockbit].sort(),
 }))
 
 console.log(`screener.json: ${emiten.length} emiten masuk, ${dilewati.ohlcKosong} dilewati (ohlc kosong)`)

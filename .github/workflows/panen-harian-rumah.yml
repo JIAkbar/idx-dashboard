@@ -258,6 +258,19 @@ jobs:
           & "${{ steps.py.outputs.exe }}" scripts/panen_asing.py
           if ($LASTEXITCODE -ne 0) { Write-Host "::warning::panen_asing gagal" }
 
+      # IDX memasang verifikasi bot dan `panen_asing.py` (langkah 3) berhenti
+      # bisa menembus sejak 2026-09-23 — lihat docstring `isi_asing_stockbit.py`.
+      # Selama itu, hari yang belum ada di `asing/` diisi taksiran dari
+      # `ohlcv_stockbit/` (2b sudah jalan di atas), DITANDAI kolom ke-7
+      # "stockbit". Begitu IDX kembali, `panen_asing.py` menimpanya OTOMATIS
+      # lewat `gabung()` — tak ada yang perlu diubah di sini.
+      - name: 3a · Isi asing dari Stockbit bila IDX tertinggal (#253)
+        if: ${{ env.HANYA_BROKER != 'true' }}
+        continue-on-error: true
+        run: |
+          & "${{ steps.py.outputs.exe }}" scripts/isi_asing_stockbit.py
+          if ($LASTEXITCODE -ne 0) { Write-Host "::warning::isi_asing_stockbit gagal" }
+
       # `--tulis` WAJIB. Tanpa itu skripnya menghitung, mencetak "[383/383]",
       # keluar dengan kode SUKSES, dan tidak menyimpan apa pun — dari log,
       # jalan yang tak menyimpan terlihat persis seperti jalan yang berhasil.

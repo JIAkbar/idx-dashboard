@@ -53,6 +53,11 @@ export interface DataScreener {
   tanggal: string
   n: number
   emiten: BarisScreener[]
+  /** Tanggal-tanggal (di jendela ASING_N) yang, untuk sekurangnya satu
+   *  emiten, ikut dihitung dari taksiran Stockbit karena bursa sedang tak
+   *  bisa diambil (#253) — kosong kalau semua emiten sedang lengkap dari
+   *  sumber resmi. Opsional supaya baris uji lama tetap sah. */
+  asing_isian_stockbit?: string[]
 }
 
 /** Lima label tetap SSS Score, dalam urutan kuat→lemah→kuat — dipakai sebagai

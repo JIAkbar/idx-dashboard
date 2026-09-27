@@ -284,6 +284,9 @@ export function PanelAliranAsing({ ticker }: { ticker: string }) {
   // yang sama. Jumlahnya juga TIDAK diikutkan pil rentang — pil mengatur
   // grafik kumulatif, dan tabel yang ikut memanjang jadi 157 baris di YTD.
   const recent = data ? data.d.slice(-JENDELA_TABEL).slice().reverse() : []
+  // #253: baris yang sedang ditampilkan bisa berisi taksiran Stockbit
+  // (kolom ke-7 "stockbit") kalau bursa sempat tak bisa diambil.
+  const isianStockbitTanggal = recent.filter((r) => r.sumber === 'stockbit').map((r) => r.tanggal).sort()
 
   return (
     <div className="panel" ref={wrapRef} style={{ marginBottom: 12 }}>
@@ -396,6 +399,12 @@ export function PanelAliranAsing({ ticker }: { ticker: string }) {
                 </tbody>
               </table>
             </div>
+            {isianStockbitTanggal.length > 0 && (
+              <p className="teks-10" style={{ color: 'var(--text3)', marginTop: 6 }}>
+                Angka asing {isianStockbitTanggal.map(tanggalPendek).join(', ')} dari Stockbit — bursa sedang tak
+                bisa diambil; lembar dihitung dari nilai rupiah ÷ harga rata-rata hari itu.
+              </p>
+            )}
             <p className="teks-10" style={{ color: 'var(--text3)', marginTop: 6 }}>
               Lembar (beli/jual/net asing) dari sumber resmi bursa. Rupiah aliran asing sebenarnya (bukan perkiraan) —
               riwayat sebelum {tanggalPendek(data.mulai)} cuma dari satu sumber, belum ada pembanding bursa.
