@@ -8,6 +8,7 @@ import { useOhlcvKaya } from '../../lib/dasbor/ohlcvKaya'
 import { netRupiahPeriode, kumulatifRupiah, type TitikRupiah } from '../../lib/dasbor/aliranAsingRupiah'
 import { tanggalPendek } from '../../lib/dasbor/statistikBerkala'
 import { IkonMenu, IKON_JAM } from './IkonMenu'
+import { CatatanAsingStockbit } from './CatatanAsingStockbit'
 import { PemilihRentang } from './PemilihRentang'
 import { LabelRentang } from './LabelRentang'
 import { jendelaBaku, opsiRentangBaku, RENTANG_BAKU, type KunciBaku } from '../../lib/dasbor/periode'
@@ -399,12 +400,7 @@ export function PanelAliranAsing({ ticker }: { ticker: string }) {
                 </tbody>
               </table>
             </div>
-            {isianStockbitTanggal.length > 0 && (
-              <p className="teks-10" style={{ color: 'var(--text3)', marginTop: 6 }}>
-                Angka asing {isianStockbitTanggal.map(tanggalPendek).join(', ')} dari Stockbit — bursa sedang tak
-                bisa diambil; lembar dihitung dari nilai rupiah ÷ harga rata-rata hari itu.
-              </p>
-            )}
+            <CatatanAsingStockbit tanggal={isianStockbitTanggal} />
             <p className="teks-10" style={{ color: 'var(--text3)', marginTop: 6 }}>
               Lembar (beli/jual/net asing) dari sumber resmi bursa. Rupiah aliran asing sebenarnya (bukan perkiraan) —
               riwayat sebelum {tanggalPendek(data.mulai)} cuma dari satu sumber, belum ada pembanding bursa.

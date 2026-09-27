@@ -122,6 +122,9 @@ export interface AsingRingkas {
   akhir: string
   n_total: number
   periode: Record<string, AsingPeriode>
+  /** Tanggal isian Stockbit (#253) di dalam jendela terpanjang yang
+   *  diringkas (20 hari) — bursa sedang tak bisa diambil di hari itu. */
+  isian_stockbit?: string[]
 }
 
 /**

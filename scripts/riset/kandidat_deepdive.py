@@ -196,10 +196,15 @@ def sinyal(bar: list, asing: list | None, ihsg_turun: set[str]) -> dict | None:
 
     # 6. Net asing 20 hari positif (pelengkap, bukan inti — lihat sinyal 3)
     net20 = None
+    # #253 C: tanggal isian Stockbit DI DALAM `pot` (jendela yang dijumlah
+    # untuk net20) — bukan dihitung ulang di jendela lain. Angka net20 di
+    # atas TIDAK disentuh.
+    isian_stockbit: list[str] = []
     if asing:
         pot = [r for r in asing if r and r[0] <= bar[-1][0]][-20:]
         if pot:
             net20 = sum((r[1] or 0) - (r[2] or 0) for r in pot)
+            isian_stockbit = [r[0] for r in pot if len(r) > 6 and r[6] == "stockbit"]
             if net20 > 0:
                 poin.append({"nama": "net asing 20 hari positif",
                              "bukti": f"{net20/1e6:,.1f} juta lembar bersih dibeli asing".replace(",", ".")})
@@ -213,6 +218,7 @@ def sinyal(bar: list, asing: list | None, ihsg_turun: set[str]) -> dict | None:
         "rvol_med": round(rvol_med, 2) if rvol_med else None,
         "efisiensi": round(efisiensi, 2) if efisiensi is not None else None,
         "net_asing_20h": net20,
+        "asing_isian_stockbit": isian_stockbit,
         "tanggal": bar[-1][0],
     }
 
@@ -295,6 +301,13 @@ def uji() -> None:
     nama2 = {x["nama"] for x in s2["sinyal"]}
     assert "menyerap saat pasar merah" in nama2, nama2
     assert "net asing 20 hari positif" in nama2, nama2
+    assert s2["asing_isian_stockbit"] == [], s2["asing_isian_stockbit"]  # tanpa kolom-7
+
+    # asing_isian_stockbit (#253 C): baris ber-kolom-7 'stockbit' DI DALAM
+    # jendela 20 hari yang dijumlah untuk net20 ikut terdaftar.
+    asing_isian = [[b[0], 1_000_000, 500_000, 0, 0, 0, "stockbit"] for b in bar[-JENDELA:]]
+    s3 = sinyal(bar, asing_isian, tgl_merah)
+    assert s3["asing_isian_stockbit"] == [r[0] for r in asing_isian], s3["asing_isian_stockbit"]
     print("OK  kandidat_deepdive: 8 pemeriksaan lolos")
 
 

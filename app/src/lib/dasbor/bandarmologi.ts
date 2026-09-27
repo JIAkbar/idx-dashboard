@@ -77,6 +77,9 @@ export interface DataBandar {
   tanggal_bidoffer: string | null
   nilai_pasar_miliar: number | null
   n: number
+  /** #253: tanggal yang net_asing_lembar/share_asing sebagian emitennya ikut
+   *  baris isian Stockbit (bursa sedang tak bisa diambil hari itu). */
+  asing_isian_stockbit?: string[]
   ambang: {
     lipat_timpang: number
     share_nilai_min: number

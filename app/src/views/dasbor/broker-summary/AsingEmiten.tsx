@@ -4,6 +4,7 @@ import { IkonMenu, IKON_CARI, IKON_JAM } from '../../../components/dasbor/IkonMe
 import { useKamusEmiten } from '../../../lib/dasbor/kamusEmiten'
 import { useStockAsing } from '../../../lib/dasbor/stockDetailData'
 import { netPeriode, type NetPeriode } from '../../../components/dasbor/PanelAliranAsing'
+import { CatatanAsingStockbit } from '../../../components/dasbor/CatatanAsingStockbit'
 import { useOhlcvKaya } from '../../../lib/dasbor/ohlcvKaya'
 import { netRupiahPeriode, type NetRupiahPeriode } from '../../../lib/dasbor/aliranAsingRupiah'
 import { fRingkas } from '../../../lib/dasbor/stockDetailFormat'
@@ -57,6 +58,9 @@ export function AsingEmiten() {
   const n10 = data ? netPeriode(data.d, 10) : null
   const n5r = data ? netRupiahPeriode(stockbit, data.akhir, 5) : null
   const n10r = data ? netRupiahPeriode(stockbit, data.akhir, 10) : null
+  // #253: jendela terpanjang di panel ini 10 hari — cukup periksa 10 baris
+  // terakhir untuk tahu apakah salah satu ikut isian Stockbit.
+  const isianTanggal = data ? data.d.slice(-10).filter((r) => r.sumber === 'stockbit').map((r) => r.tanggal) : []
 
   return (
     <div className="panel" style={{ marginTop: 12 }}>
@@ -92,6 +96,7 @@ export function AsingEmiten() {
               <Sel hariDiminta={5} lembar={n5} rupiah={n5r} />
               <Sel hariDiminta={10} lembar={n10} rupiah={n10r} />
             </div>
+            <CatatanAsingStockbit tanggal={isianTanggal} />
             <p className="teks-10" style={{ color: 'var(--text3)', marginTop: 8 }}>
               Net (beli-jual) lembar langsung dari sumber resmi bursa. Nilai rupiah aliran asing sebenarnya (bukan
               perkiraan) — kosong kalau harinya belum terpanen. Data s.d. {data.akhir}.

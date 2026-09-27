@@ -95,6 +95,7 @@ import { useOhlcvKaya, jumlahEmber } from '../../lib/dasbor/ohlcvKaya'
 import { fmtB, fmtRingkas } from '../../lib/dasbor/brokerSummaryFormat'
 import './GrafikEmiten.css'
 import { urlData } from '../../lib/dasbor/baseData'
+import { CatatanAsingStockbit } from '../../components/dasbor/CatatanAsingStockbit'
 
 const DEFAULT_KODE = 'BBCA'
 
@@ -2350,6 +2351,9 @@ export function GrafikEmiten() {
 
   const perluFnet = pol.daftar.some((i) => i.jenis === 'wyckoff')
   const [fnetPeta, setFnetPeta] = useState<Map<string, number>>(() => new Map())
+  // #253 C: tanggal isian Stockbit (kolom ke-7) di berkas asing/ yang sama
+  // dipakai `fnetPeta` — dipisah supaya angka fnet di atas TAK disentuh.
+  const [fnetIsianStockbit, setFnetIsianStockbit] = useState<string[]>(() => [])
 
   /**
    * Net asing per BAR, bukan per tanggal.
@@ -2392,13 +2396,15 @@ export function GrafikEmiten() {
     // emiten baru sempat dihitung dari aliran asing emiten lama — dan hasilnya
     // tetap terlihat masuk akal di layar.
     setFnetPeta(new Map())
+    setFnetIsianStockbit([])
     fetch(urlData(`/data-idx/json/asing/${kode}.json`))
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
-      .then((d: { d?: Array<[string, number, number, number, number, number]> }) => {
+      .then((d: { d?: Array<[string, number, number, number, number, number, string?]> }) => {
         if (batal || !Array.isArray(d.d)) return
         setFnetPeta(new Map(d.d.map(([tgl, beli, jual]) => [tgl, beli - jual])))
+        setFnetIsianStockbit(d.d.filter((r) => r[6] === 'stockbit').map((r) => r[0]))
       })
-      .catch(() => { if (!batal) setFnetPeta(new Map()) })
+      .catch(() => { if (!batal) { setFnetPeta(new Map()); setFnetIsianStockbit([]) } })
     return () => { batal = true }
   }, [kode, perluFnet])
 
@@ -4676,6 +4682,9 @@ export function GrafikEmiten() {
                           </li>
                         ))}
                       </ul>
+                    )}
+                    {inst.jenis === 'wyckoff' && fnetIsianStockbit.length > 0 && (
+                      <CatatanAsingStockbit tanggal={fnetIsianStockbit} />
                     )}
                     {jenisKlasik(inst.jenis) && klasik.length > 0 && (
                       <ul className="grf-pola-daftar">

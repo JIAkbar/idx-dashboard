@@ -785,12 +785,19 @@ def asing_ringkas(kode: str, hari_list: tuple[int, ...] = (5, 20)) -> dict | Non
     baris = a.get("d") or []
     if not baris:
         return None
+    # #253 C: tanggal isian Stockbit (kolom ke-7 baris, indeks 6) DI DALAM
+    # jendela terpanjang yang diringkas — bukan `a["isian_stockbit"]` berkas
+    # (itu daftar SEUMUR HIDUP berkas, bisa memuat tanggal di luar jendela
+    # yang sedang dipakai kartu). Angka yang sudah dihitung di atas TIDAK disentuh.
+    jendela_maks = max(hari_list)
+    isian_stockbit = [r[0] for r in baris[-jendela_maks:] if len(r) > 6 and r[6] == "stockbit"]
     return {
         "satuan": a.get("satuan", {}),
         "mulai": a.get("mulai"),
         "akhir": a.get("akhir"),
         "n_total": len(baris),
         "periode": {str(h): ringkas_asing_dari(baris, h) for h in hari_list},
+        "isian_stockbit": isian_stockbit,
     }
 
 
@@ -1021,6 +1028,12 @@ def uji() -> None:
     # volume nol -> porsi None, bukan ZeroDivisionError
     r0 = ringkas_asing_dari([["d1", 1, 1, 0, 0, 0]], 1)
     assert r0["porsi_beli_pct"] is None and r0["porsi_jual_pct"] is None
+    # isian_stockbit (#253 C): hanya tanggal berkolom-7 'stockbit' DI DALAM
+    # jendela terpanjang (mis. baris "d0" di luar jendela 3 tak ikut).
+    baris_isian = [["d0", 1, 1, 10, 0, 0, "stockbit"], ["d1", 10, 5, 100, 0, 0],
+                   ["d2", 20, 20, 200, 0, 0], ["d3", 5, 25, 50, 0, 0, "stockbit"]]
+    isian = [r[0] for r in baris_isian[-3:] if len(r) > 6 and r[6] == "stockbit"]
+    assert isian == ["d3"], isian
     # kualitas_dari: klasifikasi relatif MIN_LILIN/MIN_LIKUIDITAS (WBSA/GWSA
     # 21 Agu 2026 — riwayat pendek 93 lilin tapi likuiditas cukup vs sebaliknya)
     assert kualitas_dari(93, 9.9e9) == {"riwayat": "pendek", "likuiditas": "cukup", "lilin": 93, "nilai20": 9.9e9}

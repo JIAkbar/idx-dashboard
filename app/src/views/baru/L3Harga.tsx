@@ -5,6 +5,7 @@ import { useJson, angka, bertanda, arah, tanggalPendek } from './data'
 import { EMITEN_BAWAAN } from './peta'
 import { PilihEmiten } from './l3-pilih'
 import { KakiBaru } from './KakiBaru'
+import { CatatanAsingStockbit } from '../../components/dasbor/CatatanAsingStockbit'
 
 interface SR { harga: number; sentuhan: number; terakhir: string }
 interface Target { harga: number; pct: number; fp: { p_kena: number; p_stop: number; median_hari: number } }
@@ -30,7 +31,7 @@ interface Kartu {
   ichimoku: { di_atas_kumo: boolean }
   porsi_asing: number
   label_accdist: string
-  asing?: { periode?: Record<string, PeriodeAsing> }
+  asing?: { periode?: Record<string, PeriodeAsing>; isian_stockbit?: string[] }
   sektor: { nama: string; sektor: string; subsektor: string }
   fundamental?: { week52_high?: number; week52_low?: number }
 }
@@ -297,6 +298,7 @@ export default function L3Harga({ kodeTetap, sisip = false }: { kodeTetap?: stri
                 </span>
               ))}
             </div>
+            {asing5 && <CatatanAsingStockbit tanggal={kartu.asing?.isian_stockbit} />}
           </Blok>
         </div>
       </div>

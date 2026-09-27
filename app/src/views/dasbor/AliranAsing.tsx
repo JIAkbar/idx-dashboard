@@ -1,8 +1,9 @@
 import { lazy, useMemo, useState } from 'react'
-import { IkonMenu, IKON_PERINGATAN, IKON_INFO } from '../../components/dasbor/IkonMenu'
+import { IkonMenu, IKON_PERINGATAN } from '../../components/dasbor/IkonMenu'
 import { Dropdown } from '../../components/dasbor/Dropdown'
 import { StockAutocomplete } from '../../components/dasbor/StockAutocomplete'
 import { PanelAliranAsing } from '../../components/dasbor/PanelAliranAsing'
+import { CatatanAsingStockbit } from '../../components/dasbor/CatatanAsingStockbit'
 import { TINGKAT_LIKUIDITAS } from '../../lib/dasbor/likuiditas'
 import { saringAliranAsing } from '../../lib/dasbor/aliranAsing'
 import { useUrut } from '../../lib/dasbor/useUrut'
@@ -10,7 +11,6 @@ import { useScreener, ringkasLembarBertanda, type BarisScreener } from '../../li
 import { useStockIndex } from '../../lib/dasbor/stockDetailData'
 import { fp } from '../../lib/dasbor/format'
 import { fRingkas } from '../../lib/dasbor/stockDetailFormat'
-import { tanggalPendek } from '../../lib/dasbor/statistikBerkala'
 import { keFraksi } from '../../lib/fraksiHarga'
 import { useTheme } from '../../context/ThemeContext'
 import { SisipKanvas } from '../baru/SisipKanvas'
@@ -80,13 +80,7 @@ export function AliranAsing() {
 
       {/* #253: bursa sempat tak bisa diambil — sebagian angka net asing di
           jendela 20 hari adalah taksiran dari Stockbit, ditulis apa adanya. */}
-      {!!data.asing_isian_stockbit?.length && (
-        <p className="catatan-cakupan muted">
-          <IkonMenu d={IKON_INFO} size={12} />
-          Angka asing {data.asing_isian_stockbit.map(tanggalPendek).join(', ')} dari Stockbit — bursa sedang tak
-          bisa diambil; lembar dihitung dari nilai rupiah ÷ harga rata-rata hari itu.
-        </p>
-      )}
+      <CatatanAsingStockbit tanggal={data.asing_isian_stockbit} />
 
       {/* #228: ringkasan kanvas PAPAN Baru (tampilan Baru saja); fitur lama tetap di bawah. */}
       {tampilan === 'baru' && (

@@ -4,8 +4,10 @@
  *  Indonesia dilakukan di komponen lewat data.ts, bukan di sini). */
 
 export type BarisOhlc = [string, number, number, number, number, number]
-/** [tanggal, beli, jual, volume, value, frekuensi] — beli/jual dalam LEMBAR. */
-export type BarisAsing = [string, number, number, number, number, number]
+/** [tanggal, beli, jual, volume, value, frekuensi, sumber?] — beli/jual dalam
+ *  LEMBAR. Kolom ke-7 opsional "stockbit" menandai baris isian (#253) —
+ *  bursa sedang tak bisa diambil, lembarnya taksiran dari Stockbit. */
+export type BarisAsing = [string, number, number, number, number, number, string?]
 
 export interface HariBrokerPuncak {
   tanggal: string
@@ -20,6 +22,8 @@ export interface FaktaHari {
   close: number
   chgPct: number | null
   netAsingLembar: number | null
+  /** true kalau `netAsingLembar` hari ini ikut baris isian Stockbit (#253). */
+  asingStockbit: boolean
   broker: HariBrokerPuncak | null
 }
 
@@ -45,7 +49,11 @@ export function susunFaktaHarian(
     const chgPct = prevClose ? ((close - prevClose) / prevClose) * 100 : null
     const a = asingByTgl.get(tanggal)
     const netAsingLembar = a ? a[1] - a[2] : null
-    return { tanggal, close, chgPct, netAsingLembar, broker: brokerByTgl.get(tanggal) ?? null }
+    return {
+      tanggal, close, chgPct, netAsingLembar,
+      asingStockbit: a?.[6] === 'stockbit',
+      broker: brokerByTgl.get(tanggal) ?? null,
+    }
   })
 }
 

@@ -18,6 +18,7 @@ import {
 } from '../../lib/dasbor/kartuRingkas'
 import { TINGKAT_LIKUIDITAS, kodePeringkatTeratas, ujiLikuiditas } from '../../lib/dasbor/likuiditas'
 import { LencanaBeku, tidakDiperdagangkan } from '../../components/dasbor/LencanaBeku'
+import { CatatanAsingStockbit } from '../../components/dasbor/CatatanAsingStockbit'
 import {
   useIndeksKartu, useKartu, pembatalDalamAtr, bangunTesis, tingkatBasi, takKeduanya as hitungTakKeduanya,
   type KartuEmiten, type LevelSR, type TargetItem, type FirstPassage,
@@ -143,6 +144,7 @@ function BlokAsing({ k }: { k: KartuEmiten }) {
         <span>Porsi dari volume pasar (20h)</span>
         <span>beli {fmtPct0(p20?.porsi_beli_pct)} · jual {fmtPct0(p20?.porsi_jual_pct)}</span>
       </div>
+      <CatatanAsingStockbit tanggal={k.asing.isian_stockbit} />
       <div className="asal">
         <b>Asal:</b> jumlah beli/jual asing ({satBeli}) dibagi jumlah volume pasar periode yang sama.
         Beli dan jual ditampilkan terpisah, bukan cuma net — net menyembunyikan beda antara &quot;sepi
@@ -493,6 +495,7 @@ function KartuRingkasSatuEmiten({ kode }: { kode: string }) {
             ? <span className={naikTurun(asingP5.net)} style={redupStyle}>{asingP5.net >= 0 ? '+' : ''}{fRingkas(asingP5.net)} {satBeli}</span>
             : <span style={{ color: 'var(--text3)' }}>belum tersedia</span>}
         </div>
+        <CatatanAsingStockbit tanggal={k.asing?.isian_stockbit} />
 
         {peringatanAtr && k.atr_pct != null && (
           <div className="catat awas kta-awas-ringkas">

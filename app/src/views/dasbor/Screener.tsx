@@ -8,6 +8,7 @@ import { UjiAturan } from '../../components/dasbor/UjiAturan'
 import { DropdownMulti, type OpsiMulti } from '../../components/dasbor/DropdownMulti'
 import { Dropdown } from '../../components/dasbor/Dropdown'
 import { PemilihRentang } from '../../components/dasbor/PemilihRentang'
+import { CatatanAsingStockbit } from '../../components/dasbor/CatatanAsingStockbit'
 import { jendelaBaku, opsiRentangBaku, RENTANG_BAKU, type KunciBaku } from '../../lib/dasbor/periode'
 import { TINGKAT_LIKUIDITAS, kodePeringkatTeratas, ujiLikuiditas } from '../../lib/dasbor/likuiditas'
 import { useUrut } from '../../lib/dasbor/useUrut'
@@ -236,6 +237,10 @@ export function Screener() {
         <span className="sub">{data.n} emiten, satu baris per emiten</span>
         <BedaSkor halaman="screener" />
       </div>
+
+      {/* #253: sama seperti Aliran Asing — sebagian Net Asing di sini ikut
+          jendela yang berisi hari isian Stockbit. */}
+      <CatatanAsingStockbit tanggal={data.asing_isian_stockbit} />
 
       {/* #228: ringkasan kanvas PAPAN Baru (tampilan Baru saja); fitur lama tetap di bawah. */}
       {tampilan === 'baru' && (
