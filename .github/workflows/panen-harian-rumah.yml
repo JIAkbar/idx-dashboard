@@ -192,6 +192,18 @@ jobs:
           }
           if ($kode -ne 0 -or ($keluaran -match 'PERINGATAN:')) { exit 1 }
 
+      # #250 (27 Sep 2026): IHSG harian dari Yahoo (^JKSE) + cadangan indeks
+      # untuk hari yang PDF IDX-nya gagal. Dulu hanya dijalankan
+      # JALANKAN_OTOMATIS.bat dari bat laptop; sejak #241 bat itu tak memanen,
+      # dan "IHSG harian" membeku 22 Sep. Urutan sama dengan bat: sebelum 2b
+      # (IHSG Stockbit + jahit_ihsg).
+      - name: 2a · IHSG harian (Yahoo)
+        if: ${{ github.event.inputs.hanya_broker != 'true' }}
+        continue-on-error: true
+        run: |
+          & "${{ steps.py.outputs.exe }}" scripts/panen_ihsg.py
+          if ($LASTEXITCODE -ne 0) { Write-Host "::warning::panen_ihsg gagal" }
+
       # #246 A (Johan 27 Sep 2026): langkah ini (sapuan Yahoo +-22 menit) hanya
       # CADANGAN. Saat token hidup, 2b (OHLCV Stockbit) menimpa ohlc/ sesudahnya,
       # jadi menjalankan keduanya membuang waktu sebelum commit awal - bat sudah

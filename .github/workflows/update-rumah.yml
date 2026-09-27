@@ -195,6 +195,18 @@ jobs:
           Write-Host ('OK: ' + $terbaru.BaseName + '.json ada')
           exit 0
 
+      # #250 (27 Sep 2026): statistik MINGGUAN dan BULANAN dulu hanya di-parse
+      # JALANKAN_OTOMATIS.bat yang dipanggil bat laptop. Sejak #241 bat itu tak
+      # memanen lagi, jadi langkah ini pindah ke sini (PDF-nya sudah diunduh
+      # `download_idx.py --jenis semua` di atas).
+      - name: Parse PDF mingguan & bulanan
+        continue-on-error: true
+        run: |
+          & "${{ steps.py.outputs.exe }}" scripts/parse_idx_weekly.py --semua
+          if ($LASTEXITCODE -ne 0) { Write-Host "::warning::parse_idx_weekly gagal" }
+          & "${{ steps.py.outputs.exe }}" scripts/parse_idx_monthly.py --semua
+          if ($LASTEXITCODE -ne 0) { Write-Host "::warning::parse_idx_monthly gagal" }
+
       - name: Commit kalau ada perubahan
         if: always()
         run: |
