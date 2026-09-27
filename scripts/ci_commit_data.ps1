@@ -50,8 +50,14 @@ if ($LASTEXITCODE -ne 0) {
         }
         Write-Host ("konflik hanya di data-idx (" + $bentrok.Count +
                     " berkas) - dimenangkan versi yang baru dibangun")
-        git checkout --ours -- $bentrok
-        git add $bentrok
+        # Daftar berkas lewat BERKAS, bukan argumen (28 Sep 2026): run 36342684759
+        # bentrok di +-1.600 berkas broker_harian, dan satu perintah berisi 1.600
+        # jalur melampaui batas panjang baris perintah Windows - checkout gagal,
+        # berkas tetap 'unmerged', commit ditolak, push gagal.
+        $daftar = Join-Path $(if ($env:RUNNER_TEMP) { $env:RUNNER_TEMP } else { $env:TEMP }) 'bentrok.txt'
+        [System.IO.File]::WriteAllLines($daftar, [string[]]$bentrok)
+        git checkout --ours --pathspec-from-file=$daftar
+        git add --pathspec-from-file=$daftar
         git commit --no-edit
     }
     git push origin "HEAD:$env:GITHUB_REF_NAME"
