@@ -6,9 +6,14 @@ satu hari broker kosong untuk selamanya: panen berikutnya sudah menarget hari
 bursa sesudahnya. Terjadi 14 Sep 2026 (panen sore keluar karena kunci, lalu
 ditolak gerbang 22:00).
 
-Keluaran: satu tanggal per baris, urut naik - hari bursa dalam JENDELA_HARI hari
-kalender terakhir yang arsipnya belum lengkap enam varian, lalu hari tuntas
-terakhir (selalu ada, sama seperti dulu).
+Keluaran: satu tanggal per baris - hari tuntas terakhir DULU (selalu ada), lalu
+hari bursa dalam JENDELA_HARI hari kalender terakhir yang arsipnya belum lengkap
+enam varian, termuda dulu. Jatah sumber (#218) sering habis di tengah jalan, jadi
+urutan menentukan apa yang kebagian: data hari ini lebih dulu, lubang lama sesudahnya.
+
+#240 (27 Sep 2026): jendela 7 -> 30 hari. Dengan 7 hari, lubang yang belum tertutup
+dalam seminggu jatuh keluar jendela dan tak pernah dikejar lagi - 18 Sep 2026
+(360/963 emiten) terlewat begitu 26 Sep.
 
 Lengkap = untuk TIAP varian, >= AMBANG_LENGKAP emiten punya berkas hari itu,
 dibanding jumlah emiten yang dilaporkan bursa hari itu (`aliran_investor.json`,
@@ -37,7 +42,7 @@ AKAR = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(AKAR / "scripts"))
 
 VARIAN = ("reguler", "asing", "nego", "nego-asing", "tunai", "tunai-asing")
-JENDELA_HARI = 7
+JENDELA_HARI = 30
 # Hari lengkap terukur 962 dari 963 emiten bursa (10-14 Sep 2026); hari bolong
 # 192-379. 95% memberi ruang untuk emiten tersuspensi tanpa bar IDX.
 AMBANG_LENGKAP = 0.95
@@ -70,12 +75,12 @@ def target(bar: list[str], kini: datetime.datetime, hitung: dict[str, dict[str, 
     aman = bar[-1]
     batas = str(kini.date() - datetime.timedelta(days=JENDELA_HARI))
     lubang = [t for t in bar if batas <= t < aman and not lengkap(t, hitung, acuan)]
-    return lubang + [aman]
+    return [aman] + lubang[::-1]
 
 
 def uji() -> int:
     kini = datetime.datetime(2026, 9, 15, 18, 5)
-    bar = ["2026-09-04", "2026-09-07", "2026-09-08", "2026-09-09", "2026-09-10", "2026-09-11", "2026-09-14", "2026-09-15"]
+    bar = ["2026-08-10", "2026-09-04", "2026-09-07", "2026-09-08", "2026-09-09", "2026-09-10", "2026-09-11", "2026-09-14", "2026-09-15"]
     acuan = {t: 963 for t in bar}
     penuh = {v: 962 for v in VARIAN}
 
@@ -86,21 +91,24 @@ def uji() -> int:
         return d
 
     # 14 Sep tak dipanen sama sekali: masuk sebagai lubang.
-    assert target(bar, kini, h(tanpa=("2026-09-14",)), acuan) == ["2026-09-14", "2026-09-15"]
+    assert target(bar, kini, h(tanpa=("2026-09-14",)), acuan) == ["2026-09-15", "2026-09-14"]
     # Satu varian kurang di 10 Sep: ikut masuk.
-    assert target(bar, kini, h({"2026-09-10": {"tunai-asing": 500}}), acuan) == ["2026-09-10", "2026-09-15"]
+    assert target(bar, kini, h({"2026-09-10": {"tunai-asing": 500}}), acuan) == ["2026-09-15", "2026-09-10"]
     # KASUS #233: BBCA lengkap tapi hanya 324 dari 963 emiten -> lubang.
-    assert target(bar, kini, h({"2026-09-11": {v: 324 for v in VARIAN}}), acuan) == ["2026-09-11", "2026-09-15"]
+    assert target(bar, kini, h({"2026-09-11": {v: 324 for v in VARIAN}}), acuan) == ["2026-09-15", "2026-09-11"]
     # 962/963 (satu emiten tersuspensi) tetap lengkap.
     assert target(bar, kini, h(), acuan) == ["2026-09-15"]
-    # Di luar jendela 7 hari (4 Sep) tak dikejar walau bolong.
-    assert "2026-09-04" not in target(bar, kini, h(tanpa=("2026-09-04",)), acuan)
+    # #240: 4 Sep (11 hari lalu) kini masih dikejar; 10 Agu (36 hari) tidak.
+    assert "2026-09-04" in target(bar, kini, h(tanpa=("2026-09-04",)), acuan)
+    assert "2026-08-10" not in target(bar, kini, h(tanpa=("2026-08-10",)), acuan)
+    # Beberapa lubang: hari tuntas dulu, lalu lubang termuda dulu.
+    assert target(bar, kini, h(tanpa=("2026-09-04", "2026-09-10")), acuan) == ["2026-09-15", "2026-09-10", "2026-09-04"]
     # Tanpa angka bursa: acuan = hitungan terbesar di jendela (962) -> 324 tetap lubang.
     assert "2026-09-11" in target(bar, kini, h({"2026-09-11": {v: 324 for v in VARIAN}}), {})
     # Sebelum 16:30 hari ini tak dianggap tuntas.
     assert target(bar, datetime.datetime(2026, 9, 15, 10, 0), h(), acuan) == ["2026-09-14"]
     assert target([], kini, {}, {}) == []
-    print("uji tgl_broker_lubang: LOLOS 8 kasus")
+    print("uji tgl_broker_lubang: LOLOS 10 kasus")
     return 0
 
 

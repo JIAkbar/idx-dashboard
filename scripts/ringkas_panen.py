@@ -90,7 +90,7 @@ def main(berkas: Path, nama: str) -> int:
 
     isi = ["", f"== RINGKASAN {nama} =="]
     isi += [f"Langkah gagal: {len(gagal)}"] + [f"  - {g}" for g in gagal]
-    isi += [f"Broker belum lengkap (7 hari terakhir): {len(bolong)} hari"] + [f"  - {b}" for b in bolong]
+    isi += [f"Broker belum lengkap (30 hari terakhir): {len(bolong)} hari"] + [f"  - {b}" for b in bolong]
     if bolong:
         isi.append("  Hari yang bolong disusul otomatis di panen berikutnya (pemanen melewati berkas yang sudah ada).")
     teks = "\n".join(isi) + "\n"
@@ -113,7 +113,7 @@ def main(berkas: Path, nama: str) -> int:
         except OSError:
             pass
     else:
-        toast(f"PAPAN {nama}: selesai", "Semua langkah jalan, broker 7 hari terakhir lengkap.")
+        toast(f"PAPAN {nama}: selesai", "Semua langkah jalan, broker 30 hari terakhir lengkap.")
     return 0
 
 

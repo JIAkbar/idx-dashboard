@@ -77,9 +77,26 @@ echo Akhir pekan ^(hari %HARI%^) - panen terjadwal hanya Senin-Jumat, keluar tan
 exit /b 0
 
 :jam_ok
+REM #241 A (Johan 27 Sep 2026): pemanen harian TUNGGAL = workflow panen-harian-rumah.yml
+REM di runner rumahan (layanan Windows, tak mati saat jendela ditutup). Dulu bat ini dan
+REM workflow memanen bersamaan dengan token dan jatah Stockbit yang sama. Jalan
+REM terjadwal (auto) kini hanya MELAPOR hasil workflow lewat scripts\lapor_panen.py
+REM (notifikasi Windows + Notepad bila bermasalah). Jalan manual tetap memanen penuh.
+if not "%1"=="auto" goto mode_panen
+"%PYEXE%" scripts\lapor_panen.py
+exit /b 0
+:mode_panen
 REM JANGAN menaruh tanda kurung di echo DALAM blok if-berkurung: kurung
 REM tutupnya menutup blok lebih awal dan sisa barisnya dieksekusi sebagai
 REM perintah ("- was unexpected at this time", task 0xFF - uji sadar 27 Agu).
+REM #245 (27 Sep 2026): kunci milik jalan yang sudah MATI dibuang dulu. Tanpa ini
+REM kunci dari bat yang jendelanya ditutup membuat jalan berikutnya keluar tanpa
+REM memanen (24 Sep 2026). scripts\kunci_panen.py memeriksa proses yang hidup;
+REM kunci milik proses hidup TIDAK disentuh. Keluar 2 = kunci basi dihapus.
+if not exist "%~dp0.panen.lock" goto kunci_tak_ada
+"%PYEXE%" scripts\kunci_panen.py --bersihkan-basi
+if errorlevel 2 set KUNCI_BASI=1
+:kunci_tak_ada
 if exist "%~dp0.panen.lock" (
   echo Pipeline lain sedang jalan - .panen.lock ada - keluar.
   goto keluar_terkunci
@@ -90,6 +107,7 @@ for /f %%t in ('call "%PYEXE%" -c "import datetime;print(datetime.date.today().i
 set "RINGKAS=%~dp0logs\ringkasan_panen_buka_laptop_%TGL_RINGKAS%.txt"
 if not exist "%~dp0logs" mkdir "%~dp0logs"
 > "%RINGKAS%" echo PAPAN buka laptop - mulai %date% %time%
+if defined KUNCI_BASI call :gagal "kunci basi dari jalan sebelumnya dihapus - jalan itu mati sebelum selesai, datanya mungkin belum ter-commit"
 
 echo.
 

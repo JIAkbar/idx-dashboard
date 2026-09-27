@@ -119,7 +119,13 @@ jobs:
     # OHLC 960-an emiten memakan ±23 menit pada jalan penuh. 90 menit habis
     # 12-15 Sep 2026 (#204: job terukur 81-95 menit, data 14 Sep tak
     # tercommit); 150 memberi ruang, 3e dibuat inkremental.
-    timeout-minutes: 150
+    #
+    # 150 -> 200 (27 Sep 2026, #239/#241/#242): run 21/24/25 Sep CANCELLED
+    # karena habis di tengah broker (3d), dan commit ada di langkah PALING
+    # AKHIR - harga hari itu ikut tak pernah tayang. Langkah 8 sekarang
+    # commit lebih dulu supaya data harian aman; sisa 200 menit itu punya
+    # broker.
+    timeout-minutes: 200
     defaults:
       run:
         # PowerShell, bukan bash — `shell: bash` di runner Windows menunjuk
@@ -254,88 +260,12 @@ jobs:
           & "${{ steps.py.outputs.exe }}" scripts/fetch_broker_summary.py --hari 5
           if ($LASTEXITCODE -ne 0) { Write-Host "::warning::fetch_broker_summary gagal" }
 
-      # Broker summary PER EMITEN (Stockbit) — lapis yang tak ada di satu pun
-      # endpoint IDX. Tokennya dibaca `token_segar()` dari tabel `live_token`
-      # — rantai tunggal (#105 A, keputusan Johan 8 Sep 2026), diputar HANYA
-      # cron `/api/live-refresh`, tak pernah oleh langkah ini. Berkas
-      # %USERPROFILE%\.papan\stockbit-token.json (di LUAR checkout) tinggal
-      # CADANGAN untuk saat tabel tak terjangkau.
-      #
-      # Keterangan di sini dulu menyebut berkas itu sebagai sumbernya dan
-      # `stockbit_token.py` sebagai pemutarnya — dua-duanya sudah tidak benar
-      # sejak 8 Sep, dan keterangan basi soal token berbiaya nyata: 10 Sep
-      # 2026 satu pemanen yang memang masih membaca berkas menembak 962
-      # emiten dengan salinan kedaluwarsa, dan laporannya nyaris memicu semai
-      # ulang atas rantai yang sedang sehat (semai mengganti pasangan
-      # sekali-pakai, jadi menurutinya justru memutusnya).
-      #
-      # Jalan SESUDAH langkah 2 karena tanggal bawaannya = bar OHLC terakhir,
-      # dan cek silangnya memakai Volume dari berkas yang sama.
-      #
-      # ENAM varian GROSS, bukan dua belas — Johan 5 Sep 2026: *"ralat dulu
-      # setiap hari itu harusnya panen 6 varian karena gross, sedangkan yang
-      # net bisa di hitung"*. Ini menggantikan ketetapan 23 Agu ("CI harus ke
-      # lengkap Varian") yang memanen 12, dan menyelaraskan CI dengan bat
-      # buka-laptop yang sudah 6 sejak 1 Sep.
-      #
-      # Susunannya: 3 papan (REGULER/NEGO/TUNAI) x 2 tipe investor
-      # (ALL/FOREIGN), semuanya GROSS. Dua hal sengaja TIDAK dipanen karena
-      # keduanya turunan eksak, bukan karena dianggap tak perlu:
-      #   NET      = beli - jual dari GROSS (backtest 5.756 baris, 0 beda)
-      #   DOMESTIC = ALL - FOREIGN
-      # Halaman yang memajang "Net" menghitungnya di layar dari gross
-      # (`tabelDuaSisi` di lib/dasbor/brokerEmiten.ts), tak satu pun pembaca
-      # membuka berkas varian net-*. Diperiksa 5 Sep 2026 dengan grep, bukan
-      # diingat.
-      #
-      # Beban turun separuh: 6 x ±960 = ±5.800 permintaan, pada jeda 0,4 detik
-      # ≈ 40 menit (dulu 12 varian ≈ 1,3 jam). Balasan 429 sudah ditangani
-      # skripnya: jeda 30 detik lalu coba sekali lagi.
-      #
-      # Berkas net-* yang TELANJUR ada di arsip dibiarkan sampai konsolidasi
-      # (ketetapan J14) — berhenti memanennya bukan alasan menghapus yang
-      # sudah terlanjur dibayar.
-      # Semua hari bursa 7 hari terakhir yang arsip BBCA-nya belum lengkap enam varian,
-      # bukan satu tanggal (#194 A, keputusan Johan 15 Sep 2026). Dulu jalan yang
-      # terlewat meninggalkan satu hari broker kosong untuk selamanya (14 Sep 2026).
-      # Pemanen melewati berkas yang sudah ada, jadi hari normal tetap satu tarikan.
-      - name: 3d · Broker summary per emiten (Stockbit, 6 varian GROSS)
-        if: steps.token.outputs.hidup == '1'
-        continue-on-error: true
-        # Pemanen dibatasi 1 panggilan/detik sejak #215 (jatah sumber), jadi
-        # satu hari penuh ±1,5 jam dan hari bolong bisa menumpuk. Tanpa batas
-        # langkah, job 150 menit mati sebelum commit dan SEMUA data run itu
-        # hilang. Yang belum terpanen disusul run berikutnya (tgl_broker_lubang).
-        timeout-minutes: 60
-        run: |
-          & "${{ steps.py.outputs.exe }}" scripts/stockbit_token.py --status
-          $tanggal = @(& "${{ steps.py.outputs.exe }}" scripts/tgl_broker_lubang.py)
-          if ($LASTEXITCODE -ne 0 -or $tanggal.Count -eq 0) {
-            Write-Host "::warning::tgl_broker_lubang gagal - memakai tanggal bawaan pemanen"
-            $tanggal = @('')
-          }
-          foreach ($t in $tanggal) {
-            $argTgl = @()
-            if ($t) { $argTgl = @('--tanggal', $t); Write-Host "broker harian: $t" }
-            # --maks-tunda 0 (#233): tanpa jeda 5 menit + putaran ulang di CI -
-            # batas langkah 60 menit; sisanya disusul run berikutnya lewat
-            # tgl_broker_lubang.py yang kini menghitung semua emiten.
-            & "${{ steps.py.outputs.exe }}" scripts/panen_broker_harian.py @argTgl --jeda 0.4 --paralel 48 --maks-tunda 0 `
-              --varian reguler,asing,nego,nego-asing,tunai,tunai-asing
-            if ($LASTEXITCODE -ne 0) { Write-Host "::warning::panen_broker_harian $t gagal" }
-          }
-
-      # Gudang broker tahunan (#160 B) — dibaca Whales, Arus Broker, dan
-      # Bandarmologi. Sumbernya arsip broker per emiten yang baru saja
-      # dipanen langkah 3d, jadi urutannya tak boleh dibalik.
-      - name: 3e · Gudang broker tahunan
-        continue-on-error: true
-        run: |
-          $tahun = (Get-Date).Year
-          # --inkremental (#204): hanya emiten yang arsipnya ditulis sesudah
-          # berkas tahunannya dibangun (±30 menit kalau penuh). Bat sore tetap penuh.
-          & "${{ steps.py.outputs.exe }}" scripts/bangun_broker_tahunan.py --tahun $tahun --paralel 16 --inkremental
-          if ($LASTEXITCODE -ne 0) { Write-Host "::warning::bangun_broker_tahunan gagal" }
+      # Broker summary PER EMITEN (3d) dan gudang broker tahunan (3e) DIPINDAH
+      # ke sesudah langkah 8 (commit awal, 27 Sep 2026, #239/#241/#242) — dua
+      # langkah inilah yang dulu menghabiskan job sampai timeout di tengah
+      # jalan (run 21/24/25 Sep CANCELLED), dan commit ada di paling akhir
+      # sehingga harga hari itu ikut tak pernah tayang. Isinya tak diubah
+      # kecuali timeout 3d 45 menit; lihat langkah "3d ·" dan "3e ·" di bawah.
 
       # Intraday 1 jam (Whales). Stockbit, jadi ia butuh rantai token yang
       # sama dengan langkah 3d — dan sejak `PAPAN_ENV_LOCAL` dipasang di env
@@ -595,6 +525,18 @@ jobs:
           # kelima barisnya berhenti di 3/5 dan 4/5 hari sejak 22 Agu 2026.
           & "${{ steps.py.outputs.exe }}" scripts/riset/tinjau_deepdive.py
           if ($LASTEXITCODE -ne 0) { Write-Host "::warning::tinjau_deepdive gagal" }
+          # Rantai tesis (antrean #3) - dulu hanya dijalankan tangan/bat.
+          # tarik_tesis menarik tabel `tesis` ke cakram (satu-satunya langkah
+          # berjaringan); nilai_tesis menghakiminya nol jaringan sesudahnya.
+          & "${{ steps.py.outputs.exe }}" scripts/tarik_tesis.py
+          if ($LASTEXITCODE -ne 0) { Write-Host "::warning::tarik_tesis gagal" }
+          & "${{ steps.py.outputs.exe }}" scripts/riset/nilai_tesis.py
+          if ($LASTEXITCODE -ne 0) { Write-Host "::warning::nilai_tesis gagal" }
+          # Rapor Uji (#221 opsi a) - catat sinyal hari ini, lalu nilai log lama.
+          & "${{ steps.py.outputs.exe }}" scripts/riset/rapor_uji.py --catat
+          if ($LASTEXITCODE -ne 0) { Write-Host "::warning::rapor_uji --catat gagal" }
+          & "${{ steps.py.outputs.exe }}" scripts/riset/rapor_uji.py --nilai
+          if ($LASTEXITCODE -ne 0) { Write-Host "::warning::rapor_uji --nilai gagal" }
 
       # Penjaga radar: menandai kartu radar yang sudah lewat umur. Ia menilai
       # turunan yang baru ditulis langkah-langkah di atas, jadi tempatnya
@@ -604,6 +546,163 @@ jobs:
         run: |
           & "${{ steps.py.outputs.exe }}" scripts/cek_radar_basi.py
           if ($LASTEXITCODE -ne 0) { Write-Host "::warning::cek_radar_basi gagal" }
+
+      # Commit AWAL (27 Sep 2026, #239/#241/#242) — langkah 3d (broker per
+      # emiten) yang bisa berjam-jam kalau sumber membatasi jatah, dan kalau
+      # job habis timeout di tengah jalan, HARGA + seluruh turunan non-broker
+      # di atas tetap tayang karena sudah dicommit di sini. Dulu commit cuma
+      # satu, di paling akhir; run 21/24/25 Sep 2026 CANCELLED di tengah
+      # broker membuat harga hari itu ikut tak pernah tayang.
+      # `if: always()` — commit tetap jalan walau langkah 7/7b di atas gagal;
+      # data yang berhasil dipanen tak boleh menunggu data yang gagal.
+      - name: 8 · Commit awal (harga & turunan non-broker)
+        if: always()
+        # Gagal commit di sini tak boleh menghentikan broker di bawah; commit
+        # akhir mencoba lagi dan vonis merahnya tetap tercatat di langkah itu.
+        continue-on-error: true
+        run: |
+          & powershell -NoProfile -ExecutionPolicy Bypass -File scripts/ci_commit_data.ps1 -Label "penuh"
+          exit $LASTEXITCODE
+
+      # Keystats & info Stockbit HARIAN (keputusan Johan #182 A) — dulu cuma
+      # dipanen `JALANKAN_PANEN_SORE.bat` sore hari di laptop Johan; alur ini
+      # jadi SATU-SATUNYA pemanen harian sejak bat laptop berhenti memanen.
+      # Profil tetap BULANAN lewat gerbang: `gerbang_bulanan.py` keluar 0 =
+      # jatuh tempo (panen), 1 = belum, 2 = galat — dua yang terakhir dilewati
+      # (lihat `JALANKAN_BUKA_LAPTOP.bat` baris gerbang yang sama).
+      - name: 9 · Keystats, info, dan profil Stockbit
+        continue-on-error: true
+        timeout-minutes: 30
+        run: |
+          & "${{ steps.py.outputs.exe }}" scripts/panen_keystats_stockbit.py --semua --jeda 0.4
+          if ($LASTEXITCODE -ne 0) { Write-Host "::warning::panen_keystats_stockbit gagal" }
+          & "${{ steps.py.outputs.exe }}" scripts/panen_info_stockbit.py --semua --jeda 0.4
+          if ($LASTEXITCODE -ne 0) { Write-Host "::warning::panen_info_stockbit gagal" }
+          & "${{ steps.py.outputs.exe }}" scripts/gerbang_bulanan.py profil_stockbit 28
+          if ($LASTEXITCODE -eq 0) {
+            & "${{ steps.py.outputs.exe }}" scripts/panen_profil_stockbit.py --semua --jeda 0.4
+            if ($LASTEXITCODE -ne 0) { Write-Host "::warning::panen_profil_stockbit gagal" }
+          } else {
+            Write-Host "gerbang bulanan: profil belum jatuh tempo atau gerbang galat - dilewati"
+          }
+
+      # Commit sesudah langkah 9 (sanggahan pemeriksa #242): keystats/info menulis
+      # ke data-idx/json SESUDAH commit awal, jadi tanpa ini ikut hilang kalau job
+      # terpotong di broker di bawah.
+      - name: 9b · Commit keystats & info
+        if: always()
+        continue-on-error: true
+        run: |
+          & powershell -NoProfile -ExecutionPolicy Bypass -File scripts/ci_commit_data.ps1 -Label "stockbit"
+          exit $LASTEXITCODE
+
+      # Broker summary PER EMITEN (Stockbit) — lapis yang tak ada di satu pun
+      # endpoint IDX. Tokennya dibaca `token_segar()` dari tabel `live_token`
+      # — rantai tunggal (#105 A, keputusan Johan 8 Sep 2026), diputar HANYA
+      # cron `/api/live-refresh`, tak pernah oleh langkah ini. Berkas
+      # %USERPROFILE%\.papan\stockbit-token.json (di LUAR checkout) tinggal
+      # CADANGAN untuk saat tabel tak terjangkau.
+      #
+      # Keterangan di sini dulu menyebut berkas itu sebagai sumbernya dan
+      # `stockbit_token.py` sebagai pemutarnya — dua-duanya sudah tidak benar
+      # sejak 8 Sep, dan keterangan basi soal token berbiaya nyata: 10 Sep
+      # 2026 satu pemanen yang memang masih membaca berkas menembak 962
+      # emiten dengan salinan kedaluwarsa, dan laporannya nyaris memicu semai
+      # ulang atas rantai yang sedang sehat (semai mengganti pasangan
+      # sekali-pakai, jadi menurutinya justru memutusnya).
+      #
+      # Jalan SESUDAH langkah 2 karena tanggal bawaannya = bar OHLC terakhir,
+      # dan cek silangnya memakai Volume dari berkas yang sama.
+      #
+      # ENAM varian GROSS, bukan dua belas — Johan 5 Sep 2026: *"ralat dulu
+      # setiap hari itu harusnya panen 6 varian karena gross, sedangkan yang
+      # net bisa di hitung"*. Ini menggantikan ketetapan 23 Agu ("CI harus ke
+      # lengkap Varian") yang memanen 12, dan menyelaraskan CI dengan bat
+      # buka-laptop yang sudah 6 sejak 1 Sep.
+      #
+      # Susunannya: 3 papan (REGULER/NEGO/TUNAI) x 2 tipe investor
+      # (ALL/FOREIGN), semuanya GROSS. Dua hal sengaja TIDAK dipanen karena
+      # keduanya turunan eksak, bukan karena dianggap tak perlu:
+      #   NET      = beli - jual dari GROSS (backtest 5.756 baris, 0 beda)
+      #   DOMESTIC = ALL - FOREIGN
+      # Halaman yang memajang "Net" menghitungnya di layar dari gross
+      # (`tabelDuaSisi` di lib/dasbor/brokerEmiten.ts), tak satu pun pembaca
+      # membuka berkas varian net-*. Diperiksa 5 Sep 2026 dengan grep, bukan
+      # diingat.
+      #
+      # Beban turun separuh: 6 x ±960 = ±5.800 permintaan, pada jeda 0,4 detik
+      # ≈ 40 menit (dulu 12 varian ≈ 1,3 jam). Balasan 429 sudah ditangani
+      # skripnya: jeda 30 detik lalu coba sekali lagi.
+      #
+      # Berkas net-* yang TELANJUR ada di arsip dibiarkan sampai konsolidasi
+      # (ketetapan J14) — berhenti memanennya bukan alasan menghapus yang
+      # sudah terlanjur dibayar.
+      # Semua hari bursa 7 hari terakhir yang arsip BBCA-nya belum lengkap enam varian,
+      # bukan satu tanggal (#194 A, keputusan Johan 15 Sep 2026). Dulu jalan yang
+      # terlewat meninggalkan satu hari broker kosong untuk selamanya (14 Sep 2026).
+      # Pemanen melewati berkas yang sudah ada, jadi hari normal tetap satu tarikan.
+      #
+      # Dipindah ke sini SESUDAH commit awal (langkah 8, 27 Sep 2026,
+      # #239/#241/#242) — inilah langkah yang dulu menghabiskan job sampai
+      # timeout di tengah jalan (run 21/24/25 Sep CANCELLED) sementara commit
+      # masih di paling akhir. Timeout 60 -> 45 menit: sisa waktu job (200
+      # menit, lihat komentar `timeout-minutes` job) dibagi dengan langkah 9
+      # dan 10 yang kini turut menunggu di belakangnya.
+      - name: 3d · Broker summary per emiten (Stockbit, 6 varian GROSS)
+        if: steps.token.outputs.hidup == '1'
+        continue-on-error: true
+        # Pemanen dibatasi 1 panggilan/detik sejak #215 (jatah sumber), jadi
+        # satu hari penuh ±1,5 jam dan hari bolong bisa menumpuk. Tanpa batas
+        # langkah, job 150 menit mati sebelum commit dan SEMUA data run itu
+        # hilang. Yang belum terpanen disusul run berikutnya (tgl_broker_lubang).
+        timeout-minutes: 45
+        run: |
+          & "${{ steps.py.outputs.exe }}" scripts/stockbit_token.py --status
+          $tanggal = @(& "${{ steps.py.outputs.exe }}" scripts/tgl_broker_lubang.py)
+          if ($LASTEXITCODE -ne 0 -or $tanggal.Count -eq 0) {
+            Write-Host "::warning::tgl_broker_lubang gagal - memakai tanggal bawaan pemanen"
+            $tanggal = @('')
+          }
+          foreach ($t in $tanggal) {
+            $argTgl = @()
+            if ($t) { $argTgl = @('--tanggal', $t); Write-Host "broker harian: $t" }
+            # --maks-tunda 0 (#233): tanpa jeda 5 menit + putaran ulang di CI -
+            # batas langkah 60 menit; sisanya disusul run berikutnya lewat
+            # tgl_broker_lubang.py yang kini menghitung semua emiten.
+            & "${{ steps.py.outputs.exe }}" scripts/panen_broker_harian.py @argTgl --jeda 0.4 --paralel 48 --maks-tunda 0 `
+              --varian reguler,asing,nego,nego-asing,tunai,tunai-asing
+            if ($LASTEXITCODE -ne 0) { Write-Host "::warning::panen_broker_harian $t gagal" }
+          }
+
+      # Gudang broker tahunan (#160 B) — dibaca Whales, Arus Broker, dan
+      # Bandarmologi. Sumbernya arsip broker per emiten yang baru saja
+      # dipanen langkah 3d, jadi urutannya tak boleh dibalik.
+      - name: 3e · Gudang broker tahunan
+        continue-on-error: true
+        run: |
+          $tahun = (Get-Date).Year
+          # --inkremental (#204): hanya emiten yang arsipnya ditulis sesudah
+          # berkas tahunannya dibangun (±30 menit kalau penuh). Bat sore tetap penuh.
+          & "${{ steps.py.outputs.exe }}" scripts/bangun_broker_tahunan.py --tahun $tahun --paralel 16 --inkremental
+          if ($LASTEXITCODE -ne 0) { Write-Host "::warning::bangun_broker_tahunan gagal" }
+
+      # Turunan broker diulang di sini karena 3d/3e baru saja menulis arsip
+      # broker BARU — turunan yang sama sudah dipanggil di atas (3g, 4d, 4e,
+      # 4i) tapi saat itu membaca arsip broker KEMARIN. ringkas_broker_harian
+      # WAJIB sesudah broker_tahunan (3e) karena ia membacanya.
+      - name: 10 · Turunan broker ulang
+        continue-on-error: true
+        run: |
+          & "${{ steps.py.outputs.exe }}" scripts/bangun_kategori_broker.py
+          if ($LASTEXITCODE -ne 0) { Write-Host "::warning::bangun_kategori_broker gagal" }
+          & "${{ steps.py.outputs.exe }}" scripts/bangun_broker_rentang.py --tulis
+          if ($LASTEXITCODE -ne 0) { Write-Host "::warning::bangun_broker_rentang gagal" }
+          & "${{ steps.py.outputs.exe }}" scripts/bangun_broker_pivot.py --tulis
+          if ($LASTEXITCODE -ne 0) { Write-Host "::warning::bangun_broker_pivot gagal" }
+          & "${{ steps.py.outputs.exe }}" scripts/bangun_bandarmologi.py
+          if ($LASTEXITCODE -ne 0) { Write-Host "::warning::bangun_bandarmologi gagal" }
+          & "${{ steps.py.outputs.exe }}" scripts/riset/ringkas_broker_harian.py --tulis
+          if ($LASTEXITCODE -ne 0) { Write-Host "::warning::ringkas_broker_harian gagal" }
 
       # Vonis merah/hijau diputuskan DI SINI, satu tempat — bukan tersebar di
       # exit code tiap langkah. Tiap langkah di atas `continue-on-error` supaya
@@ -622,53 +721,8 @@ jobs:
       - name: Commit kalau ada perubahan
         if: always()
         run: |
-          $berkas = 'data-idx/json'
-          git diff --quiet -- $berkas
-          if ($LASTEXITCODE -eq 0) { Write-Host 'Tidak ada perubahan.'; exit 0 }
-          git config user.name  'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add $berkas
-          $stempel = (Get-Date).ToUniversalTime().ToString('yyyy-MM-dd HH:mm')
-          git commit -m "data: panen harian penuh $stempel UTC"
-          # TANPA tarik-lalu-rebase (#163 di CI, ralat 12 Sep 2026). Baris itu
-          # dulu di sini; kembarannya di `panen-kabar.yml` gagal dua kali
-          # (10 Sep 22:47, 12 Sep 00:39 UTC) dengan konflik pada berkas hasil
-          # generasi, dan commit-nya tak pernah mendarat.
-          #
-          # Alur INI tak bisa memakai pola "panen ulang di atas remote" seperti
-          # kabar: panennya berjam-jam, bukan sepuluh detik. Jadi: GABUNG, dan
-          # untuk berkas yang baru saja dibangun dari sumber, versi kita yang
-          # menang - ia memang keluaran panen atas isi cakram terbaru.
-          #
-          # Batasnya keras: konflik DI LUAR `data-idx/` MENGHENTIKAN langkah.
-          # Mesin tak pernah menggabung dokumen manusia (pelajaran #163:
-          # `stash pop` pernah menulis penanda konflik ke dalam dokumen antrean).
-          git push origin "HEAD:$env:GITHUB_REF_NAME"
-          if ($LASTEXITCODE -ne 0) {
-            Write-Host "push ditolak - remote maju di tengah jalan, menggabung"
-            git fetch origin $env:GITHUB_REF_NAME
-            git merge --no-edit "origin/$env:GITHUB_REF_NAME"
-            if ($LASTEXITCODE -ne 0) {
-              $bentrok = @(git diff --name-only --diff-filter=U)
-              $luar = @($bentrok | Where-Object { $_ -notlike 'data-idx/*' })
-              if ($luar.Count -gt 0) {
-                Write-Host ("::error::konflik DI LUAR data-idx: " + ($luar -join ', ') +
-                            " - berhenti, dokumen manusia tak disentuh")
-                git merge --abort
-                exit 1
-              }
-              Write-Host ("konflik hanya di data-idx (" + $bentrok.Count +
-                          " berkas) - dimenangkan versi yang baru dibangun")
-              git checkout --ours -- $bentrok
-              git add $bentrok
-              git commit --no-edit
-            }
-            git push origin "HEAD:$env:GITHUB_REF_NAME"
-            if ($LASTEXITCODE -ne 0) {
-              Write-Host "::error::push masih ditolak sesudah gabung - berhenti"
-              exit 1
-            }
-          }
+          & powershell -NoProfile -ExecutionPolicy Bypass -File scripts/ci_commit_data.ps1 -Label "broker"
+          exit $LASTEXITCODE
 
       # Runner rumahan tak memulai dari mesin bersih seperti runner GitHub.
       - name: Bersihkan sisa

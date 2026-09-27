@@ -113,6 +113,15 @@ if %HARI% LSS 6 goto hari_ok
 echo Akhir pekan ^(hari %HARI%^) - panen sore terjadwal hanya Senin-Jumat, dilewati.
 goto akhir
 :hari_ok
+REM #241 A (Johan 27 Sep 2026): pemanen harian TUNGGAL = workflow panen-harian-rumah.yml
+REM di runner rumahan (layanan Windows, tak mati saat jendela ditutup). Dulu bat ini dan
+REM workflow memanen bersamaan dengan token dan jatah Stockbit yang sama. Jalan
+REM terjadwal (auto) kini hanya MELAPOR hasil workflow lewat scripts\lapor_panen.py
+REM (notifikasi Windows + Notepad bila bermasalah). Jalan manual tetap memanen penuh.
+if not "%1"=="auto" goto mode_panen
+"%PYEXE%" scripts\lapor_panen.py
+goto keluar_tanpa_kunci
+:mode_panen
 
 REM ---- Kunci dipegang pipeline lain: tunggu, jangan langsung keluar (#190) ----
 REM 14 Sep 2026 PAPAN-BukaLaptop mulai 18:32 dan memegang kunci sekitar 4 menit.
@@ -122,6 +131,14 @@ REM menunggu: periksa tiap 30 detik, paling lama 20 menit (40 kali). Tiap
 REM putaran kembali ke :cek_gerbang, jadi menunggu tak pernah membuat panen
 REM mulai sesudah 22:00. Tidur lewat Python, bukan `timeout`: `timeout`
 REM langsung gagal kalau masukan dialihkan, seperti di bawah Task Scheduler.
+REM #245 (27 Sep 2026): kunci milik jalan yang sudah MATI dibuang dulu. Tanpa ini
+REM kunci dari bat yang jendelanya ditutup membuat jalan berikutnya keluar tanpa
+REM memanen (24 Sep 2026). scripts\kunci_panen.py memeriksa proses yang hidup;
+REM kunci milik proses hidup TIDAK disentuh. Keluar 2 = kunci basi dihapus.
+if not exist "%~dp0.panen.lock" goto kunci_tak_ada
+"%PYEXE%" scripts\kunci_panen.py --bersihkan-basi
+if errorlevel 2 set KUNCI_BASI=1
+:kunci_tak_ada
 if not exist "%~dp0.panen.lock" goto kunci_bebas
 if not defined PAPAN_TUNGGU_KUNCI set PAPAN_TUNGGU_KUNCI=0
 if %PAPAN_TUNGGU_KUNCI% GEQ 40 goto kunci_tetap_dipegang
@@ -147,6 +164,7 @@ for /f %%t in ('call "%PYEXE%" -c "import datetime;print(datetime.date.today().i
 set "RINGKAS=%~dp0logs\ringkasan_panen_sore_%TGL_RINGKAS%.txt"
 if not exist "%~dp0logs" mkdir "%~dp0logs"
 > "%RINGKAS%" echo PAPAN sore - mulai %date% %time%
+if defined KUNCI_BASI call :gagal "kunci basi dari jalan sebelumnya dihapus - jalan itu mati sebelum selesai, datanya mungkin belum ter-commit"
 REM Sejak titik ini kunci MILIK proses ini, jadi :akhir boleh melepasnya.
 set PAPAN_KUNCI_MILIK=1
 
