@@ -4,6 +4,7 @@ import { useJson, angka, bertanda, tanggalPendek } from './data'
 import { Blok, Keadaan, Arah, Pil } from './ui'
 import { KakiBaru } from './KakiBaru'
 import { ruteLapisan } from './peta'
+import { CatatanAsingStockbit } from '../../components/dasbor/CatatanAsingStockbit'
 
 interface ScreenerEmiten { kode: string; likuiditas: number }
 interface ScreenerData { tanggal: string; n: number; emiten: ScreenerEmiten[] }
@@ -18,6 +19,8 @@ interface KandidatEmiten {
   ret10: number
   rvol_med: number
   net_asing_20h: number
+  /** Tanggal isian Stockbit (#253) di jendela 20 hari yang dijumlah untuk net_asing_20h. */
+  asing_isian_stockbit?: string[]
 }
 interface KandidatDeepdive { tanggal: string; ambang: { skor_min: number; likuiditas_min: number; jendela: number }; n: number; emiten: KandidatEmiten[] }
 
@@ -90,6 +93,9 @@ export default function L4Screener({ sisip = false }: { sisip?: boolean } = {}) 
   const sinyalTerjarang = sinyalRanked[sinyalRanked.length - 1]
 
   const top10 = [...kandidat.emiten].sort((a, b) => b.skor - a.skor).slice(0, 10)
+  // #253 C: gabungan tanggal isian Stockbit dari kandidat yang BENAR-BENAR
+  // tampil (top10), bukan seluruh daftar kandidat_deepdive.json.
+  const isianTop10 = [...new Set(top10.flatMap((e) => e.asing_isian_stockbit ?? []))].sort()
 
   const polaCount = new Map<string, number>()
   for (const v of Object.values(pola.d)) polaCount.set(v[0], (polaCount.get(v[0]) ?? 0) + 1)
@@ -222,6 +228,7 @@ export default function L4Screener({ sisip = false }: { sisip?: boolean } = {}) 
                 </div>
               ))}
             </div>
+            <CatatanAsingStockbit tanggal={isianTop10} />
             <p className="bb-narasi">Skor tertinggi {maxSkor} dari 6 sinyal ({nSkorMaks} emiten). Kandidat, bukan jaminan · tetap perlu Deep Dive.</p>
           </Blok>
           )}

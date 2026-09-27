@@ -63,6 +63,14 @@
 .bb-label { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--bb-redup); }
 .bb-judul { margin: 0; font-size: 22px; font-weight: 700; line-height: 1.2; letter-spacing: -.01em; }
 .bb-catatan { font-size: 12px; color: var(--bb-redup); }
+/* CatatanAsingStockbit (#253) — .lantai .catatan-cakupan (dasbor/lantai.css
+   ~1082) butuh leluhur `.lantai`; LayarEmiten/LayarPagi hidup di bawah
+   `.baru` (BaruLayout.tsx), jadi tata letaknya disalin ke sini. Warna dulu
+   dari `.muted` (dasbor-shell .muted{color:var(--text2)}), token yang tak
+   terdefinisi di `.baru` — dipaksa ke token sendiri (`--bb-redup`, dengan
+   cadangan) supaya tak jatuh ke `unset` kalau suatu saat dipakai di luar
+   `.dasbor-shell`. */
+.baru .catatan-cakupan { display: flex; align-items: center; gap: 6px; font-size: 11px; margin: 0; line-height: 1.4; color: var(--bb-redup, #A9B0C4); }
 .bb-narasi { margin: 0; font-size: 14px; line-height: 1.55; color: var(--bb-redup); max-width: 70ch; }
 .bb-keadaan { color: var(--bb-redup); font-size: 14px; padding: 24px 0; }
 .bb-mono { font-family: var(--bb-mono); font-variant-numeric: tabular-nums; }

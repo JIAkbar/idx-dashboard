@@ -226,6 +226,11 @@ def main() -> int:
     bo_tgl, bo_d = bidoffer.get("tanggal"), bidoffer.get("d") or {}
 
     hasil = []
+    # #253: baris isian Stockbit (bursa sempat tak bisa diambil) punya kolom
+    # ke-7 "stockbit" — dikumpulkan lintas emiten sama seperti
+    # bangun-screener.mjs, dipakai halaman untuk catatan "angka ini dari
+    # Stockbit" (bukan cuma bursa langsung).
+    isian_stockbit: set[str] = set()
     for p in sorted(ASING.glob("*.json")):
         kode = p.stem
         a = baca(p)
@@ -240,6 +245,8 @@ def main() -> int:
         if i is None:
             continue  # emiten tak bertransaksi hari itu / berkas tertinggal
         akhir = baris[i]
+        if len(akhir) >= 7 and akhir[6] == "stockbit":
+            isian_stockbit.add(akhir[0])
         vol, val, frek = akhir[3] or 0, akhir[4] or 0, akhir[5] or 0
         if not vol or not frek:
             continue
@@ -318,6 +325,7 @@ def main() -> int:
         "tanggal_bidoffer": bo_tgl,
         "nilai_pasar_miliar": nilai_pasar,
         "n": len(hasil),
+        "asing_isian_stockbit": sorted(isian_stockbit),
         "ambang": {
             "lipat_timpang": LIPAT_TIMPANG,
             "share_nilai_min": NILAI_SHARE_MIN,

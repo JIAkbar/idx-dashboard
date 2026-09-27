@@ -14,6 +14,7 @@ import { useValuasiHistoris, valuasiEmiten } from '../../lib/dasbor/valuasiHisto
 import { MAKS_BANDING, kalimatTanggal, susunBanding, unduhBandingPng } from '../../lib/dasbor/bandingEmiten'
 import { muatTambahanKeystats } from '../../lib/dasbor/rasioTambahanKeystats'
 import { JUDUL_ASAL, type PetaRasio } from '../../lib/dasbor/rasioUtamaKeystats'
+import { CatatanAsingStockbit } from './CatatanAsingStockbit'
 
 /**
  * Panel/tab "Banding Emiten" — dipindah dari halaman Bedah Emiten (pensiun 21
@@ -119,6 +120,16 @@ export function PanelBandingEmiten({ awal }: { awal: string }) {
 
   const belumTerpanen = tabel.kolom.filter((k) => !k.ada).map((k) => k.kode)
 
+  // #253: "Net Asing 20 Hari" (baris net20, lib/dasbor/bandingEmiten.ts) ikut
+  // jendela 20 hari yang sama — gabungkan tanggal isian lintas kolom.
+  const isianTanggal = useMemo(() => {
+    const set = new Set<string>()
+    kode.forEach((k) => {
+      (bahan[k]?.asing ?? []).slice(-20).forEach((r) => { if (r.sumber === 'stockbit') set.add(r.tanggal) })
+    })
+    return [...set].sort()
+  }, [kode, bahan])
+
   return (
     <div className="panel">
       <div className="panel-h"><span className="lbl">Banding Emiten</span></div>
@@ -208,6 +219,8 @@ export function PanelBandingEmiten({ awal }: { awal: string }) {
             </tbody>
           </table>
         </div>
+
+        <CatatanAsingStockbit tanggal={isianTanggal} />
 
         {belumTerpanen.length > 0 && (
           <p className="teks-11" style={{ color: 'var(--text3)', marginTop: 10 }}>

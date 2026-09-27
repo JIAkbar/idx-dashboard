@@ -37,6 +37,7 @@ import {
 } from '../../lib/dasbor/berkasRekam'
 import { muatCandle, type DataCandle } from '../../lib/dasbor/candleStockbit'
 import { fetchAsing, type AsingData } from '../../lib/dasbor/stockDetailData'
+import { CatatanAsingStockbit } from '../../components/dasbor/CatatanAsingStockbit'
 import { LABEL_KELOMPOK, KETERANGAN_KELOMPOK, warnaBrokerCanvas, namaBroker } from '../../lib/dasbor/kelompokBroker'
 import {
   ARTI_WATAK, bacaHariMerah, muatRezim, tahunTerbaru,
@@ -184,6 +185,11 @@ export default function BerkasEmiten() {
     return () => { batal = true }
   }, [kode])
   const aliran = useMemo(() => ringkasAsing(asing?.d ?? [], 20), [asing])
+  // #253: jendela blok ini 20 hari, sama seperti Aliran Asing/Screener.
+  const isianTanggalAsing = useMemo(
+    () => (asing?.d ?? []).slice(-20).filter((r) => r.sumber === 'stockbit').map((r) => r.tanggal),
+    [asing],
+  )
 
   // Blok D — likuiditas. Candle dipakai untuk volume & harga beku; lot nego
   // dari arsip broker yang SUDAH dimuat blok B (nol fetch tambahan).
@@ -760,6 +766,7 @@ export default function BerkasEmiten() {
               })}
             </div>
             <p className="be-ket" style={{ marginTop: 6 }}>{bacaAliran(aliran)}</p>
+            <CatatanAsingStockbit tanggal={isianTanggalAsing} />
 
             <div className="be-batas">
               <b>Batas blok ini</b>

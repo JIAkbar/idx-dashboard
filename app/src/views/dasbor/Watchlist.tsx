@@ -21,6 +21,7 @@ import {
 } from '../../lib/dasbor/akumulasi'
 import { fetchAsing, type AsingHarian } from '../../lib/dasbor/stockDetailData'
 import { useScreener } from '../../lib/dasbor/screener'
+import { CatatanAsingStockbit } from '../../components/dasbor/CatatanAsingStockbit'
 import { useChartCanvas, bacaTokenTema } from '../../lib/dasbor/useChartJs'
 import { useTheme } from '../../context/ThemeContext'
 import { labelTanggal } from '../../lib/dasbor/brokerHarian'
@@ -276,11 +277,26 @@ export function Watchlist() {
 
   const s = useUrut(baris, 'kode', 'naik')
 
+  // #253: catatan wajib pakai jendela yang BENAR-BENAR dipakai kolom Asing
+  // 20H/1D — deret `asing` lokal per anggota watchlist, bukan ruas global
+  // screener.json (pola sama PanelBandingEmiten.tsx).
+  const isianTanggal = useMemo(() => {
+    const set = new Set<string>()
+    Object.values(asing).forEach((d) => {
+      (d ?? []).slice(-JENDELA).forEach((r) => { if (r.sumber === 'stockbit') set.add(r.tanggal) })
+    })
+    return [...set].sort()
+  }, [asing])
+
   return (
     <div className="lantai hal-watchlist">
       <div className="vhead">
         <h1>Watchlist</h1>
       </div>
+
+      {/* #253: Asing 20H/1D di tabel di bawah — tanggal isian dari deret
+          `asing` per anggota watchlist, jendela sama dengan kolomnya. */}
+      <CatatanAsingStockbit tanggal={isianTanggal} />
 
       {/* #228: ringkasan kanvas PAPAN Baru (tampilan Baru saja); fitur lama tetap di bawah. */}
       {tampilan === 'baru' && (

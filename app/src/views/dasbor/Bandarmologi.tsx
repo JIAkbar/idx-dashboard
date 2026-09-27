@@ -11,6 +11,7 @@ import {
   useBandarmologi, ciriLot, ciriTimpang, ciriFase,
   LABEL_LOT, LABEL_TIMPANG, LABEL_FASE, type BarisBandar,
 } from '../../lib/dasbor/bandarmologi'
+import { CatatanAsingStockbit } from '../../components/dasbor/CatatanAsingStockbit'
 import './Bandarmologi.css'
 
 /**
@@ -158,6 +159,10 @@ export default function Bandarmologi() {
   return (
     <div className="lantai hal-bandarmologi">
       {vhead(data.tanggal)}
+
+      {/* #253: net_asing_lembar/share_asing bisa ikut baris isian Stockbit
+          untuk emiten yang bursanya sempat tak bisa diambil. */}
+      <CatatanAsingStockbit tanggal={data.asing_isian_stockbit} />
 
       <p className="bm-pengantar">
         Dua dokumen di arsip ide menjelaskan cara membaca jejak pemain besar: kelas

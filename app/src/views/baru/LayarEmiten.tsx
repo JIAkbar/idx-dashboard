@@ -7,6 +7,7 @@ import { EMITEN_BAWAAN, LAYAR, LAPIS_PER_EMITEN, ruteLapisan, ruteLayar } from '
 import { PilihEmiten } from './l3-pilih'
 import { susunFaktaHarian, susunFaseBroker, type BarisOhlc, type BarisAsing, type HariBrokerPuncak, type FaktaHari } from './cerita-hitung'
 import { KakiBaru } from './KakiBaru'
+import { CatatanAsingStockbit } from '../../components/dasbor/CatatanAsingStockbit'
 
 interface Kartu { harga: number; chg: number; tgl: string; sektor?: { nama?: string } }
 interface Keystats { rasio: Record<string, string> }
@@ -65,6 +66,7 @@ export default function LayarEmiten() {
     [ohlc, asing, brokerPuncak],
   )
   const fase = useMemo(() => susunFaseBroker(brokerPuncak?.hari ?? null, 5), [brokerPuncak])
+  const isianTanggal = useMemo(() => fakta.filter((h) => h.asingStockbit).map((h) => h.tanggal), [fakta])
 
   const pilih = <PilihEmiten />
   const galat = gk ?? go
@@ -125,6 +127,7 @@ export default function LayarEmiten() {
                 </div>
               ))}
             </div>
+            <CatatanAsingStockbit tanggal={isianTanggal} />
           </Blok>
 
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>

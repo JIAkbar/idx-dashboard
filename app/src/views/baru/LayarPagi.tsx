@@ -8,6 +8,7 @@ import type { BarisAsing } from './cerita-hitung'
 import { useDsTerbaru, useJson, angka, bertanda, rupiah, tanggalPendek } from './data'
 import { KakiBaru } from './KakiBaru'
 import { ruteLayar } from './peta'
+import { CatatanAsingStockbit } from '../../components/dasbor/CatatanAsingStockbit'
 import {
   hitungLonjakan, pemicuAsingBeruntun, pemicuDekatStop, pemicuPembeliBerganti, pemicuTembusMa20,
   type HariBrokerPuncak,
@@ -105,6 +106,9 @@ export default function LayarPagi() {
       const d = dataPemicu.data[kode]
       const brokerHari = broker.data[kode]
       const menyala: { p: Pemicu; kalimat: string }[] = []
+      // #253: hari yang ikut jendela pemicu "asing-beruntun" (5 hari, sama
+      // dengan default `pemicuAsingBeruntun`) tapi berasal dari isian Stockbit.
+      let asingIsian: string[] = []
       if (setelan['pembeli-berganti'] && brokerHari) {
         const r = pemicuPembeliBerganti(brokerHari)
         if (r.menyala && r.kalimat) menyala.push({ p: 'pembeli-berganti', kalimat: r.kalimat })
@@ -115,13 +119,16 @@ export default function LayarPagi() {
       }
       if (setelan['asing-beruntun'] && d?.asing) {
         const r = pemicuAsingBeruntun(d.asing)
-        if (r.menyala && r.kalimat) menyala.push({ p: 'asing-beruntun', kalimat: r.kalimat })
+        if (r.menyala && r.kalimat) {
+          menyala.push({ p: 'asing-beruntun', kalimat: r.kalimat })
+          asingIsian = d.asing.slice(-5).filter((b) => b[6] === 'stockbit').map((b) => b[0])
+        }
       }
       if (setelan['dekat-stop'] && d?.kartu) {
         const r = pemicuDekatStop(d.kartu)
         if (r.menyala && r.kalimat) menyala.push({ p: 'dekat-stop', kalimat: r.kalimat })
       }
-      return { kode, menyala }
+      return { kode, menyala, asingIsian }
     })
     .filter((x) => x.menyala.length > 0)
 
@@ -166,12 +173,13 @@ export default function LayarPagi() {
               ? <span className="bb-catatan">Tak ada pemicu yang menyala untuk watchlist-mu{tglBroker ? ` (data broker per ${tanggalPendek(tglBroker)})` : ''}.</span>
               : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                  {pemicuPerEmiten.map(({ kode, menyala }) => (
+                  {pemicuPerEmiten.map(({ kode, menyala, asingIsian }) => (
                     <div key={kode} style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                       <Link to={ruteLayar('emiten', kode)} className="bb-mono" style={{ fontWeight: 600, fontSize: 13, minHeight: 44, display: 'inline-flex', alignItems: 'center' }}>{kode} →</Link>
                       {menyala.map((m) => (
                         <span key={m.p} style={{ fontSize: 13, lineHeight: 1.4 }}>{LABEL_PEMICU[m.p]}: {m.kalimat}</span>
                       ))}
+                      <CatatanAsingStockbit tanggal={asingIsian} />
                     </div>
                   ))}
                 </div>
