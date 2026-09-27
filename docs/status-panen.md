@@ -8,6 +8,23 @@
 >
 > Kata pemicu untuk panen manual lewat Claude Code: **"Panen Lagi"**.
 
+## Keadaan 27 September 2026 malam (dibaca dari ISI berkas, hari bursa terakhir Jumat 25 Sep)
+
+Sejak #241 (27 Sep) pemanen harian TUNGGAL = workflow `panen-harian-rumah.yml` (runner rumahan, 18:30 WIB Senin-Jumat) + susulan broker tiap +-3 jam (#252); bat laptop hanya melapor (#241, notifikasi Windows). Statistik PDF IDX = `update-rumah.yml`.
+
+| Sumber | Isi terakhir | Cakupan | Catatan |
+|---|---|---|---|
+| Harga OHLC / OHLCV Stockbit | 2026-09-25 | 963/964 berkas (GOTOM usang, di luar daftar emiten) | otomatis |
+| Keystats / info / profil Stockbit | dipanen 2026-09-27 | 962/963 | profil jatuh tempo bulanan, dipanen 27 Sep |
+| Intraday 1 jam | 2026-09-25 | 810/875 di bar terakhir; sisanya emiten tak aktif | otomatis |
+| IHSG harian (Yahoo) | 2026-09-25 | - | sempat membeku 22 Sep karena #241 (#250), dipulihkan |
+| Statistik harian `ds_*` | 2026-09-25 | 24-25 Sep = **cadangan Yahoo (indeks saja)** | PDF IDX terblokir verifikasi bot (#243) |
+| Aliran asing `asing/` | 2026-09-25 | 832 emiten; **24-25 Sep isian Stockbit** (#253, baris bertanda) | IDX menimpa begitu kembali |
+| Broker per emiten | 25 & 21 Sep lengkap 6 varian | 24 Sep +-627/5.772 berkas, 23 Sep +-1.660, 22 Sep +-2.718, 18 Sep +-2.078 | disusul otomatis #252; jatah Stockbit per periode (#218) |
+| Kartu, screener, pola, winrate, peluang, bandarmologi | 2026-09-25 | - | turunan |
+| Aliran investor, bid/offer, daftar emiten | 2026-09-23 | - | IDX terblokir (#243) |
+| Sektor emiten | 2026-09-05 | - | IDX terblokir (#243) |
+
 Terakhir disentuh **13 September 2026**: baris Keystats Stockbit, Profil Stockbit, `keystats_stockbit/`, dan `info_stockbit/` (irama panen #170 B dan #182 A; isi terakhir dibaca dari `dipanen_pada` di dalam berkas).
 
 Diperbarui: **19 Agustus 2026** (sore — kolom pembanding masuk); baris **Kabar**
