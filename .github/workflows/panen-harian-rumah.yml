@@ -40,6 +40,13 @@ on:
     # statistiknya. Jam UTC-nya yang ditulis; WIB tetap UTC+7 sepanjang tahun,
     # jadi tak ada pergeseran musim yang perlu diurus.
     - cron: '30 11 * * 1-5'
+    # #252 (Johan 27 Sep 2026): susulan broker otomatis tiap +-3 jam, mode
+    # "hanya broker" (lihat HANYA_BROKER di env). Jam UTC sengaja menghindari
+    # 11:30-14:59 UTC (run harian penuh 18:30 WIB, hingga 200 menit): grup
+    # concurrency cuma menyimpan SATU run antre, dan run antre yang lebih baru
+    # membatalkan yang lebih lama - susulan tak boleh menggusur run harian.
+    # Tanpa lubang, pemanen melewati berkas yang sudah ada dan run selesai cepat.
+    - cron: '15 0,3,6,9,15,18,21 * * *'
   workflow_dispatch:
     inputs:
       lewati_ohlc:
@@ -59,6 +66,10 @@ on:
 # variabel di sini menutup seluruh langkah Python sekaligus.
 env:
   PYTHONIOENCODING: utf-8
+  # Mode "hanya broker" (#248 manual, #252 terjadwal): hanya uji token, broker
+  # per emiten, gudang tahunan, turunan broker, commit. Run terjadwal harian
+  # 18:30 WIB (cron 30 11 * * 1-5) tetap penuh.
+  HANYA_BROKER: ${{ github.event.inputs.hanya_broker == 'true' || (github.event_name == 'schedule' && github.event.schedule != '30 11 * * 1-5') }}
   # Rantai token Stockbit untuk runner (#160 B, konfirmasi Johan 9 Sep 2026:
   # "panen pakai token stockbit"). Layanan runner berjalan sebagai SYSTEM dan
   # ruang kerjanya hasil checkout bersih, jadi ia tak punya `app/.env.local`
@@ -167,7 +178,7 @@ jobs:
           exit 1
 
       - name: 1 · Daftar emiten & jumlah saham
-        if: ${{ github.event.inputs.hanya_broker != 'true' }}
+        if: ${{ env.HANYA_BROKER != 'true' }}
         continue-on-error: true
         run: |
           & "${{ steps.py.outputs.exe }}" scripts/sinkron_emiten.py
@@ -198,7 +209,7 @@ jobs:
       # dan "IHSG harian" membeku 22 Sep. Urutan sama dengan bat: sebelum 2b
       # (IHSG Stockbit + jahit_ihsg).
       - name: 2a · IHSG harian (Yahoo)
-        if: ${{ github.event.inputs.hanya_broker != 'true' }}
+        if: ${{ env.HANYA_BROKER != 'true' }}
         continue-on-error: true
         run: |
           & "${{ steps.py.outputs.exe }}" scripts/panen_ihsg.py
@@ -209,7 +220,7 @@ jobs:
       # jadi menjalankan keduanya membuang waktu sebelum commit awal - bat sudah
       # lama melewatinya lewat LEWATI_OHLC_YAHOO=1 karena alasan yang sama.
       - name: 2 · OHLC harian
-        if: ${{ github.event.inputs.lewati_ohlc != 'true' && steps.token.outputs.hidup != '1' && github.event.inputs.hanya_broker != 'true' }}
+        if: ${{ github.event.inputs.lewati_ohlc != 'true' && steps.token.outputs.hidup != '1' && env.HANYA_BROKER != 'true' }}
         continue-on-error: true
         run: |
           & "${{ steps.py.outputs.exe }}" scripts/panen_ohlc.py
@@ -224,7 +235,7 @@ jobs:
       # `gabung` dijalankan DI SINI, bukan nanti: ia yang menaikkan penanda
       # bar ke `sb`, dan langkah 4 (Kartu) sudah membaca `ohlc/` hasilnya.
       - name: 2b · OHLCV Stockbit + gabung ke arsip harga
-        if: ${{ steps.token.outputs.hidup == '1' && github.event.inputs.hanya_broker != 'true' }}
+        if: ${{ steps.token.outputs.hidup == '1' && env.HANYA_BROKER != 'true' }}
         continue-on-error: true
         run: |
           & "${{ steps.py.outputs.exe }}" scripts/panen_ohlcv_stockbit.py --semua --paksa
@@ -241,7 +252,7 @@ jobs:
           if ($LASTEXITCODE -ne 0) { Write-Host "::warning::ada emiten tertinggal - lihat logs/panen_tertinggal.txt" }
 
       - name: 3 · Aliran asing
-        if: ${{ github.event.inputs.hanya_broker != 'true' }}
+        if: ${{ env.HANYA_BROKER != 'true' }}
         continue-on-error: true
         run: |
           & "${{ steps.py.outputs.exe }}" scripts/panen_asing.py
@@ -260,7 +271,7 @@ jobs:
       # 22 Agu 2026: "data daily ini mah, harusnya update yaa setiap setelah
       # panen"). Wajib SESUDAH langkah 2 (OHLC) — sumbernya dari sana.
       - name: 3b · Segarkan harga fundamental (dari OHLC, nol jaringan)
-        if: ${{ github.event.inputs.hanya_broker != 'true' }}
+        if: ${{ env.HANYA_BROKER != 'true' }}
         continue-on-error: true
         run: |
           & "${{ steps.py.outputs.exe }}" scripts/segarkan_harga_fundamental.py
@@ -278,7 +289,7 @@ jobs:
       # jadi ia sengaja dikecualikan dari panen harian — hasilnya berhenti di
       # 18 Agu 2026 tanpa satu pun galat.
       - name: 3c · Broker summary level pasar
-        if: ${{ github.event.inputs.hanya_broker != 'true' }}
+        if: ${{ env.HANYA_BROKER != 'true' }}
         continue-on-error: true
         run: |
           & "${{ steps.py.outputs.exe }}" scripts/fetch_broker_summary.py --hari 5
@@ -296,7 +307,7 @@ jobs:
       # alur kerja ini (#160 B), runner sudah bisa membacanya. Pemanen dulu,
       # pembangun sesudahnya: yang kedua memadatkan hasil yang pertama.
       - name: 3f · Intraday 1 jam (Stockbit)
-        if: ${{ steps.token.outputs.hidup == '1' && github.event.inputs.hanya_broker != 'true' }}
+        if: ${{ steps.token.outputs.hidup == '1' && env.HANYA_BROKER != 'true' }}
         continue-on-error: true
         run: |
           & "${{ steps.py.outputs.exe }}" scripts/panen_intraday_stockbit.py
@@ -342,7 +353,7 @@ jobs:
       #   langkah 3d, jadi memindahkannya berarti dua sumber tanggal untuk
       #   satu keputusan.
       - name: 3g · Kategori broker & rezim pasar
-        if: ${{ github.event.inputs.hanya_broker != 'true' }}
+        if: ${{ env.HANYA_BROKER != 'true' }}
         continue-on-error: true
         run: |
           & "${{ steps.py.outputs.exe }}" scripts/bangun_kategori_broker.py
@@ -351,7 +362,7 @@ jobs:
           if ($LASTEXITCODE -ne 0) { Write-Host "::warning::bangun_rezim_pasar gagal" }
 
       - name: 4 · Kartu Analisa
-        if: ${{ github.event.inputs.hanya_broker != 'true' }}
+        if: ${{ env.HANYA_BROKER != 'true' }}
         continue-on-error: true
         run: |
           & "${{ steps.py.outputs.exe }}" scripts/riset/kartu_analisa.py --semua --tulis
@@ -367,7 +378,7 @@ jobs:
       # berikutnya — Johan 22 Agu 2026: "sudah tau kandidat nya dulu dari
       # screener dan di analisa mendalam di buletin deepdive".
       - name: 4b · Kandidat Deep Dive
-        if: ${{ github.event.inputs.hanya_broker != 'true' }}
+        if: ${{ env.HANYA_BROKER != 'true' }}
         continue-on-error: true
         run: |
           & "${{ steps.py.outputs.exe }}" scripts/riset/kandidat_deepdive.py
@@ -377,7 +388,7 @@ jobs:
       # membaca `bt/rbs-stat-<TF>.json`; kerangka tanpa berkas tak menampilkan
       # angka sama sekali, jadi langkah ini yang menjaga angkanya hidup.
       - name: 4c · Statistik RBS & kandidat
-        if: ${{ github.event.inputs.hanya_broker != 'true' }}
+        if: ${{ env.HANYA_BROKER != 'true' }}
         continue-on-error: true
         run: |
           & "${{ steps.py.outputs.exe }}" scripts/riset/rbs_statistik.py --kerangka D W M --tulis
@@ -392,7 +403,7 @@ jobs:
       # Rollup Top Broker lintas hari (#29) — dijumlah dari rekap broker
       # harian resmi yang sudah dibaca halaman itu, bukan sumber lain.
       - name: 4d · Rollup Top Broker rentang
-        if: ${{ github.event.inputs.hanya_broker != 'true' }}
+        if: ${{ env.HANYA_BROKER != 'true' }}
         continue-on-error: true
         run: |
           & "${{ steps.py.outputs.exe }}" scripts/bangun_broker_rentang.py --tulis
@@ -401,7 +412,7 @@ jobs:
       # Pivot broker -> emiten (#30) — membalik arsip per-emiten jadi satu
       # berkas per broker. Sumbernya sama, cuma arah bacanya yang dibalik.
       - name: 4e · Pivot broker per emiten
-        if: ${{ github.event.inputs.hanya_broker != 'true' }}
+        if: ${{ env.HANYA_BROKER != 'true' }}
         continue-on-error: true
         run: |
           & "${{ steps.py.outputs.exe }}" scripts/bangun_broker_pivot.py --tulis
@@ -412,7 +423,7 @@ jobs:
       # skripnya MENGIMPOR mesin klasifikasi yang dipakai layar, jadi angka
       # layar dan angka rapor tak mungkin berbeda diam-diam.
       - name: 4g · Backtest Pivot/CPR
-        if: ${{ github.event.inputs.hanya_broker != 'true' }}
+        if: ${{ env.HANYA_BROKER != 'true' }}
         continue-on-error: true
         run: |
           node app/scripts/bt-pivot-cpr.ts --tulis
@@ -424,7 +435,7 @@ jobs:
       # `npx vite-node`, bukan `node`, untuk yang kedua: ia mengimpor modul
       # aplikasi lewat resolusi vite. Yang pertama .mjs biasa, jadi node cukup.
       - name: 4h · Screener + kolom pola
-        if: ${{ github.event.inputs.hanya_broker != 'true' }}
+        if: ${{ env.HANYA_BROKER != 'true' }}
         continue-on-error: true
         run: |
           node app/scripts/bangun-screener.mjs
@@ -452,7 +463,7 @@ jobs:
       # itu terjawab; keduanya `continue-on-error`, dan pemanen yang tak
       # menemukan arsip berisi berhenti tanpa menimpa berkas lama.
       - name: 4i · Turunan halaman (aliran, bid/offer, bandarmologi, grup)
-        if: ${{ github.event.inputs.hanya_broker != 'true' }}
+        if: ${{ env.HANYA_BROKER != 'true' }}
         continue-on-error: true
         run: |
           & "${{ steps.py.outputs.exe }}" scripts/bangun_aliran_investor.py
@@ -467,7 +478,7 @@ jobs:
           if ($LASTEXITCODE -ne 0) { Write-Host "::warning::petakan_grup gagal" }
 
       - name: 4j · Halaman terbitan (Harian Papan, Jago Papan, IPO)
-        if: ${{ github.event.inputs.hanya_broker != 'true' }}
+        if: ${{ env.HANYA_BROKER != 'true' }}
         continue-on-error: true
         run: |
           node app/scripts/bangun-harian-papan.mjs
@@ -478,7 +489,7 @@ jobs:
           if ($LASTEXITCODE -ne 0) { Write-Host "::warning::bangun-ipo gagal" }
 
       - name: 5 · Valuasi historis
-        if: ${{ github.event.inputs.hanya_broker != 'true' }}
+        if: ${{ env.HANYA_BROKER != 'true' }}
         continue-on-error: true
         run: |
           if (Test-Path 'scripts/hitung_valuasi_historis.py') {
@@ -517,7 +528,7 @@ jobs:
       # terpasang SESUDAH rencana_saham — jadi ia melaporkan exit code milik
       # skrip yang salah; tiap baris sekarang diperiksa tepat di bawahnya.
       - name: 7 · Hakim jejak (win rate) & kohort terkunci
-        if: ${{ github.event.inputs.hanya_broker != 'true' }}
+        if: ${{ env.HANYA_BROKER != 'true' }}
         continue-on-error: true
         run: |
           & "${{ steps.py.outputs.exe }}" scripts/riset/rekap_preset.py
@@ -555,7 +566,7 @@ jobs:
       # turunan yang baru ditulis langkah-langkah di atas, jadi tempatnya
       # sesudah semuanya dan sebelum gerbang kesegaran.
       - name: 7b · Penjaga radar basi
-        if: ${{ github.event.inputs.hanya_broker != 'true' }}
+        if: ${{ env.HANYA_BROKER != 'true' }}
         continue-on-error: true
         run: |
           & "${{ steps.py.outputs.exe }}" scripts/cek_radar_basi.py
@@ -570,7 +581,7 @@ jobs:
       # `if: always()` — commit tetap jalan walau langkah 7/7b di atas gagal;
       # data yang berhasil dipanen tak boleh menunggu data yang gagal.
       - name: 8 · Commit awal (harga & turunan non-broker)
-        if: ${{ always() && github.event.inputs.hanya_broker != 'true' }}
+        if: ${{ always() && env.HANYA_BROKER != 'true' }}
         # Gagal commit di sini tak boleh menghentikan broker di bawah; commit
         # akhir mencoba lagi dan vonis merahnya tetap tercatat di langkah itu.
         continue-on-error: true
@@ -585,7 +596,7 @@ jobs:
       # jatuh tempo (panen), 1 = belum, 2 = galat — dua yang terakhir dilewati
       # (lihat `JALANKAN_BUKA_LAPTOP.bat` baris gerbang yang sama).
       - name: 9 · Keystats, info, dan profil Stockbit
-        if: ${{ github.event.inputs.hanya_broker != 'true' }}
+        if: ${{ env.HANYA_BROKER != 'true' }}
         continue-on-error: true
         timeout-minutes: 30
         run: |
@@ -604,7 +615,7 @@ jobs:
       # #246 A: Seasonality (sapuan Yahoo 963 emiten, data bulanan) dipindah ke
       # SESUDAH commit awal supaya tak menahan harga & kartu hari itu.
       - name: 6 · Seasonality
-        if: ${{ github.event.inputs.hanya_broker != 'true' }}
+        if: ${{ env.HANYA_BROKER != 'true' }}
         continue-on-error: true
         run: |
           if (Test-Path 'scripts/panen_seasonality.py') {
@@ -622,7 +633,7 @@ jobs:
       # direktori seasonality yang sama dan dipakai sebagai pembanding.
       # Keduanya NOL JARINGAN — membaca berkas yang baru turun di langkah 6.
       - name: 6b · IHSG bulanan + berkas siap-unduh Seasonality
-        if: ${{ github.event.inputs.hanya_broker != 'true' }}
+        if: ${{ env.HANYA_BROKER != 'true' }}
         continue-on-error: true
         run: |
           if (Test-Path 'scripts/bangun_ihsg_bulanan.py') {
@@ -636,7 +647,7 @@ jobs:
       # sejak #246 juga Seasonality - menulis ke data-idx/json SESUDAH commit awal,
       # jadi tanpa ini ikut hilang kalau job terpotong di broker di bawah.
       - name: 9b · Commit keystats & info
-        if: ${{ always() && github.event.inputs.hanya_broker != 'true' }}
+        if: ${{ always() && env.HANYA_BROKER != 'true' }}
         continue-on-error: true
         run: |
           & powershell -NoProfile -ExecutionPolicy Bypass -File scripts/ci_commit_data.ps1 -Label "stockbit"
@@ -760,7 +771,7 @@ jobs:
       # YAML: `'@` wajib di kolom 0 dan itu menabrak indentasi YAML — berkas
       # ini sempat ditolak parser karenanya.
       - name: Periksa kesegaran
-        if: ${{ github.event.inputs.hanya_broker != 'true' }}
+        if: ${{ env.HANYA_BROKER != 'true' }}
         run: |
           & "${{ steps.py.outputs.exe }}" scripts/cek_kesegaran.py
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
