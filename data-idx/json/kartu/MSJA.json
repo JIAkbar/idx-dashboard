@@ -1,16 +1,16 @@
 {
  "kode": "MSJA",
- "tgl": "2026-09-25",
- "harga": 865.0,
+ "tgl": "2026-09-28",
+ "harga": 840.0,
  "prev": 865.0,
- "chg": 0.0,
- "n": 640,
+ "chg": -2.8901734104046284,
+ "n": 641,
  "mulai": "2024-01-10",
- "ma20": 709.55,
- "ma50": 534.3,
- "ma200": 441.9,
- "atr": 59.239680377445445,
- "atr_pct": 6.8485179627104555,
+ "ma20": 729.45,
+ "ma50": 542.94,
+ "ma200": 444.55,
+ "atr": 58.22256035048506,
+ "atr_pct": 6.931257184581555,
  "support": [
   {
    "level": 315.57377049180326,
@@ -20,29 +20,70 @@
    "harga": 314
   }
  ],
- "resistance": [],
+ "resistance": [
+  {
+   "level": 890.0,
+   "sentuhan": 2,
+   "terakhir": "2026-09-11",
+   "dalam_atr": true,
+   "harga": 890
+  }
+ ],
  "stop": 314,
  "stop_asal": "klaster",
- "stop_pct": 63.69942196531792,
+ "stop_pct": 62.61904761904762,
  "er": 0.15789473684210525,
- "er_persentil": 5.3452115812917596,
- "er_n_populasi": 449,
- "likuiditas_median20": 11024118000.0,
+ "er_persentil": 5.369127516778524,
+ "er_n_populasi": 447,
+ "likuiditas_median20": 11296749500.0,
  "kualitas": {
   "riwayat": "cukup",
   "likuiditas": "cukup",
-  "lilin": 640,
-  "nilai20": 11024118000.0
+  "lilin": 641,
+  "nilai20": 11296749500.0
  },
  "beku": 0,
  "beku_sejak": null,
- "dihitung": "2026-09-25",
- "rsi": 73.2559662938373,
+ "dihitung": "2026-09-28",
+ "rsi": 68.68360425078538,
  "stochrsi": [
-  17.38004531788068,
-  31.751949633438528
+  1.8397829454166361,
+  17.141817219460332
  ],
- "target": [],
+ "target": [
+  {
+   "harga": 890,
+   "pct": 5.952380952380952,
+   "sentuhan": 2,
+   "terakhir": "2026-09-11",
+   "fp": {
+    "n": 620,
+    "n_efektif": 31,
+    "kena": 382,
+    "stop": 0,
+    "lewat": 238,
+    "p_kena": 61.61290322580645,
+    "p_stop": 0.0,
+    "median_hari": 5.0,
+    "q1": 2,
+    "q3": 10,
+    "harapan": 3.667434715821812
+   },
+   "fp60": {
+    "n": 580,
+    "n_efektif": 10,
+    "kena": 489,
+    "stop": 0,
+    "lewat": 91,
+    "p_kena": 84.3103448275862,
+    "p_stop": 0.0,
+    "median_hari": 8,
+    "q1": 3,
+    "q3": 24,
+    "harapan": 5.01847290640394
+   }
+  }
+ ],
  "musiman": {
   "n": 3,
   "naik": 1,
@@ -68,10 +109,10 @@
  "fundamental": {
   "name": "PT Multi Spunindo Jaya Tbk",
   "updated": "2026-09-26 01:31",
-  "harga_pada": "2026-09-25",
-  "pe": 53.760099440646364,
+  "harga_pada": "2026-09-28",
+  "pe": 52.20633934120572,
   "pb": 3.4705,
-  "pbv": 3.4705226245977805,
+  "pbv": 3.3702185024995788,
   "eps": 16.09,
   "roe": 0.06913,
   "der": 16.198,
@@ -97,40 +138,41 @@
    "frekuensi": "kali"
   },
   "mulai": "2024-01-10",
-  "akhir": "2026-09-25",
-  "n_total": 640,
+  "akhir": "2026-09-28",
+  "n_total": 641,
   "periode": {
    "5": {
     "n": 5,
-    "beli": 17101415,
-    "jual": 17450074,
-    "net": -348659,
-    "porsi_beli_pct": 22.365286454689194,
-    "porsi_jual_pct": 22.82126383492384
+    "beli": 24203439,
+    "jual": 11269118,
+    "net": 12934321,
+    "porsi_beli_pct": 30.927671477238167,
+    "porsi_jual_pct": 14.399919752818235
    },
    "20": {
     "n": 20,
-    "beli": 90976215,
-    "jual": 93261174,
-    "net": -2284959,
-    "porsi_beli_pct": 27.562486253024332,
-    "porsi_jual_pct": 28.254745774111512
+    "beli": 99776739,
+    "jual": 81106018,
+    "net": 18670721,
+    "porsi_beli_pct": 30.341552499473917,
+    "porsi_jual_pct": 24.66388987888526
    }
   },
   "isian_stockbit": [
    "2026-09-24",
-   "2026-09-25"
+   "2026-09-25",
+   "2026-09-28"
   ]
  },
- "ma5": 856.0,
- "ma100": 481.86,
- "ma150": 472.46666666666664,
+ "ma5": 860.0,
+ "ma100": 485.01,
+ "ma150": 475.46666666666664,
  "bb20": {
-  "mid": 709.55,
-  "atas": 1058.863884636726,
-  "bawah": 360.2361153632739
+  "mid": 729.45,
+  "atas": 1060.3925781007938,
+  "bawah": 398.5074218992063
  },
- "posisi_bb": 0.445,
+ "posisi_bb": 0.334,
  "ichimoku": {
   "tenkan": 825.0,
   "kijun": 671.0,
@@ -139,30 +181,30 @@
   "di_atas_kumo": true
  },
  "regresi60": {
-  "kemiringan": 7.742622950819672,
-  "tengah": 742.0907103825136,
-  "posisi": 1.1466
+  "kemiringan": 8.091664351208669,
+  "tengah": 759.6540983606558,
+  "posisi": 0.754
  },
- "freq": 1821,
- "ukuran_order": 73.2894,
- "peringkat_value": 127,
- "peringkat_volume": 244,
- "peringkat_freq": 217,
- "porsi_asing": 0.1418,
- "net_asing_rp": -930916000,
- "label_fd": "F 14% : D 86%",
- "tiket_avg": 6235722.95,
- "tiket_avg_med60": 7664588.96,
- "tiket_lonjakan": 0.8136,
- "asing_net_5h": -328908500,
- "asing_net_20h": 657711600,
- "asing_streak": -1,
- "tiket_broker_maks": 845000000.0,
- "broker_tiket_maks_kode": "TP",
- "bval_maks": 2337250000.0,
- "nego_blok_rp": 0.0,
+ "freq": 1689,
+ "ukuran_order": 118.0332,
+ "peringkat_value": 102,
+ "peringkat_volume": 193,
+ "peringkat_freq": 221,
+ "porsi_asing": 0.2992,
+ "net_asing_rp": 7034945500,
+ "label_fd": "F 30% : D 70%",
+ "tiket_avg": 10059712.55,
+ "tiket_avg_med60": 7812233.91,
+ "tiket_lonjakan": 1.2877,
+ "asing_net_5h": 10938097000,
+ "asing_net_20h": 13282283500,
+ "asing_streak": 1,
+ "tiket_broker_maks": null,
+ "broker_tiket_maks_kode": null,
+ "bval_maks": null,
+ "nego_blok_rp": null,
  "nego_broker_maks_kode": null,
- "top3_pct": 90.32,
- "number_broker_buysell": -1,
- "label_accdist": "Acc"
+ "top3_pct": null,
+ "number_broker_buysell": null,
+ "label_accdist": null
 }

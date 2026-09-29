@@ -1,16 +1,16 @@
 {
  "kode": "BSML",
- "tgl": "2026-09-25",
+ "tgl": "2026-09-28",
  "harga": 540.0,
- "prev": 550.0,
- "chg": -1.8181818181818188,
- "n": 1142,
+ "prev": 540.0,
+ "chg": 0.0,
+ "n": 1143,
  "mulai": "2021-12-16",
- "ma20": 535.25,
- "ma50": 524.8,
- "ma200": 391.49,
- "atr": 16.73300969801017,
- "atr_pct": 3.0987054996315133,
+ "ma20": 536.5,
+ "ma50": 525.2,
+ "ma200": 393.11,
+ "atr": 17.323509005295158,
+ "atr_pct": 3.208057223202807,
  "support": [
   {
    "level": 505.84615384615387,
@@ -34,29 +34,70 @@
    "harga": 360
   }
  ],
- "resistance": [],
+ "resistance": [
+  {
+   "level": 575.0,
+   "sentuhan": 1,
+   "terakhir": "2026-09-21",
+   "dalam_atr": false,
+   "harga": 575
+  }
+ ],
  "stop": 505,
  "stop_asal": "klaster",
  "stop_pct": 6.481481481481481,
- "er": 0.2640575798470535,
- "er_persentil": 92.42761692650335,
- "er_n_populasi": 449,
- "likuiditas_median20": 6796620000.0,
+ "er": 0.2631578947368421,
+ "er_persentil": 91.2751677852349,
+ "er_n_populasi": 447,
+ "likuiditas_median20": 6949305000.0,
  "kualitas": {
   "riwayat": "cukup",
   "likuiditas": "cukup",
-  "lilin": 1142,
-  "nilai20": 6796620000.0
+  "lilin": 1143,
+  "nilai20": 6949305000.0
  },
  "beku": 0,
  "beku_sejak": null,
- "dihitung": "2026-09-25",
+ "dihitung": "2026-09-28",
  "rsi": 53.92713126113008,
  "stochrsi": [
-  19.09580619518929,
-  38.67293733639292
+  15.714984784404711,
+  26.24068552581839
  ],
- "target": [],
+ "target": [
+  {
+   "harga": 575,
+   "pct": 6.481481481481481,
+   "sentuhan": 1,
+   "terakhir": "2026-09-21",
+   "fp": {
+    "n": 1122,
+    "n_efektif": 56,
+    "kena": 584,
+    "stop": 490,
+    "lewat": 48,
+    "p_kena": 52.04991087344028,
+    "p_stop": 43.672014260249554,
+    "median_hari": 3.0,
+    "q1": 1,
+    "q3": 5,
+    "harapan": 0.5430118175216214
+   },
+   "fp60": {
+    "n": 1082,
+    "n_efektif": 18,
+    "kena": 587,
+    "stop": 495,
+    "lewat": 0,
+    "p_kena": 54.25138632162662,
+    "p_stop": 45.74861367837338,
+    "median_hari": 3,
+    "q1": 1,
+    "q3": 5,
+    "harapan": 0.5511056342849319
+   }
+  }
+ ],
  "musiman": {
   "n": 5,
   "naik": 2,
@@ -82,7 +123,7 @@
  "fundamental": {
   "name": "PT Bintang Samudera Mandiri Lines Tbk",
   "updated": "2026-09-26 01:18",
-  "harga_pada": "2026-09-25",
+  "harga_pada": "2026-09-28",
   "pe": 163.5867918812481,
   "pb": 7.525,
   "pbv": 7.524978748902607,
@@ -97,7 +138,7 @@
   "shares": 1850225000,
   "float_pct": 19.26,
   "week52_high": 575,
-  "week52_low": 100,
+  "week52_low": 103,
   "pb_keystats": 7.52,
   "pe_keystats": 517.5,
   "roe_keystats": 1.45
@@ -111,72 +152,73 @@
    "frekuensi": "kali"
   },
   "mulai": "2021-12-16",
-  "akhir": "2026-09-25",
-  "n_total": 1142,
+  "akhir": "2026-09-28",
+  "n_total": 1143,
   "periode": {
    "5": {
     "n": 5,
-    "beli": 12819651,
-    "jual": 3154923,
-    "net": 9664728,
-    "porsi_beli_pct": 20.471513959174025,
-    "porsi_jual_pct": 5.038050586136799
+    "beli": 5586045,
+    "jual": 3680280,
+    "net": 1905765,
+    "porsi_beli_pct": 11.877746946065768,
+    "porsi_jual_pct": 7.825471246770643
    },
    "20": {
     "n": 20,
-    "beli": 28337451,
-    "jual": 18326123,
-    "net": 10011328,
-    "porsi_beli_pct": 11.32601472674231,
-    "porsi_jual_pct": 7.324651006263442
+    "beli": 28965945,
+    "jual": 18413580,
+    "net": 10552365,
+    "porsi_beli_pct": 11.452276423985698,
+    "porsi_jual_pct": 7.280183957926267
    }
   },
   "isian_stockbit": [
    "2026-09-24",
-   "2026-09-25"
+   "2026-09-25",
+   "2026-09-28"
   ]
  },
- "ma5": 546.0,
- "ma100": 485.04,
- "ma150": 438.02666666666664,
+ "ma5": 544.0,
+ "ma100": 486.38,
+ "ma150": 439.8666666666667,
  "bb20": {
-  "mid": 535.25,
-  "atas": 564.4861078120874,
-  "bawah": 506.0138921879126
+  "mid": 536.5,
+  "atas": 564.2668867538297,
+  "bawah": 508.7331132461704
  },
- "posisi_bb": 0.1625,
+ "posisi_bb": 0.126,
  "ichimoku": {
-  "tenkan": 555.0,
+  "tenkan": 550.0,
   "kijun": 540.0,
-  "senkou_a": 547.5,
+  "senkou_a": 545.0,
   "senkou_b": 535.5,
   "di_atas_kumo": true
  },
  "regresi60": {
-  "kemiringan": 0.47818838566268407,
-  "tengah": 537.7732240437158,
-  "posisi": 0.2168
+  "kemiringan": 0.4479021950541817,
+  "tengah": 537.7131147540983,
+  "posisi": 0.2301
  },
- "freq": 345,
- "ukuran_order": 143.8029,
- "peringkat_value": 268,
- "peringkat_volume": 370,
- "peringkat_freq": 473,
- "porsi_asing": 0.099,
- "net_asing_rp": 436802000,
- "label_fd": "F 10% : D 90%",
- "tiket_avg": 7766410.14,
- "tiket_avg_med60": 12416306.67,
- "tiket_lonjakan": 0.6255,
- "asing_net_5h": 5333142000,
- "asing_net_20h": 5652178500,
- "asing_streak": 9,
- "tiket_broker_maks": 18118257.0,
- "broker_tiket_maks_kode": "HD",
- "bval_maks": 1829944000.0,
- "nego_blok_rp": 0.0,
+ "freq": 717,
+ "ukuran_order": 192.0683,
+ "peringkat_value": 164,
+ "peringkat_volume": 230,
+ "peringkat_freq": 375,
+ "porsi_asing": 0.0916,
+ "net_asing_rp": -168219000,
+ "label_fd": "F 9% : D 91%",
+ "tiket_avg": 10410228.73,
+ "tiket_avg_med60": 12236388.89,
+ "tiket_lonjakan": 0.8508,
+ "asing_net_5h": 1031701500,
+ "asing_net_20h": 5916809500,
+ "asing_streak": -1,
+ "tiket_broker_maks": null,
+ "broker_tiket_maks_kode": null,
+ "bval_maks": null,
+ "nego_blok_rp": null,
  "nego_broker_maks_kode": null,
- "top3_pct": 174.22,
- "number_broker_buysell": -1,
- "label_accdist": "Acc"
+ "top3_pct": null,
+ "number_broker_buysell": null,
+ "label_accdist": null
 }
