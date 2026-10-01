@@ -8,8 +8,9 @@ ditolak gerbang 22:00).
 
 Keluaran: satu tanggal per baris - hari tuntas terakhir DULU (selalu ada), lalu
 hari bursa dalam JENDELA_HARI hari kalender terakhir yang arsipnya belum lengkap
-enam varian, termuda dulu. Jatah sumber (#218) sering habis di tengah jalan, jadi
-urutan menentukan apa yang kebagian: data hari ini lebih dulu, lubang lama sesudahnya.
+enam varian: lubang termuda dulu, lalu sisanya dari yang paling bolong (#258).
+Jatah sumber (#218) sering habis di tengah jalan, jadi urutan menentukan apa yang
+kebagian: data hari ini lebih dulu, lalu hari terbaru, lalu lubang terparah.
 
 #240 (27 Sep 2026): jendela 7 -> 30 hari. Dengan 7 hari, lubang yang belum tertutup
 dalam seminggu jatuh keluar jendela dan tak pernah dikejar lagi - 18 Sep 2026
@@ -75,7 +76,20 @@ def target(bar: list[str], kini: datetime.datetime, hitung: dict[str, dict[str, 
     aman = bar[-1]
     batas = str(kini.date() - datetime.timedelta(days=JENDELA_HARI))
     lubang = [t for t in bar if batas <= t < aman and not lengkap(t, hitung, acuan)]
-    return [aman] + lubang[::-1]
+    if not lubang:
+        return [aman]
+    # #258 (1 Okt 2026): hari tuntas dulu, lalu lubang TERMUDA, lalu sisanya
+    # dari yang PALING BOLONG. Urutan murni "termuda dulu" membuat jatah
+    # sumber dan batas 45 menit selalu habis di hari-hari baru: 18, 22, 23
+    # Sep 2026 tak bergerak dari 27 Sep sampai 1 Okt (35-45%) sementara
+    # 28-30 Sep yang sudah 86-90% terus didahulukan.
+    def isi(t: str) -> float:
+        n = acuan.get(t) or max((max(v.values(), default=0) for v in hitung.values()), default=0) or 1
+        per = hitung.get(t) or {}
+        return min(per.get(v, 0) for v in VARIAN) / n
+    termuda = lubang[-1]
+    sisa = sorted(lubang[:-1], key=lambda t: (isi(t), t))
+    return [aman, termuda] + sisa
 
 
 def uji() -> int:
@@ -103,12 +117,17 @@ def uji() -> int:
     assert "2026-08-10" not in target(bar, kini, h(tanpa=("2026-08-10",)), acuan)
     # Beberapa lubang: hari tuntas dulu, lalu lubang termuda dulu.
     assert target(bar, kini, h(tanpa=("2026-09-04", "2026-09-10")), acuan) == ["2026-09-15", "2026-09-10", "2026-09-04"]
+    # #258: sesudah lubang termuda, sisanya dari yang PALING BOLONG (9 Sep 40%
+    # didahulukan atas 11 Sep 80%), bukan dari tanggal termuda.
+    b258 = h({"2026-09-14": {v: 860 for v in VARIAN}, "2026-09-11": {v: 770 for v in VARIAN},
+              "2026-09-09": {v: 385 for v in VARIAN}})
+    assert target(bar, kini, b258, acuan) == ["2026-09-15", "2026-09-14", "2026-09-09", "2026-09-11"]
     # Tanpa angka bursa: acuan = hitungan terbesar di jendela (962) -> 324 tetap lubang.
     assert "2026-09-11" in target(bar, kini, h({"2026-09-11": {v: 324 for v in VARIAN}}), {})
     # Sebelum 16:30 hari ini tak dianggap tuntas.
     assert target(bar, datetime.datetime(2026, 9, 15, 10, 0), h(), acuan) == ["2026-09-14"]
     assert target([], kini, {}, {}) == []
-    print("uji tgl_broker_lubang: LOLOS 10 kasus")
+    print("uji tgl_broker_lubang: LOLOS 11 kasus")
     return 0
 
 
