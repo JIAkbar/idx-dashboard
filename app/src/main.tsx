@@ -86,7 +86,14 @@ function bolehIntip(): boolean {
 
 const akar = createRoot(document.getElementById('root')!)
 
-if (PAPAN_TUTUP && !bolehIntip()) {
+if (window.location.pathname.startsWith('/v2/kartu')) {
+  const { KartuV2 } = await import('./views/v2/KartuV2')
+  akar.render(
+    <StrictMode>
+      <KartuV2 />
+    </StrictMode>,
+  )
+} else if (PAPAN_TUTUP && !bolehIntip()) {
   const { Maintenance } = await import('./views/Maintenance')
   akar.render(
     <StrictMode>

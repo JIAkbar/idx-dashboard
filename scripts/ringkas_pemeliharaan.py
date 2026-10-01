@@ -37,6 +37,33 @@ def potret_ihsg(d: list) -> dict:
     }
 
 
+def ringkas_peluang() -> dict | None:
+    """Ringkasan Peluang Naik (#270) untuk modal halaman pemeliharaan."""
+    p = JSON / "peluang_naik.json"
+    if not p.exists():
+        return None
+    d = json.loads(p.read_text(encoding="utf-8"))
+    rz = d["rezim"]
+    semua = d["peringkat"]  # sudah urut: skor, jumlah jebakan, peluang, likuiditas
+    bersih = [r for r in d["peringkat_semua"].values() if not r[3]]
+    def baris(b):
+        return {"nama": b["nama"], "asal": b["asal"],
+                **{z: {"n": b[z]["uji"]["n"], "p": b[z]["uji"]["p"], "dasar": b[z]["dasar_uji"]["p"],
+                       "lift": b[z]["lift_uji_pp"], "lolos": b[z]["lolos"] and d["terkonfirmasi"][z],
+                       "gugur": b[z]["lolos"] and not d["terkonfirmasi"][z], "jebakan": b[z]["jebakan"]}
+                   for z in ("bullish", "bearish")}}
+    return {
+        "tanggal": d["tanggal"], "rezim": rz, "ihsg": d["ihsg"], "definisi": d["definisi"], "cakupan": d["cakupan"],
+        "sinyal": [baris(b) for b in d["sinyal"]],
+        "kalibrasi": d["kalibrasi"], "terkonfirmasi": d["terkonfirmasi"],
+        "jumlah_tanpa_jebakan": len(bersih),
+        "teratas": [{k: r[k] for k in ("kode", "harga", "nilai20_m", "sinyal", "jebakan", "p", "ci")} for r in semua[:15]],
+        "hindari": [{k: r[k] for k in ("kode", "harga", "jebakan", "p")} for r in d["hindari"][:15]],
+        "siaga_bullish": d["siaga_bullish"][:10],
+        "nama_sinyal": {b["kunci"]: b["nama"] for b in d["sinyal"]},
+    }
+
+
 def main() -> int:
     ihsg = json.loads((JSON / "ohlc" / "IHSG.json").read_text(encoding="utf-8"))["d"]
     tinjau = json.loads((JSON / "tinjauan_deepdive.json").read_text(encoding="utf-8"))
@@ -51,7 +78,7 @@ def main() -> int:
     dd = next((d for d in reversed(semua) if d.get("disetujui")), None)
     if dd:
         dd.pop("catatan", None)
-    isi = {"ihsg": potret_ihsg(ihsg), "jejak": jejak, "deepdive": dd}
+    isi = {"ihsg": potret_ihsg(ihsg), "jejak": jejak, "deepdive": dd, "peluang": ringkas_peluang()}
     KELUAR.write_text(json.dumps(isi, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
     print(f"pemeliharaan.json: IHSG {isi['ihsg']['tanggal']} {isi['ihsg']['close']}, jejak {len(jejak)}, "
           f"deepdive {'disetujui' if dd and dd.get('disetujui') else 'draf (tak tayang)'}")

@@ -1,3 +1,4 @@
+import { useRef, type RefObject } from 'react'
 import './Maintenance.css'
 import isi from './pemeliharaan.json'
 
@@ -184,7 +185,117 @@ function DeepDiveBaru() {
   )
 }
 
+type Kal = { skor?: number | string; jebakan?: number | string; n: number; p: number }
+type Rezim = 'bullish' | 'bearish'
+const pp = (v: number) => `${v > 0 ? '+' : v < 0 ? '−' : ''}${angka.format(Math.abs(v))} pp`
+const prs = (p: number) => `${angka.format(Math.round(p * 1000) / 10)}%`
+
+function LencanaSinyal({ s }: { s: { lift: number; lolos: boolean; gugur?: boolean; jebakan: boolean } }) {
+  const [teks, kelas] = s.lolos ? ['Lolos', 'mt-pil-ok'] : s.jebakan ? ['Penjebak', 'mt-turun-teks']
+    : s.gugur ? ['Gugur di uji akhir', 'mt-pil-tunggu'] : ['—', 'mt-pil-tunggu']
+  return <span className="mt-m-lenc"><span className={kelasArah(s.lift)}>{pp(s.lift)}</span><span className={`mt-pil ${kelas}`}>{teks}</span></span>
+}
+
+function ModalPeluang({ dlg }: { dlg: RefObject<HTMLDialogElement | null> }) {
+  const p = isi.peluang
+  const rez = p.rezim as Rezim
+  const nama = p.nama_sinyal as Record<string, string>
+  // Sinyal lolos dipakai hanya bila periode uji akhir menegaskannya (lihat scripts/riset/peluang_naik.py).
+  const adaLolos = (p.terkonfirmasi as Record<Rezim, boolean>)[rez]
+  const kal = (adaLolos ? p.kalibrasi[rez] : p.kalibrasi[`${rez}_jebakan` as 'bullish_jebakan']) as Kal[]
+  const tutup = () => dlg.current?.close()
+  return (
+    <dialog
+      ref={dlg}
+      className="mt-modal"
+      aria-labelledby="mt-m-judul"
+      onClick={(e) => { if (e.target === e.currentTarget) tutup() }}
+    >
+      <div className="mt-modal-isi">
+        <button type="button" className="mt-modal-tutup" onClick={tutup} aria-label="Tutup">✕</button>
+        <h2 id="mt-m-judul">Peluang Naik</h2>
+        <p className="mt-m-baris">
+          <span className={`mt-pil ${rez === 'bullish' ? 'mt-pil-ok' : 'mt-turun-teks'}`}>Rezim {rez}</span>
+          <span className="mt-ket">IHSG {rp(p.ihsg.close)} vs rata-rata 200 hari {rp(p.ihsg.ma200)}</span>
+        </p>
+        <p className="mt-ket">
+          Yang diukur: peluang harga naik {p.definisi.target_pct}% lebih dulu sebelum turun {p.definisi.batas_pct}% dalam{' '}
+          {p.definisi.hari} hari bursa. Diuji pada {angka.format(p.cakupan.observasi)} observasi dari {p.cakupan.emiten} emiten likuid,
+          dengan data latih {p.definisi.latih}, validasi {p.definisi.validasi} untuk memilih sinyal, dan uji akhir{' '}
+          {p.definisi.uji} untuk menghitung angka peluang. Kolom bullish/bearish menunjukkan selisih terhadap rata-rata di periode validasi. Sebanyak {p.cakupan.sinyal_diuji} sinyal
+          dari 13 buku (termasuk Technical Analysis for Mega Profit) dan riset akademik diuji.
+        </p>
+
+        <h3>Temuan utama</h3>
+        {!adaLolos && (
+          <p className="mt-m-temuan">
+            Di pasar {rez}, tidak ada satu pun sinyal yang menaikkan peluang di atas rata-rata.
+            Yang terbukti hanya sinyal yang MENJEBAK.
+          </p>
+        )}
+        <ul className="mt-m-kal">
+          {kal.map((k, i) => {
+            const label = adaLolos ? `Skor ${k.skor}` : `${k.jebakan} sinyal penjebak`
+            return <li key={i}><span>{label}</span><b>{prs(k.p)}</b><span className="mt-ket">{angka.format(k.n)} observasi</span></li>
+          })}
+        </ul>
+
+        <h3>Sinyal yang diuji</h3>
+        <div className="mt-tabel-bungkus">
+          <table className="mt-tabel">
+            <thead><tr><th>Sinyal · asal</th><th>Bullish</th><th>Bearish</th></tr></thead>
+            <tbody>
+              {p.sinyal.map((s) => (
+                <tr key={s.nama}>
+                  <td className="mt-m-wrap">{s.nama}<span className="mt-m-asal">{s.asal}</span></td>
+                  <td><LencanaSinyal s={s.bullish} /></td>
+                  <td><LencanaSinyal s={s.bearish} /></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Tanpa sinyal penjebak (paling likuid)</h3>
+        <p className="mt-ket">15 teratas dari {p.jumlah_tanpa_jebakan} emiten tanpa sinyal penjebak.</p>
+        <ul className="mt-m-kode">
+          {p.teratas.slice(0, 15).map((t) => (
+            <li key={t.kode}><a href={`/v2/kartu?kode=${t.kode}`}><b>{t.kode}</b> {rp(t.harga)} · {prs(t.p)}</a></li>
+          ))}
+        </ul>
+
+        <h3>Sebaiknya dihindari saat ini</h3>
+        <ul className="mt-m-kode mt-m-panjang">
+          {p.hindari.map((h) => (
+            <li key={h.kode}><a href={`/v2/kartu?kode=${h.kode}`}><b>{h.kode}</b></a>
+              <span className="mt-ket">{h.jebakan.map((j) => nama[j] ?? j).join('; ')}</span></li>
+          ))}
+        </ul>
+
+        <h3>Siaga bila pasar berbalik bullish</h3>
+        <p className="mt-ket">
+          Emiten dengan sinyal bullish aktif hari ini.
+          {rez === 'bearish' && ' Di rezim sekarang, sinyal yang ditandai penjebak justru menurunkan peluang, jadi belum bisa dipercaya.'}
+        </p>
+        <ul className="mt-m-kode mt-m-panjang">
+          {p.siaga_bullish.map((s) => (
+            <li key={s.kode}><a href={`/v2/kartu?kode=${s.kode}`}><b>{s.kode}</b></a>
+              <span className="mt-ket">{s.sinyal.length} sinyal bullish{s.jebakan_kini.length ? ` · ${s.jebakan_kini.length} penjebak kini` : ''}</span></li>
+          ))}
+        </ul>
+
+        <p className="mt-catatan">
+          Catatan metode: observasi saling bertumpuk, jadi rentang keyakinan terlalu sempit. Emiten yang sudah delisting
+          tidak ada di data. Hitungan tanpa biaya transaksi. Ini peta peluang, bukan janji.
+        </p>
+        <p className="mt-catatan">Informasi ini bersifat edukatif, bukan ajakan membeli atau menjual.</p>
+      </div>
+    </dialog>
+  )
+}
+
 export function Maintenance() {
+  const dlg = useRef<HTMLDialogElement>(null)
   const pita = [...BAGIAN, ...BAGIAN]
   return (
     <div className="mt-halaman">
@@ -222,6 +333,10 @@ export function Maintenance() {
         </p>
         <p className="mt-kembali">Segera kembali.</p>
         <a className="mt-ke-laporan" href="#laporan">Sementara itu, catatan pasar hari ini ↓</a>
+        <div className="mt-aksi">
+          <a className="mt-tombol" href="/v2/kartu">Coba Kartu Emiten v2</a>
+          <button type="button" className="mt-tombol" onClick={() => dlg.current?.showModal()}>Peluang Naik hari ini</button>
+        </div>
       </div>
 
       <div className="mt-pita" aria-hidden="true">
@@ -236,6 +351,7 @@ export function Maintenance() {
         </div>
       </div>
     </main>
+    <ModalPeluang dlg={dlg} />
     <div className="mt-laporan" id="laporan">
       <PotretIhsg />
       <DeepDiveBaru />

@@ -357,3 +357,47 @@
   }
   .mt-bilah { transform: none; }
 }
+
+/* Tombol + modal Peluang Naik. */
+.mt-aksi { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 14px; }
+.mt-tombol {
+  display: inline-flex; align-items: center; min-height: 44px; padding: 0 18px; border-radius: 999px;
+  border: 1px solid var(--mt-aksen); background: var(--mt-aksen-halus); color: var(--mt-teks);
+  font: inherit; font-size: 14px; font-weight: 600; text-decoration: none; cursor: pointer;
+}
+.mt-tombol:hover { background: var(--mt-aksen); color: var(--mt-latar); }
+.mt-tombol:focus-visible, .mt-modal-tutup:focus-visible, .mt-m-kode a:focus-visible { outline: 2px solid var(--mt-aksen); outline-offset: 2px; }
+.mt-modal {
+  width: min(760px, 100%); max-width: 760px; max-height: 90dvh; padding: 0; border: 1px solid var(--mt-garis);
+  border-radius: 14px; background: var(--mt-latar); color: var(--mt-teks);
+  font-family: -apple-system, 'Segoe UI', system-ui, sans-serif; font-variant-numeric: tabular-nums; overflow: hidden;
+}
+.mt-modal::backdrop { background: rgba(0, 0, 0, .55); }
+.mt-modal[open] { display: flex; }
+.mt-modal-isi { position: relative; overflow-y: auto; overflow-x: hidden; padding: 20px 16px 28px; display: grid; grid-auto-rows: max-content; gap: 12px; flex: 1; min-width: 0; align-content: start; }
+.mt-modal h2 { margin: 0; font-size: 24px; padding-right: 48px; }
+.mt-modal h3 { margin: 12px 0 0; font-size: 16px; }
+.mt-modal p { margin: 0; line-height: 1.6; }
+.mt-modal-tutup {
+  position: absolute; top: 10px; right: 10px; width: 44px; height: 44px; border-radius: 50%;
+  border: 1px solid var(--mt-garis); background: var(--mt-panel); color: var(--mt-teks); font: inherit; font-size: 16px; cursor: pointer;
+}
+.mt-m-baris { display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: center; }
+.mt-m-temuan { font-weight: 700; color: var(--mt-merah); }
+.mt-m-kal, .mt-m-kode { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.mt-m-kal li { display: grid; grid-template-columns: 1fr auto; gap: 2px 12px; padding: 8px 12px; border: 1px solid var(--mt-garis); border-radius: 8px; background: var(--mt-panel); }
+.mt-m-kal li .mt-ket { grid-column: 1 / -1; font-size: 12.5px; }
+.mt-m-kode { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+.mt-m-kode.mt-m-panjang { grid-template-columns: minmax(0, 1fr); }
+.mt-m-kode li { font-size: 14px; display: flex; flex-wrap: wrap; gap: 2px 10px; align-items: baseline; }
+.mt-m-kode a { color: var(--mt-aksen); display: inline-block; padding: 6px 0; }
+.mt-m-wrap { white-space: normal !important; min-width: 140px; text-align: left !important; }
+.mt-modal .mt-tabel { min-width: 0; }
+@media (max-width: 768px) {
+  .mt-modal { width: 100%; max-width: none; height: 100dvh; max-height: 100dvh; border-radius: 0; border: 0; }
+}
+@media (min-width: 769px) { .mt-modal-isi { padding: 24px 28px 32px; } }
+
+.mt-m-asal { display: block; margin-top: 2px; font-size: 12px; color: var(--mt-redup); }
+.mt-m-lenc { display: inline-flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+.mt-modal .mt-tabel th, .mt-modal .mt-tabel td { padding: 10px 8px; }
