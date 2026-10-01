@@ -569,6 +569,9 @@ jobs:
           # kelima barisnya berhenti di 3/5 dan 4/5 hari sejak 22 Agu 2026.
           & "${{ steps.py.outputs.exe }}" scripts/riset/tinjau_deepdive.py
           if ($LASTEXITCODE -ne 0) { Write-Host "::warning::tinjau_deepdive gagal" }
+          # Isi halaman pemeliharaan (#266): potret IHSG + rekam jejak, sesudah tinjauan.
+          & "${{ steps.py.outputs.exe }}" scripts/ringkas_pemeliharaan.py
+          if ($LASTEXITCODE -ne 0) { Write-Host "::warning::ringkas_pemeliharaan gagal" }
           # Rantai tesis (antrean #3) - dulu hanya dijalankan tangan/bat.
           # tarik_tesis menarik tabel `tesis` ke cakram (satu-satunya langkah
           # berjaringan); nilai_tesis menghakiminya nol jaringan sesudahnya.

@@ -1,0 +1,176 @@
+{
+ "ihsg": {
+  "tanggal": "2026-10-01",
+  "close": 6009.502,
+  "hari_pct": -1.02,
+  "lima_pct": -4.59,
+  "duapuluh_pct": -9.87,
+  "puncak": 9174.474,
+  "puncak_tanggal": "2026-01-20",
+  "dari_puncak_pct": -34.5,
+  "sma20": 6400.76,
+  "sma50": 6385.37,
+  "sma200": 7179.57
+ },
+ "jejak": [
+  {
+   "kode": "ARCI",
+   "tanggal": "2026-08-14",
+   "harga_acuan": 1225,
+   "level_bull": [
+    1247.0,
+    1286.0
+   ],
+   "level_invalid": [
+    1187.0
+   ],
+   "harga_h5": 1440,
+   "tertinggi_h5": 1455,
+   "gerak_pct": 17.55,
+   "status": "terbukti",
+   "tersentuh": [
+    1247.0,
+    1286.0
+   ]
+  },
+  {
+   "kode": "BUMI",
+   "tanggal": "2026-08-14",
+   "harga_acuan": 181,
+   "level_bull": [
+    185.0,
+    191.0
+   ],
+   "level_invalid": [
+    176.0
+   ],
+   "harga_h5": 194,
+   "tertinggi_h5": 202,
+   "gerak_pct": 7.18,
+   "status": "terbukti",
+   "tersentuh": [
+    185.0,
+    191.0
+   ]
+  },
+  {
+   "kode": "CUAN",
+   "tanggal": "2026-08-14",
+   "harga_acuan": 825,
+   "level_bull": [
+    880.0,
+    920.0,
+    955.0
+   ],
+   "level_invalid": [
+    805.0
+   ],
+   "harga_h5": 825,
+   "tertinggi_h5": 870,
+   "gerak_pct": 0.0,
+   "status": "belum terjadi",
+   "tersentuh": []
+  },
+  {
+   "kode": "DSSA",
+   "tanggal": "2026-08-14",
+   "harga_acuan": 990.0,
+   "level_bull": [
+    1025.0,
+    1060.0,
+    1095.0
+   ],
+   "level_invalid": [
+    955.0
+   ],
+   "harga_h5": 1065,
+   "tertinggi_h5": 1100,
+   "gerak_pct": 7.58,
+   "status": "terbukti",
+   "tersentuh": [
+    1025.0,
+    1060.0,
+    1095.0
+   ]
+  },
+  {
+   "kode": "INET",
+   "tanggal": "2026-08-18",
+   "harga_acuan": 292,
+   "level_bull": [],
+   "level_invalid": [
+    234.0
+   ],
+   "harga_h5": 306,
+   "tertinggi_h5": 360,
+   "gerak_pct": 4.79,
+   "status": "belum terjadi",
+   "tersentuh": []
+  }
+ ],
+ "deepdive": {
+  "disetujui": false,
+  "tanggal": "2026-10-01",
+  "emiten": [
+   {
+    "kode": "AALI",
+    "judul": "Asing menampung saat harga dijual turun",
+    "tesis": "Dalam 10 hari bursa (18 Sep sampai 1 Okt) harga turun 8,9% dari 8.675 ke 7.900, dan IHSG merah pada 9 dari 10 hari itu. Penjual utamanya satu broker lokal (BB, net jual Rp39,5 miliar, terpusat 21 sampai 24 Sep). Di sisi lain BK menampung Rp17,7 miliar dan net beli pada 9 dari 10 hari, ditemani AK Rp11,3 miliar dan CP Rp7,8 miliar.",
+    "asimetri": "Tekanan jual terkumpul di satu tangan dan sudah mereda sejak 25 Sep, sementara serapan asing tersebar di banyak hari.",
+    "lapis": [
+     "Arus broker 10 hari: BK +Rp17,7 M (rata-rata 8.084) · DX +Rp14,0 M (7.817) · AK +Rp11,3 M (8.007) · CP +Rp7,8 M (7.940) melawan BB −Rp39,5 M (7.973) · YU −Rp11,9 M · NI −Rp11,7 M.",
+     "Struktur modal: 62,6% modal tertimbang berada di bawah harga sekarang; median modal 7.750.",
+     "Teknikal: close 7.900 di atas EMA50 7.781. Median modal, EMA50, dan S1 7.750 berkumpul di satu zona, jadi 7.750 adalah lantai."
+    ],
+    "harga": 7900,
+    "konfirmasi": "Close di atas 8.075 (R1, sejajar EMA20 8.059)",
+    "rute": [
+     8075,
+     8250,
+     8400
+    ],
+    "invalidasi": "Close di bawah 7.750 (lantai S1, median modal, dan EMA50 jebol bersamaan)",
+    "peluang": {
+     "R1": 65,
+     "R2": 41,
+     "S1": 64,
+     "n": 2922
+    },
+    "risiko": "Peluang menyentuh 7.750 (64%) hampir sama dengan peluang mencapai 8.075 (65%): di pasar bearish, uji lantai dulu adalah jalur yang wajar. Rata-rata beli BK (8.084) dan AK (8.007) berada di atas harga, jadi keduanya sedang rugi kertas dan bisa berhenti menampung."
+   },
+   {
+    "kode": "AMRT",
+    "judul": "Serapan asing yang belum diikuti harga",
+    "tesis": "Selama 9 hari bursa yang datanya lengkap (18 sampai 30 Sep; broker 1 Okt belum terpanen), empat broker menampung sekitar Rp130 miliar, kira-kira 28% dari nilai transaksi Rp465 miliar. Pembelinya ZP +Rp50,8 M, RX +Rp32,5 M, AK +Rp32,5 M, dan DX +Rp14,5 M. Harga hanya bergeser −2,3% (1.325 ke 1.295) dan asing bursa net beli 51,4 juta lembar. AK net beli 8 dari 9 hari, makin besar di akhir periode (+Rp10,0 M, +Rp9,9 M, +Rp18,2 M).",
+    "asimetri": "Serapan sebesar itu menahan harga tetap datar saat IHSG turun 9,9% dalam 20 hari.",
+    "lapis": [
+     "Arus broker 9 hari: ZP +Rp50,8 M (rata-rata 1.307) · RX +Rp32,5 M (1.302) · AK +Rp32,5 M (1.312) · DX +Rp14,5 M melawan TP −Rp22,7 M · PD −Rp22,3 M · YU −Rp13,7 M.",
+     "Struktur modal LEMAH: hanya 22,8% modal tertimbang di bawah harga; zona inti modal 1.305 sampai 1.425 berada di atas harga, jadi banyak pemegang rugi kertas dan berpotensi menjual saat harga naik.",
+     "Teknikal: close 1.295 di bawah EMA20 1.314 dan EMA50 1.337."
+    ],
+    "harga": 1295,
+    "konfirmasi": "Close di atas 1.340 (di atas EMA50 dan R1)",
+    "rute": [
+     1335,
+     1370,
+     1400
+    ],
+    "invalidasi": "Close di bawah 1.270 (S1)",
+    "peluang": {
+     "R1": 49,
+     "R2": 26,
+     "S1": 59,
+     "n": 3700
+    },
+    "risiko": "Arusnya positif, tapi strukturnya belum: harga di bawah EMA50 dan peluang menyentuh S1 (59%) lebih besar daripada mencapai R1 (49%). Tesis ini baru berlaku kalau harga mengonfirmasinya; sebelum itu ia hanya pengamatan arus."
+   }
+  ],
+  "gugur": [
+   {
+    "kode": "AYAM",
+    "alasan": "Arus broker terlalu tipis untuk diuji: penampung terbesar hanya Rp9,9 miliar dan sisanya di bawah Rp1 miliar. Asing bursa justru net jual 4,7 juta lembar dalam 10 hari, dan data broker 2 dari 10 hari belum terpanen."
+   }
+  ],
+  "metode": "Peluang dihitung dari pola harga serupa di seluruh bursa (2.900 sampai 3.700 kejadian mirip) untuk 5 hari bursa ke depan. Uji luar sampelnya belum lebih baik daripada angka dasar, jadi angka ini peta peluang, bukan sinyal."
+ }
+}

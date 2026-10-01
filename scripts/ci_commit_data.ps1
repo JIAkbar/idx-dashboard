@@ -15,7 +15,8 @@ param(
     [string]$Label
 )
 
-$berkas = 'data-idx/json'
+# pemeliharaan.json (#266): isi halaman pemeliharaan, dibangun ulang tiap panen.
+$berkas = @('data-idx/json', 'app/src/views/pemeliharaan.json')
 
 $status = git status --porcelain -- $berkas
 if (-not $status) { Write-Host 'Tidak ada perubahan.'; exit 0 }
@@ -41,7 +42,7 @@ if ($LASTEXITCODE -ne 0) {
     git merge --no-edit "origin/$env:GITHUB_REF_NAME"
     if ($LASTEXITCODE -ne 0) {
         $bentrok = @(git diff --name-only --diff-filter=U)
-        $luar = @($bentrok | Where-Object { $_ -notlike 'data-idx/*' })
+        $luar = @($bentrok | Where-Object { $_ -notlike 'data-idx/*' -and $_ -ne 'app/src/views/pemeliharaan.json' })
         if ($luar.Count -gt 0) {
             Write-Host ("::error::konflik DI LUAR data-idx: " + ($luar -join ', ') +
                         " - berhenti, dokumen manusia tak disentuh")

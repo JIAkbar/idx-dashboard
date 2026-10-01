@@ -1,4 +1,5 @@
 import './Maintenance.css'
+import isi from './pemeliharaan.json'
 
 /**
  * Halaman tutup sementara — satu-satunya yang tayang saat PAPAN direnovasi.
@@ -25,7 +26,15 @@ import './Maintenance.css'
  *    Karena itu temanya dari `prefers-color-scheme` murni.
  * 4. **Tanpa tautan ke mana pun.** Tak ada tombol "coba lagi" atau tautan
  *    masuk — keduanya cuma memancing orang menemukan rute yang sengaja
- *    ditutup.
+ *    ditutup. (Satu-satunya tautan menuju bagian di halaman ini sendiri.)
+ *
+ * ## Laporan di bawah layar pertama (#266, Johan 1 Okt 2026)
+ *
+ * *"halaman sekarang sudah under maintenance tapi tetep harus tetap ber
+ * kontribusi"*: potret IHSG, rekam jejak Deep Dive, dan Deep Dive terbaru.
+ * Batasan 1 tetap: angkanya dibakukan saat build lewat `pemeliharaan.json`
+ * (`scripts/ringkas_pemeliharaan.py`), bukan diambil dari jaringan. Deep Dive
+ * baru hanya tampil bila `deepdive.disetujui`; drafnya ditinjau Johan dulu.
  */
 
 // Nama bagian PAPAN yang sedang dibenahi — label, bukan data.
@@ -61,9 +70,121 @@ function LatarCandle() {
   )
 }
 
+const angka = new Intl.NumberFormat('id-ID', { maximumFractionDigits: 2 })
+const rp = (v: number) => angka.format(v)
+const persen = (v: number) => `${v > 0 ? '+' : v < 0 ? '−' : ''}${angka.format(Math.abs(v))}%`
+const BULAN = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des']
+const tgl = (iso: string) => `${Number(iso.slice(8, 10))} ${BULAN[Number(iso.slice(5, 7)) - 1]} ${iso.slice(0, 4)}`
+const kelasArah = (v: number) => (v < 0 ? 'mt-turun-teks' : v > 0 ? 'mt-naik-teks' : '')
+
+function PotretIhsg() {
+  const h = isi.ihsg
+  return (
+    <section className="mt-bagian" aria-labelledby="mt-ihsg">
+      <header>
+        <p className="mt-eyebrow">Kondisi pasar · {tgl(h.tanggal)}</p>
+        <h2 id="mt-ihsg">IHSG sedang dalam tren turun</h2>
+      </header>
+      <div className="mt-angka-besar">
+        <strong>{rp(h.close)}</strong>
+        <span className={kelasArah(h.hari_pct)}>{persen(h.hari_pct)} hari ini</span>
+      </div>
+      <dl className="mt-kisi">
+        <div><dt>5 hari bursa</dt><dd className={kelasArah(h.lima_pct)}>{persen(h.lima_pct)}</dd></div>
+        <div><dt>20 hari bursa</dt><dd className={kelasArah(h.duapuluh_pct)}>{persen(h.duapuluh_pct)}</dd></div>
+        <div><dt>Dari puncak {tgl(h.puncak_tanggal)} ({rp(h.puncak)})</dt><dd className={kelasArah(h.dari_puncak_pct)}>{persen(h.dari_puncak_pct)}</dd></div>
+        <div><dt>Rata-rata 20 / 50 hari</dt><dd>{rp(Math.round(h.sma20))} / {rp(Math.round(h.sma50))}</dd></div>
+        <div><dt>Rata-rata 200 hari</dt><dd>{rp(Math.round(h.sma200))}</dd></div>
+      </dl>
+      <p className="mt-ket">
+        Indeks ditutup di bawah rata-rata 20, 50, dan 200 harinya. Di fase seperti ini,
+        jaga ukuran posisi dan tentukan batas rugi sebelum masuk.
+      </p>
+    </section>
+  )
+}
+
+const STATUS: Record<string, string> = {
+  terbukti: 'Level tercapai berurutan',
+  sebagian: 'Sebagian tercapai',
+  'belum terjadi': 'Level belum tersentuh',
+}
+
+function RekamJejak() {
+  const n = isi.jejak.length
+  const ok = isi.jejak.filter((j) => j.status === 'terbukti').length
+  return (
+    <section className="mt-bagian" aria-labelledby="mt-jejak">
+      <header>
+        <p className="mt-eyebrow">Arsip, bukan rekomendasi</p>
+        <h2 id="mt-jejak">Rekam jejak Deep Dive</h2>
+        <p className="mt-ket">
+          {ok} dari {n} terbitan Agustus mencapai level naiknya berurutan dalam 5 hari bursa,
+          dan tak satu pun menyentuh batas invalidasinya. Semuanya terbit saat IHSG masih
+          naik, dan lima kasus belum cukup sebagai bukti statistik.
+        </p>
+      </header>
+      <div className="mt-tabel-bungkus">
+        <table className="mt-tabel">
+          <thead>
+            <tr><th>Emiten</th><th>Data s.d.</th><th>Harga acuan</th><th>Level naik</th><th>Invalidasi</th><th>Harga H+5</th><th>Gerak</th><th>Hasil</th></tr>
+          </thead>
+          <tbody>
+            {isi.jejak.map((j) => (
+              <tr key={j.kode + j.tanggal}>
+                <td><b>{j.kode}</b></td>
+                <td>{tgl(j.tanggal)}</td>
+                <td>{rp(j.harga_acuan)}</td>
+                <td>{j.level_bull.length ? j.level_bull.map(rp).join(' → ') : '—'}</td>
+                <td>{j.level_invalid.map(rp).join(', ')}</td>
+                <td>{rp(j.harga_h5)}</td>
+                <td className={kelasArah(j.gerak_pct)}>{persen(j.gerak_pct)}</td>
+                <td><span className={`mt-pil ${j.status === 'terbukti' ? 'mt-pil-ok' : 'mt-pil-tunggu'}`}>{STATUS[j.status] ?? j.status}</span></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  )
+}
+
+function DeepDiveBaru() {
+  const dd = isi.deepdive
+  if (!dd || !dd.disetujui) return null
+  return (
+    <section className="mt-bagian" aria-labelledby="mt-dd">
+      <header>
+        <p className="mt-eyebrow">Deep Dive · data s.d. {tgl(dd.tanggal)}</p>
+        <h2 id="mt-dd">Siapa yang menampung saat pasar turun</h2>
+        <p className="mt-ket">{dd.metode}</p>
+      </header>
+      {dd.emiten.map((e) => (
+        <article key={e.kode} className="mt-kartu">
+          <h3>{e.kode} · {e.judul}</h3>
+          <p>{e.tesis}</p>
+          <p><b>Asimetri:</b> {e.asimetri}</p>
+          <ul>{e.lapis.map((l) => <li key={l}>{l}</li>)}</ul>
+          <dl className="mt-skenario">
+            <div className="mt-s-naik"><dt>Konfirmasi</dt><dd>{e.konfirmasi}</dd></div>
+            <div className="mt-s-naik"><dt>Rute</dt><dd>{e.rute.map(rp).join(' → ')}</dd></div>
+            <div className="mt-s-batal"><dt>Invalidasi</dt><dd>{e.invalidasi}</dd></div>
+            <div><dt>Peluang 5 hari bursa</dt><dd>capai R1 {e.peluang.R1}% · R2 {e.peluang.R2}% · sentuh S1 {e.peluang.S1}%</dd></div>
+          </dl>
+          <p><b>Risiko:</b> {e.risiko}</p>
+        </article>
+      ))}
+      {dd.gugur.map((g) => (
+        <p key={g.kode} className="mt-catatan"><b>{g.kode} tidak dilanjutkan.</b> {g.alasan}</p>
+      ))}
+    </section>
+  )
+}
+
 export function Maintenance() {
   const pita = [...BAGIAN, ...BAGIAN]
   return (
+    <div className="mt-halaman">
     <main className="mt-akar">
       <div className="mt-grid" aria-hidden="true" />
       <div className="mt-sorot" aria-hidden="true" />
@@ -97,6 +218,7 @@ export function Maintenance() {
           baca lebih lengkap dan lebih bisa dipercaya.
         </p>
         <p className="mt-kembali">Segera kembali.</p>
+        <a className="mt-ke-laporan" href="#laporan">Sementara itu, catatan pasar hari ini ↓</a>
       </div>
 
       <div className="mt-pita" aria-hidden="true">
@@ -111,5 +233,15 @@ export function Maintenance() {
         </div>
       </div>
     </main>
+    <div className="mt-laporan" id="laporan">
+      <PotretIhsg />
+      <DeepDiveBaru />
+      <RekamJejak />
+      <p className="mt-catatan">
+        Informasi ini bersifat edukatif, bukan ajakan membeli atau menjual. Keputusan dan
+        risiko investasi sepenuhnya ada pada pembaca.
+      </p>
+    </div>
+    </div>
   )
 }
