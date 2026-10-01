@@ -69,6 +69,11 @@ jobs:
         Write-Host "::error::Tak ada Python yang punya curl_cffi."
         exit 1
       if: steps.jaga.outputs.lewati != '1'
+    - name: Uji sumber 3x
+      if: steps.jaga.outputs.lewati != '1'
+      continue-on-error: true
+      run: |
+        & "${{ steps.py.outputs.exe }}" scripts/uji_sumber.py
     - name: 0 · Uji token Stockbit
       id: token
       continue-on-error: true
