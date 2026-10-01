@@ -569,6 +569,11 @@ jobs:
           # kelima barisnya berhenti di 3/5 dan 4/5 hari sejak 22 Agu 2026.
           & "${{ steps.py.outputs.exe }}" scripts/riset/tinjau_deepdive.py
           if ($LASTEXITCODE -ne 0) { Write-Host "::warning::tinjau_deepdive gagal" }
+          # PAPAN v2 (#269/#270): Peluang Naik per rezim lalu Kartu Emiten v2 (butuh kartu/ dan peluang_naik.json).
+          & "${{ steps.py.outputs.exe }}" scripts/riset/peluang_naik.py
+          if ($LASTEXITCODE -ne 0) { Write-Host "::warning::peluang_naik gagal" }
+          & "${{ steps.py.outputs.exe }}" scripts/riset/kartu_v2.py
+          if ($LASTEXITCODE -ne 0) { Write-Host "::warning::kartu_v2 gagal" }
           # Isi halaman pemeliharaan (#266): potret IHSG + rekam jejak, sesudah tinjauan.
           & "${{ steps.py.outputs.exe }}" scripts/ringkas_pemeliharaan.py
           if ($LASTEXITCODE -ne 0) { Write-Host "::warning::ringkas_pemeliharaan gagal" }

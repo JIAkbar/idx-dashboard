@@ -195,5 +195,1042 @@
   ],
   "gugur": [],
   "metode": "Pemilihan: peringkat serapan broker 10 hari (porsi tiga penampung terbesar terhadap nilai transaksi) atas emiten bernilai transaksi minimal Rp100 miliar yang harganya tidak naik lebih dari 3%; baru 327 dari 962 emiten punya data broker cukup. Peluang 5 hari bursa dihitung dari pola harga serupa di seluruh bursa; uji luar sampelnya belum lebih baik daripada angka dasar, jadi angka ini peta peluang, bukan sinyal."
+ },
+ "peluang": {
+  "tanggal": "2026-10-01",
+  "rezim": "bearish",
+  "ihsg": {
+   "close": 6009.502,
+   "ma200": 7179.57
+  },
+  "definisi": {
+   "target_pct": 5.0,
+   "batas_pct": 5.0,
+   "hari": 20,
+   "latih": "2015-01-01 s.d. 2022-12-01",
+   "validasi": "2023-01-01 s.d. 2024-06-30",
+   "uji": "2024-07-01 s.d. 2026-09-03",
+   "nilai_min": 2000000000.0
+  },
+  "cakupan": {
+   "observasi": 520179,
+   "emiten": 809,
+   "sinyal_diuji": 18,
+   "emiten_hari_ini": 339
+  },
+  "sinyal": [
+   {
+    "nama": "Formasi MA naik: close > MA50 > MA200",
+    "asal": "Mega Profit bab 25 (formasi moving average)",
+    "bullish": {
+     "n": 10046,
+     "p": 0.4346,
+     "dasar": 0.4083,
+     "lift": 2.6,
+     "lolos": true,
+     "gugur": false,
+     "jebakan": false
+    },
+    "bearish": {
+     "n": 6647,
+     "p": 0.4688,
+     "dasar": 0.4726,
+     "lift": -0.4,
+     "lolos": false,
+     "gugur": false,
+     "jebakan": true
+    }
+   },
+   {
+    "nama": "Dekat puncak 52 minggu: close >= 90% tertinggi setahun",
+    "asal": "riset momentum 52-week high",
+    "bullish": {
+     "n": 6399,
+     "p": 0.4119,
+     "dasar": 0.4083,
+     "lift": 0.4,
+     "lolos": false,
+     "gugur": false,
+     "jebakan": false
+    },
+    "bearish": {
+     "n": 4186,
+     "p": 0.4673,
+     "dasar": 0.4726,
+     "lift": -0.5,
+     "lolos": false,
+     "gugur": false,
+     "jebakan": true
+    }
+   },
+   {
+    "nama": "Tembus tertinggi 20 hari + toleransi 1,5%, volume >= 1,5x rata-rata",
+    "asal": "Mega Profit bab 9 (toleransi) dan bab 18 (volume)",
+    "bullish": {
+     "n": 771,
+     "p": 0.4163,
+     "dasar": 0.4083,
+     "lift": 0.8,
+     "lolos": true,
+     "gugur": false,
+     "jebakan": false
+    },
+    "bearish": {
+     "n": 553,
+     "p": 0.4864,
+     "dasar": 0.4726,
+     "lift": 1.4,
+     "lolos": false,
+     "gugur": false,
+     "jebakan": false
+    }
+   },
+   {
+    "nama": "Koreksi di tren naik: close > MA200 dan RSI14 < 40",
+    "asal": "Mega Profit bab 27 (RSI di tren)",
+    "bullish": {
+     "n": 1221,
+     "p": 0.412,
+     "dasar": 0.4083,
+     "lift": 0.4,
+     "lolos": false,
+     "gugur": false,
+     "jebakan": false
+    },
+    "bearish": {
+     "n": 833,
+     "p": 0.4646,
+     "dasar": 0.4726,
+     "lift": -0.8,
+     "lolos": false,
+     "gugur": false,
+     "jebakan": false
+    }
+   },
+   {
+    "nama": "Jenuh jual: RSI14 < 30",
+    "asal": "Mega Profit bab 27; riset pembalikan jangka pendek",
+    "bullish": {
+     "n": 1868,
+     "p": 0.3892,
+     "dasar": 0.4083,
+     "lift": -1.9,
+     "lolos": false,
+     "gugur": false,
+     "jebakan": false
+    },
+    "bearish": {
+     "n": 2204,
+     "p": 0.4832,
+     "dasar": 0.4726,
+     "lift": 1.1,
+     "lolos": false,
+     "gugur": false,
+     "jebakan": false
+    }
+   },
+   {
+    "nama": "Jatuh dalam: turun > 15% dalam 20 hari",
+    "asal": "riset pembalikan jangka pendek",
+    "bullish": {
+     "n": 2925,
+     "p": 0.4274,
+     "dasar": 0.4083,
+     "lift": 1.9,
+     "lolos": true,
+     "gugur": false,
+     "jebakan": false
+    },
+    "bearish": {
+     "n": 3315,
+     "p": 0.4817,
+     "dasar": 0.4726,
+     "lift": 0.9,
+     "lolos": false,
+     "gugur": true,
+     "jebakan": false
+    }
+   },
+   {
+    "nama": "Tren kuat naik: ADX14 > 25 dan DI+ > DI-",
+    "asal": "Mega Profit bab 27 (ADX)",
+    "bullish": {
+     "n": 12067,
+     "p": 0.4332,
+     "dasar": 0.4083,
+     "lift": 2.5,
+     "lolos": true,
+     "gugur": false,
+     "jebakan": false
+    },
+    "bearish": {
+     "n": 7901,
+     "p": 0.4845,
+     "dasar": 0.4726,
+     "lift": 1.2,
+     "lolos": false,
+     "gugur": false,
+     "jebakan": false
+    }
+   },
+   {
+    "nama": "Asing net beli 20 hari",
+    "asal": "Bandarmology; riset aliran asing pasar berkembang",
+    "bullish": {
+     "n": 18371,
+     "p": 0.4179,
+     "dasar": 0.4083,
+     "lift": 1.0,
+     "lolos": true,
+     "gugur": false,
+     "jebakan": false
+    },
+    "bearish": {
+     "n": 14488,
+     "p": 0.4638,
+     "dasar": 0.4726,
+     "lift": -0.9,
+     "lolos": false,
+     "gugur": false,
+     "jebakan": false
+    }
+   },
+   {
+    "nama": "Asing net beli 5 hari saat harga 5 hari turun",
+    "asal": "Analisa PAPAN v1 (menyerap saat merah)",
+    "bullish": {
+     "n": 7038,
+     "p": 0.4295,
+     "dasar": 0.4083,
+     "lift": 2.1,
+     "lolos": false,
+     "gugur": false,
+     "jebakan": false
+    },
+    "bearish": {
+     "n": 5854,
+     "p": 0.4677,
+     "dasar": 0.4726,
+     "lift": -0.5,
+     "lolos": false,
+     "gugur": false,
+     "jebakan": false
+    }
+   },
+   {
+    "nama": "Volatilitas menyempit (ATR% di 20% terbawah setahun) dan close > MA50",
+    "asal": "Mega Profit bab 21 (segitiga/apex)",
+    "bullish": {
+     "n": 4282,
+     "p": 0.429,
+     "dasar": 0.4083,
+     "lift": 2.1,
+     "lolos": false,
+     "gugur": false,
+     "jebakan": false
+    },
+    "bearish": {
+     "n": 3148,
+     "p": 0.4476,
+     "dasar": 0.4726,
+     "lift": -2.5,
+     "lolos": false,
+     "gugur": false,
+     "jebakan": true
+    }
+   },
+   {
+    "nama": "Golden cross: MA50 memotong ke atas MA200 dalam 10 hari",
+    "asal": "Mega Profit bab 25",
+    "bullish": {
+     "n": 1513,
+     "p": 0.3992,
+     "dasar": 0.4083,
+     "lift": -0.9,
+     "lolos": false,
+     "gugur": false,
+     "jebakan": false
+    },
+    "bearish": {
+     "n": 875,
+     "p": 0.4971,
+     "dasar": 0.4726,
+     "lift": 2.4,
+     "lolos": false,
+     "gugur": false,
+     "jebakan": false
+    }
+   },
+   {
+    "nama": "Candle palu di dekat terendah 20 hari",
+    "asal": "Mega Profit bab 26 (candlestick)",
+    "bullish": {
+     "n": 1452,
+     "p": 0.3526,
+     "dasar": 0.4083,
+     "lift": -5.6,
+     "lolos": false,
+     "gugur": false,
+     "jebakan": true
+    },
+    "bearish": {
+     "n": 1123,
+     "p": 0.4185,
+     "dasar": 0.4726,
+     "lift": -5.4,
+     "lolos": false,
+     "gugur": false,
+     "jebakan": true
+    }
+   },
+   {
+    "nama": "Paling jatuh 5 hari: 10% terbawah antar-emiten",
+    "asal": "Jegadeesh 1990; Lehmann 1990 (pembalikan jangka pendek)",
+    "bullish": {
+     "n": 3898,
+     "p": 0.4359,
+     "dasar": 0.4083,
+     "lift": 2.8,
+     "lolos": true,
+     "gugur": false,
+     "jebakan": false
+    },
+    "bearish": {
+     "n": 3028,
+     "p": 0.4422,
+     "dasar": 0.4726,
+     "lift": -3.0,
+     "lolos": false,
+     "gugur": false,
+     "jebakan": false
+    }
+   },
+   {
+    "nama": "Momentum 12-1 bulan: 30% teratas antar-emiten",
+    "asal": "Jegadeesh & Titman 1993",
+    "bullish": {
+     "n": 12079,
+     "p": 0.4511,
+     "dasar": 0.4083,
+     "lift": 4.3,
+     "lolos": true,
+     "gugur": false,
+     "jebakan": false
+    },
+    "bearish": {
+     "n": 9386,
+     "p": 0.4916,
+     "dasar": 0.4726,
+     "lift": 1.9,
+     "lolos": false,
+     "gugur": false,
+     "jebakan": false
+    }
+   },
+   {
+    "nama": "Sangat dekat puncak 52 minggu: close >= 95% tertinggi setahun",
+    "asal": "George & Hwang 2004",
+    "bullish": {
+     "n": 2739,
+     "p": 0.418,
+     "dasar": 0.4083,
+     "lift": 1.0,
+     "lolos": false,
+     "gugur": false,
+     "jebakan": false
+    },
+    "bearish": {
+     "n": 1800,
+     "p": 0.4567,
+     "dasar": 0.4726,
+     "lift": -1.6,
+     "lolos": false,
+     "gugur": false,
+     "jebakan": true
+    }
+   },
+   {
+    "nama": "Volume ekstrem: >= 2x rata-rata 20 hari",
+    "asal": "Gervais, Kaniel & Mingelgrin 2001",
+    "bullish": {
+     "n": 3732,
+     "p": 0.4084,
+     "dasar": 0.4083,
+     "lift": 0.0,
+     "lolos": false,
+     "gugur": false,
+     "jebakan": false
+    },
+    "bearish": {
+     "n": 2919,
+     "p": 0.4769,
+     "dasar": 0.4726,
+     "lift": 0.4,
+     "lolos": false,
+     "gugur": false,
+     "jebakan": false
+    }
+   },
+   {
+    "nama": "Asing net beli 20 hari terbesar relatif volume: 20% teratas antar-emiten",
+    "asal": "Froot dkk. 1998; studi IDX 2024",
+    "bullish": {
+     "n": 8070,
+     "p": 0.4257,
+     "dasar": 0.4083,
+     "lift": 1.7,
+     "lolos": false,
+     "gugur": false,
+     "jebakan": false
+    },
+    "bearish": {
+     "n": 6266,
+     "p": 0.4949,
+     "dasar": 0.4726,
+     "lift": 2.2,
+     "lolos": false,
+     "gugur": false,
+     "jebakan": false
+    }
+   },
+   {
+    "nama": "Kuat relatif: naik 20 hari >= 10 poin di atas IHSG",
+    "asal": "kekuatan relatif (pemimpin saat pasar turun)",
+    "bullish": {
+     "n": 6663,
+     "p": 0.4588,
+     "dasar": 0.4083,
+     "lift": 5.0,
+     "lolos": true,
+     "gugur": false,
+     "jebakan": false
+    },
+    "bearish": {
+     "n": 5654,
+     "p": 0.4758,
+     "dasar": 0.4726,
+     "lift": 0.3,
+     "lolos": false,
+     "gugur": false,
+     "jebakan": false
+    }
+   }
+  ],
+  "kalibrasi": {
+   "bullish": [
+    {
+     "skor": 0,
+     "n": 12291,
+     "p": 0.4452,
+     "ci": [
+      0.4364,
+      0.454
+     ]
+    },
+    {
+     "skor": 1,
+     "n": 16538,
+     "p": 0.4647,
+     "ci": [
+      0.4572,
+      0.4724
+     ]
+    },
+    {
+     "skor": 2,
+     "n": 16449,
+     "p": 0.4842,
+     "ci": [
+      0.4765,
+      0.4918
+     ]
+    },
+    {
+     "skor": "3+",
+     "n": 33515,
+     "p": 0.4772,
+     "ci": [
+      0.4719,
+      0.4826
+     ]
+    }
+   ],
+   "bullish_jebakan": [
+    {
+     "jebakan": 0,
+     "n": 76744,
+     "p": 0.4719,
+     "ci": [
+      0.4683,
+      0.4754
+     ]
+    },
+    {
+     "jebakan": 1,
+     "n": 2049,
+     "p": 0.4412,
+     "ci": [
+      0.4198,
+      0.4628
+     ]
+    },
+    {
+     "jebakan": "2+",
+     "n": 0,
+     "p": null
+    }
+   ],
+   "bearish": [
+    {
+     "skor": 0,
+     "n": 52725,
+     "p": 0.4689,
+     "ci": [
+      0.4646,
+      0.4731
+     ]
+    },
+    {
+     "skor": 1,
+     "n": 11502,
+     "p": 0.4663,
+     "ci": [
+      0.4572,
+      0.4754
+     ]
+    }
+   ],
+   "bearish_jebakan": [
+    {
+     "jebakan": 0,
+     "n": 46278,
+     "p": 0.479,
+     "ci": [
+      0.4745,
+      0.4836
+     ]
+    },
+    {
+     "jebakan": 1,
+     "n": 12707,
+     "p": 0.4422,
+     "ci": [
+      0.4336,
+      0.4508
+     ]
+    },
+    {
+     "jebakan": "2+",
+     "n": 5242,
+     "p": 0.438,
+     "ci": [
+      0.4246,
+      0.4515
+     ]
+    }
+   ]
+  },
+  "terkonfirmasi": {
+   "bullish": true,
+   "bearish": false
+  },
+  "jumlah_tanpa_jebakan": 253,
+  "teratas": [
+   {
+    "kode": "BBCA",
+    "harga": 6000.0,
+    "nilai20_m": 790.7,
+    "sinyal": [],
+    "jebakan": [],
+    "p": 0.479,
+    "ci": [
+     0.4745,
+     0.4836
+    ]
+   },
+   {
+    "kode": "BUMI",
+    "harga": 170.0,
+    "nilai20_m": 593.9,
+    "sinyal": [],
+    "jebakan": [],
+    "p": 0.479,
+    "ci": [
+     0.4745,
+     0.4836
+    ]
+   },
+   {
+    "kode": "BMRI",
+    "harga": 4010.0,
+    "nilai20_m": 543.8,
+    "sinyal": [],
+    "jebakan": [],
+    "p": 0.479,
+    "ci": [
+     0.4745,
+     0.4836
+    ]
+   },
+   {
+    "kode": "BBRI",
+    "harga": 3100.0,
+    "nilai20_m": 539.1,
+    "sinyal": [],
+    "jebakan": [],
+    "p": 0.479,
+    "ci": [
+     0.4745,
+     0.4836
+    ]
+   },
+   {
+    "kode": "AMMN",
+    "harga": 4370.0,
+    "nilai20_m": 425.8,
+    "sinyal": [],
+    "jebakan": [],
+    "p": 0.479,
+    "ci": [
+     0.4745,
+     0.4836
+    ]
+   },
+   {
+    "kode": "CUAN",
+    "harga": 865.0,
+    "nilai20_m": 383.5,
+    "sinyal": [],
+    "jebakan": [],
+    "p": 0.479,
+    "ci": [
+     0.4745,
+     0.4836
+    ]
+   },
+   {
+    "kode": "ANTM",
+    "harga": 3120.0,
+    "nilai20_m": 352.8,
+    "sinyal": [],
+    "jebakan": [],
+    "p": 0.479,
+    "ci": [
+     0.4745,
+     0.4836
+    ]
+   },
+   {
+    "kode": "TLKM",
+    "harga": 2250.0,
+    "nilai20_m": 347.1,
+    "sinyal": [],
+    "jebakan": [],
+    "p": 0.479,
+    "ci": [
+     0.4745,
+     0.4836
+    ]
+   },
+   {
+    "kode": "DSSA",
+    "harga": 1120.0,
+    "nilai20_m": 346.2,
+    "sinyal": [],
+    "jebakan": [],
+    "p": 0.479,
+    "ci": [
+     0.4745,
+     0.4836
+    ]
+   },
+   {
+    "kode": "TPIA",
+    "harga": 1730.0,
+    "nilai20_m": 234.6,
+    "sinyal": [],
+    "jebakan": [],
+    "p": 0.479,
+    "ci": [
+     0.4745,
+     0.4836
+    ]
+   },
+   {
+    "kode": "PTRO",
+    "harga": 5225.0,
+    "nilai20_m": 221.6,
+    "sinyal": [],
+    "jebakan": [],
+    "p": 0.479,
+    "ci": [
+     0.4745,
+     0.4836
+    ]
+   },
+   {
+    "kode": "ASII",
+    "harga": 4510.0,
+    "nilai20_m": 198.8,
+    "sinyal": [],
+    "jebakan": [],
+    "p": 0.479,
+    "ci": [
+     0.4745,
+     0.4836
+    ]
+   },
+   {
+    "kode": "BRMS",
+    "harga": 550.0,
+    "nilai20_m": 194.5,
+    "sinyal": [],
+    "jebakan": [],
+    "p": 0.479,
+    "ci": [
+     0.4745,
+     0.4836
+    ]
+   },
+   {
+    "kode": "DEWA",
+    "harga": 334.0,
+    "nilai20_m": 186.2,
+    "sinyal": [],
+    "jebakan": [],
+    "p": 0.479,
+    "ci": [
+     0.4745,
+     0.4836
+    ]
+   },
+   {
+    "kode": "BULL",
+    "harga": 348.0,
+    "nilai20_m": 165.4,
+    "sinyal": [],
+    "jebakan": [],
+    "p": 0.479,
+    "ci": [
+     0.4745,
+     0.4836
+    ]
+   }
+  ],
+  "hindari": [
+   {
+    "kode": "MMIX",
+    "harga": 915.0,
+    "jebakan": [
+     "formasi_ma",
+     "dekat_puncak",
+     "sempit",
+     "puncak_95"
+    ],
+    "p": 0.438
+   },
+   {
+    "kode": "NEST",
+    "harga": 765.0,
+    "jebakan": [
+     "formasi_ma",
+     "dekat_puncak",
+     "sempit",
+     "puncak_95"
+    ],
+    "p": 0.438
+   },
+   {
+    "kode": "AKRA",
+    "harga": 1450.0,
+    "jebakan": [
+     "formasi_ma",
+     "dekat_puncak",
+     "palu_support"
+    ],
+    "p": 0.438
+   },
+   {
+    "kode": "AUTO",
+    "harga": 3300.0,
+    "jebakan": [
+     "formasi_ma",
+     "dekat_puncak",
+     "sempit"
+    ],
+    "p": 0.438
+   },
+   {
+    "kode": "BSML",
+    "harga": 540.0,
+    "jebakan": [
+     "formasi_ma",
+     "dekat_puncak",
+     "sempit"
+    ],
+    "p": 0.438
+   },
+   {
+    "kode": "PKPK",
+    "harga": 6100.0,
+    "jebakan": [
+     "formasi_ma",
+     "dekat_puncak",
+     "puncak_95"
+    ],
+    "p": 0.438
+   },
+   {
+    "kode": "PRDA",
+    "harga": 2840.0,
+    "jebakan": [
+     "formasi_ma",
+     "dekat_puncak",
+     "puncak_95"
+    ],
+    "p": 0.438
+   },
+   {
+    "kode": "RSCH",
+    "harga": 540.0,
+    "jebakan": [
+     "formasi_ma",
+     "dekat_puncak",
+     "puncak_95"
+    ],
+    "p": 0.438
+   },
+   {
+    "kode": "SGER",
+    "harga": 740.0,
+    "jebakan": [
+     "formasi_ma",
+     "dekat_puncak",
+     "puncak_95"
+    ],
+    "p": 0.438
+   },
+   {
+    "kode": "SINI",
+    "harga": 18300.0,
+    "jebakan": [
+     "formasi_ma",
+     "dekat_puncak",
+     "puncak_95"
+    ],
+    "p": 0.438
+   },
+   {
+    "kode": "SMMT",
+    "harga": 3520.0,
+    "jebakan": [
+     "formasi_ma",
+     "dekat_puncak",
+     "puncak_95"
+    ],
+    "p": 0.438
+   },
+   {
+    "kode": "ARNA",
+    "harga": 515.0,
+    "jebakan": [
+     "formasi_ma",
+     "dekat_puncak"
+    ],
+    "p": 0.438
+   },
+   {
+    "kode": "ASGR",
+    "harga": 2450.0,
+    "jebakan": [
+     "formasi_ma",
+     "dekat_puncak"
+    ],
+    "p": 0.438
+   },
+   {
+    "kode": "BDKR",
+    "harga": 169.0,
+    "jebakan": [
+     "formasi_ma",
+     "sempit"
+    ],
+    "p": 0.438
+   },
+   {
+    "kode": "BDMN",
+    "harga": 4630.0,
+    "jebakan": [
+     "formasi_ma",
+     "dekat_puncak"
+    ],
+    "p": 0.438
+   }
+  ],
+  "siaga_bullish": [
+   {
+    "kode": "AGAR",
+    "harga": 1655.0,
+    "sinyal": [
+     "formasi_ma",
+     "adx_naik",
+     "asing_20",
+     "kuat_relatif",
+     "pembalikan_xs",
+     "momentum_12_1"
+    ],
+    "jebakan_kini": [
+     "formasi_ma"
+    ]
+   },
+   {
+    "kode": "BAJA",
+    "harga": 302.0,
+    "sinyal": [
+     "formasi_ma",
+     "adx_naik",
+     "asing_20",
+     "kuat_relatif",
+     "pembalikan_xs",
+     "momentum_12_1"
+    ],
+    "jebakan_kini": [
+     "formasi_ma"
+    ]
+   },
+   {
+    "kode": "FORU",
+    "harga": 191.0,
+    "sinyal": [
+     "formasi_ma",
+     "adx_naik",
+     "asing_20",
+     "kuat_relatif",
+     "pembalikan_xs",
+     "momentum_12_1"
+    ],
+    "jebakan_kini": [
+     "formasi_ma"
+    ]
+   },
+   {
+    "kode": "AYAM",
+    "harga": 498.0,
+    "sinyal": [
+     "formasi_ma",
+     "adx_naik",
+     "asing_20",
+     "kuat_relatif",
+     "momentum_12_1"
+    ],
+    "jebakan_kini": [
+     "formasi_ma"
+    ]
+   },
+   {
+    "kode": "CSMI",
+    "harga": 290.0,
+    "sinyal": [
+     "formasi_ma",
+     "tembus_vol",
+     "adx_naik",
+     "asing_20",
+     "kuat_relatif"
+    ],
+    "jebakan_kini": [
+     "formasi_ma"
+    ]
+   },
+   {
+    "kode": "DEWI",
+    "harga": 232.0,
+    "sinyal": [
+     "formasi_ma",
+     "adx_naik",
+     "asing_20",
+     "kuat_relatif",
+     "momentum_12_1"
+    ],
+    "jebakan_kini": [
+     "formasi_ma"
+    ]
+   },
+   {
+    "kode": "JAYA",
+    "harga": 149.0,
+    "sinyal": [
+     "formasi_ma",
+     "adx_naik",
+     "asing_20",
+     "kuat_relatif",
+     "momentum_12_1"
+    ],
+    "jebakan_kini": [
+     "formasi_ma"
+    ]
+   },
+   {
+    "kode": "KICI",
+    "harga": 286.0,
+    "sinyal": [
+     "formasi_ma",
+     "adx_naik",
+     "asing_20",
+     "kuat_relatif",
+     "momentum_12_1"
+    ],
+    "jebakan_kini": [
+     "formasi_ma"
+    ]
+   },
+   {
+    "kode": "MPIX",
+    "harga": 202.0,
+    "sinyal": [
+     "formasi_ma",
+     "adx_naik",
+     "asing_20",
+     "kuat_relatif",
+     "momentum_12_1"
+    ],
+    "jebakan_kini": [
+     "formasi_ma"
+    ]
+   },
+   {
+    "kode": "NASI",
+    "harga": 194.0,
+    "sinyal": [
+     "formasi_ma",
+     "adx_naik",
+     "asing_20",
+     "kuat_relatif",
+     "momentum_12_1"
+    ],
+    "jebakan_kini": [
+     "formasi_ma"
+    ]
+   }
+  ],
+  "nama_sinyal": {
+   "formasi_ma": "Formasi MA naik: close > MA50 > MA200",
+   "dekat_puncak": "Dekat puncak 52 minggu: close >= 90% tertinggi setahun",
+   "tembus_vol": "Tembus tertinggi 20 hari + toleransi 1,5%, volume >= 1,5x rata-rata",
+   "pullback_tren": "Koreksi di tren naik: close > MA200 dan RSI14 < 40",
+   "jenuh_jual": "Jenuh jual: RSI14 < 30",
+   "jatuh_dalam": "Jatuh dalam: turun > 15% dalam 20 hari",
+   "adx_naik": "Tren kuat naik: ADX14 > 25 dan DI+ > DI-",
+   "asing_20": "Asing net beli 20 hari",
+   "asing_serap": "Asing net beli 5 hari saat harga 5 hari turun",
+   "sempit": "Volatilitas menyempit (ATR% di 20% terbawah setahun) dan close > MA50",
+   "golden_cross": "Golden cross: MA50 memotong ke atas MA200 dalam 10 hari",
+   "palu_support": "Candle palu di dekat terendah 20 hari",
+   "pembalikan_xs": "Paling jatuh 5 hari: 10% terbawah antar-emiten",
+   "momentum_12_1": "Momentum 12-1 bulan: 30% teratas antar-emiten",
+   "puncak_95": "Sangat dekat puncak 52 minggu: close >= 95% tertinggi setahun",
+   "volume_ekstrem": "Volume ekstrem: >= 2x rata-rata 20 hari",
+   "asing_kuat": "Asing net beli 20 hari terbesar relatif volume: 20% teratas antar-emiten",
+   "kuat_relatif": "Kuat relatif: naik 20 hari >= 10 poin di atas IHSG"
+  }
  }
 }
