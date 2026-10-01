@@ -111,66 +111,89 @@
  "deepdive": {
   "disetujui": true,
   "tanggal": "2026-10-01",
+  "judul": "Siapa yang menampung saat pasar turun",
+  "pengantar": "Tiga emiten dengan serapan broker terbesar dalam 10 hari bursa terakhir, dari 25 emiten likuid yang harganya tidak naik lebih dari 3%. Hasil jujurnya: tak satu pun lolos tiga lapis Analisa PAPAN. Arus brokernya menampung, tetapi harga masih di bawah rata-rata 50 hari dan sebagian besar modal sedang rugi kertas. Jadi ketiganya pengamatan arus dengan syarat konfirmasi, bukan ajakan masuk.",
   "emiten": [
    {
-    "kode": "AALI",
-    "judul": "Asing menampung saat harga dijual turun",
-    "tesis": "Dalam 10 hari bursa (18 Sep sampai 1 Okt) harga turun 8,9% dari 8.675 ke 7.900, dan IHSG merah pada 9 dari 10 hari itu. Penjual utamanya satu broker lokal (BB, net jual Rp39,5 miliar, terpusat 21 sampai 24 Sep). Di sisi lain BK menampung Rp17,7 miliar dan net beli pada 9 dari 10 hari, ditemani AK Rp11,3 miliar dan CP Rp7,8 miliar.",
-    "asimetri": "Tekanan jual terkumpul di satu tangan dan sudah mereda sejak 25 Sep, sementara serapan asing tersebar di banyak hari.",
+    "kode": "ITMG",
+    "judul": "Satu institusi menampung saat asing keluar",
+    "tesis": "Dalam 10 hari bursa harga turun 7,0% dari 26.500 ke 24.650. Penampungnya hampir seluruhnya satu broker: NI net beli Rp114,6 miliar (rata-rata 25.809). Di seberangnya broker asing ZP, BK, dan KZ menjual Rp57,0 miliar, BB menjual Rp19,8 miliar, dan asing bursa net jual 5,1 juta lembar.",
+    "asimetri": "Serapan Rp114,6 miliar dari satu tangan tidak mampu menahan harga turun 7%. Ini perpindahan barang dari asing ke institusi domestik, belum tanda harga siap naik.",
     "lapis": [
-     "Arus broker 10 hari: BK +Rp17,7 M (rata-rata 8.084) · DX +Rp14,0 M (7.817) · AK +Rp11,3 M (8.007) · CP +Rp7,8 M (7.940) melawan BB −Rp39,5 M (7.973) · YU −Rp11,9 M · NI −Rp11,7 M.",
-     "Struktur modal: 62,6% modal tertimbang berada di bawah harga sekarang; median modal 7.750.",
-     "Teknikal: close 7.900 di atas EMA50 7.781. Median modal, EMA50, dan S1 7.750 berkumpul di satu zona, jadi 7.750 adalah lantai."
+     "Arus broker (8 dari 10 hari terpanen): NI +Rp114,6 M · LG +Rp10,2 M melawan ZP −Rp29,0 M · BB −Rp19,8 M · BK −Rp17,3 M · KZ −Rp10,7 M.",
+     "Struktur modal: 43,5% modal tertimbang di bawah harga; median modal 25.000, tepat di atas harga.",
+     "Teknikal: close 24.650 di bawah EMA20 25.545 dan EMA50 25.260."
     ],
-    "harga": 7900,
-    "konfirmasi": "Close di atas 8.075 (R1, sejajar EMA20 8.059)",
+    "harga": 24650,
+    "konfirmasi": "Close di atas 25.275 (kembali di atas EMA50)",
     "rute": [
-     8075,
-     8250,
-     8400
+     25275,
+     25475,
+     25700
     ],
-    "invalidasi": "Close di bawah 7.750 (lantai S1, median modal, dan EMA50 jebol bersamaan)",
+    "invalidasi": "Close di bawah 24.400 (S1)",
     "peluang": {
-     "R1": 65,
-     "R2": 41,
-     "S1": 64,
-     "n": 2922
+     "R1": 78,
+     "R2": 58,
+     "S1": 88,
+     "n": 373
     },
-    "risiko": "Peluang menyentuh 7.750 (64%) hampir sama dengan peluang mencapai 8.075 (65%): di pasar bearish, uji lantai dulu adalah jalur yang wajar. Rata-rata beli BK (8.084) dan AK (8.007) berada di atas harga, jadi keduanya sedang rugi kertas dan bisa berhenti menampung."
+    "risiko": "Peluang menyentuh S1 24.400 (88%) lebih tinggi daripada mencapai R1 25.050 (78%). Seluruh tesis bergantung pada satu penampung; kalau NI berhenti, tak ada pembeli lain sebesar itu."
    },
    {
-    "kode": "AMRT",
-    "judul": "Serapan asing yang belum diikuti harga",
-    "tesis": "Selama 9 hari bursa yang datanya lengkap (18 sampai 30 Sep; broker 1 Okt belum terpanen), empat broker menampung sekitar Rp130 miliar, kira-kira 28% dari nilai transaksi Rp465 miliar. Pembelinya ZP +Rp50,8 M, RX +Rp32,5 M, AK +Rp32,5 M, dan DX +Rp14,5 M. Harga hanya bergeser −2,3% (1.325 ke 1.295) dan asing bursa net beli 51,4 juta lembar. AK net beli 8 dari 9 hari, makin besar di akhir periode (+Rp10,0 M, +Rp9,9 M, +Rp18,2 M).",
-    "asimetri": "Serapan sebesar itu menahan harga tetap datar saat IHSG turun 9,9% dalam 20 hari.",
+    "kode": "KLBF",
+    "judul": "Jual besar satu tangan, ditampung tiga broker",
+    "tesis": "Harga turun 7,1% dari 775 ke 720. DX menjual Rp73,8 miliar, dan sisi seberangnya diserap BB Rp38,6 miliar, KZ Rp30,1 miliar, serta AK Rp17,2 miliar di rata-rata 729 sampai 740. Asing bursa secara keseluruhan tetap net jual 76,7 juta lembar.",
+    "asimetri": "Penjualnya terkumpul di satu tangan dan penampungnya tersebar di tiga broker dengan modal rata-rata di atas harga sekarang. Kalau tekanan DX habis, penampung itu berkepentingan menjaga harga.",
     "lapis": [
-     "Arus broker 9 hari: ZP +Rp50,8 M (rata-rata 1.307) · RX +Rp32,5 M (1.302) · AK +Rp32,5 M (1.312) · DX +Rp14,5 M melawan TP −Rp22,7 M · PD −Rp22,3 M · YU −Rp13,7 M.",
-     "Struktur modal LEMAH: hanya 22,8% modal tertimbang di bawah harga; zona inti modal 1.305 sampai 1.425 berada di atas harga, jadi banyak pemegang rugi kertas dan berpotensi menjual saat harga naik.",
-     "Teknikal: close 1.295 di bawah EMA20 1.314 dan EMA50 1.337."
+     "Arus broker (8 dari 10 hari terpanen): BB +Rp38,6 M (737) · KZ +Rp30,1 M (729) · AK +Rp17,2 M (740) melawan DX −Rp73,8 M (736) · YU −Rp15,0 M.",
+     "Struktur modal LEMAH: hanya 13,8% modal tertimbang di bawah harga; median modal 780 dan rata-rata modal 850, jauh di atas harga.",
+     "Teknikal: close 720 di bawah EMA20 747 dan EMA50 761."
     ],
-    "harga": 1295,
-    "konfirmasi": "Close di atas 1.340 (di atas EMA50 dan R1)",
+    "harga": 720,
+    "konfirmasi": "Close di atas 765 (kembali di atas EMA50)",
     "rute": [
-     1335,
-     1370,
-     1400
+     765,
+     780,
+     850
     ],
-    "invalidasi": "Close di bawah 1.270 (S1)",
+    "invalidasi": "Close di bawah 715 (S1)",
     "peluang": {
-     "R1": 49,
-     "R2": 26,
-     "S1": 59,
-     "n": 3700
+     "R1": 82,
+     "R2": 63,
+     "S1": 80,
+     "n": 2966
     },
-    "risiko": "Arusnya positif, tapi strukturnya belum: harga di bawah EMA50 dan peluang menyentuh S1 (59%) lebih besar daripada mencapai R1 (49%). Tesis ini baru berlaku kalau harga mengonfirmasinya; sebelum itu ia hanya pengamatan arus."
-   }
-  ],
-  "gugur": [
+    "risiko": "Hampir 86% modal sedang rugi kertas, jadi setiap kenaikan bertemu penjual yang ingin impas. Asing bursa masih net jual besar. R1 728 dan S1 715 sangat dekat dengan harga, sehingga kedua peluang tinggi bersamaan."
+   },
    {
-    "kode": "AYAM",
-    "alasan": "Arus broker terlalu tipis untuk diuji: penampung terbesar hanya Rp9,9 miliar dan sisanya di bawah Rp1 miliar. Asing bursa justru net jual 4,7 juta lembar dalam 10 hari, dan data broker 2 dari 10 hari belum terpanen."
+    "kode": "BTPS",
+    "judul": "Asing melepas, dua broker menampung",
+    "tesis": "Harga turun 9,2% dari 1.035 ke 940. AK menjual Rp71,4 miliar; BK menampung Rp36,7 miliar (rata-rata 981) dan CC Rp16,0 miliar (974). Asing bursa net jual 25,5 juta lembar.",
+    "asimetri": "Hampir separuh nilai transaksi 10 hari berpindah dari satu penjual asing ke dua penampung. Harga tetap turun, jadi tekanan jualnya lebih besar daripada serapannya.",
+    "lapis": [
+     "Arus broker (8 dari 10 hari terpanen): BK +Rp36,7 M · CC +Rp16,0 M · XL +Rp4,5 M melawan AK −Rp71,4 M.",
+     "Struktur modal SANGAT LEMAH: hanya 8,5% modal tertimbang di bawah harga; median modal 1.020.",
+     "Teknikal: close 940 di bawah EMA20 979 dan EMA50 992; volume di bawah normal."
+    ],
+    "harga": 940,
+    "konfirmasi": "Close di atas 995 (kembali di atas EMA50)",
+    "rute": [
+     995,
+     1020,
+     1070
+    ],
+    "invalidasi": "Close di bawah 930 (S1)",
+    "peluang": {
+     "R1": 77,
+     "R2": 62,
+     "S1": 76,
+     "n": 841
+    },
+    "risiko": "Paling lemah dari ketiganya: modal hampir seluruhnya rugi kertas, penjual asing belum berhenti, dan rata-rata beli penampung (974 sampai 981) di atas harga, jadi mereka sendiri sedang rugi."
    }
   ],
-  "metode": "Peluang dihitung dari pola harga serupa di seluruh bursa (2.900 sampai 3.700 kejadian mirip) untuk 5 hari bursa ke depan. Uji luar sampelnya belum lebih baik daripada angka dasar, jadi angka ini peta peluang, bukan sinyal."
+  "gugur": [],
+  "metode": "Pemilihan: peringkat serapan broker 10 hari (porsi tiga penampung terbesar terhadap nilai transaksi) atas emiten bernilai transaksi minimal Rp100 miliar yang harganya tidak naik lebih dari 3%; baru 327 dari 962 emiten punya data broker cukup. Peluang 5 hari bursa dihitung dari pola harga serupa di seluruh bursa; uji luar sampelnya belum lebih baik daripada angka dasar, jadi angka ini peta peluang, bukan sinyal."
  }
 }

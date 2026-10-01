@@ -4,8 +4,8 @@ Halaman pemeliharaan tak boleh fetch apa pun, jadi isinya dibakukan ke
 `app/src/views/pemeliharaan.json` dan ikut ter-bundle saat build:
   ihsg     potret IHSG dari ohlc/IHSG.json (close, perubahan, jarak dari puncak, rata-rata)
   jejak    rekam jejak Deep Dive dari tinjauan_deepdive.json (hasil H+5)
-  deepdive draf analis arus-pasar/draft/DD-pemeliharaan-*.json terbaru,
-           dibawa apa adanya; halaman hanya menampilkannya bila disetujui=true
+  deepdive draf analis arus-pasar/draft/DD-pemeliharaan-*.json TERBARU yang
+           disetujui=true, dibawa apa adanya (draf baru tak menurunkan yang tayang)
 
 Pakai:  python scripts/ringkas_pemeliharaan.py
 Uji:    python scripts/ringkas_pemeliharaan.py --uji
@@ -44,8 +44,11 @@ def main() -> int:
                                      "harga_h5", "tertinggi_h5", "gerak_pct", "status")}
              | {"tersentuh": [u["level"] for u in t.get("urutan_tersentuh") or []]}
              for t in tinjau["terbitan"]]
-    draf = sorted((AKAR / "arus-pasar" / "draft").glob("DD-pemeliharaan-*.json"))
-    dd = json.loads(draf[-1].read_text(encoding="utf-8")) if draf else None
+    # Draf TERBARU yang sudah disetujui; draf baru yang belum disetujui tak
+    # menurunkan yang sedang tayang (#268).
+    draf = sorted((AKAR / "arus-pasar" / "draft").glob("DD-pemeliharaan-*.json"), key=lambda p: p.stem)
+    semua = [json.loads(p.read_text(encoding="utf-8")) for p in draf]
+    dd = next((d for d in reversed(semua) if d.get("disetujui")), None)
     if dd:
         dd.pop("catatan", None)
     isi = {"ihsg": potret_ihsg(ihsg), "jejak": jejak, "deepdive": dd}

@@ -1,0 +1,62 @@
+{
+ "catatan": "DRAF ANALIS #268 B. Emiten dipilih pindai_serapan.py (peringkat 1-3 dari 25 yang lolos; 327 dari 962 emiten punya broker >= 8/10 hari). Angka dari angka-<KODE>-2026-10-01.json. Menggantikan draf v1 (AALI/AMRT). Tayang hanya bila disetujui = true.",
+ "disetujui": true,
+ "tanggal": "2026-10-01",
+ "judul": "Siapa yang menampung saat pasar turun",
+ "pengantar": "Tiga emiten dengan serapan broker terbesar dalam 10 hari bursa terakhir, dari 25 emiten likuid yang harganya tidak naik lebih dari 3%. Hasil jujurnya: tak satu pun lolos tiga lapis Analisa PAPAN. Arus brokernya menampung, tetapi harga masih di bawah rata-rata 50 hari dan sebagian besar modal sedang rugi kertas. Jadi ketiganya pengamatan arus dengan syarat konfirmasi, bukan ajakan masuk.",
+ "emiten": [
+  {
+   "kode": "ITMG",
+   "judul": "Satu institusi menampung saat asing keluar",
+   "tesis": "Dalam 10 hari bursa harga turun 7,0% dari 26.500 ke 24.650. Penampungnya hampir seluruhnya satu broker: NI net beli Rp114,6 miliar (rata-rata 25.809). Di seberangnya broker asing ZP, BK, dan KZ menjual Rp57,0 miliar, BB menjual Rp19,8 miliar, dan asing bursa net jual 5,1 juta lembar.",
+   "asimetri": "Serapan Rp114,6 miliar dari satu tangan tidak mampu menahan harga turun 7%. Ini perpindahan barang dari asing ke institusi domestik, belum tanda harga siap naik.",
+   "lapis": [
+    "Arus broker (8 dari 10 hari terpanen): NI +Rp114,6 M · LG +Rp10,2 M melawan ZP −Rp29,0 M · BB −Rp19,8 M · BK −Rp17,3 M · KZ −Rp10,7 M.",
+    "Struktur modal: 43,5% modal tertimbang di bawah harga; median modal 25.000, tepat di atas harga.",
+    "Teknikal: close 24.650 di bawah EMA20 25.545 dan EMA50 25.260."
+   ],
+   "harga": 24650,
+   "konfirmasi": "Close di atas 25.275 (kembali di atas EMA50)",
+   "rute": [25275, 25475, 25700],
+   "invalidasi": "Close di bawah 24.400 (S1)",
+   "peluang": {"R1": 78, "R2": 58, "S1": 88, "n": 373},
+   "risiko": "Peluang menyentuh S1 24.400 (88%) lebih tinggi daripada mencapai R1 25.050 (78%). Seluruh tesis bergantung pada satu penampung; kalau NI berhenti, tak ada pembeli lain sebesar itu."
+  },
+  {
+   "kode": "KLBF",
+   "judul": "Jual besar satu tangan, ditampung tiga broker",
+   "tesis": "Harga turun 7,1% dari 775 ke 720. DX menjual Rp73,8 miliar, dan sisi seberangnya diserap BB Rp38,6 miliar, KZ Rp30,1 miliar, serta AK Rp17,2 miliar di rata-rata 729 sampai 740. Asing bursa secara keseluruhan tetap net jual 76,7 juta lembar.",
+   "asimetri": "Penjualnya terkumpul di satu tangan dan penampungnya tersebar di tiga broker dengan modal rata-rata di atas harga sekarang. Kalau tekanan DX habis, penampung itu berkepentingan menjaga harga.",
+   "lapis": [
+    "Arus broker (8 dari 10 hari terpanen): BB +Rp38,6 M (737) · KZ +Rp30,1 M (729) · AK +Rp17,2 M (740) melawan DX −Rp73,8 M (736) · YU −Rp15,0 M.",
+    "Struktur modal LEMAH: hanya 13,8% modal tertimbang di bawah harga; median modal 780 dan rata-rata modal 850, jauh di atas harga.",
+    "Teknikal: close 720 di bawah EMA20 747 dan EMA50 761."
+   ],
+   "harga": 720,
+   "konfirmasi": "Close di atas 765 (kembali di atas EMA50)",
+   "rute": [765, 780, 850],
+   "invalidasi": "Close di bawah 715 (S1)",
+   "peluang": {"R1": 82, "R2": 63, "S1": 80, "n": 2966},
+   "risiko": "Hampir 86% modal sedang rugi kertas, jadi setiap kenaikan bertemu penjual yang ingin impas. Asing bursa masih net jual besar. R1 728 dan S1 715 sangat dekat dengan harga, sehingga kedua peluang tinggi bersamaan."
+  },
+  {
+   "kode": "BTPS",
+   "judul": "Asing melepas, dua broker menampung",
+   "tesis": "Harga turun 9,2% dari 1.035 ke 940. AK menjual Rp71,4 miliar; BK menampung Rp36,7 miliar (rata-rata 981) dan CC Rp16,0 miliar (974). Asing bursa net jual 25,5 juta lembar.",
+   "asimetri": "Hampir separuh nilai transaksi 10 hari berpindah dari satu penjual asing ke dua penampung. Harga tetap turun, jadi tekanan jualnya lebih besar daripada serapannya.",
+   "lapis": [
+    "Arus broker (8 dari 10 hari terpanen): BK +Rp36,7 M · CC +Rp16,0 M · XL +Rp4,5 M melawan AK −Rp71,4 M.",
+    "Struktur modal SANGAT LEMAH: hanya 8,5% modal tertimbang di bawah harga; median modal 1.020.",
+    "Teknikal: close 940 di bawah EMA20 979 dan EMA50 992; volume di bawah normal."
+   ],
+   "harga": 940,
+   "konfirmasi": "Close di atas 995 (kembali di atas EMA50)",
+   "rute": [995, 1020, 1070],
+   "invalidasi": "Close di bawah 930 (S1)",
+   "peluang": {"R1": 77, "R2": 62, "S1": 76, "n": 841},
+   "risiko": "Paling lemah dari ketiganya: modal hampir seluruhnya rugi kertas, penjual asing belum berhenti, dan rata-rata beli penampung (974 sampai 981) di atas harga, jadi mereka sendiri sedang rugi."
+  }
+ ],
+ "gugur": [],
+ "metode": "Pemilihan: peringkat serapan broker 10 hari (porsi tiga penampung terbesar terhadap nilai transaksi) atas emiten bernilai transaksi minimal Rp100 miliar yang harganya tidak naik lebih dari 3%; baru 327 dari 962 emiten punya data broker cukup. Peluang 5 hari bursa dihitung dari pola harga serupa di seluruh bursa; uji luar sampelnya belum lebih baik daripada angka dasar, jadi angka ini peta peluang, bukan sinyal."
+}
