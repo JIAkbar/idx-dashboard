@@ -1,0 +1,5006 @@
+{
+ "tanggal": "2026-10-01",
+ "rezim": "bearish",
+ "ihsg": {
+  "close": 6009.502,
+  "ma200": 7179.57
+ },
+ "definisi": {
+  "target_pct": 5.0,
+  "batas_pct": 5.0,
+  "hari": 20,
+  "latih": "2015-01-01 s.d. 2022-12-01",
+  "validasi": "2023-01-01 s.d. 2024-06-30",
+  "uji": "2024-07-01 s.d. 2026-09-03",
+  "nilai_min": 2000000000.0
+ },
+ "cakupan": {
+  "observasi": 520179,
+  "emiten": 809,
+  "sinyal_diuji": 18,
+  "emiten_hari_ini": 339
+ },
+ "sinyal": [
+  {
+   "kunci": "formasi_ma",
+   "nama": "Formasi MA naik: close > MA50 > MA200",
+   "asal": "Mega Profit bab 25 (formasi moving average)",
+   "bullish": {
+    "latih": {
+     "n": 78629,
+     "p": 0.46,
+     "ci": [
+      0.4565,
+      0.4635
+     ]
+    },
+    "uji": {
+     "n": 10046,
+     "p": 0.4346,
+     "ci": [
+      0.4249,
+      0.4443
+     ]
+    },
+    "dasar_latih": {
+     "n": 218628,
+     "p": 0.4544,
+     "ci": [
+      0.4523,
+      0.4564
+     ]
+    },
+    "dasar_uji": {
+     "n": 39965,
+     "p": 0.4083,
+     "ci": [
+      0.4034,
+      0.4131
+     ]
+    },
+    "lift_uji_pp": 2.6,
+    "lolos": true,
+    "jebakan": false
+   },
+   "bearish": {
+    "latih": {
+     "n": 14196,
+     "p": 0.4298,
+     "ci": [
+      0.4216,
+      0.4379
+     ]
+    },
+    "uji": {
+     "n": 6647,
+     "p": 0.4688,
+     "ci": [
+      0.4568,
+      0.4808
+     ]
+    },
+    "dasar_latih": {
+     "n": 83047,
+     "p": 0.4532,
+     "ci": [
+      0.4499,
+      0.4566
+     ]
+    },
+    "dasar_uji": {
+     "n": 31056,
+     "p": 0.4726,
+     "ci": [
+      0.467,
+      0.4781
+     ]
+    },
+    "lift_uji_pp": -0.4,
+    "lolos": false,
+    "jebakan": true
+   }
+  },
+  {
+   "kunci": "dekat_puncak",
+   "nama": "Dekat puncak 52 minggu: close >= 90% tertinggi setahun",
+   "asal": "riset momentum 52-week high",
+   "bullish": {
+    "latih": {
+     "n": 44038,
+     "p": 0.4353,
+     "ci": [
+      0.4307,
+      0.44
+     ]
+    },
+    "uji": {
+     "n": 6399,
+     "p": 0.4119,
+     "ci": [
+      0.3999,
+      0.424
+     ]
+    },
+    "dasar_latih": {
+     "n": 218628,
+     "p": 0.4544,
+     "ci": [
+      0.4523,
+      0.4564
+     ]
+    },
+    "dasar_uji": {
+     "n": 39965,
+     "p": 0.4083,
+     "ci": [
+      0.4034,
+      0.4131
+     ]
+    },
+    "lift_uji_pp": 0.4,
+    "lolos": false,
+    "jebakan": false
+   },
+   "bearish": {
+    "latih": {
+     "n": 9290,
+     "p": 0.3939,
+     "ci": [
+      0.384,
+      0.4038
+     ]
+    },
+    "uji": {
+     "n": 4186,
+     "p": 0.4673,
+     "ci": [
+      0.4522,
+      0.4824
+     ]
+    },
+    "dasar_latih": {
+     "n": 83047,
+     "p": 0.4532,
+     "ci": [
+      0.4499,
+      0.4566
+     ]
+    },
+    "dasar_uji": {
+     "n": 31056,
+     "p": 0.4726,
+     "ci": [
+      0.467,
+      0.4781
+     ]
+    },
+    "lift_uji_pp": -0.5,
+    "lolos": false,
+    "jebakan": true
+   }
+  },
+  {
+   "kunci": "tembus_vol",
+   "nama": "Tembus tertinggi 20 hari + toleransi 1,5%, volume >= 1,5x rata-rata",
+   "asal": "Mega Profit bab 9 (toleransi) dan bab 18 (volume)",
+   "bullish": {
+    "latih": {
+     "n": 5134,
+     "p": 0.4899,
+     "ci": [
+      0.4762,
+      0.5035
+     ]
+    },
+    "uji": {
+     "n": 771,
+     "p": 0.4163,
+     "ci": [
+      0.382,
+      0.4515
+     ]
+    },
+    "dasar_latih": {
+     "n": 218628,
+     "p": 0.4544,
+     "ci": [
+      0.4523,
+      0.4564
+     ]
+    },
+    "dasar_uji": {
+     "n": 39965,
+     "p": 0.4083,
+     "ci": [
+      0.4034,
+      0.4131
+     ]
+    },
+    "lift_uji_pp": 0.8,
+    "lolos": true,
+    "jebakan": false
+   },
+   "bearish": {
+    "latih": {
+     "n": 1133,
+     "p": 0.4793,
+     "ci": [
+      0.4503,
+      0.5084
+     ]
+    },
+    "uji": {
+     "n": 553,
+     "p": 0.4864,
+     "ci": [
+      0.445,
+      0.528
+     ]
+    },
+    "dasar_latih": {
+     "n": 83047,
+     "p": 0.4532,
+     "ci": [
+      0.4499,
+      0.4566
+     ]
+    },
+    "dasar_uji": {
+     "n": 31056,
+     "p": 0.4726,
+     "ci": [
+      0.467,
+      0.4781
+     ]
+    },
+    "lift_uji_pp": 1.4,
+    "lolos": false,
+    "jebakan": false
+   }
+  },
+  {
+   "kunci": "pullback_tren",
+   "nama": "Koreksi di tren naik: close > MA200 dan RSI14 < 40",
+   "asal": "Mega Profit bab 27 (RSI di tren)",
+   "bullish": {
+    "latih": {
+     "n": 9870,
+     "p": 0.4527,
+     "ci": [
+      0.4429,
+      0.4625
+     ]
+    },
+    "uji": {
+     "n": 1221,
+     "p": 0.412,
+     "ci": [
+      0.3847,
+      0.4398
+     ]
+    },
+    "dasar_latih": {
+     "n": 218628,
+     "p": 0.4544,
+     "ci": [
+      0.4523,
+      0.4564
+     ]
+    },
+    "dasar_uji": {
+     "n": 39965,
+     "p": 0.4083,
+     "ci": [
+      0.4034,
+      0.4131
+     ]
+    },
+    "lift_uji_pp": 0.4,
+    "lolos": false,
+    "jebakan": false
+   },
+   "bearish": {
+    "latih": {
+     "n": 2526,
+     "p": 0.4703,
+     "ci": [
+      0.4509,
+      0.4898
+     ]
+    },
+    "uji": {
+     "n": 833,
+     "p": 0.4646,
+     "ci": [
+      0.431,
+      0.4985
+     ]
+    },
+    "dasar_latih": {
+     "n": 83047,
+     "p": 0.4532,
+     "ci": [
+      0.4499,
+      0.4566
+     ]
+    },
+    "dasar_uji": {
+     "n": 31056,
+     "p": 0.4726,
+     "ci": [
+      0.467,
+      0.4781
+     ]
+    },
+    "lift_uji_pp": -0.8,
+    "lolos": false,
+    "jebakan": false
+   }
+  },
+  {
+   "kunci": "jenuh_jual",
+   "nama": "Jenuh jual: RSI14 < 30",
+   "asal": "Mega Profit bab 27; riset pembalikan jangka pendek",
+   "bullish": {
+    "latih": {
+     "n": 9400,
+     "p": 0.4632,
+     "ci": [
+      0.4531,
+      0.4733
+     ]
+    },
+    "uji": {
+     "n": 1868,
+     "p": 0.3892,
+     "ci": [
+      0.3673,
+      0.4115
+     ]
+    },
+    "dasar_latih": {
+     "n": 218628,
+     "p": 0.4544,
+     "ci": [
+      0.4523,
+      0.4564
+     ]
+    },
+    "dasar_uji": {
+     "n": 39965,
+     "p": 0.4083,
+     "ci": [
+      0.4034,
+      0.4131
+     ]
+    },
+    "lift_uji_pp": -1.9,
+    "lolos": false,
+    "jebakan": false
+   },
+   "bearish": {
+    "latih": {
+     "n": 8036,
+     "p": 0.4333,
+     "ci": [
+      0.4225,
+      0.4442
+     ]
+    },
+    "uji": {
+     "n": 2204,
+     "p": 0.4832,
+     "ci": [
+      0.4624,
+      0.5041
+     ]
+    },
+    "dasar_latih": {
+     "n": 83047,
+     "p": 0.4532,
+     "ci": [
+      0.4499,
+      0.4566
+     ]
+    },
+    "dasar_uji": {
+     "n": 31056,
+     "p": 0.4726,
+     "ci": [
+      0.467,
+      0.4781
+     ]
+    },
+    "lift_uji_pp": 1.1,
+    "lolos": false,
+    "jebakan": false
+   }
+  },
+  {
+   "kunci": "jatuh_dalam",
+   "nama": "Jatuh dalam: turun > 15% dalam 20 hari",
+   "asal": "riset pembalikan jangka pendek",
+   "bullish": {
+    "latih": {
+     "n": 17561,
+     "p": 0.4738,
+     "ci": [
+      0.4664,
+      0.4812
+     ]
+    },
+    "uji": {
+     "n": 2925,
+     "p": 0.4274,
+     "ci": [
+      0.4095,
+      0.4454
+     ]
+    },
+    "dasar_latih": {
+     "n": 218628,
+     "p": 0.4544,
+     "ci": [
+      0.4523,
+      0.4564
+     ]
+    },
+    "dasar_uji": {
+     "n": 39965,
+     "p": 0.4083,
+     "ci": [
+      0.4034,
+      0.4131
+     ]
+    },
+    "lift_uji_pp": 1.9,
+    "lolos": true,
+    "jebakan": false
+   },
+   "bearish": {
+    "latih": {
+     "n": 12460,
+     "p": 0.4729,
+     "ci": [
+      0.4641,
+      0.4816
+     ]
+    },
+    "uji": {
+     "n": 3315,
+     "p": 0.4817,
+     "ci": [
+      0.4648,
+      0.4988
+     ]
+    },
+    "dasar_latih": {
+     "n": 83047,
+     "p": 0.4532,
+     "ci": [
+      0.4499,
+      0.4566
+     ]
+    },
+    "dasar_uji": {
+     "n": 31056,
+     "p": 0.4726,
+     "ci": [
+      0.467,
+      0.4781
+     ]
+    },
+    "lift_uji_pp": 0.9,
+    "lolos": true,
+    "jebakan": false
+   }
+  },
+  {
+   "kunci": "adx_naik",
+   "nama": "Tren kuat naik: ADX14 > 25 dan DI+ > DI-",
+   "asal": "Mega Profit bab 27 (ADX)",
+   "bullish": {
+    "latih": {
+     "n": 76909,
+     "p": 0.478,
+     "ci": [
+      0.4745,
+      0.4815
+     ]
+    },
+    "uji": {
+     "n": 12067,
+     "p": 0.4332,
+     "ci": [
+      0.4243,
+      0.442
+     ]
+    },
+    "dasar_latih": {
+     "n": 218628,
+     "p": 0.4544,
+     "ci": [
+      0.4523,
+      0.4564
+     ]
+    },
+    "dasar_uji": {
+     "n": 39965,
+     "p": 0.4083,
+     "ci": [
+      0.4034,
+      0.4131
+     ]
+    },
+    "lift_uji_pp": 2.5,
+    "lolos": true,
+    "jebakan": false
+   },
+   "bearish": {
+    "latih": {
+     "n": 17904,
+     "p": 0.4578,
+     "ci": [
+      0.4505,
+      0.4651
+     ]
+    },
+    "uji": {
+     "n": 7901,
+     "p": 0.4845,
+     "ci": [
+      0.4735,
+      0.4955
+     ]
+    },
+    "dasar_latih": {
+     "n": 83047,
+     "p": 0.4532,
+     "ci": [
+      0.4499,
+      0.4566
+     ]
+    },
+    "dasar_uji": {
+     "n": 31056,
+     "p": 0.4726,
+     "ci": [
+      0.467,
+      0.4781
+     ]
+    },
+    "lift_uji_pp": 1.2,
+    "lolos": false,
+    "jebakan": false
+   }
+  },
+  {
+   "kunci": "asing_20",
+   "nama": "Asing net beli 20 hari",
+   "asal": "Bandarmology; riset aliran asing pasar berkembang",
+   "bullish": {
+    "latih": {
+     "n": 55067,
+     "p": 0.4601,
+     "ci": [
+      0.4559,
+      0.4642
+     ]
+    },
+    "uji": {
+     "n": 18371,
+     "p": 0.4179,
+     "ci": [
+      0.4108,
+      0.4251
+     ]
+    },
+    "dasar_latih": {
+     "n": 218628,
+     "p": 0.4544,
+     "ci": [
+      0.4523,
+      0.4564
+     ]
+    },
+    "dasar_uji": {
+     "n": 39965,
+     "p": 0.4083,
+     "ci": [
+      0.4034,
+      0.4131
+     ]
+    },
+    "lift_uji_pp": 1.0,
+    "lolos": true,
+    "jebakan": false
+   },
+   "bearish": {
+    "latih": {
+     "n": 11016,
+     "p": 0.4447,
+     "ci": [
+      0.4355,
+      0.454
+     ]
+    },
+    "uji": {
+     "n": 14488,
+     "p": 0.4638,
+     "ci": [
+      0.4557,
+      0.4719
+     ]
+    },
+    "dasar_latih": {
+     "n": 83047,
+     "p": 0.4532,
+     "ci": [
+      0.4499,
+      0.4566
+     ]
+    },
+    "dasar_uji": {
+     "n": 31056,
+     "p": 0.4726,
+     "ci": [
+      0.467,
+      0.4781
+     ]
+    },
+    "lift_uji_pp": -0.9,
+    "lolos": false,
+    "jebakan": false
+   }
+  },
+  {
+   "kunci": "asing_serap",
+   "nama": "Asing net beli 5 hari saat harga 5 hari turun",
+   "asal": "Analisa PAPAN v1 (menyerap saat merah)",
+   "bullish": {
+    "latih": {
+     "n": 23222,
+     "p": 0.4582,
+     "ci": [
+      0.4518,
+      0.4646
+     ]
+    },
+    "uji": {
+     "n": 7038,
+     "p": 0.4295,
+     "ci": [
+      0.418,
+      0.4411
+     ]
+    },
+    "dasar_latih": {
+     "n": 218628,
+     "p": 0.4544,
+     "ci": [
+      0.4523,
+      0.4564
+     ]
+    },
+    "dasar_uji": {
+     "n": 39965,
+     "p": 0.4083,
+     "ci": [
+      0.4034,
+      0.4131
+     ]
+    },
+    "lift_uji_pp": 2.1,
+    "lolos": false,
+    "jebakan": false
+   },
+   "bearish": {
+    "latih": {
+     "n": 5433,
+     "p": 0.4515,
+     "ci": [
+      0.4383,
+      0.4648
+     ]
+    },
+    "uji": {
+     "n": 5854,
+     "p": 0.4677,
+     "ci": [
+      0.455,
+      0.4805
+     ]
+    },
+    "dasar_latih": {
+     "n": 83047,
+     "p": 0.4532,
+     "ci": [
+      0.4499,
+      0.4566
+     ]
+    },
+    "dasar_uji": {
+     "n": 31056,
+     "p": 0.4726,
+     "ci": [
+      0.467,
+      0.4781
+     ]
+    },
+    "lift_uji_pp": -0.5,
+    "lolos": false,
+    "jebakan": false
+   }
+  },
+  {
+   "kunci": "sempit",
+   "nama": "Volatilitas menyempit (ATR% di 20% terbawah setahun) dan close > MA50",
+   "asal": "Mega Profit bab 21 (segitiga/apex)",
+   "bullish": {
+    "latih": {
+     "n": 24619,
+     "p": 0.4421,
+     "ci": [
+      0.4359,
+      0.4483
+     ]
+    },
+    "uji": {
+     "n": 4282,
+     "p": 0.429,
+     "ci": [
+      0.4143,
+      0.4439
+     ]
+    },
+    "dasar_latih": {
+     "n": 218628,
+     "p": 0.4544,
+     "ci": [
+      0.4523,
+      0.4564
+     ]
+    },
+    "dasar_uji": {
+     "n": 39965,
+     "p": 0.4083,
+     "ci": [
+      0.4034,
+      0.4131
+     ]
+    },
+    "lift_uji_pp": 2.1,
+    "lolos": false,
+    "jebakan": false
+   },
+   "bearish": {
+    "latih": {
+     "n": 4205,
+     "p": 0.4209,
+     "ci": [
+      0.4061,
+      0.4359
+     ]
+    },
+    "uji": {
+     "n": 3148,
+     "p": 0.4476,
+     "ci": [
+      0.4303,
+      0.465
+     ]
+    },
+    "dasar_latih": {
+     "n": 83047,
+     "p": 0.4532,
+     "ci": [
+      0.4499,
+      0.4566
+     ]
+    },
+    "dasar_uji": {
+     "n": 31056,
+     "p": 0.4726,
+     "ci": [
+      0.467,
+      0.4781
+     ]
+    },
+    "lift_uji_pp": -2.5,
+    "lolos": false,
+    "jebakan": true
+   }
+  },
+  {
+   "kunci": "golden_cross",
+   "nama": "Golden cross: MA50 memotong ke atas MA200 dalam 10 hari",
+   "asal": "Mega Profit bab 25",
+   "bullish": {
+    "latih": {
+     "n": 7759,
+     "p": 0.4548,
+     "ci": [
+      0.4438,
+      0.4659
+     ]
+    },
+    "uji": {
+     "n": 1513,
+     "p": 0.3992,
+     "ci": [
+      0.3748,
+      0.4241
+     ]
+    },
+    "dasar_latih": {
+     "n": 218628,
+     "p": 0.4544,
+     "ci": [
+      0.4523,
+      0.4564
+     ]
+    },
+    "dasar_uji": {
+     "n": 39965,
+     "p": 0.4083,
+     "ci": [
+      0.4034,
+      0.4131
+     ]
+    },
+    "lift_uji_pp": -0.9,
+    "lolos": false,
+    "jebakan": false
+   },
+   "bearish": {
+    "latih": {
+     "n": 2040,
+     "p": 0.4701,
+     "ci": [
+      0.4485,
+      0.4918
+     ]
+    },
+    "uji": {
+     "n": 875,
+     "p": 0.4971,
+     "ci": [
+      0.4641,
+      0.5302
+     ]
+    },
+    "dasar_latih": {
+     "n": 83047,
+     "p": 0.4532,
+     "ci": [
+      0.4499,
+      0.4566
+     ]
+    },
+    "dasar_uji": {
+     "n": 31056,
+     "p": 0.4726,
+     "ci": [
+      0.467,
+      0.4781
+     ]
+    },
+    "lift_uji_pp": 2.4,
+    "lolos": false,
+    "jebakan": false
+   }
+  },
+  {
+   "kunci": "palu_support",
+   "nama": "Candle palu di dekat terendah 20 hari",
+   "asal": "Mega Profit bab 26 (candlestick)",
+   "bullish": {
+    "latih": {
+     "n": 5721,
+     "p": 0.4029,
+     "ci": [
+      0.3903,
+      0.4157
+     ]
+    },
+    "uji": {
+     "n": 1452,
+     "p": 0.3526,
+     "ci": [
+      0.3285,
+      0.3776
+     ]
+    },
+    "dasar_latih": {
+     "n": 218628,
+     "p": 0.4544,
+     "ci": [
+      0.4523,
+      0.4564
+     ]
+    },
+    "dasar_uji": {
+     "n": 39965,
+     "p": 0.4083,
+     "ci": [
+      0.4034,
+      0.4131
+     ]
+    },
+    "lift_uji_pp": -5.6,
+    "lolos": false,
+    "jebakan": true
+   },
+   "bearish": {
+    "latih": {
+     "n": 2623,
+     "p": 0.4091,
+     "ci": [
+      0.3904,
+      0.428
+     ]
+    },
+    "uji": {
+     "n": 1123,
+     "p": 0.4185,
+     "ci": [
+      0.39,
+      0.4476
+     ]
+    },
+    "dasar_latih": {
+     "n": 83047,
+     "p": 0.4532,
+     "ci": [
+      0.4499,
+      0.4566
+     ]
+    },
+    "dasar_uji": {
+     "n": 31056,
+     "p": 0.4726,
+     "ci": [
+      0.467,
+      0.4781
+     ]
+    },
+    "lift_uji_pp": -5.4,
+    "lolos": false,
+    "jebakan": true
+   }
+  },
+  {
+   "kunci": "pembalikan_xs",
+   "nama": "Paling jatuh 5 hari: 10% terbawah antar-emiten",
+   "asal": "Jegadeesh 1990; Lehmann 1990 (pembalikan jangka pendek)",
+   "bullish": {
+    "latih": {
+     "n": 21280,
+     "p": 0.4648,
+     "ci": [
+      0.4581,
+      0.4715
+     ]
+    },
+    "uji": {
+     "n": 3898,
+     "p": 0.4359,
+     "ci": [
+      0.4204,
+      0.4515
+     ]
+    },
+    "dasar_latih": {
+     "n": 218628,
+     "p": 0.4544,
+     "ci": [
+      0.4523,
+      0.4564
+     ]
+    },
+    "dasar_uji": {
+     "n": 39965,
+     "p": 0.4083,
+     "ci": [
+      0.4034,
+      0.4131
+     ]
+    },
+    "lift_uji_pp": 2.8,
+    "lolos": true,
+    "jebakan": false
+   },
+   "bearish": {
+    "latih": {
+     "n": 8004,
+     "p": 0.4434,
+     "ci": [
+      0.4325,
+      0.4543
+     ]
+    },
+    "uji": {
+     "n": 3028,
+     "p": 0.4422,
+     "ci": [
+      0.4246,
+      0.46
+     ]
+    },
+    "dasar_latih": {
+     "n": 83047,
+     "p": 0.4532,
+     "ci": [
+      0.4499,
+      0.4566
+     ]
+    },
+    "dasar_uji": {
+     "n": 31056,
+     "p": 0.4726,
+     "ci": [
+      0.467,
+      0.4781
+     ]
+    },
+    "lift_uji_pp": -3.0,
+    "lolos": false,
+    "jebakan": false
+   }
+  },
+  {
+   "kunci": "momentum_12_1",
+   "nama": "Momentum 12-1 bulan: 30% teratas antar-emiten",
+   "asal": "Jegadeesh & Titman 1993",
+   "bullish": {
+    "latih": {
+     "n": 66165,
+     "p": 0.4591,
+     "ci": [
+      0.4553,
+      0.4629
+     ]
+    },
+    "uji": {
+     "n": 12079,
+     "p": 0.4511,
+     "ci": [
+      0.4423,
+      0.46
+     ]
+    },
+    "dasar_latih": {
+     "n": 218628,
+     "p": 0.4544,
+     "ci": [
+      0.4523,
+      0.4564
+     ]
+    },
+    "dasar_uji": {
+     "n": 39965,
+     "p": 0.4083,
+     "ci": [
+      0.4034,
+      0.4131
+     ]
+    },
+    "lift_uji_pp": 4.3,
+    "lolos": true,
+    "jebakan": false
+   },
+   "bearish": {
+    "latih": {
+     "n": 25197,
+     "p": 0.4419,
+     "ci": [
+      0.4358,
+      0.4481
+     ]
+    },
+    "uji": {
+     "n": 9386,
+     "p": 0.4916,
+     "ci": [
+      0.4815,
+      0.5017
+     ]
+    },
+    "dasar_latih": {
+     "n": 83047,
+     "p": 0.4532,
+     "ci": [
+      0.4499,
+      0.4566
+     ]
+    },
+    "dasar_uji": {
+     "n": 31056,
+     "p": 0.4726,
+     "ci": [
+      0.467,
+      0.4781
+     ]
+    },
+    "lift_uji_pp": 1.9,
+    "lolos": false,
+    "jebakan": false
+   }
+  },
+  {
+   "kunci": "puncak_95",
+   "nama": "Sangat dekat puncak 52 minggu: close >= 95% tertinggi setahun",
+   "asal": "George & Hwang 2004",
+   "bullish": {
+    "latih": {
+     "n": 20484,
+     "p": 0.4445,
+     "ci": [
+      0.4377,
+      0.4514
+     ]
+    },
+    "uji": {
+     "n": 2739,
+     "p": 0.418,
+     "ci": [
+      0.3997,
+      0.4366
+     ]
+    },
+    "dasar_latih": {
+     "n": 218628,
+     "p": 0.4544,
+     "ci": [
+      0.4523,
+      0.4564
+     ]
+    },
+    "dasar_uji": {
+     "n": 39965,
+     "p": 0.4083,
+     "ci": [
+      0.4034,
+      0.4131
+     ]
+    },
+    "lift_uji_pp": 1.0,
+    "lolos": false,
+    "jebakan": false
+   },
+   "bearish": {
+    "latih": {
+     "n": 4051,
+     "p": 0.3873,
+     "ci": [
+      0.3724,
+      0.4024
+     ]
+    },
+    "uji": {
+     "n": 1800,
+     "p": 0.4567,
+     "ci": [
+      0.4338,
+      0.4797
+     ]
+    },
+    "dasar_latih": {
+     "n": 83047,
+     "p": 0.4532,
+     "ci": [
+      0.4499,
+      0.4566
+     ]
+    },
+    "dasar_uji": {
+     "n": 31056,
+     "p": 0.4726,
+     "ci": [
+      0.467,
+      0.4781
+     ]
+    },
+    "lift_uji_pp": -1.6,
+    "lolos": false,
+    "jebakan": true
+   }
+  },
+  {
+   "kunci": "volume_ekstrem",
+   "nama": "Volume ekstrem: >= 2x rata-rata 20 hari",
+   "asal": "Gervais, Kaniel & Mingelgrin 2001",
+   "bullish": {
+    "latih": {
+     "n": 22350,
+     "p": 0.4596,
+     "ci": [
+      0.4531,
+      0.4662
+     ]
+    },
+    "uji": {
+     "n": 3732,
+     "p": 0.4084,
+     "ci": [
+      0.3927,
+      0.4242
+     ]
+    },
+    "dasar_latih": {
+     "n": 218628,
+     "p": 0.4544,
+     "ci": [
+      0.4523,
+      0.4564
+     ]
+    },
+    "dasar_uji": {
+     "n": 39965,
+     "p": 0.4083,
+     "ci": [
+      0.4034,
+      0.4131
+     ]
+    },
+    "lift_uji_pp": 0.0,
+    "lolos": false,
+    "jebakan": false
+   },
+   "bearish": {
+    "latih": {
+     "n": 7702,
+     "p": 0.4613,
+     "ci": [
+      0.4502,
+      0.4725
+     ]
+    },
+    "uji": {
+     "n": 2919,
+     "p": 0.4769,
+     "ci": [
+      0.4588,
+      0.495
+     ]
+    },
+    "dasar_latih": {
+     "n": 83047,
+     "p": 0.4532,
+     "ci": [
+      0.4499,
+      0.4566
+     ]
+    },
+    "dasar_uji": {
+     "n": 31056,
+     "p": 0.4726,
+     "ci": [
+      0.467,
+      0.4781
+     ]
+    },
+    "lift_uji_pp": 0.4,
+    "lolos": false,
+    "jebakan": false
+   }
+  },
+  {
+   "kunci": "asing_kuat",
+   "nama": "Asing net beli 20 hari terbesar relatif volume: 20% teratas antar-emiten",
+   "asal": "Froot dkk. 1998; studi IDX 2024",
+   "bullish": {
+    "latih": {
+     "n": 22630,
+     "p": 0.4593,
+     "ci": [
+      0.4528,
+      0.4658
+     ]
+    },
+    "uji": {
+     "n": 8070,
+     "p": 0.4257,
+     "ci": [
+      0.4149,
+      0.4365
+     ]
+    },
+    "dasar_latih": {
+     "n": 218628,
+     "p": 0.4544,
+     "ci": [
+      0.4523,
+      0.4564
+     ]
+    },
+    "dasar_uji": {
+     "n": 39965,
+     "p": 0.4083,
+     "ci": [
+      0.4034,
+      0.4131
+     ]
+    },
+    "lift_uji_pp": 1.7,
+    "lolos": false,
+    "jebakan": false
+   },
+   "bearish": {
+    "latih": {
+     "n": 6339,
+     "p": 0.452,
+     "ci": [
+      0.4397,
+      0.4642
+     ]
+    },
+    "uji": {
+     "n": 6266,
+     "p": 0.4949,
+     "ci": [
+      0.4825,
+      0.5073
+     ]
+    },
+    "dasar_latih": {
+     "n": 83047,
+     "p": 0.4532,
+     "ci": [
+      0.4499,
+      0.4566
+     ]
+    },
+    "dasar_uji": {
+     "n": 31056,
+     "p": 0.4726,
+     "ci": [
+      0.467,
+      0.4781
+     ]
+    },
+    "lift_uji_pp": 2.2,
+    "lolos": false,
+    "jebakan": false
+   }
+  },
+  {
+   "kunci": "kuat_relatif",
+   "nama": "Kuat relatif: naik 20 hari >= 10 poin di atas IHSG",
+   "asal": "kekuatan relatif (pemimpin saat pasar turun)",
+   "bullish": {
+    "latih": {
+     "n": 45502,
+     "p": 0.4716,
+     "ci": [
+      0.467,
+      0.4762
+     ]
+    },
+    "uji": {
+     "n": 6663,
+     "p": 0.4588,
+     "ci": [
+      0.4469,
+      0.4708
+     ]
+    },
+    "dasar_latih": {
+     "n": 218628,
+     "p": 0.4544,
+     "ci": [
+      0.4523,
+      0.4564
+     ]
+    },
+    "dasar_uji": {
+     "n": 39965,
+     "p": 0.4083,
+     "ci": [
+      0.4034,
+      0.4131
+     ]
+    },
+    "lift_uji_pp": 5.0,
+    "lolos": true,
+    "jebakan": false
+   },
+   "bearish": {
+    "latih": {
+     "n": 14554,
+     "p": 0.4566,
+     "ci": [
+      0.4486,
+      0.4647
+     ]
+    },
+    "uji": {
+     "n": 5654,
+     "p": 0.4758,
+     "ci": [
+      0.4628,
+      0.4888
+     ]
+    },
+    "dasar_latih": {
+     "n": 83047,
+     "p": 0.4532,
+     "ci": [
+      0.4499,
+      0.4566
+     ]
+    },
+    "dasar_uji": {
+     "n": 31056,
+     "p": 0.4726,
+     "ci": [
+      0.467,
+      0.4781
+     ]
+    },
+    "lift_uji_pp": 0.3,
+    "lolos": false,
+    "jebakan": false
+   }
+  }
+ ],
+ "lolos": {
+  "bullish": [
+   "formasi_ma",
+   "tembus_vol",
+   "jatuh_dalam",
+   "adx_naik",
+   "asing_20",
+   "pembalikan_xs",
+   "momentum_12_1",
+   "kuat_relatif"
+  ],
+  "bearish": [
+   "jatuh_dalam"
+  ]
+ },
+ "jebakan": {
+  "bullish": [
+   "palu_support"
+  ],
+  "bearish": [
+   "formasi_ma",
+   "dekat_puncak",
+   "sempit",
+   "palu_support",
+   "puncak_95"
+  ]
+ },
+ "kalibrasi": {
+  "bullish": [
+   {
+    "skor": 0,
+    "n": 12291,
+    "p": 0.4452,
+    "ci": [
+     0.4364,
+     0.454
+    ]
+   },
+   {
+    "skor": 1,
+    "n": 16538,
+    "p": 0.4647,
+    "ci": [
+     0.4572,
+     0.4724
+    ]
+   },
+   {
+    "skor": 2,
+    "n": 16449,
+    "p": 0.4842,
+    "ci": [
+     0.4765,
+     0.4918
+    ]
+   },
+   {
+    "skor": "3+",
+    "n": 33515,
+    "p": 0.4772,
+    "ci": [
+     0.4719,
+     0.4826
+    ]
+   }
+  ],
+  "bullish_jebakan": [
+   {
+    "jebakan": 0,
+    "n": 76744,
+    "p": 0.4719,
+    "ci": [
+     0.4683,
+     0.4754
+    ]
+   },
+   {
+    "jebakan": 1,
+    "n": 2049,
+    "p": 0.4412,
+    "ci": [
+     0.4198,
+     0.4628
+    ]
+   },
+   {
+    "jebakan": "2+",
+    "n": 0,
+    "p": null
+   }
+  ],
+  "bearish": [
+   {
+    "skor": 0,
+    "n": 52725,
+    "p": 0.4689,
+    "ci": [
+     0.4646,
+     0.4731
+    ]
+   },
+   {
+    "skor": 1,
+    "n": 11502,
+    "p": 0.4663,
+    "ci": [
+     0.4572,
+     0.4754
+    ]
+   }
+  ],
+  "bearish_jebakan": [
+   {
+    "jebakan": 0,
+    "n": 46278,
+    "p": 0.479,
+    "ci": [
+     0.4745,
+     0.4836
+    ]
+   },
+   {
+    "jebakan": 1,
+    "n": 12707,
+    "p": 0.4422,
+    "ci": [
+     0.4336,
+     0.4508
+    ]
+   },
+   {
+    "jebakan": "2+",
+    "n": 5242,
+    "p": 0.438,
+    "ci": [
+     0.4246,
+     0.4515
+    ]
+   }
+  ]
+ },
+ "terkonfirmasi": {
+  "bullish": true,
+  "bearish": false
+ },
+ "peringkat": [
+  {
+   "kode": "BBCA",
+   "harga": 6000.0,
+   "nilai20_m": 790.7,
+   "skor": 0,
+   "sinyal": [],
+   "jebakan": [],
+   "p": 0.479,
+   "ci": [
+    0.4745,
+    0.4836
+   ]
+  },
+  {
+   "kode": "BUMI",
+   "harga": 170.0,
+   "nilai20_m": 593.9,
+   "skor": 0,
+   "sinyal": [],
+   "jebakan": [],
+   "p": 0.479,
+   "ci": [
+    0.4745,
+    0.4836
+   ]
+  },
+  {
+   "kode": "BMRI",
+   "harga": 4010.0,
+   "nilai20_m": 543.8,
+   "skor": 0,
+   "sinyal": [],
+   "jebakan": [],
+   "p": 0.479,
+   "ci": [
+    0.4745,
+    0.4836
+   ]
+  },
+  {
+   "kode": "BBRI",
+   "harga": 3100.0,
+   "nilai20_m": 539.1,
+   "skor": 0,
+   "sinyal": [],
+   "jebakan": [],
+   "p": 0.479,
+   "ci": [
+    0.4745,
+    0.4836
+   ]
+  },
+  {
+   "kode": "AMMN",
+   "harga": 4370.0,
+   "nilai20_m": 425.8,
+   "skor": 0,
+   "sinyal": [],
+   "jebakan": [],
+   "p": 0.479,
+   "ci": [
+    0.4745,
+    0.4836
+   ]
+  },
+  {
+   "kode": "CUAN",
+   "harga": 865.0,
+   "nilai20_m": 383.5,
+   "skor": 0,
+   "sinyal": [],
+   "jebakan": [],
+   "p": 0.479,
+   "ci": [
+    0.4745,
+    0.4836
+   ]
+  },
+  {
+   "kode": "ANTM",
+   "harga": 3120.0,
+   "nilai20_m": 352.8,
+   "skor": 0,
+   "sinyal": [],
+   "jebakan": [],
+   "p": 0.479,
+   "ci": [
+    0.4745,
+    0.4836
+   ]
+  },
+  {
+   "kode": "TLKM",
+   "harga": 2250.0,
+   "nilai20_m": 347.1,
+   "skor": 0,
+   "sinyal": [],
+   "jebakan": [],
+   "p": 0.479,
+   "ci": [
+    0.4745,
+    0.4836
+   ]
+  },
+  {
+   "kode": "DSSA",
+   "harga": 1120.0,
+   "nilai20_m": 346.2,
+   "skor": 0,
+   "sinyal": [],
+   "jebakan": [],
+   "p": 0.479,
+   "ci": [
+    0.4745,
+    0.4836
+   ]
+  },
+  {
+   "kode": "TPIA",
+   "harga": 1730.0,
+   "nilai20_m": 234.6,
+   "skor": 0,
+   "sinyal": [],
+   "jebakan": [],
+   "p": 0.479,
+   "ci": [
+    0.4745,
+    0.4836
+   ]
+  },
+  {
+   "kode": "PTRO",
+   "harga": 5225.0,
+   "nilai20_m": 221.6,
+   "skor": 0,
+   "sinyal": [],
+   "jebakan": [],
+   "p": 0.479,
+   "ci": [
+    0.4745,
+    0.4836
+   ]
+  },
+  {
+   "kode": "ASII",
+   "harga": 4510.0,
+   "nilai20_m": 198.8,
+   "skor": 0,
+   "sinyal": [],
+   "jebakan": [],
+   "p": 0.479,
+   "ci": [
+    0.4745,
+    0.4836
+   ]
+  },
+  {
+   "kode": "BRMS",
+   "harga": 550.0,
+   "nilai20_m": 194.5,
+   "skor": 0,
+   "sinyal": [],
+   "jebakan": [],
+   "p": 0.479,
+   "ci": [
+    0.4745,
+    0.4836
+   ]
+  },
+  {
+   "kode": "DEWA",
+   "harga": 334.0,
+   "nilai20_m": 186.2,
+   "skor": 0,
+   "sinyal": [],
+   "jebakan": [],
+   "p": 0.479,
+   "ci": [
+    0.4745,
+    0.4836
+   ]
+  },
+  {
+   "kode": "BULL",
+   "harga": 348.0,
+   "nilai20_m": 165.4,
+   "skor": 0,
+   "sinyal": [],
+   "jebakan": [],
+   "p": 0.479,
+   "ci": [
+    0.4745,
+    0.4836
+   ]
+  },
+  {
+   "kode": "INET",
+   "harga": 264.0,
+   "nilai20_m": 150.5,
+   "skor": 0,
+   "sinyal": [],
+   "jebakan": [],
+   "p": 0.479,
+   "ci": [
+    0.4745,
+    0.4836
+   ]
+  },
+  {
+   "kode": "ISAT",
+   "harga": 2260.0,
+   "nilai20_m": 147.7,
+   "skor": 0,
+   "sinyal": [],
+   "jebakan": [],
+   "p": 0.479,
+   "ci": [
+    0.4745,
+    0.4836
+   ]
+  },
+  {
+   "kode": "BBNI",
+   "harga": 3410.0,
+   "nilai20_m": 139.8,
+   "skor": 0,
+   "sinyal": [],
+   "jebakan": [],
+   "p": 0.479,
+   "ci": [
+    0.4745,
+    0.4836
+   ]
+  },
+  {
+   "kode": "MDKA",
+   "harga": 2820.0,
+   "nilai20_m": 127.7,
+   "skor": 0,
+   "sinyal": [],
+   "jebakan": [],
+   "p": 0.479,
+   "ci": [
+    0.4745,
+    0.4836
+   ]
+  },
+  {
+   "kode": "ADRO",
+   "harga": 2410.0,
+   "nilai20_m": 105.7,
+   "skor": 0,
+   "sinyal": [],
+   "jebakan": [],
+   "p": 0.479,
+   "ci": [
+    0.4745,
+    0.4836
+   ]
+  },
+  {
+   "kode": "UNTR",
+   "harga": 26350.0,
+   "nilai20_m": 97.6,
+   "skor": 0,
+   "sinyal": [],
+   "jebakan": [],
+   "p": 0.479,
+   "ci": [
+    0.4745,
+    0.4836
+   ]
+  },
+  {
+   "kode": "MEDC",
+   "harga": 1380.0,
+   "nilai20_m": 93.9,
+   "skor": 0,
+   "sinyal": [],
+   "jebakan": [],
+   "p": 0.479,
+   "ci": [
+    0.4745,
+    0.4836
+   ]
+  },
+  {
+   "kode": "CPIN",
+   "harga": 2880.0,
+   "nilai20_m": 92.7,
+   "skor": 0,
+   "sinyal": [],
+   "jebakan": [],
+   "p": 0.479,
+   "ci": [
+    0.4745,
+    0.4836
+   ]
+  },
+  {
+   "kode": "BRPT",
+   "harga": 1405.0,
+   "nilai20_m": 90.7,
+   "skor": 0,
+   "sinyal": [],
+   "jebakan": [],
+   "p": 0.479,
+   "ci": [
+    0.4745,
+    0.4836
+   ]
+  },
+  {
+   "kode": "COCO",
+   "harga": 111.0,
+   "nilai20_m": 89.5,
+   "skor": 0,
+   "sinyal": [],
+   "jebakan": [],
+   "p": 0.479,
+   "ci": [
+    0.4745,
+    0.4836
+   ]
+  },
+  {
+   "kode": "BIPI",
+   "harga": 129.0,
+   "nilai20_m": 88.8,
+   "skor": 0,
+   "sinyal": [],
+   "jebakan": [],
+   "p": 0.479,
+   "ci": [
+    0.4745,
+    0.4836
+   ]
+  },
+  {
+   "kode": "IATA",
+   "harga": 91.0,
+   "nilai20_m": 83.8,
+   "skor": 0,
+   "sinyal": [],
+   "jebakan": [],
+   "p": 0.479,
+   "ci": [
+    0.4745,
+    0.4836
+   ]
+  },
+  {
+   "kode": "INCO",
+   "harga": 4130.0,
+   "nilai20_m": 76.7,
+   "skor": 0,
+   "sinyal": [],
+   "jebakan": [],
+   "p": 0.479,
+   "ci": [
+    0.4745,
+    0.4836
+   ]
+  },
+  {
+   "kode": "BNBR",
+   "harga": 73.0,
+   "nilai20_m": 75.8,
+   "skor": 0,
+   "sinyal": [],
+   "jebakan": [],
+   "p": 0.479,
+   "ci": [
+    0.4745,
+    0.4836
+   ]
+  },
+  {
+   "kode": "MBMA",
+   "harga": 476.0,
+   "nilai20_m": 68.5,
+   "skor": 0,
+   "sinyal": [],
+   "jebakan": [],
+   "p": 0.479,
+   "ci": [
+    0.4745,
+    0.4836
+   ]
+  }
+ ],
+ "hindari": [
+  {
+   "kode": "MMIX",
+   "harga": 915.0,
+   "nilai20_m": 24.1,
+   "skor": 0,
+   "sinyal": [],
+   "jebakan": [
+    "formasi_ma",
+    "dekat_puncak",
+    "sempit",
+    "puncak_95"
+   ],
+   "p": 0.438,
+   "ci": [
+    0.4246,
+    0.4515
+   ]
+  },
+  {
+   "kode": "NEST",
+   "harga": 765.0,
+   "nilai20_m": 6.7,
+   "skor": 0,
+   "sinyal": [],
+   "jebakan": [
+    "formasi_ma",
+    "dekat_puncak",
+    "sempit",
+    "puncak_95"
+   ],
+   "p": 0.438,
+   "ci": [
+    0.4246,
+    0.4515
+   ]
+  },
+  {
+   "kode": "AKRA",
+   "harga": 1450.0,
+   "nilai20_m": 30.1,
+   "skor": 0,
+   "sinyal": [],
+   "jebakan": [
+    "formasi_ma",
+    "dekat_puncak",
+    "palu_support"
+   ],
+   "p": 0.438,
+   "ci": [
+    0.4246,
+    0.4515
+   ]
+  },
+  {
+   "kode": "AUTO",
+   "harga": 3300.0,
+   "nilai20_m": 9.3,
+   "skor": 0,
+   "sinyal": [],
+   "jebakan": [
+    "formasi_ma",
+    "dekat_puncak",
+    "sempit"
+   ],
+   "p": 0.438,
+   "ci": [
+    0.4246,
+    0.4515
+   ]
+  },
+  {
+   "kode": "BSML",
+   "harga": 540.0,
+   "nilai20_m": 6.7,
+   "skor": 0,
+   "sinyal": [],
+   "jebakan": [
+    "formasi_ma",
+    "dekat_puncak",
+    "sempit"
+   ],
+   "p": 0.438,
+   "ci": [
+    0.4246,
+    0.4515
+   ]
+  },
+  {
+   "kode": "PKPK",
+   "harga": 6100.0,
+   "nilai20_m": 16.3,
+   "skor": 0,
+   "sinyal": [],
+   "jebakan": [
+    "formasi_ma",
+    "dekat_puncak",
+    "puncak_95"
+   ],
+   "p": 0.438,
+   "ci": [
+    0.4246,
+    0.4515
+   ]
+  },
+  {
+   "kode": "PRDA",
+   "harga": 2840.0,
+   "nilai20_m": 2.8,
+   "skor": 0,
+   "sinyal": [],
+   "jebakan": [
+    "formasi_ma",
+    "dekat_puncak",
+    "puncak_95"
+   ],
+   "p": 0.438,
+   "ci": [
+    0.4246,
+    0.4515
+   ]
+  },
+  {
+   "kode": "RSCH",
+   "harga": 540.0,
+   "nilai20_m": 12.7,
+   "skor": 0,
+   "sinyal": [],
+   "jebakan": [
+    "formasi_ma",
+    "dekat_puncak",
+    "puncak_95"
+   ],
+   "p": 0.438,
+   "ci": [
+    0.4246,
+    0.4515
+   ]
+  },
+  {
+   "kode": "SGER",
+   "harga": 740.0,
+   "nilai20_m": 34.9,
+   "skor": 0,
+   "sinyal": [],
+   "jebakan": [
+    "formasi_ma",
+    "dekat_puncak",
+    "puncak_95"
+   ],
+   "p": 0.438,
+   "ci": [
+    0.4246,
+    0.4515
+   ]
+  },
+  {
+   "kode": "SINI",
+   "harga": 18300.0,
+   "nilai20_m": 131.2,
+   "skor": 0,
+   "sinyal": [],
+   "jebakan": [
+    "formasi_ma",
+    "dekat_puncak",
+    "puncak_95"
+   ],
+   "p": 0.438,
+   "ci": [
+    0.4246,
+    0.4515
+   ]
+  },
+  {
+   "kode": "SMMT",
+   "harga": 3520.0,
+   "nilai20_m": 3.5,
+   "skor": 0,
+   "sinyal": [],
+   "jebakan": [
+    "formasi_ma",
+    "dekat_puncak",
+    "puncak_95"
+   ],
+   "p": 0.438,
+   "ci": [
+    0.4246,
+    0.4515
+   ]
+  },
+  {
+   "kode": "ARNA",
+   "harga": 515.0,
+   "nilai20_m": 2.3,
+   "skor": 0,
+   "sinyal": [],
+   "jebakan": [
+    "formasi_ma",
+    "dekat_puncak"
+   ],
+   "p": 0.438,
+   "ci": [
+    0.4246,
+    0.4515
+   ]
+  },
+  {
+   "kode": "ASGR",
+   "harga": 2450.0,
+   "nilai20_m": 4.4,
+   "skor": 0,
+   "sinyal": [],
+   "jebakan": [
+    "formasi_ma",
+    "dekat_puncak"
+   ],
+   "p": 0.438,
+   "ci": [
+    0.4246,
+    0.4515
+   ]
+  },
+  {
+   "kode": "BDKR",
+   "harga": 169.0,
+   "nilai20_m": 2.3,
+   "skor": 0,
+   "sinyal": [],
+   "jebakan": [
+    "formasi_ma",
+    "sempit"
+   ],
+   "p": 0.438,
+   "ci": [
+    0.4246,
+    0.4515
+   ]
+  },
+  {
+   "kode": "BDMN",
+   "harga": 4630.0,
+   "nilai20_m": 10.1,
+   "skor": 0,
+   "sinyal": [],
+   "jebakan": [
+    "formasi_ma",
+    "dekat_puncak"
+   ],
+   "p": 0.438,
+   "ci": [
+    0.4246,
+    0.4515
+   ]
+  },
+  {
+   "kode": "CCSI",
+   "harga": 470.0,
+   "nilai20_m": 4.4,
+   "skor": 0,
+   "sinyal": [],
+   "jebakan": [
+    "formasi_ma",
+    "dekat_puncak"
+   ],
+   "p": 0.438,
+   "ci": [
+    0.4246,
+    0.4515
+   ]
+  },
+  {
+   "kode": "ERAA",
+   "harga": 595.0,
+   "nilai20_m": 72.0,
+   "skor": 0,
+   "sinyal": [],
+   "jebakan": [
+    "formasi_ma",
+    "dekat_puncak"
+   ],
+   "p": 0.438,
+   "ci": [
+    0.4246,
+    0.4515
+   ]
+  },
+  {
+   "kode": "FORE",
+   "harga": 790.0,
+   "nilai20_m": 3.0,
+   "skor": 0,
+   "sinyal": [],
+   "jebakan": [
+    "formasi_ma",
+    "sempit"
+   ],
+   "p": 0.438,
+   "ci": [
+    0.4246,
+    0.4515
+   ]
+  },
+  {
+   "kode": "HOPE",
+   "harga": 296.0,
+   "nilai20_m": 12.6,
+   "skor": 0,
+   "sinyal": [],
+   "jebakan": [
+    "formasi_ma",
+    "sempit"
+   ],
+   "p": 0.438,
+   "ci": [
+    0.4246,
+    0.4515
+   ]
+  },
+  {
+   "kode": "MARK",
+   "harga": 1175.0,
+   "nilai20_m": 18.2,
+   "skor": 0,
+   "sinyal": [],
+   "jebakan": [
+    "formasi_ma",
+    "dekat_puncak"
+   ],
+   "p": 0.438,
+   "ci": [
+    0.4246,
+    0.4515
+   ]
+  },
+  {
+   "kode": "MBSS",
+   "harga": 2910.0,
+   "nilai20_m": 3.8,
+   "skor": 0,
+   "sinyal": [],
+   "jebakan": [
+    "formasi_ma",
+    "sempit"
+   ],
+   "p": 0.438,
+   "ci": [
+    0.4246,
+    0.4515
+   ]
+  },
+  {
+   "kode": "MOLI",
+   "harga": 404.0,
+   "nilai20_m": 4.1,
+   "skor": 0,
+   "sinyal": [],
+   "jebakan": [
+    "formasi_ma",
+    "dekat_puncak"
+   ],
+   "p": 0.438,
+   "ci": [
+    0.4246,
+    0.4515
+   ]
+  },
+  {
+   "kode": "MSJA",
+   "harga": 830.0,
+   "nilai20_m": 14.3,
+   "skor": 0,
+   "sinyal": [],
+   "jebakan": [
+    "formasi_ma",
+    "dekat_puncak"
+   ],
+   "p": 0.438,
+   "ci": [
+    0.4246,
+    0.4515
+   ]
+  },
+  {
+   "kode": "PTBA",
+   "harga": 3050.0,
+   "nilai20_m": 133.9,
+   "skor": 0,
+   "sinyal": [],
+   "jebakan": [
+    "formasi_ma",
+    "dekat_puncak"
+   ],
+   "p": 0.438,
+   "ci": [
+    0.4246,
+    0.4515
+   ]
+  },
+  {
+   "kode": "SMIL",
+   "harga": 446.0,
+   "nilai20_m": 21.9,
+   "skor": 0,
+   "sinyal": [],
+   "jebakan": [
+    "formasi_ma",
+    "sempit"
+   ],
+   "p": 0.438,
+   "ci": [
+    0.4246,
+    0.4515
+   ]
+  },
+  {
+   "kode": "SRSN",
+   "harga": 131.0,
+   "nilai20_m": 49.4,
+   "skor": 0,
+   "sinyal": [],
+   "jebakan": [
+    "formasi_ma",
+    "dekat_puncak"
+   ],
+   "p": 0.438,
+   "ci": [
+    0.4246,
+    0.4515
+   ]
+  },
+  {
+   "kode": "TINS",
+   "harga": 4590.0,
+   "nilai20_m": 224.7,
+   "skor": 0,
+   "sinyal": [],
+   "jebakan": [
+    "formasi_ma",
+    "dekat_puncak"
+   ],
+   "p": 0.438,
+   "ci": [
+    0.4246,
+    0.4515
+   ]
+  },
+  {
+   "kode": "ULTJ",
+   "harga": 2060.0,
+   "nilai20_m": 50.9,
+   "skor": 0,
+   "sinyal": [],
+   "jebakan": [
+    "formasi_ma",
+    "dekat_puncak"
+   ],
+   "p": 0.438,
+   "ci": [
+    0.4246,
+    0.4515
+   ]
+  },
+  {
+   "kode": "UVCR",
+   "harga": 264.0,
+   "nilai20_m": 22.4,
+   "skor": 0,
+   "sinyal": [],
+   "jebakan": [
+    "dekat_puncak",
+    "puncak_95"
+   ],
+   "p": 0.438,
+   "ci": [
+    0.4246,
+    0.4515
+   ]
+  }
+ ],
+ "siaga_bullish": [
+  {
+   "kode": "AGAR",
+   "harga": 1655.0,
+   "sinyal": [
+    "formasi_ma",
+    "adx_naik",
+    "asing_20",
+    "kuat_relatif",
+    "pembalikan_xs",
+    "momentum_12_1"
+   ],
+   "jebakan_kini": [
+    "formasi_ma"
+   ]
+  },
+  {
+   "kode": "BAJA",
+   "harga": 302.0,
+   "sinyal": [
+    "formasi_ma",
+    "adx_naik",
+    "asing_20",
+    "kuat_relatif",
+    "pembalikan_xs",
+    "momentum_12_1"
+   ],
+   "jebakan_kini": [
+    "formasi_ma"
+   ]
+  },
+  {
+   "kode": "FORU",
+   "harga": 191.0,
+   "sinyal": [
+    "formasi_ma",
+    "adx_naik",
+    "asing_20",
+    "kuat_relatif",
+    "pembalikan_xs",
+    "momentum_12_1"
+   ],
+   "jebakan_kini": [
+    "formasi_ma"
+   ]
+  },
+  {
+   "kode": "AYAM",
+   "harga": 498.0,
+   "sinyal": [
+    "formasi_ma",
+    "adx_naik",
+    "asing_20",
+    "kuat_relatif",
+    "momentum_12_1"
+   ],
+   "jebakan_kini": [
+    "formasi_ma"
+   ]
+  },
+  {
+   "kode": "CSMI",
+   "harga": 290.0,
+   "sinyal": [
+    "formasi_ma",
+    "tembus_vol",
+    "adx_naik",
+    "asing_20",
+    "kuat_relatif"
+   ],
+   "jebakan_kini": [
+    "formasi_ma"
+   ]
+  },
+  {
+   "kode": "DEWI",
+   "harga": 232.0,
+   "sinyal": [
+    "formasi_ma",
+    "adx_naik",
+    "asing_20",
+    "kuat_relatif",
+    "momentum_12_1"
+   ],
+   "jebakan_kini": [
+    "formasi_ma"
+   ]
+  },
+  {
+   "kode": "JAYA",
+   "harga": 149.0,
+   "sinyal": [
+    "formasi_ma",
+    "adx_naik",
+    "asing_20",
+    "kuat_relatif",
+    "momentum_12_1"
+   ],
+   "jebakan_kini": [
+    "formasi_ma"
+   ]
+  },
+  {
+   "kode": "KICI",
+   "harga": 286.0,
+   "sinyal": [
+    "formasi_ma",
+    "adx_naik",
+    "asing_20",
+    "kuat_relatif",
+    "momentum_12_1"
+   ],
+   "jebakan_kini": [
+    "formasi_ma"
+   ]
+  },
+  {
+   "kode": "MPIX",
+   "harga": 202.0,
+   "sinyal": [
+    "formasi_ma",
+    "adx_naik",
+    "asing_20",
+    "kuat_relatif",
+    "momentum_12_1"
+   ],
+   "jebakan_kini": [
+    "formasi_ma"
+   ]
+  },
+  {
+   "kode": "NASI",
+   "harga": 194.0,
+   "sinyal": [
+    "formasi_ma",
+    "adx_naik",
+    "asing_20",
+    "kuat_relatif",
+    "momentum_12_1"
+   ],
+   "jebakan_kini": [
+    "formasi_ma"
+   ]
+  },
+  {
+   "kode": "OILS",
+   "harga": 290.0,
+   "sinyal": [
+    "formasi_ma",
+    "adx_naik",
+    "asing_20",
+    "kuat_relatif",
+    "momentum_12_1"
+   ],
+   "jebakan_kini": [
+    "formasi_ma"
+   ]
+  },
+  {
+   "kode": "SOCI",
+   "harga": 620.0,
+   "sinyal": [
+    "formasi_ma",
+    "adx_naik",
+    "asing_20",
+    "kuat_relatif",
+    "momentum_12_1"
+   ],
+   "jebakan_kini": [
+    "formasi_ma"
+   ]
+  },
+  {
+   "kode": "TOTL",
+   "harga": 1500.0,
+   "sinyal": [
+    "formasi_ma",
+    "adx_naik",
+    "asing_20",
+    "kuat_relatif",
+    "momentum_12_1"
+   ],
+   "jebakan_kini": [
+    "formasi_ma"
+   ]
+  },
+  {
+   "kode": "VISI",
+   "harga": 1080.0,
+   "sinyal": [
+    "formasi_ma",
+    "adx_naik",
+    "asing_20",
+    "kuat_relatif",
+    "momentum_12_1"
+   ],
+   "jebakan_kini": [
+    "formasi_ma"
+   ]
+  },
+  {
+   "kode": "MARK",
+   "harga": 1175.0,
+   "sinyal": [
+    "formasi_ma",
+    "adx_naik",
+    "asing_20",
+    "kuat_relatif",
+    "momentum_12_1"
+   ],
+   "jebakan_kini": [
+    "formasi_ma",
+    "dekat_puncak"
+   ]
+  },
+  {
+   "kode": "MSJA",
+   "harga": 830.0,
+   "sinyal": [
+    "formasi_ma",
+    "adx_naik",
+    "asing_20",
+    "kuat_relatif",
+    "momentum_12_1"
+   ],
+   "jebakan_kini": [
+    "formasi_ma",
+    "dekat_puncak"
+   ]
+  },
+  {
+   "kode": "SRSN",
+   "harga": 131.0,
+   "sinyal": [
+    "formasi_ma",
+    "adx_naik",
+    "asing_20",
+    "kuat_relatif",
+    "momentum_12_1"
+   ],
+   "jebakan_kini": [
+    "formasi_ma",
+    "dekat_puncak"
+   ]
+  },
+  {
+   "kode": "TINS",
+   "harga": 4590.0,
+   "sinyal": [
+    "formasi_ma",
+    "adx_naik",
+    "asing_20",
+    "kuat_relatif",
+    "momentum_12_1"
+   ],
+   "jebakan_kini": [
+    "formasi_ma",
+    "dekat_puncak"
+   ]
+  },
+  {
+   "kode": "BSML",
+   "harga": 540.0,
+   "sinyal": [
+    "formasi_ma",
+    "adx_naik",
+    "asing_20",
+    "kuat_relatif",
+    "momentum_12_1"
+   ],
+   "jebakan_kini": [
+    "formasi_ma",
+    "dekat_puncak",
+    "sempit"
+   ]
+  },
+  {
+   "kode": "PKPK",
+   "harga": 6100.0,
+   "sinyal": [
+    "formasi_ma",
+    "adx_naik",
+    "asing_20",
+    "kuat_relatif",
+    "momentum_12_1"
+   ],
+   "jebakan_kini": [
+    "formasi_ma",
+    "dekat_puncak",
+    "puncak_95"
+   ]
+  }
+ ],
+ "peringkat_semua": {
+  "BBCA": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "BUMI": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "BMRI": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "BBRI": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "AMMN": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "CUAN": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "ANTM": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "TLKM": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "DSSA": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "TPIA": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "PTRO": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "ASII": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "BRMS": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "DEWA": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "BULL": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "INET": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "ISAT": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "BBNI": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "MDKA": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "ADRO": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "UNTR": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "MEDC": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "CPIN": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "BRPT": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "COCO": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "BIPI": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "IATA": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "INCO": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "BNBR": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "MBMA": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "MDIA": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "INDY": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "VKTR": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "ASLI": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "KPIG": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "KLBF": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "RAJA": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "BUVA": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "KOTA": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "TAPG": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "LUCY": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "PGAS": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "AMRT": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "ADMR": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "NCKL": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "IMPC": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "INKP": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "ARCI": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "INDF": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "BYAN": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "PSAB": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "RATU": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "ICBP": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "ITMG": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "PANI": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "BREN": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "WIFI": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "SSIA": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "IRSX": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "SMGR": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "PIPA": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "RMKE": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "BWPT": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "JPFA": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "TOWR": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "FILM": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "JGLE": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "MYOR": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "LSIP": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "UNVR": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "BFIN": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "TRIN": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "MEDS": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "MSIN": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "TRUE": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "EXCL": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "TKIM": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "ARKO": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "WIRG": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "MNCN": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "EMTK": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "BSDE": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "NICL": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "PADI": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "LAPD": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "BBTN": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "GGRM": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "DPUM": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "SMRA": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "HMSP": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "CMRY": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "ELSA": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "SMDR": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "PGEO": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "ARTO": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "CMNT": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "CYBR": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "GULA": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "GOTO": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "SCMA": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "FOLK": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "SSMS": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "DEFI": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "MAPI": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "MTEL": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "LPKR": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "HRUM": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "MINA": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "FUTR": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "BKSL": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "BMTR": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "BBHI": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "BUKA": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "TOOL": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "ICON": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "BBYB": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "CBDK": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "FAST": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "AHAP": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "GPRA": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "BBSS": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "MGNA": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "ZATA": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "MUTU": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "POLA": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "HEAL": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "MAPA": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "ELTY": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "PNLF": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "FPNI": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "JAWA": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "PWON": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "SIMP": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "UDNG": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "JSMR": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "GPSO": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "NZIA": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "BELL": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "NISP": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "SIDO": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "ASSA": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "TCPI": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "CTRA": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "KJEN": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "SDMU": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "BAIK": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "BIPP": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "HATM": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "PYFA": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "UANG": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "KEEN": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "DFAM": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "STAA": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "BJBR": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "BNGA": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "CLEO": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "INTP": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "KOCI": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "MIKA": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "OMED": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "SLIS": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "YELO": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "ACES": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "KKES": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "HEXA": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "PADA": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "GMFI": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "PTSN": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "ESTI": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "AYLS": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "DYAN": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "LAJU": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "TOBA": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "PART": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "MSKY": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "WIIM": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "HUMI": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "KOKA": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "MITI": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "OASA": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "CENT": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "GIAA": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "GJTL": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "INDO": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "SMSM": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "ESIP": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "DSFI": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "EURO": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "SNLK": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "GSMF": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "BTEK": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "SRTG": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "AVIA": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "UNSP": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "BBKP": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "DATA": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "LABA": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "SILO": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "LPPF": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "DKFT": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "GTSI": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "LAND": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "KUAS": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "PPRI": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "RODA": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "WGSH": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "DKHH": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "GZCO": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "NIKL": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "NRCA": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "RGAS": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "APEX": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "GDST": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "HALO": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "LEAD": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "DGWG": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "ENZO": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "FIRE": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "KAQI": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "MGRO": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "PSKT": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "BINA": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "BJTM": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "NSSS": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "EPAC": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "HOKI": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "MPMX": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "BLTA": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "PPRO": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "APLN": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "RMKO": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "VIVA": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "KAEF": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "KIOS": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "VERN": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "BLES": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "MLPT": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "PNBN": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "TRON": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "CTTH": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "KKGI": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "MAHA": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "MIDI": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "TAXI": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "RISE": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "KDTN": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "KRYA": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "PPRE": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "VAST": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "ABMM": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "SOFA": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "BEEF": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "WMUU": [
+   0,
+   0.479,
+   [],
+   []
+  ],
+  "AADI": [
+   0,
+   0.4422,
+   [],
+   [
+    "formasi_ma"
+   ]
+  ],
+  "ENRG": [
+   0,
+   0.4422,
+   [],
+   [
+    "sempit"
+   ]
+  ],
+  "JARR": [
+   0,
+   0.4422,
+   [],
+   [
+    "formasi_ma"
+   ]
+  ],
+  "PACK": [
+   0,
+   0.4422,
+   [],
+   [
+    "formasi_ma"
+   ]
+  ],
+  "SQMI": [
+   0,
+   0.4422,
+   [],
+   [
+    "formasi_ma"
+   ]
+  ],
+  "TEBE": [
+   0,
+   0.4422,
+   [],
+   [
+    "formasi_ma"
+   ]
+  ],
+  "KIJA": [
+   0,
+   0.4422,
+   [],
+   [
+    "palu_support"
+   ]
+  ],
+  "ESSA": [
+   0,
+   0.4422,
+   [],
+   [
+    "palu_support"
+   ]
+  ],
+  "DOOH": [
+   0,
+   0.4422,
+   [],
+   [
+    "formasi_ma"
+   ]
+  ],
+  "KETR": [
+   0,
+   0.4422,
+   [],
+   [
+    "formasi_ma"
+   ]
+  ],
+  "DMAS": [
+   0,
+   0.4422,
+   [],
+   [
+    "formasi_ma"
+   ]
+  ],
+  "BRIS": [
+   0,
+   0.4422,
+   [],
+   [
+    "palu_support"
+   ]
+  ],
+  "CARE": [
+   0,
+   0.4422,
+   [],
+   [
+    "palu_support"
+   ]
+  ],
+  "AALI": [
+   0,
+   0.4422,
+   [],
+   [
+    "formasi_ma"
+   ]
+  ],
+  "FORU": [
+   0,
+   0.4422,
+   [],
+   [
+    "formasi_ma"
+   ]
+  ],
+  "HRTA": [
+   0,
+   0.4422,
+   [],
+   [
+    "sempit"
+   ]
+  ],
+  "MGLV": [
+   0,
+   0.4422,
+   [],
+   [
+    "formasi_ma"
+   ]
+  ],
+  "SOCI": [
+   0,
+   0.4422,
+   [],
+   [
+    "formasi_ma"
+   ]
+  ],
+  "CBRE": [
+   0,
+   0.4422,
+   [],
+   [
+    "sempit"
+   ]
+  ],
+  "CSMI": [
+   0,
+   0.4422,
+   [],
+   [
+    "formasi_ma"
+   ]
+  ],
+  "BSSR": [
+   0,
+   0.4422,
+   [],
+   [
+    "formasi_ma"
+   ]
+  ],
+  "DEWI": [
+   0,
+   0.4422,
+   [],
+   [
+    "formasi_ma"
+   ]
+  ],
+  "BAJA": [
+   0,
+   0.4422,
+   [],
+   [
+    "formasi_ma"
+   ]
+  ],
+  "AYAM": [
+   0,
+   0.4422,
+   [],
+   [
+    "formasi_ma"
+   ]
+  ],
+  "POWR": [
+   0,
+   0.4422,
+   [],
+   [
+    "formasi_ma"
+   ]
+  ],
+  "SEMA": [
+   0,
+   0.4422,
+   [],
+   [
+    "formasi_ma"
+   ]
+  ],
+  "MEJA": [
+   0,
+   0.4422,
+   [],
+   [
+    "formasi_ma"
+   ]
+  ],
+  "MPIX": [
+   0,
+   0.4422,
+   [],
+   [
+    "formasi_ma"
+   ]
+  ],
+  "NASI": [
+   0,
+   0.4422,
+   [],
+   [
+    "formasi_ma"
+   ]
+  ],
+  "SMLE": [
+   0,
+   0.4422,
+   [],
+   [
+    "formasi_ma"
+   ]
+  ],
+  "VICI": [
+   0,
+   0.4422,
+   [],
+   [
+    "formasi_ma"
+   ]
+  ],
+  "ELIT": [
+   0,
+   0.4422,
+   [],
+   [
+    "formasi_ma"
+   ]
+  ],
+  "BTPS": [
+   0,
+   0.4422,
+   [],
+   [
+    "palu_support"
+   ]
+  ],
+  "DSNG": [
+   0,
+   0.4422,
+   [],
+   [
+    "formasi_ma"
+   ]
+  ],
+  "MBTO": [
+   0,
+   0.4422,
+   [],
+   [
+    "formasi_ma"
+   ]
+  ],
+  "BKDP": [
+   0,
+   0.4422,
+   [],
+   [
+    "formasi_ma"
+   ]
+  ],
+  "TMPO": [
+   0,
+   0.4422,
+   [],
+   [
+    "formasi_ma"
+   ]
+  ],
+  "SAPX": [
+   0,
+   0.4422,
+   [],
+   [
+    "formasi_ma"
+   ]
+  ],
+  "EKAD": [
+   0,
+   0.4422,
+   [],
+   [
+    "formasi_ma"
+   ]
+  ],
+  "TOTL": [
+   0,
+   0.4422,
+   [],
+   [
+    "formasi_ma"
+   ]
+  ],
+  "TUGU": [
+   0,
+   0.4422,
+   [],
+   [
+    "formasi_ma"
+   ]
+  ],
+  "AGAR": [
+   0,
+   0.4422,
+   [],
+   [
+    "formasi_ma"
+   ]
+  ],
+  "OILS": [
+   0,
+   0.4422,
+   [],
+   [
+    "formasi_ma"
+   ]
+  ],
+  "GRPH": [
+   0,
+   0.4422,
+   [],
+   [
+    "formasi_ma"
+   ]
+  ],
+  "BEST": [
+   0,
+   0.4422,
+   [],
+   [
+    "formasi_ma"
+   ]
+  ],
+  "JAYA": [
+   0,
+   0.4422,
+   [],
+   [
+    "formasi_ma"
+   ]
+  ],
+  "NOBU": [
+   0,
+   0.4422,
+   [],
+   [
+    "palu_support"
+   ]
+  ],
+  "VISI": [
+   0,
+   0.4422,
+   [],
+   [
+    "formasi_ma"
+   ]
+  ],
+  "KICI": [
+   0,
+   0.4422,
+   [],
+   [
+    "formasi_ma"
+   ]
+  ],
+  "AISA": [
+   0,
+   0.4422,
+   [],
+   [
+    "palu_support"
+   ]
+  ],
+  "JATI": [
+   0,
+   0.4422,
+   [],
+   [
+    "sempit"
+   ]
+  ],
+  "ASPI": [
+   0,
+   0.4422,
+   [],
+   [
+    "formasi_ma"
+   ]
+  ],
+  "TOSK": [
+   0,
+   0.4422,
+   [],
+   [
+    "formasi_ma"
+   ]
+  ],
+  "INPC": [
+   0,
+   0.4422,
+   [],
+   [
+    "palu_support"
+   ]
+  ],
+  "MPXL": [
+   0,
+   0.4422,
+   [],
+   [
+    "formasi_ma"
+   ]
+  ],
+  "PEGE": [
+   0,
+   0.4422,
+   [],
+   [
+    "sempit"
+   ]
+  ],
+  "ERAL": [
+   0,
+   0.4422,
+   [],
+   [
+    "palu_support"
+   ]
+  ],
+  "TINS": [
+   0,
+   0.438,
+   [],
+   [
+    "formasi_ma",
+    "dekat_puncak"
+   ]
+  ],
+  "PTBA": [
+   0,
+   0.438,
+   [],
+   [
+    "formasi_ma",
+    "dekat_puncak"
+   ]
+  ],
+  "ERAA": [
+   0,
+   0.438,
+   [],
+   [
+    "formasi_ma",
+    "dekat_puncak"
+   ]
+  ],
+  "ULTJ": [
+   0,
+   0.438,
+   [],
+   [
+    "formasi_ma",
+    "dekat_puncak"
+   ]
+  ],
+  "SRSN": [
+   0,
+   0.438,
+   [],
+   [
+    "formasi_ma",
+    "dekat_puncak"
+   ]
+  ],
+  "UVCR": [
+   0,
+   0.438,
+   [],
+   [
+    "dekat_puncak",
+    "puncak_95"
+   ]
+  ],
+  "SMIL": [
+   0,
+   0.438,
+   [],
+   [
+    "formasi_ma",
+    "sempit"
+   ]
+  ],
+  "MARK": [
+   0,
+   0.438,
+   [],
+   [
+    "formasi_ma",
+    "dekat_puncak"
+   ]
+  ],
+  "MSJA": [
+   0,
+   0.438,
+   [],
+   [
+    "formasi_ma",
+    "dekat_puncak"
+   ]
+  ],
+  "HOPE": [
+   0,
+   0.438,
+   [],
+   [
+    "formasi_ma",
+    "sempit"
+   ]
+  ],
+  "BDMN": [
+   0,
+   0.438,
+   [],
+   [
+    "formasi_ma",
+    "dekat_puncak"
+   ]
+  ],
+  "ASGR": [
+   0,
+   0.438,
+   [],
+   [
+    "formasi_ma",
+    "dekat_puncak"
+   ]
+  ],
+  "CCSI": [
+   0,
+   0.438,
+   [],
+   [
+    "formasi_ma",
+    "dekat_puncak"
+   ]
+  ],
+  "MOLI": [
+   0,
+   0.438,
+   [],
+   [
+    "formasi_ma",
+    "dekat_puncak"
+   ]
+  ],
+  "MBSS": [
+   0,
+   0.438,
+   [],
+   [
+    "formasi_ma",
+    "sempit"
+   ]
+  ],
+  "FORE": [
+   0,
+   0.438,
+   [],
+   [
+    "formasi_ma",
+    "sempit"
+   ]
+  ],
+  "ARNA": [
+   0,
+   0.438,
+   [],
+   [
+    "formasi_ma",
+    "dekat_puncak"
+   ]
+  ],
+  "BDKR": [
+   0,
+   0.438,
+   [],
+   [
+    "formasi_ma",
+    "sempit"
+   ]
+  ],
+  "SINI": [
+   0,
+   0.438,
+   [],
+   [
+    "formasi_ma",
+    "dekat_puncak",
+    "puncak_95"
+   ]
+  ],
+  "SGER": [
+   0,
+   0.438,
+   [],
+   [
+    "formasi_ma",
+    "dekat_puncak",
+    "puncak_95"
+   ]
+  ],
+  "AKRA": [
+   0,
+   0.438,
+   [],
+   [
+    "formasi_ma",
+    "dekat_puncak",
+    "palu_support"
+   ]
+  ],
+  "PKPK": [
+   0,
+   0.438,
+   [],
+   [
+    "formasi_ma",
+    "dekat_puncak",
+    "puncak_95"
+   ]
+  ],
+  "RSCH": [
+   0,
+   0.438,
+   [],
+   [
+    "formasi_ma",
+    "dekat_puncak",
+    "puncak_95"
+   ]
+  ],
+  "AUTO": [
+   0,
+   0.438,
+   [],
+   [
+    "formasi_ma",
+    "dekat_puncak",
+    "sempit"
+   ]
+  ],
+  "BSML": [
+   0,
+   0.438,
+   [],
+   [
+    "formasi_ma",
+    "dekat_puncak",
+    "sempit"
+   ]
+  ],
+  "SMMT": [
+   0,
+   0.438,
+   [],
+   [
+    "formasi_ma",
+    "dekat_puncak",
+    "puncak_95"
+   ]
+  ],
+  "PRDA": [
+   0,
+   0.438,
+   [],
+   [
+    "formasi_ma",
+    "dekat_puncak",
+    "puncak_95"
+   ]
+  ],
+  "MMIX": [
+   0,
+   0.438,
+   [],
+   [
+    "formasi_ma",
+    "dekat_puncak",
+    "sempit",
+    "puncak_95"
+   ]
+  ],
+  "NEST": [
+   0,
+   0.438,
+   [],
+   [
+    "formasi_ma",
+    "dekat_puncak",
+    "sempit",
+    "puncak_95"
+   ]
+  ]
+ }
+}
