@@ -1,82 +1,262 @@
-/* Halaman tutup sementara.
+/* Halaman tutup sementara (#256 A, 1 Okt 2026).
 
    Sengaja BERDIRI SENDIRI: tak mengimpor satu pun token/variabel aplikasi,
-   dan warnanya ditulis apa adanya di sini. Alasannya bukan kemalasan — gerbang
-   ini harus tetap menutup PAPAN walau berkas gaya aplikasi yang sedang
-   direnovasi patah. Halaman yang bergantung pada yang sedang diperbaiki bukan
-   gerbang, ia bagian dari yang rusak.
+   dan warnanya ditulis apa adanya di sini. Gerbang ini harus tetap menutup
+   PAPAN walau berkas gaya aplikasi yang sedang direnovasi patah.
 
-   Temanya dari `prefers-color-scheme` murni: pemilih tema aplikasi tinggal di
-   dalam konteks yang sengaja tidak dipasang di atas halaman ini. */
+   Temanya dari `prefers-color-scheme` murni. Fon sistem (nol unduhan fon);
+   angka tak ada di halaman ini, jadi aturan nol-bertitik tak tersentuh.
+   Semua gerak berhenti di `prefers-reduced-motion: reduce`. */
 
 .mt-akar {
-  --mt-latar: #f7f7f5;
-  --mt-teks: #16181a;
-  --mt-redup: #6b6f74;
-  --mt-aksen: #7a5e00;
+  --mt-latar: #f6f5f1;
+  --mt-latar2: #ecebe5;
+  --mt-teks: #15171b;
+  --mt-redup: #646a73;
+  --mt-garis: rgba(21, 23, 27, .07);
+  --mt-aksen: #8a6a00;
+  --mt-aksen-halus: rgba(138, 106, 0, .14);
+  --mt-naik: rgba(22, 128, 82, .20);
+  --mt-turun: rgba(190, 52, 52, .17);
+  --mt-pita-latar: #15171b;
+  --mt-pita-teks: #f6f5f1;
 
-  min-height: 100dvh; /* dvh, bukan vh — bilah alamat ponsel menutup ~105px
-                         dan vh membuat isinya jatuh di balik bilah itu */
+  position: relative;
+  min-height: 100dvh; /* dvh: bilah alamat ponsel menutup ~105px */
   margin: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 32px 24px;
-  background: var(--mt-latar);
+  padding: 48px 20px 96px;
+  overflow: hidden;
+  background:
+    radial-gradient(120% 80% at 50% 0%, var(--mt-latar) 0%, var(--mt-latar2) 100%);
   color: var(--mt-teks);
   font-family: -apple-system, 'Segoe UI', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
+  isolation: isolate;
 }
 
 @media (prefers-color-scheme: dark) {
   .mt-akar {
-    /* Ikut tangga navy tema gelap (#40 A) - halaman ini berdiri sendiri
-       dan tak memuat token .lantai, jadi nilainya disalin, bukan dirujuk. */
-    --mt-latar: #0B0D14;
-    --mt-teks: #EDEFF5;
-    --mt-redup: #98A0B6;
+    /* Tangga navy tema gelap PAPAN (#40 A), disalin bukan dirujuk. */
+    --mt-latar: #10131c;
+    --mt-latar2: #07090e;
+    --mt-teks: #edeff5;
+    --mt-redup: #98a0b6;
+    --mt-garis: rgba(237, 239, 245, .06);
     --mt-aksen: #e0b860;
+    --mt-aksen-halus: rgba(224, 184, 96, .16);
+    --mt-naik: rgba(52, 199, 123, .18);
+    --mt-turun: rgba(240, 90, 90, .16);
+    --mt-pita-latar: #e0b860;
+    --mt-pita-teks: #10131c;
   }
 }
 
+/* Kisi tipis seperti kertas grafik terminal. */
+.mt-grid {
+  position: absolute;
+  inset: 0;
+  z-index: -3;
+  background-image:
+    linear-gradient(var(--mt-garis) 1px, transparent 1px),
+    linear-gradient(90deg, var(--mt-garis) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: radial-gradient(ellipse 75% 65% at 50% 42%, #000 35%, transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse 75% 65% at 50% 42%, #000 35%, transparent 100%);
+}
+
+/* Cahaya emas lembut di belakang lambang. */
+.mt-sorot {
+  position: absolute;
+  z-index: -2;
+  width: min(720px, 120vw);
+  aspect-ratio: 1;
+  left: 50%;
+  top: 42%;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle, var(--mt-aksen-halus) 0%, transparent 62%);
+  animation: mt-napas 7s ease-in-out infinite;
+}
+
+/* Siluet candle di dasar halaman. */
+.mt-candle {
+  position: absolute;
+  z-index: -1;
+  left: 0;
+  right: 0;
+  bottom: 44px;
+  width: 100%;
+  height: min(30dvh, 220px);
+  mask-image: linear-gradient(to top, #000 0%, transparent 95%);
+  -webkit-mask-image: linear-gradient(to top, #000 0%, transparent 95%);
+}
+.mt-candle line { stroke-width: 1.5; }
+.mt-c-naik rect, .mt-c-naik line { fill: var(--mt-naik); stroke: var(--mt-naik); }
+.mt-c-turun rect, .mt-c-turun line { fill: var(--mt-turun); stroke: var(--mt-turun); }
+.mt-candle g {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: mt-ayun 6s ease-in-out infinite;
+}
+
 .mt-isi {
+  position: relative;
   text-align: center;
-  max-width: 30rem;
+  max-width: 34rem;
+  animation: mt-muncul .9s cubic-bezier(.2, .7, .2, 1) both;
 }
 
 .mt-ikon {
-  width: clamp(64px, 16vw, 92px);
+  width: clamp(72px, 18vw, 104px);
   height: auto;
   display: block;
-  margin: 0 auto 26px;
+  margin: 0 auto 22px;
   color: var(--mt-teks);
+  filter: drop-shadow(0 10px 30px var(--mt-aksen-halus));
+}
+.mt-bilah {
+  fill: var(--mt-aksen);
+  transform-box: fill-box;
+  transform-origin: 0 50%;
+  animation: mt-isi-bilah 3.2s cubic-bezier(.6, 0, .3, 1) infinite;
+}
+.mt-bilah2 {
+  opacity: .5;
+  animation-delay: .45s;
 }
 
-.mt-bilah { fill: var(--mt-aksen); }
-.mt-bilah2 { opacity: .45; }
+.mt-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 18px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--mt-aksen-halus);
+  background: var(--mt-aksen-halus);
+  color: var(--mt-aksen);
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+.mt-titik {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--mt-aksen);
+  box-shadow: 0 0 0 0 var(--mt-aksen);
+  animation: mt-denyut 2s ease-out infinite;
+}
 
 .mt-nama {
-  font-size: clamp(28px, 7vw, 40px);
-  font-weight: 600;
-  letter-spacing: .22em; /* PAPAN dalam huruf besar butuh jarak; tanpa ini
-                            huruf-hurufnya saling tempel di ukuran besar */
-  text-indent: .22em;    /* imbangi jarak yang menempel di huruf TERAKHIR,
-                            supaya kata tetap terlihat di tengah */
+  font-size: clamp(40px, 11vw, 72px);
+  font-weight: 800;
+  letter-spacing: .2em;
+  text-indent: .2em; /* imbangi jarak di huruf terakhir supaya tetap di tengah */
   margin: 0 0 6px;
-  line-height: 1.1;
+  line-height: 1;
+  background: linear-gradient(180deg, var(--mt-teks) 30%, var(--mt-redup) 140%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
 .mt-sub {
-  font-size: clamp(12px, 3vw, 13.5px);
-  letter-spacing: .06em;
+  font-size: clamp(11.5px, 3vw, 13.5px);
+  letter-spacing: .14em;
   text-transform: uppercase;
   color: var(--mt-redup);
-  margin: 0 0 30px;
+  margin: 0 0 28px;
 }
 
 .mt-pesan {
-  font-size: clamp(15px, 4vw, 17px);
-  line-height: 1.6;
+  font-size: clamp(15px, 4vw, 17.5px);
+  line-height: 1.65;
   color: var(--mt-teks);
+  margin: 0 auto 10px;
+  max-width: 30rem;
+  text-wrap: balance;
+}
+
+.mt-kembali {
   margin: 0;
+  font-size: clamp(15px, 4vw, 17px);
+  font-weight: 700;
+  color: var(--mt-aksen);
+}
+
+/* Pita berjalan di dasar: nama bagian PAPAN yang sedang dibenahi. */
+.mt-pita {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 44px;
+  overflow: hidden;
+  background: var(--mt-pita-latar);
+  color: var(--mt-pita-teks);
+  display: flex;
+  align-items: center;
+}
+.mt-pita-jalan {
+  display: flex;
+  width: max-content;
+  animation: mt-gulir 48s linear infinite;
+}
+.mt-pita-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 22px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: .04em;
+  white-space: nowrap;
+}
+.mt-pita-tanda { font-size: 8px; opacity: .6; }
+.mt-pita-ket {
+  font-weight: 400;
+  opacity: .65;
+  font-size: 12px;
+}
+
+@keyframes mt-muncul {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes mt-isi-bilah {
+  0% { transform: scaleX(.15); }
+  45%, 70% { transform: scaleX(1); }
+  100% { transform: scaleX(.15); }
+}
+@keyframes mt-denyut {
+  0% { box-shadow: 0 0 0 0 var(--mt-aksen); }
+  100% { box-shadow: 0 0 0 9px transparent; }
+}
+@keyframes mt-napas {
+  0%, 100% { opacity: .75; transform: translate(-50%, -50%) scale(1); }
+  50% { opacity: 1; transform: translate(-50%, -50%) scale(1.06); }
+}
+@keyframes mt-ayun {
+  0%, 100% { transform: scaleY(1); }
+  50% { transform: scaleY(.82); }
+}
+@keyframes mt-gulir {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+@media (max-width: 480px) {
+  .mt-akar { padding: 40px 16px 88px; }
+  .mt-candle { bottom: 44px; height: 22dvh; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mt-isi, .mt-sorot, .mt-candle g, .mt-bilah, .mt-titik, .mt-pita-jalan {
+    animation: none;
+  }
+  .mt-bilah { transform: none; }
 }
