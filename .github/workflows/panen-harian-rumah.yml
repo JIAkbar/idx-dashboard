@@ -175,6 +175,15 @@ jobs:
         run: |
           & "${{ steps.py.outputs.exe }}" scripts/uji_sumber.py
 
+      # #263 B: snapshot harian Pasardana diarsipkan sebagai cadangan bila sumber
+      # IDX tertutup (riwayat tak tersedia di sumbernya, jadi wajib tiap hari).
+      - name: 1a · Snapshot cadangan Pasardana
+        if: ${{ env.HANYA_BROKER != 'true' }}
+        continue-on-error: true
+        run: |
+          & "${{ steps.py.outputs.exe }}" scripts/panen_pasardana.py
+          if ($LASTEXITCODE -ne 0) { Write-Host "::warning::panen_pasardana gagal" }
+
       - name: 1 · Daftar emiten & jumlah saham
         if: ${{ env.HANYA_BROKER != 'true' }}
         continue-on-error: true
