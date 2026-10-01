@@ -168,6 +168,13 @@ jobs:
           Write-Host "::error::Tak ada Python yang punya curl_cffi."
           exit 1
 
+      # Standar kerja (Johan 1 Okt 2026): tiap sumber diuji TIGA kali sebelum
+      # panen. Hanya melapor (::warning:: bila tak terbuka), tak menghentikan.
+      - name: Uji sumber 3x
+        continue-on-error: true
+        run: |
+          & "${{ steps.py.outputs.exe }}" scripts/uji_sumber.py
+
       - name: 1 · Daftar emiten & jumlah saham
         if: ${{ env.HANYA_BROKER != 'true' }}
         continue-on-error: true

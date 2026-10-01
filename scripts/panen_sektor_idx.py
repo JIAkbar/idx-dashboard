@@ -124,6 +124,7 @@ def main() -> int:
             "tercatat": (b.get("TanggalPencatatan") or "")[:10] or None,
         }
 
+    terapkan_koreksi(emiten)
     berisi = sum(1 for v in emiten.values() if v["sektor"])
     berisi_en = sum(1 for v in emiten.values() if v["sektor_en"])
     isi = {
@@ -152,6 +153,73 @@ def main() -> int:
     print("Papan pencatatan:", ", ".join(f"{k} {v}" for k, v in sorted(papan.items())))
     return 0
 
+# #254 (keputusan Johan 1 Okt 2026: "kerjakan #254 juga"). Lima emiten yang
+# klasifikasinya SALAH di balasan IDX sendiri (arsip mentah 5 Sep 2026): AADI,
+# CTRA, ZINC tercatat "Keuangan / Reasuransi" bertanggal 2026-03-09, DGIK
+# "Teknologi" tanpa subindustri, HKMU "Infrastruktur / Maskapai" - pola data
+# uji yang bocor, sama dengan dokumen "TEST.AADI.001". 955 dari 961 emiten
+# lain cocok dengan Stockbit. Sektor kelima emiten itu ditimpa dari
+# info_stockbit (ditandai `koreksi`), dan tanggal tercatatnya dikosongkan
+# kecuali yang terbukti (AADI 5 Des 2024, profil Stockbit = bar harga pertama).
+# Dijalankan TIAP panen supaya panen IDX berikutnya tak mengembalikan yang salah;
+# hapus kode dari daftar begitu IDX membetulkan datanya.
+KOREKSI_STOCKBIT = {"AADI": "2024-12-05", "CTRA": None, "ZINC": None, "DGIK": None, "HKMU": None}
+
+
+def terapkan_koreksi(emiten: dict) -> list[str]:
+    akar = Path(__file__).resolve().parent.parent / "data-idx" / "json"
+    # Nama Inggris resmi IDX diturunkan dari emiten lain bernama Indonesia sama.
+    peta_en: dict[tuple[str, str], str] = {}
+    for v in emiten.values():
+        for ruas in ("sektor", "subsektor", "industri", "subindustri"):
+            if v.get(ruas) and v.get(ruas + "_en"):
+                peta_en.setdefault((ruas, v[ruas]), v[ruas + "_en"])
+    diubah = []
+    for kode, tercatat in KOREKSI_STOCKBIT.items():
+        if kode not in emiten:
+            continue
+        try:
+            info = json.loads((akar / "info_stockbit" / f"{kode}.json").read_text(encoding="utf-8"))
+        except OSError:
+            continue
+
+        def cari(o):
+            if isinstance(o, dict):
+                if "sector" in o and "sub_sector" in o:
+                    return o
+                for x in o.values():
+                    r = cari(x)
+                    if r:
+                        return r
+            return None
+        sb = cari(info)
+        if not sb or not sb.get("sector"):
+            continue
+        v = emiten[kode]
+        v["sektor"] = sb.get("sector") or None
+        v["subsektor"] = sb.get("sub_sector") or None
+        v["industri"] = sb.get("industry") or None
+        v["subindustri"] = sb.get("sub_industry") or None
+        for ruas in ("sektor", "subsektor", "industri", "subindustri"):
+            v[ruas + "_en"] = peta_en.get((ruas, v[ruas])) if v[ruas] else None
+        v["tercatat"] = tercatat
+        v["koreksi"] = "stockbit"
+        diubah.append(kode)
+    return diubah
+
+
+def koreksi_saja() -> int:
+    isi = json.loads(KELUARAN.read_text(encoding="utf-8"))
+    diubah = terapkan_koreksi(isi["emiten"])
+    isi["n_bersektor"] = sum(1 for v in isi["emiten"].values() if v.get("sektor"))
+    isi["n_bersektor_en"] = sum(1 for v in isi["emiten"].values() if v.get("sektor_en"))
+    KELUARAN.write_text(json.dumps(isi, ensure_ascii=False, indent=1), encoding="utf-8")
+    for k in diubah:
+        v = isi["emiten"][k]
+        print(f"  {k}: {v['sektor']} / {v['subindustri']} | EN {v['sektor_en']} / {v['subindustri_en']} | tercatat {v['tercatat']}")
+    print(f"koreksi: {len(diubah)} emiten")
+    return 0
+
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    raise SystemExit(koreksi_saja() if "--koreksi-saja" in sys.argv else main())
