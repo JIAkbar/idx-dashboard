@@ -152,12 +152,14 @@ function RekamJejak() {
 function DeepDiveBaru() {
   const dd = isi.deepdive
   if (!dd || !dd.disetujui) return null
+  // `pengantar` hanya ada di draf sejak #268; tipe JSON draf lama tak memuatnya.
+  const pengantar = (dd as { pengantar?: string }).pengantar
   return (
     <section className="mt-bagian" aria-labelledby="mt-dd">
       <header>
         <p className="mt-eyebrow">Deep Dive · data s.d. {tgl(dd.tanggal)}</p>
         <h2 id="mt-dd">Siapa yang menampung saat pasar turun</h2>
-        {'pengantar' in dd && <p className="mt-ket">{dd.pengantar}</p>}
+        {pengantar && <p className="mt-ket">{pengantar}</p>}
         <p className="mt-catatan">{dd.metode}</p>
       </header>
       {dd.emiten.map((e) => (
