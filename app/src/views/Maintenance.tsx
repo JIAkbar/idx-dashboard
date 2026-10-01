@@ -157,7 +157,8 @@ function DeepDiveBaru() {
       <header>
         <p className="mt-eyebrow">Deep Dive · data s.d. {tgl(dd.tanggal)}</p>
         <h2 id="mt-dd">Siapa yang menampung saat pasar turun</h2>
-        <p className="mt-ket">{dd.metode}</p>
+        {'pengantar' in dd && <p className="mt-ket">{dd.pengantar}</p>}
+        <p className="mt-catatan">{dd.metode}</p>
       </header>
       {dd.emiten.map((e) => (
         <article key={e.kode} className="mt-kartu">
@@ -174,7 +175,7 @@ function DeepDiveBaru() {
           <p><b>Risiko:</b> {e.risiko}</p>
         </article>
       ))}
-      {dd.gugur.map((g) => (
+      {(dd.gugur as { kode: string; alasan: string }[]).map((g) => (
         <p key={g.kode} className="mt-catatan"><b>{g.kode} tidak dilanjutkan.</b> {g.alasan}</p>
       ))}
     </section>

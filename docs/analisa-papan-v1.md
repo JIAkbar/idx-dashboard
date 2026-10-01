@@ -211,3 +211,25 @@ PCD · tangga pivot + EMA50), asimetri dinyatakan eksplisit, skenario dalam
 angka (konfirmasi · rute · invalidasi), probabilitas v2 dicetak apa adanya,
 dan tinjauan H+5 ditambahkan ke log §5. Perubahan metode = versi baru (v2)
 dengan catatan apa yang berubah dan kenapa — bukan penyuntingan diam-diam v1.
+
+## 8. Aturan pemilihan emiten Deep Dive (#268, 2 Okt 2026)
+
+Johan 2 Okt 2026: *"masak hasil dari analisa nya dapat AALI, AMRT dan AYAM ?"*
+lalu *"kerjakan #268 A+B"*. Pilihan #266 diurutkan menurut kelengkapan data
+broker lalu likuiditas, bukan menurut kekuatan sinyal: kesalahan bagian 6
+terulang. Sejak 2 Okt pemilihan memakai `scripts/riset/pindai_serapan.py`:
+
+| Langkah | Aturan |
+|---|---|
+| Populasi | arsip broker reguler minimal 8 dari 10 hari bursa terakhir, nilai transaksi 10 hari minimal Rp100 miliar |
+| Ukuran | serapan = jumlah net tiga penampung terbesar / nilai transaksi 10 hari |
+| Syarat | gerak harga 10 hari antara −12% dan +3% (diserap, bukan diburu) |
+| Urutan | serapan menurun; kandidat screener hanya ditandai, tidak diutamakan |
+| Pilih | tiga teratas; analis memeriksa tiga lapis dan mencatat yang gugur beserta alasannya |
+| Cetak | cakupan (berapa emiten punya data broker cukup) selalu ikut dilaporkan |
+
+Batasnya: ukuran serapan belum diuji balik, jadi ia penyaring, bukan peringkat
+kelayakan. Jalan pertama (data s.d. 1 Okt): 327 dari 962 emiten punya broker
+cukup, 25 lolos semua syarat, tiga teratas ITMG, BTPS, KLBF. Tak satu pun
+lolos tiga lapis (harga di bawah EMA50, sebagian besar modal rugi kertas), jadi
+ketiganya diterbitkan sebagai pengamatan arus dengan syarat konfirmasi.
