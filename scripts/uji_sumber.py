@@ -57,8 +57,16 @@ def _stockbit():
     return kode == 200, pesan
 
 
+def _stockbit_harga():
+    from stockbit_token import token_segar
+    from cek_token import uji_harga
+    ok = uji_harga(token_segar())
+    return ok, "bar BBCA terbaca" if ok else "harga tak terbaca"
+
+
 SUMBER = [
     ("Stockbit broker (token panen)", _stockbit),
+    ("Stockbit harga (token panen)", _stockbit_harga),
     ("Yahoo IHSG harian", _yahoo),
     ("IDX statistik harian (daftar PDF)", _idx("https://www.idx.co.id/primary/Statistic/GetStatistic",
                                               {"Year": "2026", "Month": "10", "Prefix": "ds"})),

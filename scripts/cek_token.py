@@ -95,9 +95,30 @@ def uji_hidup(access: str) -> tuple[int, str]:
         # kosong lalu mendorongnya ke produksi. Status 200 bukan bukti hidup;
         # yang jadi bukti adalah DATANYA.
         if n == 0:
-            return 0, "200 tapi NOL broker BBCA 21 Agu — token diterima tapi tak berhak data (MATI DIAM-DIAM)"
+            return 0, "200 tapi NOL broker BBCA 21 Agu — token mati diam-diam ATAU jatah broker habis (dibedakan lewat uji harga)"
         return 200, f"200 OK — {n} broker beli BBCA 21 Agu terbaca"
     return r.status_code, f"HTTP {r.status_code}: {r.text[:120]}"
+
+
+def uji_harga(access: str) -> bool:
+    """#264 (Johan 1 Okt 2026: "kerjakan #264"): pembeda "token mati" dari
+    "jatah broker habis". Endpoint broker menjawab 200 TANPA broker dalam DUA
+    keadaan: token tak berhak data (mati diam-diam, 2 Sep 2026) DAN jatah
+    panggilan broker habis (#218; 1 Okt 2026 21:4x - endpoint harga dengan
+    token yang sama tetap menjawab bar 1 Okt). Endpoint harga memakai jatah
+    lain, jadi ia pemisahnya: harga terbaca = token hidup."""
+    import requests
+    from datetime import date as _d, timedelta as _td
+    try:
+        r = requests.get("https://exodus.stockbit.com/chartbit/BBCA/price/daily", headers={
+            "Authorization": f"Bearer {access}", "Origin": "https://stockbit.com",
+            "Referer": "https://stockbit.com/",
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+        }, params={"from": str(_d.today()), "to": str(_d.today() - _td(days=14)), "limit": 0}, timeout=30)
+        bar = ((r.json().get("data") or {}).get("chartbit") or []) if r.status_code == 200 else []
+        return len(bar) > 0
+    except Exception:  # noqa: BLE001 - jaringan apa pun = tak terbukti hidup
+        return False
 
 
 def diputar_pada_tabel() -> datetime | None:
@@ -225,6 +246,14 @@ def cek() -> int:
         return 0
     if kode == 200:
         print("  ==> RANTAI HIDUP" + (" DAN BARU" if baru else ""))
+        return 0
+    if kode == 0 and uji_harga(dipakai):
+        # Broker kosong tapi harga terbaca: token HIDUP, jatah broker habis.
+        # Keluar 0 supaya langkah Stockbit tetap jalan (harga, keystats);
+        # pemanen broker punya kanari sendiri dan berhenti bila tetap kosong.
+        print("  uji harga: bar BBCA terbaca - token hidup")
+        print("  PERINGATAN: JATAH BROKER HABIS (bukan token mati) - JANGAN semai; susulan broker menunggu jatah pulih")
+        print("  ==> RANTAI HIDUP, jatah broker habis")
         return 0
     print("  ==> RANTAI MATI — login ulang di peramban, semai pasangan baru (stockbit_token.py), lalu jalankan ulang runner")
     return 1
