@@ -1,0 +1,139 @@
+# Susulan broker per emiten - dipisah dari panen-harian-rumah.yml (#257,
+# Johan 1 Okt 2026: "kerjakan #257 #258 #259 dan push live").
+#
+# Dulu susulan memakai workflow harian yang sama (mode hanya_broker, #248/#252).
+# Satu grup concurrency hanya menyimpan SATU run antre, dan run antre yang lebih
+# baru MEMBATALKAN yang lebih lama: run 28 Sep 21:14 dibatalkan tanpa satu
+# langkah pun. Akibatnya run harian penuh bisa tergusur susulan. Sekarang
+# grupnya terpisah, dan susulan mengalah kalau run harian sedang jalan/antre.
+# Langkah-langkahnya disalin dari panen-harian-rumah.yml (token, 3d, 3e, 10,
+# commit) - ubah di sana, salin ke sini.
+
+name: Susulan broker (runner rumahan)
+on:
+  schedule:
+  - cron: 15 0,3,6,9,15,18,21 * * *
+  workflow_dispatch:
+env:
+  PYTHONIOENCODING: utf-8
+  PAPAN_ENV_LOCAL: C:\1-Johan\10. Pengembangan\IDX Statistik\app\.env.local
+  PAPAN_ARSIP_AKAR: C:\1-Johan\10. Pengembangan\IDX Statistik\_arsip-mentah
+permissions:
+  contents: write
+  actions: read
+concurrency:
+  group: panen-susulan
+  cancel-in-progress: false
+jobs:
+  susulan:
+    runs-on: self-hosted
+    timeout-minutes: 90
+    defaults:
+      run:
+        shell: powershell -NoProfile -ExecutionPolicy Bypass -Command ". '{0}'"
+    steps:
+    - uses: actions/checkout@v4
+    - name: Lewati kalau panen harian sedang jalan atau antre
+      id: jaga
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        # Satu runner rumahan menjalankan satu job sekaligus, jadi susulan yang
+        # antre di belakang run harian cuma menunda harga hari itu. Kalau run
+        # harian sedang jalan/antre, susulan ini mengalah; jadwal berikutnya
+        # (+-3 jam) mencoba lagi.
+        # Disaring di PowerShell, bukan --jq: PowerShell 5.1 membuang tanda kutip
+        # ganda di argumen program, dan `select(.status != "completed")` jadi galat jq.
+        $r = gh run list --repo ${{ github.repository }} --workflow panen-harian-rumah.yml --limit 5 --json status | ConvertFrom-Json
+        if ($LASTEXITCODE -ne 0) { Write-Host '::warning::status run harian tak terbaca - susulan tetap jalan'; $r = @() }
+        $n = @($r | Where-Object { $_.status -ne 'completed' }).Count
+        if ([int]$n -gt 0) {
+          'lewati=1' | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+          Write-Host "Panen harian sedang jalan/antre ($n run) - susulan dilewati."
+        } else {
+          'lewati=0' | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+        }
+    - name: Tentukan Python
+      id: py
+      run: |
+        $kandidat = @('C:\Python314\python.exe', 'python3', 'python')
+        foreach ($p in $kandidat) {
+          $exe = (Get-Command $p -ErrorAction SilentlyContinue).Source
+          if (-not $exe) { continue }
+          & $exe -c "import curl_cffi" 2>$null
+          if ($LASTEXITCODE -eq 0) {
+            "exe=$exe" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+            Write-Host "Python: $exe"; exit 0
+          }
+        }
+        Write-Host "::error::Tak ada Python yang punya curl_cffi."
+        exit 1
+      if: steps.jaga.outputs.lewati != '1'
+    - name: 0 · Uji token Stockbit
+      id: token
+      continue-on-error: true
+      run: |
+        $keluaran = & "${{ steps.py.outputs.exe }}" scripts/cek_token.py 2>&1
+        $kode = $LASTEXITCODE
+        $keluaran | ForEach-Object { Write-Host $_ }
+        if ($kode -eq 0) { "hidup=1" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8 }
+        else {
+          "hidup=0" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+          Write-Host "::error::Token Stockbit ditolak - langkah 2b, 3d, dan 3f dilewati"
+        }
+        if ($kode -ne 0 -or ($keluaran -match 'PERINGATAN:')) { exit 1 }
+      if: steps.jaga.outputs.lewati != '1'
+    - name: 3d · Broker summary per emiten (Stockbit, 6 varian GROSS)
+      if: steps.jaga.outputs.lewati != '1' && (steps.token.outputs.hidup == '1')
+      continue-on-error: true
+      timeout-minutes: 45
+      run: |
+        & "${{ steps.py.outputs.exe }}" scripts/stockbit_token.py --status
+        $tanggal = @(& "${{ steps.py.outputs.exe }}" scripts/tgl_broker_lubang.py)
+        if ($LASTEXITCODE -ne 0 -or $tanggal.Count -eq 0) {
+          Write-Host "::warning::tgl_broker_lubang gagal - memakai tanggal bawaan pemanen"
+          $tanggal = @('')
+        }
+        foreach ($t in $tanggal) {
+          $argTgl = @()
+          if ($t) { $argTgl = @('--tanggal', $t); Write-Host "broker harian: $t" }
+          # --maks-tunda 0 (#233): tanpa jeda 5 menit + putaran ulang di CI -
+          # batas langkah 60 menit; sisanya disusul run berikutnya lewat
+          # tgl_broker_lubang.py yang kini menghitung semua emiten.
+          & "${{ steps.py.outputs.exe }}" scripts/panen_broker_harian.py @argTgl --jeda 0.4 --paralel 48 --maks-tunda 0 `
+            --varian reguler,asing,nego,nego-asing,tunai,tunai-asing
+          if ($LASTEXITCODE -ne 0) { Write-Host "::warning::panen_broker_harian $t gagal" }
+        }
+    - name: 3e · Gudang broker tahunan
+      continue-on-error: true
+      run: |
+        $tahun = (Get-Date).Year
+        # --inkremental (#204): hanya emiten yang arsipnya ditulis sesudah
+        # berkas tahunannya dibangun (±30 menit kalau penuh). Bat sore tetap penuh.
+        & "${{ steps.py.outputs.exe }}" scripts/bangun_broker_tahunan.py --tahun $tahun --paralel 16 --inkremental
+        if ($LASTEXITCODE -ne 0) { Write-Host "::warning::bangun_broker_tahunan gagal" }
+      if: steps.jaga.outputs.lewati != '1'
+    - name: 10 · Turunan broker ulang
+      continue-on-error: true
+      run: |
+        & "${{ steps.py.outputs.exe }}" scripts/bangun_kategori_broker.py
+        if ($LASTEXITCODE -ne 0) { Write-Host "::warning::bangun_kategori_broker gagal" }
+        & "${{ steps.py.outputs.exe }}" scripts/bangun_broker_rentang.py --tulis
+        if ($LASTEXITCODE -ne 0) { Write-Host "::warning::bangun_broker_rentang gagal" }
+        & "${{ steps.py.outputs.exe }}" scripts/bangun_broker_pivot.py --tulis
+        if ($LASTEXITCODE -ne 0) { Write-Host "::warning::bangun_broker_pivot gagal" }
+        & "${{ steps.py.outputs.exe }}" scripts/bangun_bandarmologi.py
+        if ($LASTEXITCODE -ne 0) { Write-Host "::warning::bangun_bandarmologi gagal" }
+        & "${{ steps.py.outputs.exe }}" scripts/riset/ringkas_broker_harian.py --tulis
+        if ($LASTEXITCODE -ne 0) { Write-Host "::warning::ringkas_broker_harian gagal" }
+      if: steps.jaga.outputs.lewati != '1'
+    - name: Commit kalau ada perubahan
+      if: always() && steps.jaga.outputs.lewati != '1'
+      run: |
+        & powershell -NoProfile -ExecutionPolicy Bypass -File scripts/ci_commit_data.ps1 -Label "broker"
+        exit $LASTEXITCODE
+    - name: Bersihkan sisa
+      if: always()
+      run: |
+        git clean -fdq -- data-idx
+        exit 0

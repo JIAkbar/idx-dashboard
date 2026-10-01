@@ -54,6 +54,7 @@ from __future__ import annotations
 
 import collections
 import json
+import os
 import sys
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta, timezone
@@ -548,6 +549,13 @@ def hari_sementara_tertinggal(acuan: str) -> list[str]:
     return tertinggal
 
 
+
+# Turunan yang sumbernya diblokir IDX (#243, sejak +-25 Sep 2026). SATU tempat:
+# workflow dan pelapor laptop sama-sama memakainya. Kosongkan string ini begitu
+# IDX kembali terbuka (env PAPAN_SUMBER_TERBLOKIR menimpanya bila disetel).
+TERBLOKIR_BAWAAN = "Aliran investor,Bid/offer,Sektor emiten,Daftar emiten"
+BATAS_TERBLOKIR = 30  # hari; lebih tua dari ini, turunan terblokir kembali dihitung basi
+
 def periksa(cetak_semua: bool = False) -> int:
     stat = dari_maks_anak("dates", "date_iso")(JSON / "index.json")
     harga = dari_bar_berisi(i_volume=6)(JSON / "ohlcv_stockbit")
@@ -574,6 +582,15 @@ def periksa(cetak_semua: bool = False) -> int:
     hilang_penanda = penanda_sumber_hilang()
 
     segar, basi, tak_terperiksa, kosong = [], [], [], []
+    blokir: list = []
+    # #259 (Johan 1 Okt 2026): sumber yang SEDANG DIBLOKIR pemiliknya (IDX
+    # memasang verifikasi bot sejak +-25 Sep, #243) bukan kegagalan panen.
+    # Dulu turunannya ikut "BASI" dan membuat setiap run harian merah, padahal
+    # panennya selesai - merah palsu yang menutupi merah sungguhan. Daftarnya
+    # dari TERBLOKIR_BAWAAN (atau env PAPAN_SUMBER_TERBLOKIR), satu baris yang
+    # dikosongkan begitu IDX kembali. Lewat BATAS_TERBLOKIR hari, ia kembali merah:
+    # blokir yang dibiarkan berbulan-bulan tetap harus terlihat.
+    terblokir = {x.strip() for x in os.environ.get("PAPAN_SUMBER_TERBLOKIR", TERBLOKIR_BAWAAN).split(",") if x.strip()}
     for t in MANIFEST:
         p = JSON / t.jalur
         if not p.exists():
@@ -597,7 +614,9 @@ def periksa(cetak_semua: bool = False) -> int:
                 kosong.append((t, isi))
                 continue
         umur = selisih_hari(isi, acuan)
-        if umur > t.toleransi:
+        if umur > t.toleransi and t.nama in terblokir and umur <= BATAS_TERBLOKIR:
+            blokir.append((t, isi, umur))
+        elif umur > t.toleransi:
             basi.append((t, isi, umur))
         else:
             segar.append((t, isi, umur))
@@ -610,6 +629,8 @@ def periksa(cetak_semua: bool = False) -> int:
         print(f"         dipakai: {t.halaman}")
         if t.pembangun:
             print(f"         pembangun: {t.pembangun}")
+    for t, isi, umur in blokir:
+        print(f"  BLOKIR {t.nama:24} {isi}  ({umur} hari) - sumber diblokir, bukan kegagalan panen")
     for t, isi in kosong:
         print(f"  KOSONG {t.nama:24} {isi}  (tanggalnya segar, tapi NOL baris)")
         print(f"         dipakai: {t.halaman}")
@@ -619,7 +640,10 @@ def periksa(cetak_semua: bool = False) -> int:
         print(f"  ?      {t.nama:24} {sebab}")
 
     print(f"\nsegar {len(segar)} · basi {len(basi)} · kosong {len(kosong)} "
-          f"· tak terperiksa {len(tak_terperiksa)}")
+          f"· tak terperiksa {len(tak_terperiksa)} · terblokir {len(blokir)}")
+    if blokir:
+        print(f"::warning::{len(blokir)} turunan menunggu sumber yang diblokir: "
+              + ", ".join(t.nama for t, _, _ in blokir))
     if hilang_penanda:
         contoh = ", ".join(hilang_penanda[:6])
         lagi = f" (+{len(hilang_penanda) - 6} lagi)" if len(hilang_penanda) > 6 else ""

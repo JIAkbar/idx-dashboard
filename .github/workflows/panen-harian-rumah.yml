@@ -40,21 +40,10 @@ on:
     # statistiknya. Jam UTC-nya yang ditulis; WIB tetap UTC+7 sepanjang tahun,
     # jadi tak ada pergeseran musim yang perlu diurus.
     - cron: '30 11 * * 1-5'
-    # #252 (Johan 27 Sep 2026): susulan broker otomatis tiap +-3 jam, mode
-    # "hanya broker" (lihat HANYA_BROKER di env). Jam UTC sengaja menghindari
-    # 11:30-14:59 UTC (run harian penuh 18:30 WIB, hingga 200 menit): grup
-    # concurrency cuma menyimpan SATU run antre, dan run antre yang lebih baru
-    # membatalkan yang lebih lama - susulan tak boleh menggusur run harian.
-    # Tanpa lubang, pemanen melewati berkas yang sudah ada dan run selesai cepat.
-    - cron: '15 0,3,6,9,15,18,21 * * *'
   workflow_dispatch:
     inputs:
       lewati_ohlc:
         description: 'Lewati panen OHLC (dipakai kalau cuma mau menyegarkan turunannya)'
-        type: boolean
-        default: false
-      hanya_broker:
-        description: 'Hanya susulan broker per emiten + turunannya (#248) - langkah lain dilewati'
         type: boolean
         default: false
 
@@ -69,7 +58,9 @@ env:
   # Mode "hanya broker" (#248 manual, #252 terjadwal): hanya uji token, broker
   # per emiten, gudang tahunan, turunan broker, commit. Run terjadwal harian
   # 18:30 WIB (cron 30 11 * * 1-5) tetap penuh.
-  HANYA_BROKER: ${{ github.event.inputs.hanya_broker == 'true' || (github.event_name == 'schedule' && github.event.schedule != '30 11 * * 1-5') }}
+  # Susulan broker pindah ke susulan-broker-rumah.yml (#257); mode ini kini
+  # selalu mati, syarat `env.HANYA_BROKER` di langkah-langkah tinggal sejarah.
+  HANYA_BROKER: 'false'
   # Rantai token Stockbit untuk runner (#160 B, konfirmasi Johan 9 Sep 2026:
   # "panen pakai token stockbit"). Layanan runner berjalan sebagai SYSTEM dan
   # ruang kerjanya hasil checkout bersih, jadi ia tak punya `app/.env.local`
