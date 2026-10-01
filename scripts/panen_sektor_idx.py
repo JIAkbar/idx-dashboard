@@ -37,12 +37,13 @@ WIB = timezone(timedelta(hours=7))
 
 UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
       "(KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36")
-HEADER = {"User-Agent": UA, "Referer": "https://www.idx.co.id/id", "Accept": "application/json"}
+HEADER = {"User-Agent": UA, "Referer": "https://www.idx.id/id", "Accept": "application/json"}
 
 # Endpoint IDX menjawab 403 tanpa cookie sesi — sentuh halaman depannya dulu.
 # Pola yang sama sudah dipakai `panen_kabar.py`; lihat catatannya di sana.
-PEMANASAN = "https://www.idx.co.id/id"
-SUMBER = ("https://www.idx.co.id/primary/ListedCompany/GetCompanyProfiles"
+# #263 A: host www.idx.id (idx.co.id memasang verifikasi bot sejak +-25 Sep 2026).
+PEMANASAN = "https://www.idx.id/id"
+SUMBER = ("https://www.idx.id/primary/ListedCompany/GetCompanyProfiles"
           "?start=0&length=1200&emitenType=s")
 # DUA BAHASA (keputusan Johan 27 Agu: nilai klasifikasi tampil Inggris, empat
 # tingkat; Indonesia tetap dipanen sebagai cadangan — aturan 3c). Pembeda
@@ -50,7 +51,7 @@ SUMBER = ("https://www.idx.co.id/primary/ListedCompany/GetCompanyProfiles"
 # saja — semuanya tetap Indonesia. Bukti bijeksi 962x962 keempat tingkat:
 # docs/spek-dev-papan/bukti_peta_sektor_idx_en.md
 SUMBER_EN = SUMBER + "&lang=en"
-HEADER_EN = {**HEADER, "Referer": "https://www.idx.co.id/en"}
+HEADER_EN = {**HEADER, "Referer": "https://www.idx.id/en"}
 
 
 def main() -> int:

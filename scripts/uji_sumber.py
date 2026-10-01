@@ -69,7 +69,7 @@ SUMBER = [
     ("Stockbit harga (token panen)", _stockbit_harga),
     ("Yahoo IHSG harian", _yahoo),
     ("IDX statistik harian (daftar PDF)", _idx("https://www.idx.co.id/primary/Statistic/GetStatistic",
-                                              {"Year": "2026", "Month": "10", "Prefix": "ds"})),
+                                              {"type": "daily", "lang": "id", "keyword": "", "StartDate": "", "EndDate": ""})),
     ("IDX ringkasan saham", _idx("https://www.idx.co.id/primary/TradingSummary/GetStockSummary",
                                  {"length": "5", "start": "0"})),
 ]

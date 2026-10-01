@@ -32,6 +32,7 @@ mati di sisi IDX, bukan gejala sidik jari. Penggantinya yang hidup:
 """
 from __future__ import annotations
 
+import os
 import time
 from typing import Any
 
@@ -62,7 +63,23 @@ HDR_JSON = {**HDR_PERAMBAN, "Accept": "application/json, text/plain, */*"}
 # perlu header terpisah tanpa itu (pelajaran dari panen_keuangan_idx.py).
 HDR_FILE = {**HDR_PERAMBAN}
 
-BERANDA = "https://www.idx.co.id/id"
+# Host IDX yang dipakai (#263 A, keputusan Johan 1 Okt 2026: "kerjakan A + B").
+# Sejak +-25 Sep 2026 www.idx.co.id memasang verifikasi bot di semua jalur;
+# www.idx.id (domain resmi IDX yang lain, frontend yang sama) menjawab jalur
+# /primary/... dan /Media/... tanpa tantangan. Uji silang 1 Okt: GetStockSummary
+# 22 Sep cocok persis 963/963 emiten dengan asing/ yang dipanen dari idx.co.id.
+# Kita TIDAK menembus verifikasi apa pun; kalau idx.id ikut ditutup, setel env
+# PAPAN_IDX_HOST=www.idx.co.id (atau tunggu) - jangan mencari jalan menembus.
+HOST = os.environ.get("PAPAN_IDX_HOST", "www.idx.id")
+BERANDA = f"https://{HOST}/id"
+
+
+def ke_host(url: str | None) -> str | None:
+    """Tulis ulang www.idx.co.id -> HOST (URL berkas di balasan GetStatistic
+    tetap menunjuk idx.co.id)."""
+    if not url:
+        return url
+    return url.replace("://www.idx.co.id", f"://{HOST}").replace("://idx.co.id", f"://{HOST}")
 TUNGGU_ULANG = (5, 15, 45)   # backoff kalau 403/429/5xx atau gagal jaringan
 
 _sesi: cffi.Session | None = None
@@ -104,9 +121,10 @@ def get(url: str, *, headers: dict | None = None, params: dict | None = None,
     apakah itu fatal atau cukup dihitung sebagai satu item gagal.
     """
     panaskan()
+    url = ke_host(url)
     h = {**(headers or HDR_JSON)}
     if referer:
-        h["Referer"] = referer
+        h["Referer"] = ke_host(referer)
     galat = None
     for i in range(coba):
         try:
