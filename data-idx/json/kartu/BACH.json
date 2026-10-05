@@ -1,17 +1,25 @@
 {
  "kode": "BACH",
- "tgl": "2026-10-02",
- "harga": 344.0,
- "prev": 352.0,
- "chg": -2.2727272727272707,
- "n": 61,
+ "tgl": "2026-10-05",
+ "harga": 360.0,
+ "prev": 344.0,
+ "chg": 4.651162790697683,
+ "n": 62,
  "mulai": "2026-07-08",
- "ma20": 395.5,
- "ma50": 497.82,
+ "ma20": 390.8,
+ "ma50": 494.42,
  "ma200": null,
- "atr": 24.735873130957625,
- "atr_pct": 7.19066079388303,
- "support": [],
+ "atr": 24.11188219303208,
+ "atr_pct": 6.697745053620022,
+ "support": [
+  {
+   "level": 330.0,
+   "sentuhan": 1,
+   "terakhir": "2026-09-28",
+   "dalam_atr": false,
+   "harga": 330
+  }
+ ],
  "resistance": [
   {
    "level": 1080.0,
@@ -21,48 +29,58 @@
    "harga": 1080
   }
  ],
- "stop": 326,
- "stop_asal": "fallback5pct",
- "stop_pct": 5.232558139534884,
- "er": 0.375,
- "er_persentil": 99.10514541387025,
- "er_n_populasi": 447,
- "likuiditas_median20": 8328269300.0,
+ "stop": 330,
+ "stop_asal": "klaster",
+ "stop_pct": 8.333333333333332,
+ "er": 0.3908898305084746,
+ "er_persentil": 99.33184855233853,
+ "er_n_populasi": 449,
+ "likuiditas_median20": 7708035300.0,
  "kualitas": {
   "riwayat": "pendek",
   "likuiditas": "cukup",
-  "lilin": 61,
-  "nilai20": 8328269300.0
+  "lilin": 62,
+  "nilai20": 7708035300.0
  },
  "beku": 0,
  "beku_sejak": null,
- "dihitung": "2026-10-02",
- "rsi": 27.930301541254863,
+ "dihitung": "2026-10-05",
+ "rsi": 34.75685206615363,
  "stochrsi": [
-  45.54979537626139,
-  42.51278983745281
+  60.069297429253346,
+  50.824677139736814
  ],
  "target": [
   {
    "harga": 1080,
-   "pct": 213.953488372093,
+   "pct": 200.0,
    "sentuhan": 1,
    "terakhir": "2026-08-04",
    "fp": {
-    "n": 40,
+    "n": 41,
     "n_efektif": 2,
     "kena": 0,
     "stop": 38,
-    "lewat": 2,
+    "lewat": 3,
     "p_kena": 0.0,
-    "p_stop": 95.0,
+    "p_stop": 92.6829268292683,
     "median_hari": null,
     "q1": null,
     "q3": null,
-    "harapan": -4.97093023255814
+    "harapan": -7.723577235772357
    },
    "fp60": {
-    "n": 0
+    "n": 1,
+    "n_efektif": 0,
+    "kena": 0,
+    "stop": 1,
+    "lewat": 0,
+    "p_kena": 0.0,
+    "p_stop": 100.0,
+    "median_hari": null,
+    "q1": null,
+    "q3": null,
+    "harapan": -8.333333333333332
    }
   }
  ],
@@ -73,7 +91,7 @@
   "tersusut": 0.0,
   "bawah": 0,
   "atas": 79.34567085261071,
-  "median": -4.444444444444439,
+  "median": 0.0,
   "dasar": 0.0,
   "total_bulan": 3
  },
@@ -91,10 +109,10 @@
  "fundamental": {
   "name": "PT Bach Multi Global Tbk.",
   "updated": "2026-09-09 09:01",
-  "harga_pada": "2026-10-02",
-  "pe": 9.031241795746915,
+  "harga_pada": "2026-10-05",
+  "pe": 9.451299553688632,
   "pb": 2.5695,
-  "pbv": 1.9469347097708958,
+  "pbv": 2.0374898125509375,
   "eps": 38.09,
   "roe": 0.23725,
   "der": 110.666,
@@ -120,57 +138,57 @@
    "frekuensi": "kali"
   },
   "mulai": "2026-07-08",
-  "akhir": "2026-10-02",
-  "n_total": 61,
+  "akhir": "2026-10-05",
+  "n_total": 62,
   "periode": {
    "5": {
     "n": 5,
-    "beli": 28898700,
-    "jual": 16419100,
-    "net": 12479600,
-    "porsi_beli_pct": 32.32860315134158,
-    "porsi_jual_pct": 18.36783550824752
+    "beli": 22706200,
+    "jual": 15388600,
+    "net": 7317600,
+    "porsi_beli_pct": 27.882845434908877,
+    "porsi_jual_pct": 18.896951284655238
    },
    "20": {
     "n": 20,
-    "beli": 78679500,
-    "jual": 66465900,
-    "net": 12213600,
-    "porsi_beli_pct": 16.980968374579923,
-    "porsi_jual_pct": 14.344973543146459
+    "beli": 80745500,
+    "jual": 65518200,
+    "net": 15227300,
+    "porsi_beli_pct": 17.892569904017357,
+    "porsi_jual_pct": 14.518319577999886
    }
   },
   "isian_stockbit": []
  },
- "ma5": 351.6,
+ "ma5": 354.4,
  "ma100": null,
  "ma150": null,
  "bb20": {
-  "mid": 395.5,
-  "atas": 474.745189128426,
-  "bawah": 316.254810871574
+  "mid": 390.8,
+  "atas": 466.68833902517565,
+  "bawah": 314.9116609748244
  },
- "posisi_bb": -0.6499,
+ "posisi_bb": -0.4059,
  "ichimoku": null,
  "regresi60": {
-  "kemiringan": -4.899972214504029,
-  "tengah": 360.2174863387978,
-  "posisi": -0.1637
+  "kemiringan": -5.060627952208947,
+  "tengah": 352.3114754098361,
+  "posisi": 0.0783
  },
- "freq": 1400,
- "ukuran_order": 68.0771,
- "peringkat_value": 214,
- "peringkat_volume": 232,
- "peringkat_freq": 206,
- "porsi_asing": 0.2659,
- "net_asing_rp": 560753200,
- "label_fd": "F 27% : D 73%",
- "tiket_avg": 2353787.14,
+ "freq": 1708,
+ "ukuran_order": 58.1897,
+ "peringkat_value": 222,
+ "peringkat_volume": 246,
+ "peringkat_freq": 203,
+ "porsi_asing": 0.3246,
+ "net_asing_rp": 1215979200,
+ "label_fd": "F 32% : D 68%",
+ "tiket_avg": 2053092.86,
  "tiket_avg_med60": 2533887.84,
- "tiket_lonjakan": 0.9289,
- "asing_net_5h": 4209327800,
- "asing_net_20h": 3956617000,
- "asing_streak": 3,
+ "tiket_lonjakan": 0.8103,
+ "asing_net_5h": 2527537200,
+ "asing_net_20h": 4982767600,
+ "asing_streak": 4,
  "tiket_broker_maks": null,
  "broker_tiket_maks_kode": null,
  "bval_maks": null,
