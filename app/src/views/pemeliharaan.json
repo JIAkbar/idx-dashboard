@@ -1,16 +1,16 @@
 {
  "ihsg": {
-  "tanggal": "2026-10-06",
-  "close": 6192.927,
-  "hari_pct": 1.21,
-  "lima_pct": 1.16,
-  "duapuluh_pct": -7.38,
+  "tanggal": "2026-10-07",
+  "close": 6146.724,
+  "hari_pct": -0.75,
+  "lima_pct": 1.25,
+  "duapuluh_pct": -7.96,
   "puncak": 9174.474,
   "puncak_tanggal": "2026-01-20",
-  "dari_puncak_pct": -32.5,
-  "sma20": 6321.06,
-  "sma50": 6375.42,
-  "sma200": 7143.03
+  "dari_puncak_pct": -33.0,
+  "sma20": 6294.49,
+  "sma50": 6374.64,
+  "sma200": 7131.02
  },
  "jejak": [
   {
@@ -197,11 +197,11 @@
   "metode": "Pemilihan: peringkat serapan broker 10 hari (porsi tiga penampung terbesar terhadap nilai transaksi) atas emiten bernilai transaksi minimal Rp100 miliar yang harganya tidak naik lebih dari 3%; baru 327 dari 962 emiten punya data broker cukup. Peluang 5 hari bursa dihitung dari pola harga serupa di seluruh bursa; uji luar sampelnya belum lebih baik daripada angka dasar, jadi angka ini peta peluang, bukan sinyal."
  },
  "peluang": {
-  "tanggal": "2026-10-06",
+  "tanggal": "2026-10-07",
   "rezim": "bearish",
   "ihsg": {
-   "close": 6192.927,
-   "ma200": 7143.03
+   "close": 6146.724,
+   "ma200": 7131.02
   },
   "definisi": {
    "target_pct": 5.0,
@@ -209,14 +209,14 @@
    "hari": 20,
    "latih": "2015-01-01 s.d. 2022-12-01",
    "validasi": "2023-01-01 s.d. 2024-06-30",
-   "uji": "2024-07-01 s.d. 2026-09-08",
+   "uji": "2024-07-01 s.d. 2026-09-09",
    "nilai_min": 2000000000.0
   },
   "cakupan": {
-   "observasi": 521251,
+   "observasi": 521582,
    "emiten": 813,
    "sinyal_diuji": 18,
-   "emiten_hari_ini": 338
+   "emiten_hari_ini": 337
   },
   "sinyal": [
    {
@@ -683,49 +683,49 @@
    "bearish": [
     {
      "skor": 0,
-     "n": 53753,
-     "p": 0.4672,
+     "n": 54068,
+     "p": 0.4656,
      "ci": [
-      0.463,
-      0.4714
+      0.4614,
+      0.4698
      ]
     },
     {
      "skor": 1,
-     "n": 11545,
-     "p": 0.465,
+     "n": 11561,
+     "p": 0.4645,
      "ci": [
-      0.4559,
-      0.4741
+      0.4554,
+      0.4736
      ]
     }
    ],
    "bearish_jebakan": [
     {
      "jebakan": 0,
-     "n": 46795,
-     "p": 0.4774,
+     "n": 46932,
+     "p": 0.4764,
      "ci": [
-      0.4728,
-      0.4819
+      0.4719,
+      0.4809
      ]
     },
     {
      "jebakan": 1,
-     "n": 13129,
-     "p": 0.4398,
+     "n": 13274,
+     "p": 0.4369,
      "ci": [
-      0.4313,
-      0.4483
+      0.4285,
+      0.4453
      ]
     },
     {
      "jebakan": "2+",
-     "n": 5374,
-     "p": 0.441,
+     "n": 5423,
+     "p": 0.4402,
      "ci": [
-      0.4278,
-      0.4543
+      0.427,
+      0.4534
      ]
     }
    ]
@@ -734,201 +734,190 @@
    "bullish": true,
    "bearish": false
   },
-  "jumlah_tanpa_jebakan": 227,
+  "jumlah_tanpa_jebakan": 237,
   "teratas": [
    {
     "kode": "BBCA",
-    "harga": 6100.0,
-    "nilai20_m": 816.0,
+    "harga": 6050.0,
+    "nilai20_m": 802.1,
     "sinyal": [],
     "jebakan": [],
-    "p": 0.4774,
+    "p": 0.4764,
     "ci": [
-     0.4728,
-     0.4819
-    ]
-   },
-   {
-    "kode": "BBRI",
-    "harga": 3110.0,
-    "nilai20_m": 533.3,
-    "sinyal": [],
-    "jebakan": [],
-    "p": 0.4774,
-    "ci": [
-     0.4728,
-     0.4819
+     0.4719,
+     0.4809
     ]
    },
    {
     "kode": "BMRI",
     "harga": 4100.0,
-    "nilai20_m": 533.1,
+    "nilai20_m": 516.1,
     "sinyal": [],
     "jebakan": [],
-    "p": 0.4774,
+    "p": 0.4764,
     "ci": [
-     0.4728,
-     0.4819
+     0.4719,
+     0.4809
     ]
    },
    {
     "kode": "BUMI",
-    "harga": 184.0,
-    "nilai20_m": 509.3,
+    "harga": 180.0,
+    "nilai20_m": 503.3,
     "sinyal": [],
     "jebakan": [],
-    "p": 0.4774,
+    "p": 0.4764,
     "ci": [
-     0.4728,
-     0.4819
+     0.4719,
+     0.4809
     ]
    },
    {
     "kode": "AMMN",
-    "harga": 4500.0,
-    "nilai20_m": 435.4,
+    "harga": 4530.0,
+    "nilai20_m": 417.4,
     "sinyal": [],
     "jebakan": [],
-    "p": 0.4774,
+    "p": 0.4764,
     "ci": [
-     0.4728,
-     0.4819
+     0.4719,
+     0.4809
     ]
    },
    {
     "kode": "TLKM",
-    "harga": 2280.0,
-    "nilai20_m": 354.9,
+    "harga": 2310.0,
+    "nilai20_m": 359.1,
     "sinyal": [],
     "jebakan": [],
-    "p": 0.4774,
+    "p": 0.4764,
     "ci": [
-     0.4728,
-     0.4819
+     0.4719,
+     0.4809
+    ]
+   },
+   {
+    "kode": "DSSA",
+    "harga": 1130.0,
+    "nilai20_m": 346.1,
+    "sinyal": [],
+    "jebakan": [],
+    "p": 0.4764,
+    "ci": [
+     0.4719,
+     0.4809
+    ]
+   },
+   {
+    "kode": "CUAN",
+    "harga": 840.0,
+    "nilai20_m": 336.6,
+    "sinyal": [],
+    "jebakan": [],
+    "p": 0.4764,
+    "ci": [
+     0.4719,
+     0.4809
     ]
    },
    {
     "kode": "GOTO",
-    "harga": 31.0,
-    "nilai20_m": 215.5,
+    "harga": 30.0,
+    "nilai20_m": 234.7,
     "sinyal": [],
     "jebakan": [],
-    "p": 0.4774,
+    "p": 0.4764,
     "ci": [
-     0.4728,
-     0.4819
-    ]
-   },
-   {
-    "kode": "TPIA",
-    "harga": 1765.0,
-    "nilai20_m": 208.4,
-    "sinyal": [],
-    "jebakan": [],
-    "p": 0.4774,
-    "ci": [
-     0.4728,
-     0.4819
+     0.4719,
+     0.4809
     ]
    },
    {
     "kode": "PTRO",
-    "harga": 5100.0,
-    "nilai20_m": 206.8,
+    "harga": 5150.0,
+    "nilai20_m": 208.1,
     "sinyal": [],
     "jebakan": [],
-    "p": 0.4774,
+    "p": 0.4764,
     "ci": [
-     0.4728,
-     0.4819
+     0.4719,
+     0.4809
+    ]
+   },
+   {
+    "kode": "TPIA",
+    "harga": 1725.0,
+    "nilai20_m": 202.3,
+    "sinyal": [],
+    "jebakan": [],
+    "p": 0.4764,
+    "ci": [
+     0.4719,
+     0.4809
     ]
    },
    {
     "kode": "ASII",
-    "harga": 4820.0,
-    "nilai20_m": 197.0,
+    "harga": 4780.0,
+    "nilai20_m": 192.8,
     "sinyal": [],
     "jebakan": [],
-    "p": 0.4774,
+    "p": 0.4764,
     "ci": [
-     0.4728,
-     0.4819
+     0.4719,
+     0.4809
     ]
    },
    {
     "kode": "BRMS",
     "harga": 605.0,
-    "nilai20_m": 193.7,
+    "nilai20_m": 188.9,
     "sinyal": [],
     "jebakan": [],
-    "p": 0.4774,
+    "p": 0.4764,
     "ci": [
-     0.4728,
-     0.4819
+     0.4719,
+     0.4809
     ]
    },
    {
     "kode": "DEWA",
-    "harga": 364.0,
-    "nilai20_m": 181.8,
+    "harga": 358.0,
+    "nilai20_m": 183.1,
     "sinyal": [],
     "jebakan": [],
-    "p": 0.4774,
+    "p": 0.4764,
     "ci": [
-     0.4728,
-     0.4819
+     0.4719,
+     0.4809
     ]
    },
    {
     "kode": "ISAT",
     "harga": 2220.0,
-    "nilai20_m": 139.6,
+    "nilai20_m": 129.1,
     "sinyal": [],
     "jebakan": [],
-    "p": 0.4774,
+    "p": 0.4764,
     "ci": [
-     0.4728,
-     0.4819
+     0.4719,
+     0.4809
     ]
    },
    {
     "kode": "BBNI",
-    "harga": 3460.0,
-    "nilai20_m": 134.2,
+    "harga": 3440.0,
+    "nilai20_m": 127.0,
     "sinyal": [],
     "jebakan": [],
-    "p": 0.4774,
+    "p": 0.4764,
     "ci": [
-     0.4728,
-     0.4819
-    ]
-   },
-   {
-    "kode": "BULL",
-    "harga": 372.0,
-    "nilai20_m": 133.0,
-    "sinyal": [],
-    "jebakan": [],
-    "p": 0.4774,
-    "ci": [
-     0.4728,
-     0.4819
+     0.4719,
+     0.4809
     ]
    }
   ],
   "hindari": [
-   {
-    "kode": "AKRA",
-    "harga": 1520.0,
-    "jebakan": [
-     "formasi_ma",
-     "dekat_puncak",
-     "sempit",
-     "puncak_95"
-    ],
-    "p": 0.441
-   },
    {
     "kode": "BSML",
     "harga": 550.0,
@@ -938,92 +927,70 @@
      "sempit",
      "puncak_95"
     ],
-    "p": 0.441
-   },
-   {
-    "kode": "MBSS",
-    "harga": 4400.0,
-    "jebakan": [
-     "formasi_ma",
-     "dekat_puncak",
-     "sempit",
-     "puncak_95"
-    ],
-    "p": 0.441
+    "p": 0.4402
    },
    {
     "kode": "MMIX",
-    "harga": 935.0,
+    "harga": 940.0,
     "jebakan": [
      "formasi_ma",
      "dekat_puncak",
      "sempit",
      "puncak_95"
     ],
-    "p": 0.441
+    "p": 0.4402
    },
    {
     "kode": "NEST",
-    "harga": 845.0,
+    "harga": 835.0,
     "jebakan": [
      "formasi_ma",
      "dekat_puncak",
      "sempit",
      "puncak_95"
     ],
-    "p": 0.441
-   },
-   {
-    "kode": "OILS",
-    "harga": 342.0,
-    "jebakan": [
-     "formasi_ma",
-     "dekat_puncak",
-     "sempit",
-     "puncak_95"
-    ],
-    "p": 0.441
+    "p": 0.4402
    },
    {
     "kode": "SGER",
-    "harga": 775.0,
+    "harga": 765.0,
     "jebakan": [
      "formasi_ma",
      "dekat_puncak",
      "sempit",
      "puncak_95"
     ],
-    "p": 0.441
+    "p": 0.4402
    },
    {
     "kode": "AALI",
-    "harga": 8525.0,
+    "harga": 8575.0,
     "jebakan": [
      "formasi_ma",
      "dekat_puncak",
      "puncak_95"
     ],
-    "p": 0.441
+    "p": 0.4402
    },
    {
-    "kode": "ASGR",
-    "harga": 2530.0,
+    "kode": "AKRA",
+    "harga": 1500.0,
     "jebakan": [
      "formasi_ma",
      "dekat_puncak",
-     "puncak_95"
+     "sempit"
     ],
-    "p": 0.441
+    "p": 0.4402
    },
    {
     "kode": "AUTO",
-    "harga": 3390.0,
+    "harga": 3440.0,
     "jebakan": [
      "formasi_ma",
      "dekat_puncak",
      "puncak_95"
     ],
-    "p": 0.441
+    "p": 0.4402
    },
    {
     "kode": "AYAM",
@@ -1033,27 +1000,27 @@
      "dekat_puncak",
      "puncak_95"
     ],
-    "p": 0.441
-   },
-   {
-    "kode": "BDKR",
-    "harga": 210.0,
-    "jebakan": [
-     "formasi_ma",
-     "dekat_puncak",
-     "puncak_95"
-    ],
-    "p": 0.441
+    "p": 0.4402
    },
    {
     "kode": "BDMN",
-    "harga": 4910.0,
+    "harga": 4950.0,
     "jebakan": [
      "formasi_ma",
      "dekat_puncak",
      "puncak_95"
     ],
-    "p": 0.441
+    "p": 0.4402
+   },
+   {
+    "kode": "BSSR",
+    "harga": 5225.0,
+    "jebakan": [
+     "formasi_ma",
+     "dekat_puncak",
+     "puncak_95"
+    ],
+    "p": 0.4402
    },
    {
     "kode": "DEWI",
@@ -1063,38 +1030,53 @@
      "dekat_puncak",
      "puncak_95"
     ],
-    "p": 0.441
+    "p": 0.4402
    },
    {
-    "kode": "ERAA",
-    "harga": 625.0,
+    "kode": "GULA",
+    "harga": 815.0,
+    "jebakan": [
+     "formasi_ma",
+     "dekat_puncak",
+     "sempit"
+    ],
+    "p": 0.4402
+   },
+   {
+    "kode": "MBSS",
+    "harga": 4500.0,
     "jebakan": [
      "formasi_ma",
      "dekat_puncak",
      "puncak_95"
     ],
-    "p": 0.441
+    "p": 0.4402
+   },
+   {
+    "kode": "MPXL",
+    "harga": 316.0,
+    "jebakan": [
+     "formasi_ma",
+     "dekat_puncak",
+     "puncak_95"
+    ],
+    "p": 0.4402
+   },
+   {
+    "kode": "OILS",
+    "harga": 394.0,
+    "jebakan": [
+     "formasi_ma",
+     "dekat_puncak",
+     "puncak_95"
+    ],
+    "p": 0.4402
    }
   ],
   "siaga_bullish": [
    {
-    "kode": "VISI",
-    "harga": 1060.0,
-    "sinyal": [
-     "formasi_ma",
-     "adx_naik",
-     "asing_20",
-     "kuat_relatif",
-     "pembalikan_xs",
-     "momentum_12_1"
-    ],
-    "jebakan_kini": [
-     "formasi_ma"
-    ]
-   },
-   {
     "kode": "SINI",
-    "harga": 16500.0,
+    "harga": 16750.0,
     "sinyal": [
      "formasi_ma",
      "adx_naik",
@@ -1109,8 +1091,8 @@
     ]
    },
    {
-    "kode": "NEST",
-    "harga": 845.0,
+    "kode": "OILS",
+    "harga": 394.0,
     "sinyal": [
      "formasi_ma",
      "tembus_vol",
@@ -1122,41 +1104,12 @@
     "jebakan_kini": [
      "formasi_ma",
      "dekat_puncak",
-     "sempit",
      "puncak_95"
     ]
    },
    {
     "kode": "AGAR",
-    "harga": 2030.0,
-    "sinyal": [
-     "formasi_ma",
-     "adx_naik",
-     "asing_20",
-     "kuat_relatif",
-     "momentum_12_1"
-    ],
-    "jebakan_kini": [
-     "formasi_ma"
-    ]
-   },
-   {
-    "kode": "BAJA",
-    "harga": 316.0,
-    "sinyal": [
-     "formasi_ma",
-     "adx_naik",
-     "asing_20",
-     "kuat_relatif",
-     "momentum_12_1"
-    ],
-    "jebakan_kini": [
-     "formasi_ma"
-    ]
-   },
-   {
-    "kode": "ELIT",
-    "harga": 290.0,
+    "harga": 1825.0,
     "sinyal": [
      "formasi_ma",
      "adx_naik",
@@ -1170,7 +1123,7 @@
    },
    {
     "kode": "KICI",
-    "harga": 288.0,
+    "harga": 294.0,
     "sinyal": [
      "formasi_ma",
      "adx_naik",
@@ -1183,13 +1136,13 @@
     ]
    },
    {
-    "kode": "MEJA",
-    "harga": 152.0,
+    "kode": "KKES",
+    "harga": 77.0,
     "sinyal": [
      "formasi_ma",
+     "jatuh_dalam",
      "adx_naik",
      "asing_20",
-     "kuat_relatif",
      "momentum_12_1"
     ],
     "jebakan_kini": [
@@ -1197,14 +1150,14 @@
     ]
    },
    {
-    "kode": "SMLE",
-    "harga": 320.0,
+    "kode": "SEMA",
+    "harga": 450.0,
     "sinyal": [
      "formasi_ma",
-     "tembus_vol",
      "adx_naik",
      "asing_20",
-     "kuat_relatif"
+     "kuat_relatif",
+     "pembalikan_xs"
     ],
     "jebakan_kini": [
      "formasi_ma"
@@ -1212,7 +1165,7 @@
    },
    {
     "kode": "SMMT",
-    "harga": 3300.0,
+    "harga": 3240.0,
     "sinyal": [
      "formasi_ma",
      "adx_naik",
@@ -1222,6 +1175,49 @@
     ],
     "jebakan_kini": [
      "formasi_ma"
+    ]
+   },
+   {
+    "kode": "VISI",
+    "harga": 1035.0,
+    "sinyal": [
+     "formasi_ma",
+     "adx_naik",
+     "asing_20",
+     "kuat_relatif",
+     "momentum_12_1"
+    ],
+    "jebakan_kini": [
+     "formasi_ma"
+    ]
+   },
+   {
+    "kode": "WAPO",
+    "harga": 308.0,
+    "sinyal": [
+     "formasi_ma",
+     "adx_naik",
+     "asing_20",
+     "kuat_relatif",
+     "pembalikan_xs"
+    ],
+    "jebakan_kini": [
+     "formasi_ma"
+    ]
+   },
+   {
+    "kode": "BDKR",
+    "harga": 216.0,
+    "sinyal": [
+     "formasi_ma",
+     "tembus_vol",
+     "adx_naik",
+     "asing_20",
+     "kuat_relatif"
+    ],
+    "jebakan_kini": [
+     "formasi_ma",
+     "dekat_puncak"
     ]
    }
   ],
