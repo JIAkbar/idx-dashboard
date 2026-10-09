@@ -1,16 +1,16 @@
 {
  "kode": "MPIX",
- "tgl": "2026-10-07",
- "harga": 220.0,
- "prev": 216.0,
- "chg": 1.85185185185186,
- "n": 628,
+ "tgl": "2026-10-08",
+ "harga": 210.0,
+ "prev": 220.0,
+ "chg": -4.545454545454541,
+ "n": 629,
  "mulai": "2024-02-07",
- "ma20": 187.45,
- "ma50": 136.52,
- "ma200": 97.57,
- "atr": 20.42944181181142,
- "atr_pct": 9.286109914459736,
+ "ma20": 192.05,
+ "ma50": 138.82,
+ "ma200": 98.27,
+ "atr": 20.755910253824887,
+ "atr_pct": 9.88376678753566,
  "support": [
   {
    "level": 167.0,
@@ -34,29 +34,70 @@
    "harga": 67
   }
  ],
- "resistance": [],
+ "resistance": [
+  {
+   "level": 228.0,
+   "sentuhan": 1,
+   "terakhir": "2026-09-18",
+   "dalam_atr": true,
+   "harga": 228
+  }
+ ],
  "stop": 167,
  "stop_asal": "klaster",
- "stop_pct": 24.09090909090909,
+ "stop_pct": 20.476190476190474,
  "er": 0.2,
- "er_persentil": 31.543624161073826,
- "er_n_populasi": 447,
+ "er_persentil": 31.838565022421523,
+ "er_n_populasi": 446,
  "likuiditas_median20": 4613948800.0,
  "kualitas": {
   "riwayat": "cukup",
   "likuiditas": "cukup",
-  "lilin": 628,
+  "lilin": 629,
   "nilai20": 4613948800.0
  },
  "beku": 0,
  "beku_sejak": null,
- "dihitung": "2026-10-07",
- "rsi": 66.94139098703081,
+ "dihitung": "2026-10-08",
+ "rsi": 62.25462193648771,
  "stochrsi": [
-  22.848533231547393,
-  18.220005742092876
+  13.22178418236871,
+  17.363775187093598
  ],
- "target": [],
+ "target": [
+  {
+   "harga": 228,
+   "pct": 8.571428571428571,
+   "sentuhan": 1,
+   "terakhir": "2026-09-18",
+   "fp": {
+    "n": 608,
+    "n_efektif": 30,
+    "kena": 437,
+    "stop": 43,
+    "lewat": 128,
+    "p_kena": 71.875,
+    "p_stop": 7.072368421052631,
+    "median_hari": 6,
+    "q1": 3,
+    "q3": 11,
+    "harapan": 4.712562656641604
+   },
+   "fp60": {
+    "n": 568,
+    "n_efektif": 9,
+    "kena": 477,
+    "stop": 70,
+    "lewat": 21,
+    "p_kena": 83.97887323943662,
+    "p_stop": 12.323943661971832,
+    "median_hari": 7,
+    "q1": 3,
+    "q3": 15,
+    "harapan": 4.674714956405097
+   }
+  }
+ ],
  "musiman": {
   "n": 3,
   "naik": 1,
@@ -98,8 +139,8 @@
   "float_pct": 31.6,
   "week52_high": 232,
   "week52_low": 63,
-  "pb_keystats": 2.11,
-  "pe_keystats": 34.04,
+  "pb_keystats": 2.15,
+  "pe_keystats": 34.67,
   "roe_keystats": 6.19
  },
  "asing": {
@@ -111,48 +152,48 @@
    "frekuensi": "kali"
   },
   "mulai": "2024-02-07",
-  "akhir": "2026-10-07",
-  "n_total": 628,
+  "akhir": "2026-10-08",
+  "n_total": 629,
   "periode": {
    "5": {
     "n": 5,
-    "beli": 25062600,
-    "jual": 21683300,
-    "net": 3379300,
-    "porsi_beli_pct": 19.805004946786486,
-    "porsi_jual_pct": 17.134609488347394
+    "beli": 23663700,
+    "jual": 22794100,
+    "net": 869600,
+    "porsi_beli_pct": 18.976229693556952,
+    "porsi_jual_pct": 18.2788861107057
    },
    "20": {
     "n": 20,
-    "beli": 153120500,
-    "jual": 145919900,
-    "net": 7200600,
-    "porsi_beli_pct": 13.882580156860314,
-    "porsi_jual_pct": 13.229741989028518
+    "beli": 155166100,
+    "jual": 149033600,
+    "net": 6132500,
+    "porsi_beli_pct": 14.032912923211438,
+    "porsi_jual_pct": 13.478301841914725
    }
   },
   "isian_stockbit": []
  },
- "ma5": 210.8,
- "ma100": 113.36,
- "ma150": 104.7,
+ "ma5": 212.4,
+ "ma100": 114.58,
+ "ma150": 105.48666666666666,
  "bb20": {
-  "mid": 187.45,
-  "atas": 239.44413428455175,
-  "bawah": 135.45586571544823
+  "mid": 192.05,
+  "atas": 233.95214791630616,
+  "bawah": 150.14785208369386
  },
- "posisi_bb": 0.626,
+ "posisi_bb": 0.4284,
  "ichimoku": {
-  "tenkan": 204.5,
-  "kijun": 169.0,
-  "senkou_a": 186.75,
+  "tenkan": 206.5,
+  "kijun": 171.0,
+  "senkou_a": 188.75,
   "senkou_b": 159.5,
   "di_atas_kumo": true
  },
  "regresi60": {
-  "kemiringan": 2.244178938594054,
-  "tengah": 195.56994535519127,
-  "posisi": 1.1525
+  "kemiringan": 2.3147263128646847,
+  "tengah": 199.60109289617486,
+  "posisi": 0.4984
  },
  "freq": 2467,
  "ukuran_order": 87.2161,
