@@ -1,6 +1,6 @@
 {
  "horizon": 5,
- "hariBursaTerakhir": "2026-10-07",
+ "hariBursaTerakhir": "2026-10-09",
  "perTanggal": [
   {
    "tanggal": "2026-08-24",
@@ -8,7 +8,7 @@
    "era": "abjad",
    "dibangun": "2026-08-30T14:24:47+00:00",
    "hariBursaTersedia": 5,
-   "hariBursaSesudah": 31,
+   "hariBursaSesudah": 33,
    "jendelaTutup": true,
    "n": 100,
    "menang": 59,
@@ -1036,7 +1036,7 @@
    "era": "abjad",
    "dibangun": "2026-08-30T14:24:48+00:00",
    "hariBursaTersedia": 5,
-   "hariBursaSesudah": 30,
+   "hariBursaSesudah": 32,
    "jendelaTutup": true,
    "n": 80,
    "menang": 48,
@@ -1903,7 +1903,7 @@
    "era": "abjad",
    "dibangun": "2026-08-28T05:20:27+00:00",
    "hariBursaTersedia": 5,
-   "hariBursaSesudah": 29,
+   "hariBursaSesudah": 31,
    "jendelaTutup": true,
    "n": 80,
    "menang": 42,
@@ -2784,7 +2784,7 @@
    "era": "abjad",
    "dibangun": "2026-08-30T14:24:49+00:00",
    "hariBursaTersedia": 5,
-   "hariBursaSesudah": 28,
+   "hariBursaSesudah": 30,
    "jendelaTutup": true,
    "n": 100,
    "menang": 55,
@@ -3826,16 +3826,16 @@
    "era": "abjad",
    "dibangun": "2026-08-31T12:30:45+00:00",
    "hariBursaTersedia": 5,
-   "hariBursaSesudah": 27,
+   "hariBursaSesudah": 29,
    "jendelaTutup": true,
    "n": 100,
-   "menang": 42,
-   "kalah": 11,
+   "menang": 41,
+   "kalah": 12,
    "gantung": 43,
    "tak_masuk": 4,
    "ambigu": 0,
-   "menangDariTuntas": 79.2,
-   "menangDariSemua": 42.0,
+   "menangDariTuntas": 77.4,
+   "menangDariSemua": 41.0,
    "definisi": {
     "openTinggi": {
      "menang": 78,
@@ -3848,16 +3848,16 @@
      "kalah": 53,
      "takTerukur": 0,
      "winRate": 47.0,
-     "rataPersen": 0.3662
+     "rataPersen": 0.3674
     },
     "tpSl": {
-     "menang": 42,
-     "kalah": 11,
+     "menang": 41,
+     "kalah": 12,
      "gantung": 43,
      "tak_masuk": 4,
      "ambigu": 0,
-     "menangDariTuntas": 79.2,
-     "menangDariSemua": 42.0
+     "menangDariTuntas": 77.4,
+     "menangDariSemua": 41.0
     }
    },
    "preset": [
@@ -4455,13 +4455,13 @@
     {
      "preset": "whale-akdis",
      "n": 20,
-     "menang": 8,
-     "kalah": 1,
+     "menang": 7,
+     "kalah": 2,
      "gantung": 10,
      "tak_masuk": 1,
      "ambigu": 0,
-     "menangDariTuntas": 88.9,
-     "menangDariSemua": 40.0,
+     "menangDariTuntas": 77.8,
+     "menangDariSemua": 35.0,
      "saham": [
       {
        "kode": "AADI",
@@ -4529,10 +4529,10 @@
       },
       {
        "kode": "AHAP",
-       "tpSl": "menang",
+       "tpSl": "kalah",
        "openTinggi": "menang",
        "tutupTutup": "menang",
-       "persen": 6.1224,
+       "persen": 6.25,
        "tglKeluar": "2026-09-01"
       },
       {
@@ -4636,16 +4636,16 @@
        "kalah": 9,
        "takTerukur": 0,
        "winRate": 55.0,
-       "rataPersen": 1.5762
+       "rataPersen": 1.5825
       },
       "tpSl": {
-       "menang": 8,
-       "kalah": 1,
+       "menang": 7,
+       "kalah": 2,
        "gantung": 10,
        "tak_masuk": 1,
        "ambigu": 0,
-       "menangDariTuntas": 88.9,
-       "menangDariSemua": 40.0
+       "menangDariTuntas": 77.8,
+       "menangDariSemua": 35.0
       }
      }
     },
@@ -4846,7 +4846,21 @@
       }
      }
     }
-   ]
+   ],
+   "koreksi": {
+    "dikoreksiPada": "2026-10-10T00:16:03+07:00",
+    "alasan": "Segel dibuat pada hari penutup jendelanya sendiri, sebelum bar hari itu mengendap; aturan jeda satu hari bursa belum berlaku saat itu.",
+    "berubah": {
+     "menang": [
+      42,
+      41
+     ],
+     "kalah": [
+      11,
+      12
+     ]
+    }
+   }
   },
   {
    "tanggal": "2026-09-01",
@@ -4854,7 +4868,7 @@
    "era": "nilai-transaksi",
    "dibangun": "2026-09-01T13:55:32+00:00",
    "hariBursaTersedia": 5,
-   "hariBursaSesudah": 26,
+   "hariBursaSesudah": 28,
    "jendelaTutup": true,
    "n": 100,
    "menang": 40,
@@ -5882,7 +5896,7 @@
    "era": "nilai-transaksi",
    "dibangun": "2026-09-02T12:55:13+00:00",
    "hariBursaTersedia": 5,
-   "hariBursaSesudah": 25,
+   "hariBursaSesudah": 27,
    "jendelaTutup": true,
    "n": 100,
    "menang": 45,
@@ -6910,7 +6924,7 @@
    "era": "nilai-transaksi",
    "dibangun": "2026-09-04T03:30:37+00:00",
    "hariBursaTersedia": 5,
-   "hariBursaSesudah": 24,
+   "hariBursaSesudah": 26,
    "jendelaTutup": true,
    "n": 100,
    "menang": 37,
@@ -7938,7 +7952,7 @@
    "era": "nilai-transaksi",
    "dibangun": "2026-09-05T03:11:57+00:00",
    "hariBursaTersedia": 5,
-   "hariBursaSesudah": 23,
+   "hariBursaSesudah": 25,
    "jendelaTutup": true,
    "n": 100,
    "menang": 52,
@@ -8980,7 +8994,7 @@
    "era": "nilai-transaksi",
    "dibangun": "2026-09-07T14:21:36+00:00",
    "hariBursaTersedia": 5,
-   "hariBursaSesudah": 22,
+   "hariBursaSesudah": 24,
    "jendelaTutup": true,
    "n": 100,
    "menang": 46,
@@ -10022,7 +10036,7 @@
    "era": "nilai-transaksi",
    "dibangun": "2026-09-08T12:22:27+00:00",
    "hariBursaTersedia": 5,
-   "hariBursaSesudah": 21,
+   "hariBursaSesudah": 23,
    "jendelaTutup": true,
    "n": 100,
    "menang": 35,
@@ -11064,7 +11078,7 @@
    "era": "nilai-transaksi",
    "dibangun": "2026-09-10T01:50:29+00:00",
    "hariBursaTersedia": 5,
-   "hariBursaSesudah": 20,
+   "hariBursaSesudah": 22,
    "jendelaTutup": true,
    "n": 80,
    "menang": 22,
@@ -11945,7 +11959,7 @@
    "era": "nilai-transaksi",
    "dibangun": "2026-09-11T01:31:10+00:00",
    "hariBursaTersedia": 5,
-   "hariBursaSesudah": 19,
+   "hariBursaSesudah": 21,
    "jendelaTutup": true,
    "n": 100,
    "menang": 32,
@@ -12987,7 +13001,7 @@
    "era": "nilai-transaksi",
    "dibangun": "2026-09-12T04:25:58+00:00",
    "hariBursaTersedia": 5,
-   "hariBursaSesudah": 18,
+   "hariBursaSesudah": 20,
    "jendelaTutup": true,
    "n": 100,
    "menang": 37,
@@ -14015,15 +14029,15 @@
    "era": "nilai-transaksi",
    "dibangun": "2026-09-15T12:41:31+00:00",
    "hariBursaTersedia": 5,
-   "hariBursaSesudah": 16,
+   "hariBursaSesudah": 18,
    "jendelaTutup": true,
    "n": 100,
    "menang": 25,
-   "kalah": 31,
-   "gantung": 39,
+   "kalah": 35,
+   "gantung": 35,
    "tak_masuk": 5,
    "ambigu": 0,
-   "menangDariTuntas": 44.6,
+   "menangDariTuntas": 41.7,
    "menangDariSemua": 25.0,
    "definisi": {
     "openTinggi": {
@@ -14037,15 +14051,15 @@
      "kalah": 85,
      "takTerukur": 0,
      "winRate": 15.0,
-     "rataPersen": -2.1662
+     "rataPersen": -2.169
     },
     "tpSl": {
      "menang": 25,
-     "kalah": 31,
-     "gantung": 39,
+     "kalah": 35,
+     "gantung": 35,
      "tak_masuk": 5,
      "ambigu": 0,
-     "menangDariTuntas": 44.6,
+     "menangDariTuntas": 41.7,
      "menangDariSemua": 25.0
     }
    },
@@ -14054,11 +14068,11 @@
      "preset": "scalping",
      "n": 20,
      "menang": 5,
-     "kalah": 6,
-     "gantung": 8,
+     "kalah": 7,
+     "gantung": 7,
      "tak_masuk": 1,
      "ambigu": 0,
-     "menangDariTuntas": 45.5,
+     "menangDariTuntas": 41.7,
      "menangDariSemua": 25.0,
      "saham": [
       {
@@ -14071,11 +14085,11 @@
       },
       {
        "kode": "AHAP",
-       "tpSl": "gantung",
+       "tpSl": "kalah",
        "openTinggi": "menang",
        "tutupTutup": "kalah",
-       "persen": -5.0847,
-       "tglKeluar": null
+       "persen": -5.1546,
+       "tglKeluar": "2026-09-16"
       },
       {
        "kode": "ANTM",
@@ -14234,15 +14248,15 @@
        "kalah": 17,
        "takTerukur": 0,
        "winRate": 15.0,
-       "rataPersen": -2.3343
+       "rataPersen": -2.3378
       },
       "tpSl": {
        "menang": 5,
-       "kalah": 6,
-       "gantung": 8,
+       "kalah": 7,
+       "gantung": 7,
        "tak_masuk": 1,
        "ambigu": 0,
-       "menangDariTuntas": 45.5,
+       "menangDariTuntas": 41.7,
        "menangDariSemua": 25.0
       }
      }
@@ -14251,11 +14265,11 @@
      "preset": "swing",
      "n": 20,
      "menang": 8,
-     "kalah": 4,
-     "gantung": 7,
+     "kalah": 5,
+     "gantung": 6,
      "tak_masuk": 1,
      "ambigu": 0,
-     "menangDariTuntas": 66.7,
+     "menangDariTuntas": 61.5,
      "menangDariSemua": 40.0,
      "saham": [
       {
@@ -14268,11 +14282,11 @@
       },
       {
        "kode": "AHAP",
-       "tpSl": "gantung",
+       "tpSl": "kalah",
        "openTinggi": "menang",
        "tutupTutup": "kalah",
-       "persen": -5.0847,
-       "tglKeluar": null
+       "persen": -5.1546,
+       "tglKeluar": "2026-09-16"
       },
       {
        "kode": "BRMS",
@@ -14431,15 +14445,15 @@
        "kalah": 17,
        "takTerukur": 0,
        "winRate": 15.0,
-       "rataPersen": -2.6933
+       "rataPersen": -2.6968
       },
       "tpSl": {
        "menang": 8,
-       "kalah": 4,
-       "gantung": 7,
+       "kalah": 5,
+       "gantung": 6,
        "tak_masuk": 1,
        "ambigu": 0,
-       "menangDariTuntas": 66.7,
+       "menangDariTuntas": 61.5,
        "menangDariSemua": 40.0
       }
      }
@@ -14448,11 +14462,11 @@
      "preset": "whale-tiket",
      "n": 20,
      "menang": 3,
-     "kalah": 9,
-     "gantung": 8,
+     "kalah": 10,
+     "gantung": 7,
      "tak_masuk": 0,
      "ambigu": 0,
-     "menangDariTuntas": 25.0,
+     "menangDariTuntas": 23.1,
      "menangDariSemua": 15.0,
      "saham": [
       {
@@ -14481,11 +14495,11 @@
       },
       {
        "kode": "AHAP",
-       "tpSl": "gantung",
+       "tpSl": "kalah",
        "openTinggi": "menang",
        "tutupTutup": "kalah",
-       "persen": -5.0847,
-       "tglKeluar": null
+       "persen": -5.1546,
+       "tglKeluar": "2026-09-16"
       },
       {
        "kode": "BBRI",
@@ -14628,15 +14642,15 @@
        "kalah": 18,
        "takTerukur": 0,
        "winRate": 10.0,
-       "rataPersen": -3.1009
+       "rataPersen": -3.1044
       },
       "tpSl": {
        "menang": 3,
-       "kalah": 9,
-       "gantung": 8,
+       "kalah": 10,
+       "gantung": 7,
        "tak_masuk": 0,
        "ambigu": 0,
-       "menangDariTuntas": 25.0,
+       "menangDariTuntas": 23.1,
        "menangDariSemua": 15.0
       }
      }
@@ -14645,11 +14659,11 @@
      "preset": "whale-akdis",
      "n": 20,
      "menang": 5,
-     "kalah": 6,
-     "gantung": 8,
+     "kalah": 7,
+     "gantung": 7,
      "tak_masuk": 1,
      "ambigu": 0,
-     "menangDariTuntas": 45.5,
+     "menangDariTuntas": 41.7,
      "menangDariSemua": 25.0,
      "saham": [
       {
@@ -14662,11 +14676,11 @@
       },
       {
        "kode": "AHAP",
-       "tpSl": "gantung",
+       "tpSl": "kalah",
        "openTinggi": "menang",
        "tutupTutup": "kalah",
-       "persen": -5.0847,
-       "tglKeluar": null
+       "persen": -5.1546,
+       "tglKeluar": "2026-09-16"
       },
       {
        "kode": "BRMS",
@@ -14825,15 +14839,15 @@
        "kalah": 19,
        "takTerukur": 0,
        "winRate": 5.0,
-       "rataPersen": -2.3677
+       "rataPersen": -2.3712
       },
       "tpSl": {
        "menang": 5,
-       "kalah": 6,
-       "gantung": 8,
+       "kalah": 7,
+       "gantung": 7,
        "tak_masuk": 1,
        "ambigu": 0,
-       "menangDariTuntas": 45.5,
+       "menangDariTuntas": 41.7,
        "menangDariSemua": 25.0
       }
      }
@@ -15035,7 +15049,21 @@
       }
      }
     }
-   ]
+   ],
+   "koreksi": {
+    "dikoreksiPada": "2026-10-10T00:16:03+07:00",
+    "alasan": "Segel dibuat pada hari penutup jendelanya sendiri, sebelum bar hari itu mengendap; aturan jeda satu hari bursa belum berlaku saat itu.",
+    "berubah": {
+     "kalah": [
+      31,
+      35
+     ],
+     "gantung": [
+      39,
+      35
+     ]
+    }
+   }
   },
   {
    "tanggal": "2026-09-16",
@@ -15043,16 +15071,16 @@
    "era": "nilai-transaksi",
    "dibangun": "2026-09-16T12:50:19+00:00",
    "hariBursaTersedia": 5,
-   "hariBursaSesudah": 15,
+   "hariBursaSesudah": 17,
    "jendelaTutup": true,
    "n": 100,
-   "menang": 38,
-   "kalah": 24,
+   "menang": 37,
+   "kalah": 25,
    "gantung": 38,
    "tak_masuk": 0,
    "ambigu": 1,
-   "menangDariTuntas": 61.3,
-   "menangDariSemua": 38.0,
+   "menangDariTuntas": 59.7,
+   "menangDariSemua": 37.0,
    "definisi": {
     "openTinggi": {
      "menang": 81,
@@ -15065,16 +15093,16 @@
      "kalah": 55,
      "takTerukur": 0,
      "winRate": 45.0,
-     "rataPersen": 0.4609
+     "rataPersen": 0.4558
     },
     "tpSl": {
-     "menang": 38,
-     "kalah": 24,
+     "menang": 37,
+     "kalah": 25,
      "gantung": 38,
      "tak_masuk": 0,
      "ambigu": 1,
-     "menangDariTuntas": 61.3,
-     "menangDariSemua": 38.0
+     "menangDariTuntas": 59.7,
+     "menangDariSemua": 37.0
     }
    },
    "preset": [
@@ -15475,13 +15503,13 @@
     {
      "preset": "whale-tiket",
      "n": 20,
-     "menang": 9,
-     "kalah": 2,
+     "menang": 8,
+     "kalah": 3,
      "gantung": 9,
      "tak_masuk": 0,
      "ambigu": 0,
-     "menangDariTuntas": 81.8,
-     "menangDariSemua": 45.0,
+     "menangDariTuntas": 72.7,
+     "menangDariSemua": 40.0,
      "saham": [
       {
        "kode": "DPUM",
@@ -15605,10 +15633,10 @@
       },
       {
        "kode": "AHAP",
-       "tpSl": "menang",
+       "tpSl": "kalah",
        "openTinggi": "menang",
        "tutupTutup": "menang",
-       "persen": 2.6786,
+       "persen": 2.1739,
        "tglKeluar": "2026-09-17"
       },
       {
@@ -15656,16 +15684,16 @@
        "kalah": 11,
        "takTerukur": 0,
        "winRate": 45.0,
-       "rataPersen": -0.1442
+       "rataPersen": -0.1694
       },
       "tpSl": {
-       "menang": 9,
-       "kalah": 2,
+       "menang": 8,
+       "kalah": 3,
        "gantung": 9,
        "tak_masuk": 0,
        "ambigu": 0,
-       "menangDariTuntas": 81.8,
-       "menangDariSemua": 45.0
+       "menangDariTuntas": 72.7,
+       "menangDariSemua": 40.0
       }
      }
     },
@@ -16063,7 +16091,21 @@
       }
      }
     }
-   ]
+   ],
+   "koreksi": {
+    "dikoreksiPada": "2026-10-10T00:16:03+07:00",
+    "alasan": "Segel dibuat pada hari penutup jendelanya sendiri, sebelum bar hari itu mengendap; aturan jeda satu hari bursa belum berlaku saat itu.",
+    "berubah": {
+     "menang": [
+      38,
+      37
+     ],
+     "kalah": [
+      24,
+      25
+     ]
+    }
+   }
   },
   {
    "tanggal": "2026-09-17",
@@ -16071,7 +16113,7 @@
    "era": "nilai-transaksi",
    "dibangun": "2026-09-17T14:12:46+00:00",
    "hariBursaTersedia": 5,
-   "hariBursaSesudah": 14,
+   "hariBursaSesudah": 16,
    "jendelaTutup": true,
    "n": 100,
    "menang": 27,
@@ -16093,7 +16135,7 @@
      "kalah": 64,
      "takTerukur": 0,
      "winRate": 36.0,
-     "rataPersen": -0.6378
+     "rataPersen": -0.638
     },
     "tpSl": {
      "menang": 27,
@@ -16455,8 +16497,8 @@
        "tpSl": "kalah",
        "openTinggi": "kalah",
        "tutupTutup": "kalah",
-       "persen": -9.5652,
-       "tglKeluar": "2026-09-23"
+       "persen": -9.5745,
+       "tglKeluar": "2026-09-18"
       },
       {
        "kode": "CINT",
@@ -16487,7 +16529,7 @@
        "kalah": 12,
        "takTerukur": 0,
        "winRate": 40.0,
-       "rataPersen": -0.8799
+       "rataPersen": -0.8803
       },
       "tpSl": {
        "menang": 7,
@@ -16769,8 +16811,8 @@
        "tpSl": "kalah",
        "openTinggi": "kalah",
        "tutupTutup": "kalah",
-       "persen": -9.5652,
-       "tglKeluar": "2026-09-23"
+       "persen": -9.5745,
+       "tglKeluar": "2026-09-18"
       },
       {
        "kode": "AMRT",
@@ -16881,7 +16923,7 @@
        "kalah": 12,
        "takTerukur": 0,
        "winRate": 40.0,
-       "rataPersen": -0.1397
+       "rataPersen": -0.1402
       },
       "tpSl": {
        "menang": 5,
@@ -17099,7 +17141,7 @@
    "era": "nilai-transaksi",
    "dibangun": "2026-09-18T18:39:11+00:00",
    "hariBursaTersedia": 5,
-   "hariBursaSesudah": 13,
+   "hariBursaSesudah": 15,
    "jendelaTutup": true,
    "n": 100,
    "menang": 35,
@@ -18141,7 +18183,7 @@
    "era": "nilai-transaksi",
    "dibangun": "2026-09-22T01:41:27+00:00",
    "hariBursaTersedia": 5,
-   "hariBursaSesudah": 12,
+   "hariBursaSesudah": 14,
    "jendelaTutup": true,
    "n": 100,
    "menang": 38,
@@ -19183,7 +19225,7 @@
    "era": "nilai-transaksi",
    "dibangun": "2026-09-22T17:45:50+00:00",
    "hariBursaTersedia": 5,
-   "hariBursaSesudah": 11,
+   "hariBursaSesudah": 13,
    "jendelaTutup": true,
    "n": 100,
    "menang": 37,
@@ -20225,7 +20267,7 @@
    "era": "nilai-transaksi",
    "dibangun": "2026-09-23T16:37:38+00:00",
    "hariBursaTersedia": 5,
-   "hariBursaSesudah": 10,
+   "hariBursaSesudah": 12,
    "jendelaTutup": true,
    "n": 100,
    "menang": 23,
@@ -21253,7 +21295,7 @@
    "era": "nilai-transaksi",
    "dibangun": "2026-09-24T18:19:53+00:00",
    "hariBursaTersedia": 5,
-   "hariBursaSesudah": 9,
+   "hariBursaSesudah": 11,
    "jendelaTutup": true,
    "n": 100,
    "menang": 17,
@@ -22281,7 +22323,7 @@
    "era": "nilai-transaksi",
    "dibangun": "2026-09-27T04:22:08+00:00",
    "hariBursaTersedia": 5,
-   "hariBursaSesudah": 8,
+   "hariBursaSesudah": 10,
    "jendelaTutup": true,
    "n": 100,
    "menang": 26,
@@ -23309,7 +23351,7 @@
    "era": "nilai-transaksi",
    "dibangun": "2026-09-29T00:32:47+00:00",
    "hariBursaTersedia": 5,
-   "hariBursaSesudah": 7,
+   "hariBursaSesudah": 9,
    "jendelaTutup": true,
    "n": 100,
    "menang": 25,
@@ -24337,7 +24379,7 @@
    "era": "nilai-transaksi",
    "dibangun": "2026-09-29T17:27:04+00:00",
    "hariBursaTersedia": 5,
-   "hariBursaSesudah": 6,
+   "hariBursaSesudah": 8,
    "jendelaTutup": true,
    "n": 100,
    "menang": 35,
@@ -25365,7 +25407,7 @@
    "era": "nilai-transaksi",
    "dibangun": "2026-09-30T17:24:44+00:00",
    "hariBursaTersedia": 5,
-   "hariBursaSesudah": 5,
+   "hariBursaSesudah": 7,
    "jendelaTutup": true,
    "n": 100,
    "menang": 28,
@@ -26392,17 +26434,17 @@
    "kelasBukti": "CATATAN",
    "era": "nilai-transaksi",
    "dibangun": "2026-10-01T12:53:51+00:00",
-   "hariBursaTersedia": 4,
-   "hariBursaSesudah": 4,
-   "jendelaTutup": false,
+   "hariBursaTersedia": 5,
+   "hariBursaSesudah": 6,
+   "jendelaTutup": true,
    "n": 100,
-   "menang": 38,
+   "menang": 42,
    "kalah": 14,
-   "gantung": 44,
-   "tak_masuk": 4,
+   "gantung": 42,
+   "tak_masuk": 2,
    "ambigu": 5,
-   "menangDariTuntas": 73.1,
-   "menangDariSemua": 38.0,
+   "menangDariTuntas": 75.0,
+   "menangDariSemua": 42.0,
    "definisi": {
     "openTinggi": {
      "menang": 53,
@@ -26418,26 +26460,26 @@
      "rataPersen": -0.0536
     },
     "tpSl": {
-     "menang": 38,
+     "menang": 42,
      "kalah": 14,
-     "gantung": 44,
-     "tak_masuk": 4,
+     "gantung": 42,
+     "tak_masuk": 2,
      "ambigu": 5,
-     "menangDariTuntas": 73.1,
-     "menangDariSemua": 38.0
+     "menangDariTuntas": 75.0,
+     "menangDariSemua": 42.0
     }
    },
    "preset": [
     {
      "preset": "scalping",
      "n": 20,
-     "menang": 3,
+     "menang": 4,
      "kalah": 4,
-     "gantung": 12,
+     "gantung": 11,
      "tak_masuk": 1,
      "ambigu": 2,
-     "menangDariTuntas": 42.9,
-     "menangDariSemua": 15.0,
+     "menangDariTuntas": 50.0,
+     "menangDariSemua": 20.0,
      "saham": [
       {
        "kode": "ASLI",
@@ -26529,11 +26571,11 @@
       },
       {
        "kode": "NICK",
-       "tpSl": "gantung",
+       "tpSl": "menang",
        "openTinggi": "kalah",
        "tutupTutup": "kalah",
        "persen": 0.0,
-       "tglKeluar": null
+       "tglKeluar": "2026-10-08"
       },
       {
        "kode": "WAPO",
@@ -26615,26 +26657,26 @@
        "rataPersen": -0.0035
       },
       "tpSl": {
-       "menang": 3,
+       "menang": 4,
        "kalah": 4,
-       "gantung": 12,
+       "gantung": 11,
        "tak_masuk": 1,
        "ambigu": 2,
-       "menangDariTuntas": 42.9,
-       "menangDariSemua": 15.0
+       "menangDariTuntas": 50.0,
+       "menangDariSemua": 20.0
       }
      }
     },
     {
      "preset": "swing",
      "n": 20,
-     "menang": 13,
+     "menang": 14,
      "kalah": 3,
      "gantung": 2,
-     "tak_masuk": 2,
+     "tak_masuk": 1,
      "ambigu": 1,
-     "menangDariTuntas": 81.2,
-     "menangDariSemua": 65.0,
+     "menangDariTuntas": 82.4,
+     "menangDariSemua": 70.0,
      "saham": [
       {
        "kode": "ASLI",
@@ -26718,7 +26760,7 @@
       },
       {
        "kode": "MGNA",
-       "tpSl": "tak_masuk",
+       "tpSl": "gantung",
        "openTinggi": "menang",
        "tutupTutup": "menang",
        "persen": 3.7037,
@@ -26750,11 +26792,11 @@
       },
       {
        "kode": "PPRO",
-       "tpSl": "gantung",
+       "tpSl": "menang",
        "openTinggi": "menang",
        "tutupTutup": "kalah",
        "persen": -5.0,
-       "tglKeluar": null
+       "tglKeluar": "2026-10-08"
       },
       {
        "kode": "BEKS",
@@ -26812,26 +26854,26 @@
        "rataPersen": -0.201
       },
       "tpSl": {
-       "menang": 13,
+       "menang": 14,
        "kalah": 3,
        "gantung": 2,
-       "tak_masuk": 2,
+       "tak_masuk": 1,
        "ambigu": 1,
-       "menangDariTuntas": 81.2,
-       "menangDariSemua": 65.0
+       "menangDariTuntas": 82.4,
+       "menangDariSemua": 70.0
       }
      }
     },
     {
      "preset": "whale-tiket",
      "n": 20,
-     "menang": 10,
+     "menang": 11,
      "kalah": 1,
      "gantung": 8,
-     "tak_masuk": 1,
+     "tak_masuk": 0,
      "ambigu": 0,
-     "menangDariTuntas": 90.9,
-     "menangDariSemua": 50.0,
+     "menangDariTuntas": 91.7,
+     "menangDariSemua": 55.0,
      "saham": [
       {
        "kode": "ASLI",
@@ -26891,7 +26933,7 @@
       },
       {
        "kode": "MGNA",
-       "tpSl": "tak_masuk",
+       "tpSl": "gantung",
        "openTinggi": "menang",
        "tutupTutup": "menang",
        "persen": 3.7037,
@@ -26931,11 +26973,11 @@
       },
       {
        "kode": "ULTJ",
-       "tpSl": "gantung",
+       "tpSl": "menang",
        "openTinggi": "menang",
        "tutupTutup": "kalah",
        "persen": 0.0,
-       "tglKeluar": null
+       "tglKeluar": "2026-10-08"
       },
       {
        "kode": "AKRA",
@@ -27009,13 +27051,13 @@
        "rataPersen": -0.3987
       },
       "tpSl": {
-       "menang": 10,
+       "menang": 11,
        "kalah": 1,
        "gantung": 8,
-       "tak_masuk": 1,
+       "tak_masuk": 0,
        "ambigu": 0,
-       "menangDariTuntas": 90.9,
-       "menangDariSemua": 50.0
+       "menangDariTuntas": 91.7,
+       "menangDariSemua": 55.0
       }
      }
     },
@@ -27219,13 +27261,13 @@
     {
      "preset": "whale-asing",
      "n": 20,
-     "menang": 10,
+     "menang": 11,
      "kalah": 5,
-     "gantung": 5,
+     "gantung": 4,
      "tak_masuk": 0,
      "ambigu": 1,
-     "menangDariTuntas": 66.7,
-     "menangDariSemua": 50.0,
+     "menangDariTuntas": 68.8,
+     "menangDariSemua": 55.0,
      "saham": [
       {
        "kode": "VKTR",
@@ -27333,11 +27375,11 @@
       },
       {
        "kode": "EKAD",
-       "tpSl": "gantung",
+       "tpSl": "menang",
        "openTinggi": "menang",
        "tutupTutup": "kalah",
        "persen": 0.0,
-       "tglKeluar": null
+       "tglKeluar": "2026-10-08"
       },
       {
        "kode": "MDIY",
@@ -27403,13 +27445,13 @@
        "rataPersen": -0.9148
       },
       "tpSl": {
-       "menang": 10,
+       "menang": 11,
        "kalah": 5,
-       "gantung": 5,
+       "gantung": 4,
        "tak_masuk": 0,
        "ambigu": 1,
-       "menangDariTuntas": 66.7,
-       "menangDariSemua": 50.0
+       "menangDariTuntas": 68.8,
+       "menangDariSemua": 55.0
       }
      }
     }
@@ -27420,17 +27462,17 @@
    "kelasBukti": "CATATAN",
    "era": "nilai-transaksi",
    "dibangun": "2026-10-03T10:43:55+00:00",
-   "hariBursaTersedia": 3,
-   "hariBursaSesudah": 3,
-   "jendelaTutup": false,
+   "hariBursaTersedia": 5,
+   "hariBursaSesudah": 5,
+   "jendelaTutup": true,
    "n": 100,
-   "menang": 34,
-   "kalah": 7,
-   "gantung": 58,
+   "menang": 41,
+   "kalah": 11,
+   "gantung": 47,
    "tak_masuk": 1,
    "ambigu": 4,
-   "menangDariTuntas": 82.9,
-   "menangDariSemua": 34.0,
+   "menangDariTuntas": 78.8,
+   "menangDariSemua": 41.0,
    "definisi": {
     "openTinggi": {
      "menang": 52,
@@ -27446,26 +27488,26 @@
      "rataPersen": 1.3868
     },
     "tpSl": {
-     "menang": 34,
-     "kalah": 7,
-     "gantung": 58,
+     "menang": 41,
+     "kalah": 11,
+     "gantung": 47,
      "tak_masuk": 1,
      "ambigu": 4,
-     "menangDariTuntas": 82.9,
-     "menangDariSemua": 34.0
+     "menangDariTuntas": 78.8,
+     "menangDariSemua": 41.0
     }
    },
    "preset": [
     {
      "preset": "scalping",
      "n": 20,
-     "menang": 4,
-     "kalah": 1,
-     "gantung": 14,
+     "menang": 6,
+     "kalah": 2,
+     "gantung": 11,
      "tak_masuk": 1,
      "ambigu": 1,
-     "menangDariTuntas": 80.0,
-     "menangDariSemua": 20.0,
+     "menangDariTuntas": 75.0,
+     "menangDariSemua": 30.0,
      "saham": [
       {
        "kode": "ASLI",
@@ -27493,11 +27535,11 @@
       },
       {
        "kode": "SMLE",
-       "tpSl": "gantung",
+       "tpSl": "menang",
        "openTinggi": "menang",
        "tutupTutup": "menang",
        "persen": 1.9868,
-       "tglKeluar": null
+       "tglKeluar": "2026-10-08"
       },
       {
        "kode": "DSSA",
@@ -27517,11 +27559,11 @@
       },
       {
        "kode": "TEBE",
-       "tpSl": "gantung",
+       "tpSl": "kalah",
        "openTinggi": "kalah",
        "tutupTutup": "kalah",
        "persen": 0.0,
-       "tglKeluar": null
+       "tglKeluar": "2026-10-09"
       },
       {
        "kode": "SRSN",
@@ -27549,11 +27591,11 @@
       },
       {
        "kode": "NICK",
-       "tpSl": "gantung",
+       "tpSl": "menang",
        "openTinggi": "kalah",
        "tutupTutup": "kalah",
        "persen": 0.0,
-       "tglKeluar": null
+       "tglKeluar": "2026-10-08"
       },
       {
        "kode": "WAPO",
@@ -27643,34 +27685,34 @@
        "rataPersen": 2.1287
       },
       "tpSl": {
-       "menang": 4,
-       "kalah": 1,
-       "gantung": 14,
+       "menang": 6,
+       "kalah": 2,
+       "gantung": 11,
        "tak_masuk": 1,
        "ambigu": 1,
-       "menangDariTuntas": 80.0,
-       "menangDariSemua": 20.0
+       "menangDariTuntas": 75.0,
+       "menangDariSemua": 30.0
       }
      }
     },
     {
      "preset": "swing",
      "n": 20,
-     "menang": 14,
-     "kalah": 1,
-     "gantung": 5,
+     "menang": 15,
+     "kalah": 2,
+     "gantung": 3,
      "tak_masuk": 0,
      "ambigu": 1,
-     "menangDariTuntas": 93.3,
-     "menangDariSemua": 70.0,
+     "menangDariTuntas": 88.2,
+     "menangDariSemua": 75.0,
      "saham": [
       {
        "kode": "SMLE",
-       "tpSl": "gantung",
+       "tpSl": "menang",
        "openTinggi": "menang",
        "tutupTutup": "menang",
        "persen": 1.9868,
-       "tglKeluar": null
+       "tglKeluar": "2026-10-08"
       },
       {
        "kode": "ASLI",
@@ -27682,11 +27724,11 @@
       },
       {
        "kode": "TEBE",
-       "tpSl": "gantung",
+       "tpSl": "kalah",
        "openTinggi": "kalah",
        "tutupTutup": "kalah",
        "persen": 0.0,
-       "tglKeluar": null
+       "tglKeluar": "2026-10-09"
       },
       {
        "kode": "SEMA",
@@ -27840,26 +27882,26 @@
        "rataPersen": 2.6814
       },
       "tpSl": {
-       "menang": 14,
-       "kalah": 1,
-       "gantung": 5,
+       "menang": 15,
+       "kalah": 2,
+       "gantung": 3,
        "tak_masuk": 0,
        "ambigu": 1,
-       "menangDariTuntas": 93.3,
-       "menangDariSemua": 70.0
+       "menangDariTuntas": 88.2,
+       "menangDariSemua": 75.0
       }
      }
     },
     {
      "preset": "whale-tiket",
      "n": 20,
-     "menang": 9,
-     "kalah": 0,
-     "gantung": 11,
+     "menang": 10,
+     "kalah": 2,
+     "gantung": 8,
      "tak_masuk": 0,
      "ambigu": 0,
-     "menangDariTuntas": 100.0,
-     "menangDariSemua": 45.0,
+     "menangDariTuntas": 83.3,
+     "menangDariSemua": 50.0,
      "saham": [
       {
        "kode": "ASLI",
@@ -27871,11 +27913,11 @@
       },
       {
        "kode": "TEBE",
-       "tpSl": "gantung",
+       "tpSl": "kalah",
        "openTinggi": "kalah",
        "tutupTutup": "kalah",
        "persen": 0.0,
-       "tglKeluar": null
+       "tglKeluar": "2026-10-09"
       },
       {
        "kode": "SEMA",
@@ -27951,19 +27993,19 @@
       },
       {
        "kode": "JAWA",
-       "tpSl": "gantung",
+       "tpSl": "kalah",
        "openTinggi": "menang",
        "tutupTutup": "kalah",
        "persen": -11.9318,
-       "tglKeluar": null
+       "tglKeluar": "2026-10-08"
       },
       {
        "kode": "ULTJ",
-       "tpSl": "gantung",
+       "tpSl": "menang",
        "openTinggi": "menang",
        "tutupTutup": "menang",
        "persen": 0.9709,
-       "tglKeluar": null
+       "tglKeluar": "2026-10-08"
       },
       {
        "kode": "MAPI",
@@ -28037,13 +28079,13 @@
        "rataPersen": 0.8656
       },
       "tpSl": {
-       "menang": 9,
-       "kalah": 0,
-       "gantung": 11,
+       "menang": 10,
+       "kalah": 2,
+       "gantung": 8,
        "tak_masuk": 0,
        "ambigu": 0,
-       "menangDariTuntas": 100.0,
-       "menangDariSemua": 45.0
+       "menangDariTuntas": 83.3,
+       "menangDariSemua": 50.0
       }
      }
     },
@@ -28247,13 +28289,13 @@
     {
      "preset": "whale-asing",
      "n": 20,
-     "menang": 6,
+     "menang": 9,
      "kalah": 4,
-     "gantung": 10,
+     "gantung": 7,
      "tak_masuk": 0,
      "ambigu": 1,
-     "menangDariTuntas": 60.0,
-     "menangDariSemua": 30.0,
+     "menangDariTuntas": 69.2,
+     "menangDariSemua": 45.0,
      "saham": [
       {
        "kode": "VKTR",
@@ -28265,27 +28307,27 @@
       },
       {
        "kode": "ARCI",
-       "tpSl": "gantung",
+       "tpSl": "menang",
        "openTinggi": "menang",
        "tutupTutup": "menang",
        "persen": 3.629,
-       "tglKeluar": null
+       "tglKeluar": "2026-10-09"
       },
       {
        "kode": "EMAS",
-       "tpSl": "gantung",
+       "tpSl": "menang",
        "openTinggi": "menang",
        "tutupTutup": "menang",
        "persen": 1.2987,
-       "tglKeluar": null
+       "tglKeluar": "2026-10-09"
       },
       {
        "kode": "ULTJ",
-       "tpSl": "gantung",
+       "tpSl": "menang",
        "openTinggi": "menang",
        "tutupTutup": "menang",
        "persen": 0.9709,
-       "tglKeluar": null
+       "tglKeluar": "2026-10-08"
       },
       {
        "kode": "BACH",
@@ -28431,13 +28473,13 @@
        "rataPersen": 1.2584
       },
       "tpSl": {
-       "menang": 6,
+       "menang": 9,
        "kalah": 4,
-       "gantung": 10,
+       "gantung": 7,
        "tak_masuk": 0,
        "ambigu": 1,
-       "menangDariTuntas": 60.0,
-       "menangDariSemua": 30.0
+       "menangDariTuntas": 69.2,
+       "menangDariSemua": 45.0
       }
      }
     }
@@ -28448,17 +28490,17 @@
    "kelasBukti": "CATATAN",
    "era": "nilai-transaksi",
    "dibangun": "2026-10-05T20:08:49+00:00",
-   "hariBursaTersedia": 2,
-   "hariBursaSesudah": 2,
+   "hariBursaTersedia": 4,
+   "hariBursaSesudah": 4,
    "jendelaTutup": false,
    "n": 100,
-   "menang": 17,
-   "kalah": 3,
-   "gantung": 73,
-   "tak_masuk": 7,
+   "menang": 26,
+   "kalah": 7,
+   "gantung": 61,
+   "tak_masuk": 6,
    "ambigu": 3,
-   "menangDariTuntas": 85.0,
-   "menangDariSemua": 17.0,
+   "menangDariTuntas": 78.8,
+   "menangDariSemua": 26.0,
    "definisi": {
     "openTinggi": {
      "menang": 54,
@@ -28474,26 +28516,26 @@
      "rataPersen": 2.1671
     },
     "tpSl": {
-     "menang": 17,
-     "kalah": 3,
-     "gantung": 73,
-     "tak_masuk": 7,
+     "menang": 26,
+     "kalah": 7,
+     "gantung": 61,
+     "tak_masuk": 6,
      "ambigu": 3,
-     "menangDariTuntas": 85.0,
-     "menangDariSemua": 17.0
+     "menangDariTuntas": 78.8,
+     "menangDariSemua": 26.0
     }
    },
    "preset": [
     {
      "preset": "scalping",
      "n": 20,
-     "menang": 2,
-     "kalah": 1,
-     "gantung": 16,
+     "menang": 4,
+     "kalah": 2,
+     "gantung": 13,
      "tak_masuk": 1,
      "ambigu": 1,
      "menangDariTuntas": 66.7,
-     "menangDariSemua": 10.0,
+     "menangDariSemua": 20.0,
      "saham": [
       {
        "kode": "ASLI",
@@ -28505,11 +28547,11 @@
       },
       {
        "kode": "TEBE",
-       "tpSl": "gantung",
+       "tpSl": "kalah",
        "openTinggi": "kalah",
        "tutupTutup": "kalah",
        "persen": 0.0,
-       "tglKeluar": null
+       "tglKeluar": "2026-10-09"
       },
       {
        "kode": "SMCB",
@@ -28529,11 +28571,11 @@
       },
       {
        "kode": "SMLE",
-       "tpSl": "gantung",
+       "tpSl": "menang",
        "openTinggi": "menang",
        "tutupTutup": "menang",
        "persen": 3.8961,
-       "tglKeluar": null
+       "tglKeluar": "2026-10-08"
       },
       {
        "kode": "CSMI",
@@ -28577,11 +28619,11 @@
       },
       {
        "kode": "NICK",
-       "tpSl": "gantung",
+       "tpSl": "menang",
        "openTinggi": "kalah",
        "tutupTutup": "kalah",
        "persen": 0.0,
-       "tglKeluar": null
+       "tglKeluar": "2026-10-08"
       },
       {
        "kode": "WAPO",
@@ -28671,26 +28713,26 @@
        "rataPersen": 1.6865
       },
       "tpSl": {
-       "menang": 2,
-       "kalah": 1,
-       "gantung": 16,
+       "menang": 4,
+       "kalah": 2,
+       "gantung": 13,
        "tak_masuk": 1,
        "ambigu": 1,
        "menangDariTuntas": 66.7,
-       "menangDariSemua": 10.0
+       "menangDariSemua": 20.0
       }
      }
     },
     {
      "preset": "swing",
      "n": 20,
-     "menang": 6,
-     "kalah": 1,
-     "gantung": 9,
-     "tak_masuk": 4,
+     "menang": 7,
+     "kalah": 2,
+     "gantung": 8,
+     "tak_masuk": 3,
      "ambigu": 1,
-     "menangDariTuntas": 85.7,
-     "menangDariSemua": 30.0,
+     "menangDariTuntas": 77.8,
+     "menangDariSemua": 35.0,
      "saham": [
       {
        "kode": "ASLI",
@@ -28710,11 +28752,11 @@
       },
       {
        "kode": "TEBE",
-       "tpSl": "gantung",
+       "tpSl": "kalah",
        "openTinggi": "kalah",
        "tutupTutup": "kalah",
        "persen": 0.0,
-       "tglKeluar": null
+       "tglKeluar": "2026-10-09"
       },
       {
        "kode": "MITI",
@@ -28758,7 +28800,7 @@
       },
       {
        "kode": "KDTN",
-       "tpSl": "tak_masuk",
+       "tpSl": "gantung",
        "openTinggi": "menang",
        "tutupTutup": "menang",
        "persen": 23.5849,
@@ -28806,11 +28848,11 @@
       },
       {
        "kode": "SMIL",
-       "tpSl": "gantung",
+       "tpSl": "menang",
        "openTinggi": "menang",
        "tutupTutup": "menang",
        "persen": 1.7241,
-       "tglKeluar": null
+       "tglKeluar": "2026-10-08"
       },
       {
        "kode": "CCSI",
@@ -28868,26 +28910,26 @@
        "rataPersen": 4.6305
       },
       "tpSl": {
-       "menang": 6,
-       "kalah": 1,
-       "gantung": 9,
-       "tak_masuk": 4,
+       "menang": 7,
+       "kalah": 2,
+       "gantung": 8,
+       "tak_masuk": 3,
        "ambigu": 1,
-       "menangDariTuntas": 85.7,
-       "menangDariSemua": 30.0
+       "menangDariTuntas": 77.8,
+       "menangDariSemua": 35.0
       }
      }
     },
     {
      "preset": "whale-tiket",
      "n": 20,
-     "menang": 4,
-     "kalah": 0,
-     "gantung": 14,
+     "menang": 5,
+     "kalah": 1,
+     "gantung": 12,
      "tak_masuk": 2,
      "ambigu": 0,
-     "menangDariTuntas": 100.0,
-     "menangDariSemua": 20.0,
+     "menangDariTuntas": 83.3,
+     "menangDariSemua": 25.0,
      "saham": [
       {
        "kode": "ASLI",
@@ -28907,11 +28949,11 @@
       },
       {
        "kode": "TEBE",
-       "tpSl": "gantung",
+       "tpSl": "kalah",
        "openTinggi": "kalah",
        "tutupTutup": "kalah",
        "persen": 0.0,
-       "tglKeluar": null
+       "tglKeluar": "2026-10-09"
       },
       {
        "kode": "MITI",
@@ -29043,11 +29085,11 @@
       },
       {
        "kode": "ULTJ",
-       "tpSl": "gantung",
+       "tpSl": "menang",
        "openTinggi": "kalah",
        "tutupTutup": "kalah",
        "persen": -0.4808,
-       "tglKeluar": null
+       "tglKeluar": "2026-10-08"
       }
      ],
      "definisi": {
@@ -29065,13 +29107,13 @@
        "rataPersen": 2.6275
       },
       "tpSl": {
-       "menang": 4,
-       "kalah": 0,
-       "gantung": 14,
+       "menang": 5,
+       "kalah": 1,
+       "gantung": 12,
        "tak_masuk": 2,
        "ambigu": 0,
-       "menangDariTuntas": 100.0,
-       "menangDariSemua": 20.0
+       "menangDariTuntas": 83.3,
+       "menangDariSemua": 25.0
       }
      }
     },
@@ -29079,11 +29121,11 @@
      "preset": "whale-akdis",
      "n": 20,
      "menang": 1,
-     "kalah": 1,
-     "gantung": 18,
+     "kalah": 2,
+     "gantung": 17,
      "tak_masuk": 0,
      "ambigu": 1,
-     "menangDariTuntas": 50.0,
+     "menangDariTuntas": 33.3,
      "menangDariSemua": 5.0,
      "saham": [
       {
@@ -29096,11 +29138,11 @@
       },
       {
        "kode": "TEBE",
-       "tpSl": "gantung",
+       "tpSl": "kalah",
        "openTinggi": "kalah",
        "tutupTutup": "kalah",
        "persen": 0.0,
-       "tglKeluar": null
+       "tglKeluar": "2026-10-09"
       },
       {
        "kode": "WAPO",
@@ -29263,11 +29305,11 @@
       },
       "tpSl": {
        "menang": 1,
-       "kalah": 1,
-       "gantung": 18,
+       "kalah": 2,
+       "gantung": 17,
        "tak_masuk": 0,
        "ambigu": 1,
-       "menangDariTuntas": 50.0,
+       "menangDariTuntas": 33.3,
        "menangDariSemua": 5.0
       }
      }
@@ -29275,13 +29317,13 @@
     {
      "preset": "whale-asing",
      "n": 20,
-     "menang": 4,
+     "menang": 9,
      "kalah": 0,
-     "gantung": 16,
+     "gantung": 11,
      "tak_masuk": 0,
      "ambigu": 0,
      "menangDariTuntas": 100.0,
-     "menangDariSemua": 20.0,
+     "menangDariSemua": 45.0,
      "saham": [
       {
        "kode": "BUVA",
@@ -29301,11 +29343,11 @@
       },
       {
        "kode": "INCO",
-       "tpSl": "gantung",
+       "tpSl": "menang",
        "openTinggi": "menang",
        "tutupTutup": "menang",
        "persen": 0.4651,
-       "tglKeluar": null
+       "tglKeluar": "2026-10-08"
       },
       {
        "kode": "PKPK",
@@ -29317,11 +29359,11 @@
       },
       {
        "kode": "EMAS",
-       "tpSl": "gantung",
+       "tpSl": "menang",
        "openTinggi": "menang",
        "tutupTutup": "kalah",
        "persen": -1.2821,
-       "tglKeluar": null
+       "tglKeluar": "2026-10-09"
       },
       {
        "kode": "MIDI",
@@ -29357,19 +29399,19 @@
       },
       {
        "kode": "ULTJ",
-       "tpSl": "gantung",
+       "tpSl": "menang",
        "openTinggi": "kalah",
        "tutupTutup": "kalah",
        "persen": -0.4808,
-       "tglKeluar": null
+       "tglKeluar": "2026-10-08"
       },
       {
        "kode": "PBRX",
-       "tpSl": "gantung",
+       "tpSl": "menang",
        "openTinggi": "menang",
        "tutupTutup": "menang",
        "persen": 7.6923,
-       "tglKeluar": null
+       "tglKeluar": "2026-10-08"
       },
       {
        "kode": "GZCO",
@@ -29421,11 +29463,11 @@
       },
       {
        "kode": "IPTV",
-       "tpSl": "gantung",
+       "tpSl": "menang",
        "openTinggi": "menang",
        "tutupTutup": "menang",
        "persen": 8.6957,
-       "tglKeluar": null
+       "tglKeluar": "2026-10-08"
       },
       {
        "kode": "MLIA",
@@ -29459,13 +29501,13 @@
        "rataPersen": 2.1163
       },
       "tpSl": {
-       "menang": 4,
+       "menang": 9,
        "kalah": 0,
-       "gantung": 16,
+       "gantung": 11,
        "tak_masuk": 0,
        "ambigu": 0,
        "menangDariTuntas": 100.0,
-       "menangDariSemua": 20.0
+       "menangDariSemua": 45.0
       }
      }
     }
@@ -29476,17 +29518,17 @@
    "kelasBukti": "CATATAN",
    "era": "nilai-transaksi",
    "dibangun": "2026-10-06T17:45:13+00:00",
-   "hariBursaTersedia": 1,
-   "hariBursaSesudah": 1,
+   "hariBursaTersedia": 3,
+   "hariBursaSesudah": 3,
    "jendelaTutup": false,
    "n": 100,
-   "menang": 8,
-   "kalah": 1,
-   "gantung": 89,
-   "tak_masuk": 2,
+   "menang": 23,
+   "kalah": 14,
+   "gantung": 62,
+   "tak_masuk": 1,
    "ambigu": 1,
-   "menangDariTuntas": 88.9,
-   "menangDariSemua": 8.0,
+   "menangDariTuntas": 62.2,
+   "menangDariSemua": 23.0,
    "definisi": {
     "openTinggi": {
      "menang": 46,
@@ -29502,34 +29544,34 @@
      "rataPersen": 0.1316
     },
     "tpSl": {
-     "menang": 8,
-     "kalah": 1,
-     "gantung": 89,
-     "tak_masuk": 2,
+     "menang": 23,
+     "kalah": 14,
+     "gantung": 62,
+     "tak_masuk": 1,
      "ambigu": 1,
-     "menangDariTuntas": 88.9,
-     "menangDariSemua": 8.0
+     "menangDariTuntas": 62.2,
+     "menangDariSemua": 23.0
     }
    },
    "preset": [
     {
      "preset": "scalping",
      "n": 20,
-     "menang": 0,
-     "kalah": 1,
-     "gantung": 19,
+     "menang": 3,
+     "kalah": 5,
+     "gantung": 12,
      "tak_masuk": 0,
      "ambigu": 1,
-     "menangDariTuntas": 0.0,
-     "menangDariSemua": 0.0,
+     "menangDariTuntas": 37.5,
+     "menangDariSemua": 15.0,
      "saham": [
       {
        "kode": "TEBE",
-       "tpSl": "gantung",
+       "tpSl": "kalah",
        "openTinggi": "kalah",
        "tutupTutup": "kalah",
        "persen": 0.0,
-       "tglKeluar": null
+       "tglKeluar": "2026-10-09"
       },
       {
        "kode": "SMCB",
@@ -29549,11 +29591,11 @@
       },
       {
        "kode": "SMLE",
-       "tpSl": "gantung",
+       "tpSl": "menang",
        "openTinggi": "kalah",
        "tutupTutup": "kalah",
        "persen": -1.25,
-       "tglKeluar": null
+       "tglKeluar": "2026-10-08"
       },
       {
        "kode": "SGER",
@@ -29565,11 +29607,11 @@
       },
       {
        "kode": "ASLI",
-       "tpSl": "gantung",
+       "tpSl": "kalah",
        "openTinggi": "kalah",
        "tutupTutup": "kalah",
        "persen": -7.2,
-       "tglKeluar": null
+       "tglKeluar": "2026-10-08"
       },
       {
        "kode": "PTBA",
@@ -29605,35 +29647,35 @@
       },
       {
        "kode": "POLA",
-       "tpSl": "gantung",
+       "tpSl": "menang",
        "openTinggi": "kalah",
        "tutupTutup": "kalah",
        "persen": 0.0,
-       "tglKeluar": null
+       "tglKeluar": "2026-10-08"
       },
       {
        "kode": "ENRG",
-       "tpSl": "gantung",
+       "tpSl": "kalah",
        "openTinggi": "menang",
        "tutupTutup": "kalah",
        "persen": -1.8519,
-       "tglKeluar": null
+       "tglKeluar": "2026-10-09"
       },
       {
        "kode": "VKTR",
-       "tpSl": "gantung",
+       "tpSl": "kalah",
        "openTinggi": "menang",
        "tutupTutup": "kalah",
        "persen": -0.7407,
-       "tglKeluar": null
+       "tglKeluar": "2026-10-09"
       },
       {
        "kode": "NICK",
-       "tpSl": "gantung",
+       "tpSl": "menang",
        "openTinggi": "kalah",
        "tutupTutup": "kalah",
        "persen": 0.0,
-       "tglKeluar": null
+       "tglKeluar": "2026-10-08"
       },
       {
        "kode": "PKPK",
@@ -29699,26 +29741,26 @@
        "rataPersen": -1.1394
       },
       "tpSl": {
-       "menang": 0,
-       "kalah": 1,
-       "gantung": 19,
+       "menang": 3,
+       "kalah": 5,
+       "gantung": 12,
        "tak_masuk": 0,
        "ambigu": 1,
-       "menangDariTuntas": 0.0,
-       "menangDariSemua": 0.0
+       "menangDariTuntas": 37.5,
+       "menangDariSemua": 15.0
       }
      }
     },
     {
      "preset": "swing",
      "n": 20,
-     "menang": 5,
-     "kalah": 0,
-     "gantung": 14,
-     "tak_masuk": 1,
+     "menang": 9,
+     "kalah": 3,
+     "gantung": 8,
+     "tak_masuk": 0,
      "ambigu": 0,
-     "menangDariTuntas": 100.0,
-     "menangDariSemua": 25.0,
+     "menangDariTuntas": 75.0,
+     "menangDariSemua": 45.0,
      "saham": [
       {
        "kode": "SGER",
@@ -29730,11 +29772,11 @@
       },
       {
        "kode": "TEBE",
-       "tpSl": "gantung",
+       "tpSl": "kalah",
        "openTinggi": "kalah",
        "tutupTutup": "kalah",
        "persen": 0.0,
-       "tglKeluar": null
+       "tglKeluar": "2026-10-09"
       },
       {
        "kode": "PTBA",
@@ -29754,11 +29796,11 @@
       },
       {
        "kode": "POLA",
-       "tpSl": "gantung",
+       "tpSl": "menang",
        "openTinggi": "kalah",
        "tutupTutup": "kalah",
        "persen": 0.0,
-       "tglKeluar": null
+       "tglKeluar": "2026-10-08"
       },
       {
        "kode": "BEKS",
@@ -29770,19 +29812,19 @@
       },
       {
        "kode": "ENRG",
-       "tpSl": "gantung",
+       "tpSl": "kalah",
        "openTinggi": "menang",
        "tutupTutup": "kalah",
        "persen": -1.8519,
-       "tglKeluar": null
+       "tglKeluar": "2026-10-09"
       },
       {
        "kode": "BTEK",
-       "tpSl": "gantung",
+       "tpSl": "menang",
        "openTinggi": "kalah",
        "tutupTutup": "kalah",
        "persen": -7.1429,
-       "tglKeluar": null
+       "tglKeluar": "2026-10-08"
       },
       {
        "kode": "KDTN",
@@ -29810,11 +29852,11 @@
       },
       {
        "kode": "NEST",
-       "tpSl": "gantung",
+       "tpSl": "menang",
        "openTinggi": "kalah",
        "tutupTutup": "kalah",
        "persen": -1.1834,
-       "tglKeluar": null
+       "tglKeluar": "2026-10-08"
       },
       {
        "kode": "PPRI",
@@ -29842,7 +29884,7 @@
       },
       {
        "kode": "PART",
-       "tpSl": "tak_masuk",
+       "tpSl": "gantung",
        "openTinggi": "menang",
        "tutupTutup": "menang",
        "persen": 4.878,
@@ -29850,19 +29892,19 @@
       },
       {
        "kode": "ELIT",
-       "tpSl": "gantung",
+       "tpSl": "kalah",
        "openTinggi": "kalah",
        "tutupTutup": "kalah",
        "persen": -7.5862,
-       "tglKeluar": null
+       "tglKeluar": "2026-10-09"
       },
       {
        "kode": "UVCR",
-       "tpSl": "gantung",
+       "tpSl": "menang",
        "openTinggi": "menang",
        "tutupTutup": "kalah",
        "persen": -1.4085,
-       "tglKeluar": null
+       "tglKeluar": "2026-10-08"
       },
       {
        "kode": "MGNA",
@@ -29896,50 +29938,50 @@
        "rataPersen": 0.9135
       },
       "tpSl": {
-       "menang": 5,
-       "kalah": 0,
-       "gantung": 14,
-       "tak_masuk": 1,
+       "menang": 9,
+       "kalah": 3,
+       "gantung": 8,
+       "tak_masuk": 0,
        "ambigu": 0,
-       "menangDariTuntas": 100.0,
-       "menangDariSemua": 25.0
+       "menangDariTuntas": 75.0,
+       "menangDariSemua": 45.0
       }
      }
     },
     {
      "preset": "whale-tiket",
      "n": 20,
-     "menang": 3,
-     "kalah": 0,
-     "gantung": 16,
+     "menang": 6,
+     "kalah": 4,
+     "gantung": 9,
      "tak_masuk": 1,
      "ambigu": 0,
-     "menangDariTuntas": 100.0,
-     "menangDariSemua": 15.0,
+     "menangDariTuntas": 60.0,
+     "menangDariSemua": 30.0,
      "saham": [
       {
        "kode": "FORU",
-       "tpSl": "gantung",
+       "tpSl": "menang",
        "openTinggi": "menang",
        "tutupTutup": "menang",
        "persen": 16.129,
-       "tglKeluar": null
+       "tglKeluar": "2026-10-08"
       },
       {
        "kode": "ASLI",
-       "tpSl": "gantung",
+       "tpSl": "kalah",
        "openTinggi": "kalah",
        "tutupTutup": "kalah",
        "persen": -7.2,
-       "tglKeluar": null
+       "tglKeluar": "2026-10-08"
       },
       {
        "kode": "TEBE",
-       "tpSl": "gantung",
+       "tpSl": "kalah",
        "openTinggi": "kalah",
        "tutupTutup": "kalah",
        "persen": 0.0,
-       "tglKeluar": null
+       "tglKeluar": "2026-10-09"
       },
       {
        "kode": "CSMI",
@@ -29951,11 +29993,11 @@
       },
       {
        "kode": "POLA",
-       "tpSl": "gantung",
+       "tpSl": "menang",
        "openTinggi": "kalah",
        "tutupTutup": "kalah",
        "persen": 0.0,
-       "tglKeluar": null
+       "tglKeluar": "2026-10-08"
       },
       {
        "kode": "META",
@@ -29991,11 +30033,11 @@
       },
       {
        "kode": "NEST",
-       "tpSl": "gantung",
+       "tpSl": "menang",
        "openTinggi": "kalah",
        "tutupTutup": "kalah",
        "persen": -1.1834,
-       "tglKeluar": null
+       "tglKeluar": "2026-10-08"
       },
       {
        "kode": "ASGR",
@@ -30007,11 +30049,11 @@
       },
       {
        "kode": "SEMA",
-       "tpSl": "gantung",
+       "tpSl": "kalah",
        "openTinggi": "menang",
        "tutupTutup": "kalah",
        "persen": -1.3158,
-       "tglKeluar": null
+       "tglKeluar": "2026-10-08"
       },
       {
        "kode": "ASPI",
@@ -30031,11 +30073,11 @@
       },
       {
        "kode": "ELIT",
-       "tpSl": "gantung",
+       "tpSl": "kalah",
        "openTinggi": "kalah",
        "tutupTutup": "kalah",
        "persen": -7.5862,
-       "tglKeluar": null
+       "tglKeluar": "2026-10-09"
       },
       {
        "kode": "PKPK",
@@ -30093,13 +30135,13 @@
        "rataPersen": 1.6576
       },
       "tpSl": {
-       "menang": 3,
-       "kalah": 0,
-       "gantung": 16,
+       "menang": 6,
+       "kalah": 4,
+       "gantung": 9,
        "tak_masuk": 1,
        "ambigu": 0,
-       "menangDariTuntas": 100.0,
-       "menangDariSemua": 15.0
+       "menangDariTuntas": 60.0,
+       "menangDariSemua": 30.0
       }
      }
     },
@@ -30107,20 +30149,20 @@
      "preset": "whale-akdis",
      "n": 20,
      "menang": 0,
-     "kalah": 0,
-     "gantung": 20,
+     "kalah": 1,
+     "gantung": 19,
      "tak_masuk": 0,
      "ambigu": 0,
-     "menangDariTuntas": null,
+     "menangDariTuntas": 0.0,
      "menangDariSemua": 0.0,
      "saham": [
       {
        "kode": "TEBE",
-       "tpSl": "gantung",
+       "tpSl": "kalah",
        "openTinggi": "kalah",
        "tutupTutup": "kalah",
        "persen": 0.0,
-       "tglKeluar": null
+       "tglKeluar": "2026-10-09"
       },
       {
        "kode": "PKPK",
@@ -30291,11 +30333,11 @@
       },
       "tpSl": {
        "menang": 0,
-       "kalah": 0,
-       "gantung": 20,
+       "kalah": 1,
+       "gantung": 19,
        "tak_masuk": 0,
        "ambigu": 0,
-       "menangDariTuntas": null,
+       "menangDariTuntas": 0.0,
        "menangDariSemua": 0.0
       }
      }
@@ -30303,13 +30345,13 @@
     {
      "preset": "whale-asing",
      "n": 20,
-     "menang": 0,
-     "kalah": 0,
-     "gantung": 20,
+     "menang": 5,
+     "kalah": 1,
+     "gantung": 14,
      "tak_masuk": 0,
      "ambigu": 0,
-     "menangDariTuntas": null,
-     "menangDariSemua": 0.0,
+     "menangDariTuntas": 83.3,
+     "menangDariSemua": 25.0,
      "saham": [
       {
        "kode": "DEWA",
@@ -30337,11 +30379,11 @@
       },
       {
        "kode": "NEST",
-       "tpSl": "gantung",
+       "tpSl": "menang",
        "openTinggi": "kalah",
        "tutupTutup": "kalah",
        "persen": -1.1834,
-       "tglKeluar": null
+       "tglKeluar": "2026-10-08"
       },
       {
        "kode": "MEDC",
@@ -30361,11 +30403,11 @@
       },
       {
        "kode": "BEST",
-       "tpSl": "gantung",
+       "tpSl": "kalah",
        "openTinggi": "menang",
        "tutupTutup": "kalah",
        "persen": -5.4264,
-       "tglKeluar": null
+       "tglKeluar": "2026-10-09"
       },
       {
        "kode": "HMSP",
@@ -30377,11 +30419,11 @@
       },
       {
        "kode": "UDNG",
-       "tpSl": "gantung",
+       "tpSl": "menang",
        "openTinggi": "kalah",
        "tutupTutup": "menang",
        "persen": 1.4286,
-       "tglKeluar": null
+       "tglKeluar": "2026-10-09"
       },
       {
        "kode": "MORA",
@@ -30409,11 +30451,11 @@
       },
       {
        "kode": "MIDI",
-       "tpSl": "gantung",
+       "tpSl": "menang",
        "openTinggi": "menang",
        "tutupTutup": "kalah",
        "persen": 0.0,
-       "tglKeluar": null
+       "tglKeluar": "2026-10-08"
       },
       {
        "kode": "PTPP",
@@ -30449,11 +30491,11 @@
       },
       {
        "kode": "SOLA",
-       "tpSl": "gantung",
+       "tpSl": "menang",
        "openTinggi": "menang",
        "tutupTutup": "menang",
        "persen": 3.8961,
-       "tglKeluar": null
+       "tglKeluar": "2026-10-08"
       },
       {
        "kode": "GPRA",
@@ -30465,11 +30507,11 @@
       },
       {
        "kode": "SCNP",
-       "tpSl": "gantung",
+       "tpSl": "menang",
        "openTinggi": "menang",
        "tutupTutup": "kalah",
        "persen": -1.2048,
-       "tglKeluar": null
+       "tglKeluar": "2026-10-09"
       }
      ],
      "definisi": {
@@ -30487,13 +30529,13 @@
        "rataPersen": -0.7367
       },
       "tpSl": {
-       "menang": 0,
-       "kalah": 0,
-       "gantung": 20,
+       "menang": 5,
+       "kalah": 1,
+       "gantung": 14,
        "tak_masuk": 0,
        "ambigu": 0,
-       "menangDariTuntas": null,
-       "menangDariSemua": 0.0
+       "menangDariTuntas": 83.3,
+       "menangDariSemua": 25.0
       }
      }
     }
@@ -30504,68 +30546,1088 @@
    "kelasBukti": "CATATAN",
    "era": "nilai-transaksi",
    "dibangun": "2026-10-07T18:25:12+00:00",
-   "hariBursaTersedia": 0,
-   "hariBursaSesudah": 0,
+   "hariBursaTersedia": 2,
+   "hariBursaSesudah": 2,
    "jendelaTutup": false,
    "n": 100,
-   "menang": 0,
-   "kalah": 0,
-   "gantung": 51,
-   "tak_masuk": 49,
+   "menang": 17,
+   "kalah": 8,
+   "gantung": 75,
+   "tak_masuk": 0,
    "ambigu": 0,
-   "menangDariTuntas": null,
-   "menangDariSemua": 0.0,
+   "menangDariTuntas": 68.0,
+   "menangDariSemua": 17.0,
    "definisi": {
     "openTinggi": {
-     "menang": 0,
-     "kalah": 0,
-     "takTerukur": 100,
-     "winRate": null
+     "menang": 47,
+     "kalah": 53,
+     "takTerukur": 0,
+     "winRate": 47.0
     },
     "tutupTutup": {
-     "menang": 0,
-     "kalah": 0,
-     "takTerukur": 100,
-     "winRate": null,
-     "rataPersen": null
+     "menang": 9,
+     "kalah": 91,
+     "takTerukur": 0,
+     "winRate": 9.0,
+     "rataPersen": -1.1534
     },
     "tpSl": {
-     "menang": 0,
-     "kalah": 0,
-     "gantung": 51,
-     "tak_masuk": 49,
+     "menang": 17,
+     "kalah": 8,
+     "gantung": 75,
+     "tak_masuk": 0,
      "ambigu": 0,
-     "menangDariTuntas": null,
-     "menangDariSemua": 0.0
+     "menangDariTuntas": 68.0,
+     "menangDariSemua": 17.0
     }
    },
    "preset": [
     {
      "preset": "scalping",
      "n": 20,
-     "menang": 0,
-     "kalah": 0,
-     "gantung": 16,
-     "tak_masuk": 4,
+     "menang": 2,
+     "kalah": 1,
+     "gantung": 17,
+     "tak_masuk": 0,
      "ambigu": 0,
-     "menangDariTuntas": null,
-     "menangDariSemua": 0.0,
+     "menangDariTuntas": 66.7,
+     "menangDariSemua": 10.0,
      "saham": [
       {
        "kode": "TEBE",
+       "tpSl": "kalah",
+       "openTinggi": "kalah",
+       "tutupTutup": "kalah",
+       "persen": 0.0,
+       "tglKeluar": "2026-10-09"
+      },
+      {
+       "kode": "POLA",
+       "tpSl": "menang",
+       "openTinggi": "menang",
+       "tutupTutup": "kalah",
+       "persen": -4.5455,
+       "tglKeluar": "2026-10-08"
+      },
+      {
+       "kode": "SMCB",
        "tpSl": "gantung",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
+       "openTinggi": "kalah",
+       "tutupTutup": "kalah",
+       "persen": 0.0,
+       "tglKeluar": null
+      },
+      {
+       "kode": "MFMI",
+       "tpSl": "gantung",
+       "openTinggi": "kalah",
+       "tutupTutup": "kalah",
+       "persen": 0.0,
+       "tglKeluar": null
+      },
+      {
+       "kode": "SQMI",
+       "tpSl": "gantung",
+       "openTinggi": "menang",
+       "tutupTutup": "kalah",
+       "persen": -7.5472,
+       "tglKeluar": null
+      },
+      {
+       "kode": "MEJA",
+       "tpSl": "gantung",
+       "openTinggi": "kalah",
+       "tutupTutup": "kalah",
+       "persen": -9.7561,
+       "tglKeluar": null
+      },
+      {
+       "kode": "PTBA",
+       "tpSl": "gantung",
+       "openTinggi": "menang",
+       "tutupTutup": "kalah",
+       "persen": -1.7751,
+       "tglKeluar": null
+      },
+      {
+       "kode": "SRSN",
+       "tpSl": "gantung",
+       "openTinggi": "menang",
+       "tutupTutup": "kalah",
+       "persen": -5.6338,
+       "tglKeluar": null
+      },
+      {
+       "kode": "NICK",
+       "tpSl": "menang",
+       "openTinggi": "menang",
+       "tutupTutup": "kalah",
+       "persen": -2.1277,
+       "tglKeluar": "2026-10-08"
+      },
+      {
+       "kode": "CSMI",
+       "tpSl": "gantung",
+       "openTinggi": "kalah",
+       "tutupTutup": "kalah",
+       "persen": 0.0,
+       "tglKeluar": null
+      },
+      {
+       "kode": "PPGL",
+       "tpSl": "gantung",
+       "openTinggi": "kalah",
+       "tutupTutup": "kalah",
+       "persen": 0.0,
+       "tglKeluar": null
+      },
+      {
+       "kode": "BHAT",
+       "tpSl": "gantung",
+       "openTinggi": "kalah",
+       "tutupTutup": "kalah",
+       "persen": 0.0,
+       "tglKeluar": null
+      },
+      {
+       "kode": "BSWD",
+       "tpSl": "gantung",
+       "openTinggi": "kalah",
+       "tutupTutup": "kalah",
+       "persen": 0.0,
+       "tglKeluar": null
+      },
+      {
+       "kode": "TRUK",
+       "tpSl": "gantung",
+       "openTinggi": "kalah",
+       "tutupTutup": "kalah",
+       "persen": 0.0,
+       "tglKeluar": null
+      },
+      {
+       "kode": "DPNS",
+       "tpSl": "gantung",
+       "openTinggi": "kalah",
+       "tutupTutup": "kalah",
+       "persen": 0.0,
+       "tglKeluar": null
+      },
+      {
+       "kode": "BIMA",
+       "tpSl": "gantung",
+       "openTinggi": "kalah",
+       "tutupTutup": "kalah",
+       "persen": 0.0,
+       "tglKeluar": null
+      },
+      {
+       "kode": "GLOB",
+       "tpSl": "gantung",
+       "openTinggi": "kalah",
+       "tutupTutup": "kalah",
+       "persen": 0.0,
+       "tglKeluar": null
+      },
+      {
+       "kode": "UNIT",
+       "tpSl": "gantung",
+       "openTinggi": "kalah",
+       "tutupTutup": "kalah",
+       "persen": 0.0,
+       "tglKeluar": null
+      },
+      {
+       "kode": "MTSM",
+       "tpSl": "gantung",
+       "openTinggi": "kalah",
+       "tutupTutup": "kalah",
+       "persen": 0.0,
+       "tglKeluar": null
+      },
+      {
+       "kode": "IBST",
+       "tpSl": "gantung",
+       "openTinggi": "kalah",
+       "tutupTutup": "kalah",
+       "persen": 0.0,
+       "tglKeluar": null
+      }
+     ],
+     "definisi": {
+      "openTinggi": {
+       "menang": 5,
+       "kalah": 15,
+       "takTerukur": 0,
+       "winRate": 25.0
+      },
+      "tutupTutup": {
+       "menang": 0,
+       "kalah": 20,
+       "takTerukur": 0,
+       "winRate": 0.0,
+       "rataPersen": -1.5693
+      },
+      "tpSl": {
+       "menang": 2,
+       "kalah": 1,
+       "gantung": 17,
+       "tak_masuk": 0,
+       "ambigu": 0,
+       "menangDariTuntas": 66.7,
+       "menangDariSemua": 10.0
+      }
+     }
+    },
+    {
+     "preset": "swing",
+     "n": 20,
+     "menang": 9,
+     "kalah": 1,
+     "gantung": 10,
+     "tak_masuk": 0,
+     "ambigu": 0,
+     "menangDariTuntas": 90.0,
+     "menangDariSemua": 45.0,
+     "saham": [
+      {
+       "kode": "SQMI",
+       "tpSl": "gantung",
+       "openTinggi": "menang",
+       "tutupTutup": "kalah",
+       "persen": -7.5472,
+       "tglKeluar": null
+      },
+      {
+       "kode": "TEBE",
+       "tpSl": "kalah",
+       "openTinggi": "kalah",
+       "tutupTutup": "kalah",
+       "persen": 0.0,
+       "tglKeluar": "2026-10-09"
+      },
+      {
+       "kode": "CSMI",
+       "tpSl": "gantung",
+       "openTinggi": "kalah",
+       "tutupTutup": "kalah",
+       "persen": 0.0,
        "tglKeluar": null
       },
       {
        "kode": "POLA",
+       "tpSl": "menang",
+       "openTinggi": "menang",
+       "tutupTutup": "kalah",
+       "persen": -4.5455,
+       "tglKeluar": "2026-10-08"
+      },
+      {
+       "kode": "PPRI",
        "tpSl": "gantung",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
+       "openTinggi": "menang",
+       "tutupTutup": "kalah",
+       "persen": -3.3333,
        "tglKeluar": null
+      },
+      {
+       "kode": "MMIX",
+       "tpSl": "menang",
+       "openTinggi": "menang",
+       "tutupTutup": "menang",
+       "persen": 0.5319,
+       "tglKeluar": "2026-10-09"
+      },
+      {
+       "kode": "SRSN",
+       "tpSl": "gantung",
+       "openTinggi": "menang",
+       "tutupTutup": "kalah",
+       "persen": -5.6338,
+       "tglKeluar": null
+      },
+      {
+       "kode": "AYLS",
+       "tpSl": "gantung",
+       "openTinggi": "menang",
+       "tutupTutup": "kalah",
+       "persen": -4.0404,
+       "tglKeluar": null
+      },
+      {
+       "kode": "PCAR",
+       "tpSl": "menang",
+       "openTinggi": "menang",
+       "tutupTutup": "kalah",
+       "persen": -1.25,
+       "tglKeluar": "2026-10-09"
+      },
+      {
+       "kode": "BTEK",
+       "tpSl": "menang",
+       "openTinggi": "menang",
+       "tutupTutup": "menang",
+       "persen": 7.6923,
+       "tglKeluar": "2026-10-08"
+      },
+      {
+       "kode": "SMLE",
+       "tpSl": "menang",
+       "openTinggi": "menang",
+       "tutupTutup": "menang",
+       "persen": 7.5949,
+       "tglKeluar": "2026-10-08"
+      },
+      {
+       "kode": "OILS",
+       "tpSl": "menang",
+       "openTinggi": "menang",
+       "tutupTutup": "kalah",
+       "persen": 0.0,
+       "tglKeluar": "2026-10-08"
+      },
+      {
+       "kode": "BDKR",
+       "tpSl": "gantung",
+       "openTinggi": "menang",
+       "tutupTutup": "kalah",
+       "persen": -1.8519,
+       "tglKeluar": null
+      },
+      {
+       "kode": "AKKU",
+       "tpSl": "menang",
+       "openTinggi": "menang",
+       "tutupTutup": "menang",
+       "persen": 12.6761,
+       "tglKeluar": "2026-10-09"
+      },
+      {
+       "kode": "KREN",
+       "tpSl": "menang",
+       "openTinggi": "menang",
+       "tutupTutup": "kalah",
+       "persen": 0.0,
+       "tglKeluar": "2026-10-08"
+      },
+      {
+       "kode": "MITI",
+       "tpSl": "gantung",
+       "openTinggi": "menang",
+       "tutupTutup": "kalah",
+       "persen": -5.6497,
+       "tglKeluar": null
+      },
+      {
+       "kode": "RSCH",
+       "tpSl": "gantung",
+       "openTinggi": "menang",
+       "tutupTutup": "menang",
+       "persen": 0.8475,
+       "tglKeluar": null
+      },
+      {
+       "kode": "VICI",
+       "tpSl": "menang",
+       "openTinggi": "menang",
+       "tutupTutup": "menang",
+       "persen": 5.2846,
+       "tglKeluar": "2026-10-09"
+      },
+      {
+       "kode": "SMIL",
+       "tpSl": "gantung",
+       "openTinggi": "menang",
+       "tutupTutup": "kalah",
+       "persen": -0.8333,
+       "tglKeluar": null
+      },
+      {
+       "kode": "TARA",
+       "tpSl": "gantung",
+       "openTinggi": "kalah",
+       "tutupTutup": "kalah",
+       "persen": -4.7619,
+       "tglKeluar": null
+      }
+     ],
+     "definisi": {
+      "openTinggi": {
+       "menang": 17,
+       "kalah": 3,
+       "takTerukur": 0,
+       "winRate": 85.0
+      },
+      "tutupTutup": {
+       "menang": 6,
+       "kalah": 14,
+       "takTerukur": 0,
+       "winRate": 30.0,
+       "rataPersen": -0.241
+      },
+      "tpSl": {
+       "menang": 9,
+       "kalah": 1,
+       "gantung": 10,
+       "tak_masuk": 0,
+       "ambigu": 0,
+       "menangDariTuntas": 90.0,
+       "menangDariSemua": 45.0
+      }
+     }
+    },
+    {
+     "preset": "whale-tiket",
+     "n": 20,
+     "menang": 2,
+     "kalah": 3,
+     "gantung": 15,
+     "tak_masuk": 0,
+     "ambigu": 0,
+     "menangDariTuntas": 40.0,
+     "menangDariSemua": 10.0,
+     "saham": [
+      {
+       "kode": "TEBE",
+       "tpSl": "kalah",
+       "openTinggi": "kalah",
+       "tutupTutup": "kalah",
+       "persen": 0.0,
+       "tglKeluar": "2026-10-09"
+      },
+      {
+       "kode": "CSMI",
+       "tpSl": "gantung",
+       "openTinggi": "kalah",
+       "tutupTutup": "kalah",
+       "persen": 0.0,
+       "tglKeluar": null
+      },
+      {
+       "kode": "POLA",
+       "tpSl": "menang",
+       "openTinggi": "menang",
+       "tutupTutup": "kalah",
+       "persen": -4.5455,
+       "tglKeluar": "2026-10-08"
+      },
+      {
+       "kode": "META",
+       "tpSl": "gantung",
+       "openTinggi": "kalah",
+       "tutupTutup": "kalah",
+       "persen": 0.0,
+       "tglKeluar": null
+      },
+      {
+       "kode": "ENAK",
+       "tpSl": "kalah",
+       "openTinggi": "menang",
+       "tutupTutup": "kalah",
+       "persen": -11.215,
+       "tglKeluar": "2026-10-09"
+      },
+      {
+       "kode": "MPXL",
+       "tpSl": "gantung",
+       "openTinggi": "kalah",
+       "tutupTutup": "kalah",
+       "persen": 0.0,
+       "tglKeluar": null
+      },
+      {
+       "kode": "BDKR",
+       "tpSl": "gantung",
+       "openTinggi": "menang",
+       "tutupTutup": "kalah",
+       "persen": -1.8519,
+       "tglKeluar": null
+      },
+      {
+       "kode": "ASPI",
+       "tpSl": "gantung",
+       "openTinggi": "kalah",
+       "tutupTutup": "kalah",
+       "persen": 0.0,
+       "tglKeluar": null
+      },
+      {
+       "kode": "UNIQ",
+       "tpSl": "gantung",
+       "openTinggi": "menang",
+       "tutupTutup": "kalah",
+       "persen": -2.3256,
+       "tglKeluar": null
+      },
+      {
+       "kode": "ASGR",
+       "tpSl": "gantung",
+       "openTinggi": "menang",
+       "tutupTutup": "kalah",
+       "persen": -4.0,
+       "tglKeluar": null
+      },
+      {
+       "kode": "SEMA",
+       "tpSl": "kalah",
+       "openTinggi": "menang",
+       "tutupTutup": "kalah",
+       "persen": -14.6667,
+       "tglKeluar": "2026-10-08"
+      },
+      {
+       "kode": "PSAB",
+       "tpSl": "gantung",
+       "openTinggi": "menang",
+       "tutupTutup": "kalah",
+       "persen": -1.9231,
+       "tglKeluar": null
+      },
+      {
+       "kode": "MAPI",
+       "tpSl": "gantung",
+       "openTinggi": "kalah",
+       "tutupTutup": "kalah",
+       "persen": 0.0,
+       "tglKeluar": null
+      },
+      {
+       "kode": "ULTJ",
+       "tpSl": "menang",
+       "openTinggi": "menang",
+       "tutupTutup": "menang",
+       "persen": 3.8647,
+       "tglKeluar": "2026-10-08"
+      },
+      {
+       "kode": "PPGL",
+       "tpSl": "gantung",
+       "openTinggi": "kalah",
+       "tutupTutup": "kalah",
+       "persen": 0.0,
+       "tglKeluar": null
+      },
+      {
+       "kode": "TRIO",
+       "tpSl": "gantung",
+       "openTinggi": "kalah",
+       "tutupTutup": "kalah",
+       "persen": 0.0,
+       "tglKeluar": null
+      },
+      {
+       "kode": "BHAT",
+       "tpSl": "gantung",
+       "openTinggi": "kalah",
+       "tutupTutup": "kalah",
+       "persen": 0.0,
+       "tglKeluar": null
+      },
+      {
+       "kode": "IPAC",
+       "tpSl": "gantung",
+       "openTinggi": "kalah",
+       "tutupTutup": "kalah",
+       "persen": 0.0,
+       "tglKeluar": null
+      },
+      {
+       "kode": "BSWD",
+       "tpSl": "gantung",
+       "openTinggi": "kalah",
+       "tutupTutup": "kalah",
+       "persen": 0.0,
+       "tglKeluar": null
+      },
+      {
+       "kode": "TRUK",
+       "tpSl": "gantung",
+       "openTinggi": "kalah",
+       "tutupTutup": "kalah",
+       "persen": 0.0,
+       "tglKeluar": null
+      }
+     ],
+     "definisi": {
+      "openTinggi": {
+       "menang": 8,
+       "kalah": 12,
+       "takTerukur": 0,
+       "winRate": 40.0
+      },
+      "tutupTutup": {
+       "menang": 1,
+       "kalah": 19,
+       "takTerukur": 0,
+       "winRate": 5.0,
+       "rataPersen": -1.8332
+      },
+      "tpSl": {
+       "menang": 2,
+       "kalah": 3,
+       "gantung": 15,
+       "tak_masuk": 0,
+       "ambigu": 0,
+       "menangDariTuntas": 40.0,
+       "menangDariSemua": 10.0
+      }
+     }
+    },
+    {
+     "preset": "whale-akdis",
+     "n": 20,
+     "menang": 1,
+     "kalah": 1,
+     "gantung": 18,
+     "tak_masuk": 0,
+     "ambigu": 0,
+     "menangDariTuntas": 50.0,
+     "menangDariSemua": 5.0,
+     "saham": [
+      {
+       "kode": "TEBE",
+       "tpSl": "kalah",
+       "openTinggi": "kalah",
+       "tutupTutup": "kalah",
+       "persen": 0.0,
+       "tglKeluar": "2026-10-09"
+      },
+      {
+       "kode": "POLA",
+       "tpSl": "menang",
+       "openTinggi": "menang",
+       "tutupTutup": "kalah",
+       "persen": -4.5455,
+       "tglKeluar": "2026-10-08"
+      },
+      {
+       "kode": "WSKT",
+       "tpSl": "gantung",
+       "openTinggi": "kalah",
+       "tutupTutup": "kalah",
+       "persen": 0.0,
+       "tglKeluar": null
+      },
+      {
+       "kode": "WIKA",
+       "tpSl": "gantung",
+       "openTinggi": "kalah",
+       "tutupTutup": "kalah",
+       "persen": 0.0,
+       "tglKeluar": null
+      },
+      {
+       "kode": "PPGL",
+       "tpSl": "gantung",
+       "openTinggi": "kalah",
+       "tutupTutup": "kalah",
+       "persen": 0.0,
+       "tglKeluar": null
+      },
+      {
+       "kode": "ZINC",
+       "tpSl": "gantung",
+       "openTinggi": "kalah",
+       "tutupTutup": "kalah",
+       "persen": 0.0,
+       "tglKeluar": null
+      },
+      {
+       "kode": "WSBP",
+       "tpSl": "gantung",
+       "openTinggi": "kalah",
+       "tutupTutup": "kalah",
+       "persen": 0.0,
+       "tglKeluar": null
+      },
+      {
+       "kode": "TRIL",
+       "tpSl": "gantung",
+       "openTinggi": "kalah",
+       "tutupTutup": "kalah",
+       "persen": 0.0,
+       "tglKeluar": null
+      },
+      {
+       "kode": "IPPE",
+       "tpSl": "gantung",
+       "openTinggi": "kalah",
+       "tutupTutup": "kalah",
+       "persen": 0.0,
+       "tglKeluar": null
+      },
+      {
+       "kode": "TRUK",
+       "tpSl": "gantung",
+       "openTinggi": "kalah",
+       "tutupTutup": "kalah",
+       "persen": 0.0,
+       "tglKeluar": null
+      },
+      {
+       "kode": "DPNS",
+       "tpSl": "gantung",
+       "openTinggi": "kalah",
+       "tutupTutup": "kalah",
+       "persen": 0.0,
+       "tglKeluar": null
+      },
+      {
+       "kode": "TOYS",
+       "tpSl": "gantung",
+       "openTinggi": "kalah",
+       "tutupTutup": "kalah",
+       "persen": 0.0,
+       "tglKeluar": null
+      },
+      {
+       "kode": "LCGP",
+       "tpSl": "gantung",
+       "openTinggi": "kalah",
+       "tutupTutup": "kalah",
+       "persen": 0.0,
+       "tglKeluar": null
+      },
+      {
+       "kode": "DEAL",
+       "tpSl": "gantung",
+       "openTinggi": "kalah",
+       "tutupTutup": "kalah",
+       "persen": 0.0,
+       "tglKeluar": null
+      },
+      {
+       "kode": "BIMA",
+       "tpSl": "gantung",
+       "openTinggi": "kalah",
+       "tutupTutup": "kalah",
+       "persen": 0.0,
+       "tglKeluar": null
+      },
+      {
+       "kode": "GLOB",
+       "tpSl": "gantung",
+       "openTinggi": "kalah",
+       "tutupTutup": "kalah",
+       "persen": 0.0,
+       "tglKeluar": null
+      },
+      {
+       "kode": "INTA",
+       "tpSl": "gantung",
+       "openTinggi": "kalah",
+       "tutupTutup": "kalah",
+       "persen": 0.0,
+       "tglKeluar": null
+      },
+      {
+       "kode": "ALTO",
+       "tpSl": "gantung",
+       "openTinggi": "kalah",
+       "tutupTutup": "kalah",
+       "persen": 0.0,
+       "tglKeluar": null
+      },
+      {
+       "kode": "MTSM",
+       "tpSl": "gantung",
+       "openTinggi": "kalah",
+       "tutupTutup": "kalah",
+       "persen": 0.0,
+       "tglKeluar": null
+      },
+      {
+       "kode": "SMCB",
+       "tpSl": "gantung",
+       "openTinggi": "kalah",
+       "tutupTutup": "kalah",
+       "persen": 0.0,
+       "tglKeluar": null
+      }
+     ],
+     "definisi": {
+      "openTinggi": {
+       "menang": 1,
+       "kalah": 19,
+       "takTerukur": 0,
+       "winRate": 5.0
+      },
+      "tutupTutup": {
+       "menang": 0,
+       "kalah": 20,
+       "takTerukur": 0,
+       "winRate": 0.0,
+       "rataPersen": -0.2273
+      },
+      "tpSl": {
+       "menang": 1,
+       "kalah": 1,
+       "gantung": 18,
+       "tak_masuk": 0,
+       "ambigu": 0,
+       "menangDariTuntas": 50.0,
+       "menangDariSemua": 5.0
+      }
+     }
+    },
+    {
+     "preset": "whale-asing",
+     "n": 20,
+     "menang": 3,
+     "kalah": 2,
+     "gantung": 15,
+     "tak_masuk": 0,
+     "ambigu": 0,
+     "menangDariTuntas": 60.0,
+     "menangDariSemua": 15.0,
+     "saham": [
+      {
+       "kode": "KETR",
+       "tpSl": "kalah",
+       "openTinggi": "menang",
+       "tutupTutup": "kalah",
+       "persen": -6.5574,
+       "tglKeluar": "2026-10-09"
+      },
+      {
+       "kode": "MEDC",
+       "tpSl": "gantung",
+       "openTinggi": "menang",
+       "tutupTutup": "kalah",
+       "persen": -1.0274,
+       "tglKeluar": null
+      },
+      {
+       "kode": "BEST",
+       "tpSl": "gantung",
+       "openTinggi": "menang",
+       "tutupTutup": "kalah",
+       "persen": -2.459,
+       "tglKeluar": null
+      },
+      {
+       "kode": "ULTJ",
+       "tpSl": "menang",
+       "openTinggi": "menang",
+       "tutupTutup": "menang",
+       "persen": 3.8647,
+       "tglKeluar": "2026-10-08"
+      },
+      {
+       "kode": "HMSP",
+       "tpSl": "gantung",
+       "openTinggi": "menang",
+       "tutupTutup": "kalah",
+       "persen": -0.8,
+       "tglKeluar": null
+      },
+      {
+       "kode": "PTPP",
+       "tpSl": "gantung",
+       "openTinggi": "kalah",
+       "tutupTutup": "kalah",
+       "persen": 0.0,
+       "tglKeluar": null
+      },
+      {
+       "kode": "BNGA",
+       "tpSl": "gantung",
+       "openTinggi": "menang",
+       "tutupTutup": "kalah",
+       "persen": -1.462,
+       "tglKeluar": null
+      },
+      {
+       "kode": "CLPI",
+       "tpSl": "gantung",
+       "openTinggi": "menang",
+       "tutupTutup": "kalah",
+       "persen": -0.3165,
+       "tglKeluar": null
+      },
+      {
+       "kode": "MLBI",
+       "tpSl": "gantung",
+       "openTinggi": "kalah",
+       "tutupTutup": "kalah",
+       "persen": 0.0,
+       "tglKeluar": null
+      },
+      {
+       "kode": "DSSA",
+       "tpSl": "gantung",
+       "openTinggi": "menang",
+       "tutupTutup": "kalah",
+       "persen": -2.6549,
+       "tglKeluar": null
+      },
+      {
+       "kode": "PTBA",
+       "tpSl": "gantung",
+       "openTinggi": "menang",
+       "tutupTutup": "kalah",
+       "persen": -1.7751,
+       "tglKeluar": null
+      },
+      {
+       "kode": "SGER",
+       "tpSl": "gantung",
+       "openTinggi": "menang",
+       "tutupTutup": "kalah",
+       "persen": -0.6536,
+       "tglKeluar": null
+      },
+      {
+       "kode": "TPIA",
+       "tpSl": "gantung",
+       "openTinggi": "menang",
+       "tutupTutup": "kalah",
+       "persen": -3.1884,
+       "tglKeluar": null
+      },
+      {
+       "kode": "MMIX",
+       "tpSl": "menang",
+       "openTinggi": "menang",
+       "tutupTutup": "menang",
+       "persen": 0.5319,
+       "tglKeluar": "2026-10-09"
+      },
+      {
+       "kode": "SRSN",
+       "tpSl": "gantung",
+       "openTinggi": "menang",
+       "tutupTutup": "kalah",
+       "persen": -5.6338,
+       "tglKeluar": null
+      },
+      {
+       "kode": "TINS",
+       "tpSl": "gantung",
+       "openTinggi": "menang",
+       "tutupTutup": "kalah",
+       "persen": -1.2987,
+       "tglKeluar": null
+      },
+      {
+       "kode": "VKTR",
+       "tpSl": "kalah",
+       "openTinggi": "kalah",
+       "tutupTutup": "kalah",
+       "persen": -6.7164,
+       "tglKeluar": "2026-10-09"
+      },
+      {
+       "kode": "ANTM",
+       "tpSl": "gantung",
+       "openTinggi": "menang",
+       "tutupTutup": "kalah",
+       "persen": -2.4768,
+       "tglKeluar": null
+      },
+      {
+       "kode": "PCAR",
+       "tpSl": "menang",
+       "openTinggi": "menang",
+       "tutupTutup": "kalah",
+       "persen": -1.25,
+       "tglKeluar": "2026-10-09"
+      },
+      {
+       "kode": "BNBR",
+       "tpSl": "gantung",
+       "openTinggi": "kalah",
+       "tutupTutup": "kalah",
+       "persen": -4.0541,
+       "tglKeluar": null
+      }
+     ],
+     "definisi": {
+      "openTinggi": {
+       "menang": 16,
+       "kalah": 4,
+       "takTerukur": 0,
+       "winRate": 80.0
+      },
+      "tutupTutup": {
+       "menang": 2,
+       "kalah": 18,
+       "takTerukur": 0,
+       "winRate": 10.0,
+       "rataPersen": -1.8964
+      },
+      "tpSl": {
+       "menang": 3,
+       "kalah": 2,
+       "gantung": 15,
+       "tak_masuk": 0,
+       "ambigu": 0,
+       "menangDariTuntas": 60.0,
+       "menangDariSemua": 15.0
+      }
+     }
+    }
+   ]
+  },
+  {
+   "tanggal": "2026-10-08",
+   "kelasBukti": "CATATAN",
+   "era": "nilai-transaksi",
+   "dibangun": "2026-10-09T00:02:35+00:00",
+   "hariBursaTersedia": 1,
+   "hariBursaSesudah": 1,
+   "jendelaTutup": false,
+   "n": 100,
+   "menang": 12,
+   "kalah": 7,
+   "gantung": 81,
+   "tak_masuk": 0,
+   "ambigu": 1,
+   "menangDariTuntas": 63.2,
+   "menangDariSemua": 12.0,
+   "definisi": {
+    "openTinggi": {
+     "menang": 51,
+     "kalah": 4,
+     "takTerukur": 45,
+     "winRate": 92.7
+    },
+    "tutupTutup": {
+     "menang": 31,
+     "kalah": 24,
+     "takTerukur": 45,
+     "winRate": 56.4,
+     "rataPersen": 1.5361
+    },
+    "tpSl": {
+     "menang": 12,
+     "kalah": 7,
+     "gantung": 81,
+     "tak_masuk": 0,
+     "ambigu": 1,
+     "menangDariTuntas": 63.2,
+     "menangDariSemua": 12.0
+    }
+   },
+   "preset": [
+    {
+     "preset": "scalping",
+     "n": 20,
+     "menang": 1,
+     "kalah": 1,
+     "gantung": 18,
+     "tak_masuk": 0,
+     "ambigu": 0,
+     "menangDariTuntas": 50.0,
+     "menangDariSemua": 5.0,
+     "saham": [
+      {
+       "kode": "TEBE",
+       "tpSl": "kalah",
+       "openTinggi": "menang",
+       "tutupTutup": "menang",
+       "persen": 4.0892,
+       "tglKeluar": "2026-10-09"
       },
       {
        "kode": "SMCB",
@@ -30584,43 +31646,19 @@
        "tglKeluar": null
       },
       {
-       "kode": "SQMI",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "MEJA",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
+       "kode": "POLA",
+       "tpSl": "menang",
+       "openTinggi": "menang",
+       "tutupTutup": "menang",
+       "persen": 2.8571,
+       "tglKeluar": "2026-10-09"
       },
       {
        "kode": "PTBA",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "SRSN",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "NICK",
        "tpSl": "gantung",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
+       "openTinggi": "menang",
+       "tutupTutup": "kalah",
+       "persen": -0.6024,
        "tglKeluar": null
       },
       {
@@ -30710,59 +31748,83 @@
        "tutupTutup": "tak_terukur",
        "persen": null,
        "tglKeluar": null
+      },
+      {
+       "kode": "BBMD",
+       "tpSl": "gantung",
+       "openTinggi": "kalah",
+       "tutupTutup": "kalah",
+       "persen": 0.0,
+       "tglKeluar": null
+      },
+      {
+       "kode": "FASW",
+       "tpSl": "gantung",
+       "openTinggi": "tak_terukur",
+       "tutupTutup": "tak_terukur",
+       "persen": null,
+       "tglKeluar": null
+      },
+      {
+       "kode": "SQMI",
+       "tpSl": "gantung",
+       "openTinggi": "menang",
+       "tutupTutup": "kalah",
+       "persen": -3.0612,
+       "tglKeluar": null
+      },
+      {
+       "kode": "DSSA",
+       "tpSl": "gantung",
+       "openTinggi": "menang",
+       "tutupTutup": "menang",
+       "persen": 2.7273,
+       "tglKeluar": null
       }
      ],
      "definisi": {
       "openTinggi": {
-       "menang": 0,
-       "kalah": 0,
-       "takTerukur": 20,
-       "winRate": null
+       "menang": 5,
+       "kalah": 1,
+       "takTerukur": 14,
+       "winRate": 83.3
       },
       "tutupTutup": {
-       "menang": 0,
-       "kalah": 0,
-       "takTerukur": 20,
-       "winRate": null,
-       "rataPersen": null
+       "menang": 3,
+       "kalah": 3,
+       "takTerukur": 14,
+       "winRate": 50.0,
+       "rataPersen": 1.0017
       },
       "tpSl": {
-       "menang": 0,
-       "kalah": 0,
-       "gantung": 16,
-       "tak_masuk": 4,
+       "menang": 1,
+       "kalah": 1,
+       "gantung": 18,
+       "tak_masuk": 0,
        "ambigu": 0,
-       "menangDariTuntas": null,
-       "menangDariSemua": 0.0
+       "menangDariTuntas": 50.0,
+       "menangDariSemua": 5.0
       }
      }
     },
     {
      "preset": "swing",
      "n": 20,
-     "menang": 0,
-     "kalah": 0,
-     "gantung": 3,
-     "tak_masuk": 17,
-     "ambigu": 0,
-     "menangDariTuntas": null,
-     "menangDariSemua": 0.0,
+     "menang": 5,
+     "kalah": 3,
+     "gantung": 12,
+     "tak_masuk": 0,
+     "ambigu": 1,
+     "menangDariTuntas": 62.5,
+     "menangDariSemua": 25.0,
      "saham": [
       {
-       "kode": "SQMI",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
        "kode": "TEBE",
-       "tpSl": "gantung",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
+       "tpSl": "kalah",
+       "openTinggi": "menang",
+       "tutupTutup": "menang",
+       "persen": 4.0892,
+       "tglKeluar": "2026-10-09"
       },
       {
        "kode": "CSMI",
@@ -30774,63 +31836,55 @@
       },
       {
        "kode": "POLA",
-       "tpSl": "gantung",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
+       "tpSl": "menang",
+       "openTinggi": "menang",
+       "tutupTutup": "menang",
+       "persen": 2.8571,
+       "tglKeluar": "2026-10-09"
       },
       {
        "kode": "PPRI",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
+       "tpSl": "gantung",
+       "openTinggi": "menang",
+       "tutupTutup": "kalah",
+       "persen": -1.1494,
        "tglKeluar": null
       },
       {
        "kode": "MMIX",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "SRSN",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
+       "tpSl": "menang",
+       "openTinggi": "menang",
+       "tutupTutup": "menang",
+       "persen": 2.1164,
+       "tglKeluar": "2026-10-09"
       },
       {
        "kode": "AYLS",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
+       "tpSl": "gantung",
+       "openTinggi": "menang",
+       "tutupTutup": "kalah",
+       "persen": 0.0,
        "tglKeluar": null
       },
       {
        "kode": "PCAR",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
+       "tpSl": "menang",
+       "openTinggi": "menang",
+       "tutupTutup": "menang",
+       "persen": 13.9241,
+       "tglKeluar": "2026-10-09"
       },
       {
        "kode": "BTEK",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
+       "tpSl": "menang",
+       "openTinggi": "menang",
+       "tutupTutup": "kalah",
+       "persen": 0.0,
+       "tglKeluar": "2026-10-09"
       },
       {
        "kode": "SMLE",
-       "tpSl": "tak_masuk",
+       "tpSl": "gantung",
        "openTinggi": "tak_terukur",
        "tutupTutup": "tak_terukur",
        "persen": null,
@@ -30838,120 +31892,136 @@
       },
       {
        "kode": "OILS",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
+       "tpSl": "gantung",
+       "openTinggi": "menang",
+       "tutupTutup": "kalah",
+       "persen": -1.5228,
        "tglKeluar": null
       },
       {
        "kode": "BDKR",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
+       "tpSl": "gantung",
+       "openTinggi": "menang",
+       "tutupTutup": "kalah",
+       "persen": -2.8302,
        "tglKeluar": null
       },
       {
        "kode": "AKKU",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
+       "tpSl": "kalah",
+       "openTinggi": "menang",
+       "tutupTutup": "menang",
+       "persen": 1.25,
+       "tglKeluar": "2026-10-09"
       },
       {
        "kode": "KREN",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
+       "tpSl": "gantung",
+       "openTinggi": "menang",
+       "tutupTutup": "kalah",
+       "persen": 0.0,
        "tglKeluar": null
       },
       {
        "kode": "MITI",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
+       "tpSl": "gantung",
+       "openTinggi": "menang",
+       "tutupTutup": "menang",
+       "persen": 5.988,
        "tglKeluar": null
       },
       {
        "kode": "RSCH",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
+       "tpSl": "gantung",
+       "openTinggi": "menang",
+       "tutupTutup": "menang",
+       "persen": 2.521,
        "tglKeluar": null
       },
       {
        "kode": "VICI",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
+       "tpSl": "gantung",
+       "openTinggi": "menang",
+       "tutupTutup": "kalah",
+       "persen": -3.4749,
        "tglKeluar": null
       },
       {
        "kode": "SMIL",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
+       "tpSl": "gantung",
+       "openTinggi": "menang",
+       "tutupTutup": "menang",
+       "persen": 2.1008,
        "tglKeluar": null
       },
       {
        "kode": "TARA",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
+       "tpSl": "menang",
+       "openTinggi": "menang",
+       "tutupTutup": "menang",
+       "persen": 7.5,
+       "tglKeluar": "2026-10-09"
+      },
+      {
+       "kode": "UNSP",
+       "tpSl": "gantung",
+       "openTinggi": "menang",
+       "tutupTutup": "kalah",
+       "persen": -1.7341,
        "tglKeluar": null
+      },
+      {
+       "kode": "PGLI",
+       "tpSl": "kalah",
+       "openTinggi": "menang",
+       "tutupTutup": "kalah",
+       "persen": -2.0202,
+       "tglKeluar": "2026-10-09"
       }
      ],
      "definisi": {
       "openTinggi": {
-       "menang": 0,
+       "menang": 18,
        "kalah": 0,
-       "takTerukur": 20,
-       "winRate": null
+       "takTerukur": 2,
+       "winRate": 100.0
       },
       "tutupTutup": {
-       "menang": 0,
-       "kalah": 0,
-       "takTerukur": 20,
-       "winRate": null,
-       "rataPersen": null
+       "menang": 9,
+       "kalah": 9,
+       "takTerukur": 2,
+       "winRate": 50.0,
+       "rataPersen": 1.6453
       },
       "tpSl": {
-       "menang": 0,
-       "kalah": 0,
-       "gantung": 3,
-       "tak_masuk": 17,
-       "ambigu": 0,
-       "menangDariTuntas": null,
-       "menangDariSemua": 0.0
+       "menang": 5,
+       "kalah": 3,
+       "gantung": 12,
+       "tak_masuk": 0,
+       "ambigu": 1,
+       "menangDariTuntas": 62.5,
+       "menangDariSemua": 25.0
       }
      }
     },
     {
      "preset": "whale-tiket",
      "n": 20,
-     "menang": 0,
-     "kalah": 0,
-     "gantung": 11,
-     "tak_masuk": 9,
+     "menang": 3,
+     "kalah": 2,
+     "gantung": 15,
+     "tak_masuk": 0,
      "ambigu": 0,
-     "menangDariTuntas": null,
-     "menangDariSemua": 0.0,
+     "menangDariTuntas": 60.0,
+     "menangDariSemua": 15.0,
      "saham": [
       {
        "kode": "TEBE",
-       "tpSl": "gantung",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
+       "tpSl": "kalah",
+       "openTinggi": "menang",
+       "tutupTutup": "menang",
+       "persen": 4.0892,
+       "tglKeluar": "2026-10-09"
       },
       {
        "kode": "CSMI",
@@ -30963,11 +32033,11 @@
       },
       {
        "kode": "POLA",
-       "tpSl": "gantung",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
+       "tpSl": "menang",
+       "openTinggi": "menang",
+       "tutupTutup": "menang",
+       "persen": 2.8571,
+       "tglKeluar": "2026-10-09"
       },
       {
        "kode": "META",
@@ -30979,26 +32049,26 @@
       },
       {
        "kode": "ENAK",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
+       "tpSl": "gantung",
+       "openTinggi": "menang",
+       "tutupTutup": "kalah",
+       "persen": -3.6842,
        "tglKeluar": null
       },
       {
        "kode": "MPXL",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
+       "tpSl": "kalah",
+       "openTinggi": "menang",
+       "tutupTutup": "kalah",
+       "persen": -8.2278,
+       "tglKeluar": "2026-10-09"
       },
       {
        "kode": "BDKR",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
+       "tpSl": "gantung",
+       "openTinggi": "menang",
+       "tutupTutup": "kalah",
+       "persen": -2.8302,
        "tglKeluar": null
       },
       {
@@ -31011,50 +32081,50 @@
       },
       {
        "kode": "UNIQ",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
+       "tpSl": "gantung",
+       "openTinggi": "menang",
+       "tutupTutup": "menang",
+       "persen": 0.7937,
        "tglKeluar": null
       },
       {
        "kode": "ASGR",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
+       "tpSl": "gantung",
+       "openTinggi": "menang",
+       "tutupTutup": "menang",
+       "persen": 1.25,
        "tglKeluar": null
       },
       {
        "kode": "SEMA",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
+       "tpSl": "menang",
+       "openTinggi": "menang",
+       "tutupTutup": "menang",
+       "persen": 17.7083,
+       "tglKeluar": "2026-10-09"
       },
       {
        "kode": "PSAB",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
+       "tpSl": "menang",
+       "openTinggi": "menang",
+       "tutupTutup": "menang",
+       "persen": 5.8824,
+       "tglKeluar": "2026-10-09"
       },
       {
        "kode": "MAPI",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
+       "tpSl": "gantung",
+       "openTinggi": "menang",
+       "tutupTutup": "kalah",
+       "persen": 0.0,
        "tglKeluar": null
       },
       {
        "kode": "ULTJ",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
+       "tpSl": "gantung",
+       "openTinggi": "kalah",
+       "tutupTutup": "kalah",
+       "persen": -1.3953,
        "tglKeluar": null
       },
       {
@@ -31108,26 +32178,26 @@
      ],
      "definisi": {
       "openTinggi": {
-       "menang": 0,
-       "kalah": 0,
-       "takTerukur": 20,
-       "winRate": null
+       "menang": 10,
+       "kalah": 1,
+       "takTerukur": 9,
+       "winRate": 90.9
       },
       "tutupTutup": {
-       "menang": 0,
-       "kalah": 0,
-       "takTerukur": 20,
-       "winRate": null,
-       "rataPersen": null
+       "menang": 6,
+       "kalah": 5,
+       "takTerukur": 9,
+       "winRate": 54.5,
+       "rataPersen": 1.4948
       },
       "tpSl": {
-       "menang": 0,
-       "kalah": 0,
-       "gantung": 11,
-       "tak_masuk": 9,
+       "menang": 3,
+       "kalah": 2,
+       "gantung": 15,
+       "tak_masuk": 0,
        "ambigu": 0,
-       "menangDariTuntas": null,
-       "menangDariSemua": 0.0
+       "menangDariTuntas": 60.0,
+       "menangDariSemua": 15.0
       }
      }
     },
@@ -31135,28 +32205,20 @@
      "preset": "whale-akdis",
      "n": 20,
      "menang": 0,
-     "kalah": 0,
-     "gantung": 20,
+     "kalah": 1,
+     "gantung": 19,
      "tak_masuk": 0,
      "ambigu": 0,
-     "menangDariTuntas": null,
+     "menangDariTuntas": 0.0,
      "menangDariSemua": 0.0,
      "saham": [
       {
        "kode": "TEBE",
-       "tpSl": "gantung",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "POLA",
-       "tpSl": "gantung",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
+       "tpSl": "kalah",
+       "openTinggi": "menang",
+       "tutupTutup": "menang",
+       "persen": 4.0892,
+       "tglKeluar": "2026-10-09"
       },
       {
        "kode": "WSKT",
@@ -31296,6 +32358,1042 @@
       },
       {
        "kode": "SMCB",
+       "tpSl": "gantung",
+       "openTinggi": "tak_terukur",
+       "tutupTutup": "tak_terukur",
+       "persen": null,
+       "tglKeluar": null
+      },
+      {
+       "kode": "MFMI",
+       "tpSl": "gantung",
+       "openTinggi": "tak_terukur",
+       "tutupTutup": "tak_terukur",
+       "persen": null,
+       "tglKeluar": null
+      }
+     ],
+     "definisi": {
+      "openTinggi": {
+       "menang": 1,
+       "kalah": 0,
+       "takTerukur": 19,
+       "winRate": 100.0
+      },
+      "tutupTutup": {
+       "menang": 1,
+       "kalah": 0,
+       "takTerukur": 19,
+       "winRate": 100.0,
+       "rataPersen": 4.0892
+      },
+      "tpSl": {
+       "menang": 0,
+       "kalah": 1,
+       "gantung": 19,
+       "tak_masuk": 0,
+       "ambigu": 0,
+       "menangDariTuntas": 0.0,
+       "menangDariSemua": 0.0
+      }
+     }
+    },
+    {
+     "preset": "whale-asing",
+     "n": 20,
+     "menang": 3,
+     "kalah": 0,
+     "gantung": 17,
+     "tak_masuk": 0,
+     "ambigu": 0,
+     "menangDariTuntas": 100.0,
+     "menangDariSemua": 15.0,
+     "saham": [
+      {
+       "kode": "KETR",
+       "tpSl": "gantung",
+       "openTinggi": "menang",
+       "tutupTutup": "menang",
+       "persen": 3.5088,
+       "tglKeluar": null
+      },
+      {
+       "kode": "MEDC",
+       "tpSl": "gantung",
+       "openTinggi": "menang",
+       "tutupTutup": "kalah",
+       "persen": -1.0381,
+       "tglKeluar": null
+      },
+      {
+       "kode": "BEST",
+       "tpSl": "gantung",
+       "openTinggi": "menang",
+       "tutupTutup": "kalah",
+       "persen": -0.8403,
+       "tglKeluar": null
+      },
+      {
+       "kode": "ULTJ",
+       "tpSl": "gantung",
+       "openTinggi": "kalah",
+       "tutupTutup": "kalah",
+       "persen": -1.3953,
+       "tglKeluar": null
+      },
+      {
+       "kode": "HMSP",
+       "tpSl": "menang",
+       "openTinggi": "menang",
+       "tutupTutup": "menang",
+       "persen": 2.4194,
+       "tglKeluar": "2026-10-09"
+      },
+      {
+       "kode": "PTPP",
+       "tpSl": "gantung",
+       "openTinggi": "tak_terukur",
+       "tutupTutup": "tak_terukur",
+       "persen": null,
+       "tglKeluar": null
+      },
+      {
+       "kode": "BNGA",
+       "tpSl": "gantung",
+       "openTinggi": "menang",
+       "tutupTutup": "menang",
+       "persen": 0.5935,
+       "tglKeluar": null
+      },
+      {
+       "kode": "CLPI",
+       "tpSl": "gantung",
+       "openTinggi": "kalah",
+       "tutupTutup": "kalah",
+       "persen": 0.0,
+       "tglKeluar": null
+      },
+      {
+       "kode": "MLBI",
+       "tpSl": "gantung",
+       "openTinggi": "menang",
+       "tutupTutup": "kalah",
+       "persen": 0.0,
+       "tglKeluar": null
+      },
+      {
+       "kode": "DSSA",
+       "tpSl": "gantung",
+       "openTinggi": "menang",
+       "tutupTutup": "menang",
+       "persen": 2.7273,
+       "tglKeluar": null
+      },
+      {
+       "kode": "PTBA",
+       "tpSl": "gantung",
+       "openTinggi": "menang",
+       "tutupTutup": "kalah",
+       "persen": -0.6024,
+       "tglKeluar": null
+      },
+      {
+       "kode": "SGER",
+       "tpSl": "gantung",
+       "openTinggi": "menang",
+       "tutupTutup": "menang",
+       "persen": 1.9737,
+       "tglKeluar": null
+      },
+      {
+       "kode": "TPIA",
+       "tpSl": "gantung",
+       "openTinggi": "menang",
+       "tutupTutup": "menang",
+       "persen": 0.2994,
+       "tglKeluar": null
+      },
+      {
+       "kode": "MMIX",
+       "tpSl": "menang",
+       "openTinggi": "menang",
+       "tutupTutup": "menang",
+       "persen": 2.1164,
+       "tglKeluar": "2026-10-09"
+      },
+      {
+       "kode": "SRSN",
+       "tpSl": "gantung",
+       "openTinggi": "menang",
+       "tutupTutup": "menang",
+       "persen": 1.4925,
+       "tglKeluar": null
+      },
+      {
+       "kode": "TINS",
+       "tpSl": "gantung",
+       "openTinggi": "menang",
+       "tutupTutup": "kalah",
+       "persen": -2.4123,
+       "tglKeluar": null
+      },
+      {
+       "kode": "VKTR",
+       "tpSl": "gantung",
+       "openTinggi": "menang",
+       "tutupTutup": "menang",
+       "persen": 3.2,
+       "tglKeluar": null
+      },
+      {
+       "kode": "ANTM",
+       "tpSl": "gantung",
+       "openTinggi": "menang",
+       "tutupTutup": "menang",
+       "persen": 0.9524,
+       "tglKeluar": null
+      },
+      {
+       "kode": "PCAR",
+       "tpSl": "menang",
+       "openTinggi": "menang",
+       "tutupTutup": "menang",
+       "persen": 13.9241,
+       "tglKeluar": "2026-10-09"
+      },
+      {
+       "kode": "BNBR",
+       "tpSl": "gantung",
+       "openTinggi": "menang",
+       "tutupTutup": "menang",
+       "persen": 1.4085,
+       "tglKeluar": null
+      }
+     ],
+     "definisi": {
+      "openTinggi": {
+       "menang": 17,
+       "kalah": 2,
+       "takTerukur": 1,
+       "winRate": 89.5
+      },
+      "tutupTutup": {
+       "menang": 12,
+       "kalah": 7,
+       "takTerukur": 1,
+       "winRate": 63.2,
+       "rataPersen": 1.4909
+      },
+      "tpSl": {
+       "menang": 3,
+       "kalah": 0,
+       "gantung": 17,
+       "tak_masuk": 0,
+       "ambigu": 0,
+       "menangDariTuntas": 100.0,
+       "menangDariSemua": 15.0
+      }
+     }
+    }
+   ]
+  },
+  {
+   "tanggal": "2026-10-09",
+   "kelasBukti": "CATATAN",
+   "era": "nilai-transaksi",
+   "dibangun": "2026-10-09T17:15:57+00:00",
+   "hariBursaTersedia": 0,
+   "hariBursaSesudah": 0,
+   "jendelaTutup": false,
+   "n": 100,
+   "menang": 0,
+   "kalah": 0,
+   "gantung": 41,
+   "tak_masuk": 59,
+   "ambigu": 0,
+   "menangDariTuntas": null,
+   "menangDariSemua": 0.0,
+   "definisi": {
+    "openTinggi": {
+     "menang": 0,
+     "kalah": 0,
+     "takTerukur": 100,
+     "winRate": null
+    },
+    "tutupTutup": {
+     "menang": 0,
+     "kalah": 0,
+     "takTerukur": 100,
+     "winRate": null,
+     "rataPersen": null
+    },
+    "tpSl": {
+     "menang": 0,
+     "kalah": 0,
+     "gantung": 41,
+     "tak_masuk": 59,
+     "ambigu": 0,
+     "menangDariTuntas": null,
+     "menangDariSemua": 0.0
+    }
+   },
+   "preset": [
+    {
+     "preset": "scalping",
+     "n": 20,
+     "menang": 0,
+     "kalah": 0,
+     "gantung": 15,
+     "tak_masuk": 5,
+     "ambigu": 0,
+     "menangDariTuntas": null,
+     "menangDariSemua": 0.0,
+     "saham": [
+      {
+       "kode": "SMLE",
+       "tpSl": "gantung",
+       "openTinggi": "tak_terukur",
+       "tutupTutup": "tak_terukur",
+       "persen": null,
+       "tglKeluar": null
+      },
+      {
+       "kode": "MMIX",
+       "tpSl": "tak_masuk",
+       "openTinggi": "tak_terukur",
+       "tutupTutup": "tak_terukur",
+       "persen": null,
+       "tglKeluar": null
+      },
+      {
+       "kode": "SMCB",
+       "tpSl": "gantung",
+       "openTinggi": "tak_terukur",
+       "tutupTutup": "tak_terukur",
+       "persen": null,
+       "tglKeluar": null
+      },
+      {
+       "kode": "SMMA",
+       "tpSl": "gantung",
+       "openTinggi": "tak_terukur",
+       "tutupTutup": "tak_terukur",
+       "persen": null,
+       "tglKeluar": null
+      },
+      {
+       "kode": "MFMI",
+       "tpSl": "gantung",
+       "openTinggi": "tak_terukur",
+       "tutupTutup": "tak_terukur",
+       "persen": null,
+       "tglKeluar": null
+      },
+      {
+       "kode": "TEBE",
+       "tpSl": "tak_masuk",
+       "openTinggi": "tak_terukur",
+       "tutupTutup": "tak_terukur",
+       "persen": null,
+       "tglKeluar": null
+      },
+      {
+       "kode": "SEMA",
+       "tpSl": "tak_masuk",
+       "openTinggi": "tak_terukur",
+       "tutupTutup": "tak_terukur",
+       "persen": null,
+       "tglKeluar": null
+      },
+      {
+       "kode": "NAYZ",
+       "tpSl": "tak_masuk",
+       "openTinggi": "tak_terukur",
+       "tutupTutup": "tak_terukur",
+       "persen": null,
+       "tglKeluar": null
+      },
+      {
+       "kode": "EMAS",
+       "tpSl": "tak_masuk",
+       "openTinggi": "tak_terukur",
+       "tutupTutup": "tak_terukur",
+       "persen": null,
+       "tglKeluar": null
+      },
+      {
+       "kode": "CSMI",
+       "tpSl": "gantung",
+       "openTinggi": "tak_terukur",
+       "tutupTutup": "tak_terukur",
+       "persen": null,
+       "tglKeluar": null
+      },
+      {
+       "kode": "PPGL",
+       "tpSl": "gantung",
+       "openTinggi": "tak_terukur",
+       "tutupTutup": "tak_terukur",
+       "persen": null,
+       "tglKeluar": null
+      },
+      {
+       "kode": "BHAT",
+       "tpSl": "gantung",
+       "openTinggi": "tak_terukur",
+       "tutupTutup": "tak_terukur",
+       "persen": null,
+       "tglKeluar": null
+      },
+      {
+       "kode": "BSWD",
+       "tpSl": "gantung",
+       "openTinggi": "tak_terukur",
+       "tutupTutup": "tak_terukur",
+       "persen": null,
+       "tglKeluar": null
+      },
+      {
+       "kode": "TRUK",
+       "tpSl": "gantung",
+       "openTinggi": "tak_terukur",
+       "tutupTutup": "tak_terukur",
+       "persen": null,
+       "tglKeluar": null
+      },
+      {
+       "kode": "DPNS",
+       "tpSl": "gantung",
+       "openTinggi": "tak_terukur",
+       "tutupTutup": "tak_terukur",
+       "persen": null,
+       "tglKeluar": null
+      },
+      {
+       "kode": "BIMA",
+       "tpSl": "gantung",
+       "openTinggi": "tak_terukur",
+       "tutupTutup": "tak_terukur",
+       "persen": null,
+       "tglKeluar": null
+      },
+      {
+       "kode": "GLOB",
+       "tpSl": "gantung",
+       "openTinggi": "tak_terukur",
+       "tutupTutup": "tak_terukur",
+       "persen": null,
+       "tglKeluar": null
+      },
+      {
+       "kode": "UNIT",
+       "tpSl": "gantung",
+       "openTinggi": "tak_terukur",
+       "tutupTutup": "tak_terukur",
+       "persen": null,
+       "tglKeluar": null
+      },
+      {
+       "kode": "MTSM",
+       "tpSl": "gantung",
+       "openTinggi": "tak_terukur",
+       "tutupTutup": "tak_terukur",
+       "persen": null,
+       "tglKeluar": null
+      },
+      {
+       "kode": "IBST",
+       "tpSl": "gantung",
+       "openTinggi": "tak_terukur",
+       "tutupTutup": "tak_terukur",
+       "persen": null,
+       "tglKeluar": null
+      }
+     ],
+     "definisi": {
+      "openTinggi": {
+       "menang": 0,
+       "kalah": 0,
+       "takTerukur": 20,
+       "winRate": null
+      },
+      "tutupTutup": {
+       "menang": 0,
+       "kalah": 0,
+       "takTerukur": 20,
+       "winRate": null,
+       "rataPersen": null
+      },
+      "tpSl": {
+       "menang": 0,
+       "kalah": 0,
+       "gantung": 15,
+       "tak_masuk": 5,
+       "ambigu": 0,
+       "menangDariTuntas": null,
+       "menangDariSemua": 0.0
+      }
+     }
+    },
+    {
+     "preset": "swing",
+     "n": 20,
+     "menang": 0,
+     "kalah": 0,
+     "gantung": 2,
+     "tak_masuk": 18,
+     "ambigu": 0,
+     "menangDariTuntas": null,
+     "menangDariSemua": 0.0,
+     "saham": [
+      {
+       "kode": "SMLE",
+       "tpSl": "gantung",
+       "openTinggi": "tak_terukur",
+       "tutupTutup": "tak_terukur",
+       "persen": null,
+       "tglKeluar": null
+      },
+      {
+       "kode": "MMIX",
+       "tpSl": "tak_masuk",
+       "openTinggi": "tak_terukur",
+       "tutupTutup": "tak_terukur",
+       "persen": null,
+       "tglKeluar": null
+      },
+      {
+       "kode": "PCAR",
+       "tpSl": "tak_masuk",
+       "openTinggi": "tak_terukur",
+       "tutupTutup": "tak_terukur",
+       "persen": null,
+       "tglKeluar": null
+      },
+      {
+       "kode": "CSMI",
+       "tpSl": "gantung",
+       "openTinggi": "tak_terukur",
+       "tutupTutup": "tak_terukur",
+       "persen": null,
+       "tglKeluar": null
+      },
+      {
+       "kode": "SEMA",
+       "tpSl": "tak_masuk",
+       "openTinggi": "tak_terukur",
+       "tutupTutup": "tak_terukur",
+       "persen": null,
+       "tglKeluar": null
+      },
+      {
+       "kode": "AKKU",
+       "tpSl": "tak_masuk",
+       "openTinggi": "tak_terukur",
+       "tutupTutup": "tak_terukur",
+       "persen": null,
+       "tglKeluar": null
+      },
+      {
+       "kode": "KLBF",
+       "tpSl": "tak_masuk",
+       "openTinggi": "tak_terukur",
+       "tutupTutup": "tak_terukur",
+       "persen": null,
+       "tglKeluar": null
+      },
+      {
+       "kode": "ASMI",
+       "tpSl": "tak_masuk",
+       "openTinggi": "tak_terukur",
+       "tutupTutup": "tak_terukur",
+       "persen": null,
+       "tglKeluar": null
+      },
+      {
+       "kode": "DKHH",
+       "tpSl": "tak_masuk",
+       "openTinggi": "tak_terukur",
+       "tutupTutup": "tak_terukur",
+       "persen": null,
+       "tglKeluar": null
+      },
+      {
+       "kode": "NASA",
+       "tpSl": "tak_masuk",
+       "openTinggi": "tak_terukur",
+       "tutupTutup": "tak_terukur",
+       "persen": null,
+       "tglKeluar": null
+      },
+      {
+       "kode": "VERN",
+       "tpSl": "tak_masuk",
+       "openTinggi": "tak_terukur",
+       "tutupTutup": "tak_terukur",
+       "persen": null,
+       "tglKeluar": null
+      },
+      {
+       "kode": "PURA",
+       "tpSl": "tak_masuk",
+       "openTinggi": "tak_terukur",
+       "tutupTutup": "tak_terukur",
+       "persen": null,
+       "tglKeluar": null
+      },
+      {
+       "kode": "INDY",
+       "tpSl": "tak_masuk",
+       "openTinggi": "tak_terukur",
+       "tutupTutup": "tak_terukur",
+       "persen": null,
+       "tglKeluar": null
+      },
+      {
+       "kode": "BIKE",
+       "tpSl": "tak_masuk",
+       "openTinggi": "tak_terukur",
+       "tutupTutup": "tak_terukur",
+       "persen": null,
+       "tglKeluar": null
+      },
+      {
+       "kode": "MBSS",
+       "tpSl": "tak_masuk",
+       "openTinggi": "tak_terukur",
+       "tutupTutup": "tak_terukur",
+       "persen": null,
+       "tglKeluar": null
+      },
+      {
+       "kode": "MIRA",
+       "tpSl": "tak_masuk",
+       "openTinggi": "tak_terukur",
+       "tutupTutup": "tak_terukur",
+       "persen": null,
+       "tglKeluar": null
+      },
+      {
+       "kode": "RSCH",
+       "tpSl": "tak_masuk",
+       "openTinggi": "tak_terukur",
+       "tutupTutup": "tak_terukur",
+       "persen": null,
+       "tglKeluar": null
+      },
+      {
+       "kode": "CLEO",
+       "tpSl": "tak_masuk",
+       "openTinggi": "tak_terukur",
+       "tutupTutup": "tak_terukur",
+       "persen": null,
+       "tglKeluar": null
+      },
+      {
+       "kode": "MEDS",
+       "tpSl": "tak_masuk",
+       "openTinggi": "tak_terukur",
+       "tutupTutup": "tak_terukur",
+       "persen": null,
+       "tglKeluar": null
+      },
+      {
+       "kode": "MITI",
+       "tpSl": "tak_masuk",
+       "openTinggi": "tak_terukur",
+       "tutupTutup": "tak_terukur",
+       "persen": null,
+       "tglKeluar": null
+      }
+     ],
+     "definisi": {
+      "openTinggi": {
+       "menang": 0,
+       "kalah": 0,
+       "takTerukur": 20,
+       "winRate": null
+      },
+      "tutupTutup": {
+       "menang": 0,
+       "kalah": 0,
+       "takTerukur": 20,
+       "winRate": null,
+       "rataPersen": null
+      },
+      "tpSl": {
+       "menang": 0,
+       "kalah": 0,
+       "gantung": 2,
+       "tak_masuk": 18,
+       "ambigu": 0,
+       "menangDariTuntas": null,
+       "menangDariSemua": 0.0
+      }
+     }
+    },
+    {
+     "preset": "whale-tiket",
+     "n": 20,
+     "menang": 0,
+     "kalah": 0,
+     "gantung": 3,
+     "tak_masuk": 17,
+     "ambigu": 0,
+     "menangDariTuntas": null,
+     "menangDariSemua": 0.0,
+     "saham": [
+      {
+       "kode": "TEBE",
+       "tpSl": "tak_masuk",
+       "openTinggi": "tak_terukur",
+       "tutupTutup": "tak_terukur",
+       "persen": null,
+       "tglKeluar": null
+      },
+      {
+       "kode": "POLA",
+       "tpSl": "tak_masuk",
+       "openTinggi": "tak_terukur",
+       "tutupTutup": "tak_terukur",
+       "persen": null,
+       "tglKeluar": null
+      },
+      {
+       "kode": "CSMI",
+       "tpSl": "gantung",
+       "openTinggi": "tak_terukur",
+       "tutupTutup": "tak_terukur",
+       "persen": null,
+       "tglKeluar": null
+      },
+      {
+       "kode": "SEMA",
+       "tpSl": "tak_masuk",
+       "openTinggi": "tak_terukur",
+       "tutupTutup": "tak_terukur",
+       "persen": null,
+       "tglKeluar": null
+      },
+      {
+       "kode": "TLKM",
+       "tpSl": "tak_masuk",
+       "openTinggi": "tak_terukur",
+       "tutupTutup": "tak_terukur",
+       "persen": null,
+       "tglKeluar": null
+      },
+      {
+       "kode": "MPXL",
+       "tpSl": "tak_masuk",
+       "openTinggi": "tak_terukur",
+       "tutupTutup": "tak_terukur",
+       "persen": null,
+       "tglKeluar": null
+      },
+      {
+       "kode": "META",
+       "tpSl": "gantung",
+       "openTinggi": "tak_terukur",
+       "tutupTutup": "tak_terukur",
+       "persen": null,
+       "tglKeluar": null
+      },
+      {
+       "kode": "ASLI",
+       "tpSl": "tak_masuk",
+       "openTinggi": "tak_terukur",
+       "tutupTutup": "tak_terukur",
+       "persen": null,
+       "tglKeluar": null
+      },
+      {
+       "kode": "PTBA",
+       "tpSl": "tak_masuk",
+       "openTinggi": "tak_terukur",
+       "tutupTutup": "tak_terukur",
+       "persen": null,
+       "tglKeluar": null
+      },
+      {
+       "kode": "ASPI",
+       "tpSl": "gantung",
+       "openTinggi": "tak_terukur",
+       "tutupTutup": "tak_terukur",
+       "persen": null,
+       "tglKeluar": null
+      },
+      {
+       "kode": "PART",
+       "tpSl": "tak_masuk",
+       "openTinggi": "tak_terukur",
+       "tutupTutup": "tak_terukur",
+       "persen": null,
+       "tglKeluar": null
+      },
+      {
+       "kode": "IDEA",
+       "tpSl": "tak_masuk",
+       "openTinggi": "tak_terukur",
+       "tutupTutup": "tak_terukur",
+       "persen": null,
+       "tglKeluar": null
+      },
+      {
+       "kode": "JECX",
+       "tpSl": "tak_masuk",
+       "openTinggi": "tak_terukur",
+       "tutupTutup": "tak_terukur",
+       "persen": null,
+       "tglKeluar": null
+      },
+      {
+       "kode": "HAJJ",
+       "tpSl": "tak_masuk",
+       "openTinggi": "tak_terukur",
+       "tutupTutup": "tak_terukur",
+       "persen": null,
+       "tglKeluar": null
+      },
+      {
+       "kode": "NEST",
+       "tpSl": "tak_masuk",
+       "openTinggi": "tak_terukur",
+       "tutupTutup": "tak_terukur",
+       "persen": null,
+       "tglKeluar": null
+      },
+      {
+       "kode": "SMIL",
+       "tpSl": "tak_masuk",
+       "openTinggi": "tak_terukur",
+       "tutupTutup": "tak_terukur",
+       "persen": null,
+       "tglKeluar": null
+      },
+      {
+       "kode": "ULTJ",
+       "tpSl": "tak_masuk",
+       "openTinggi": "tak_terukur",
+       "tutupTutup": "tak_terukur",
+       "persen": null,
+       "tglKeluar": null
+      },
+      {
+       "kode": "HRTA",
+       "tpSl": "tak_masuk",
+       "openTinggi": "tak_terukur",
+       "tutupTutup": "tak_terukur",
+       "persen": null,
+       "tglKeluar": null
+      },
+      {
+       "kode": "SMMT",
+       "tpSl": "tak_masuk",
+       "openTinggi": "tak_terukur",
+       "tutupTutup": "tak_terukur",
+       "persen": null,
+       "tglKeluar": null
+      },
+      {
+       "kode": "BDKR",
+       "tpSl": "tak_masuk",
+       "openTinggi": "tak_terukur",
+       "tutupTutup": "tak_terukur",
+       "persen": null,
+       "tglKeluar": null
+      }
+     ],
+     "definisi": {
+      "openTinggi": {
+       "menang": 0,
+       "kalah": 0,
+       "takTerukur": 20,
+       "winRate": null
+      },
+      "tutupTutup": {
+       "menang": 0,
+       "kalah": 0,
+       "takTerukur": 20,
+       "winRate": null,
+       "rataPersen": null
+      },
+      "tpSl": {
+       "menang": 0,
+       "kalah": 0,
+       "gantung": 3,
+       "tak_masuk": 17,
+       "ambigu": 0,
+       "menangDariTuntas": null,
+       "menangDariSemua": 0.0
+      }
+     }
+    },
+    {
+     "preset": "whale-akdis",
+     "n": 20,
+     "menang": 0,
+     "kalah": 0,
+     "gantung": 20,
+     "tak_masuk": 0,
+     "ambigu": 0,
+     "menangDariTuntas": null,
+     "menangDariSemua": 0.0,
+     "saham": [
+      {
+       "kode": "WSKT",
+       "tpSl": "gantung",
+       "openTinggi": "tak_terukur",
+       "tutupTutup": "tak_terukur",
+       "persen": null,
+       "tglKeluar": null
+      },
+      {
+       "kode": "WIKA",
+       "tpSl": "gantung",
+       "openTinggi": "tak_terukur",
+       "tutupTutup": "tak_terukur",
+       "persen": null,
+       "tglKeluar": null
+      },
+      {
+       "kode": "PPGL",
+       "tpSl": "gantung",
+       "openTinggi": "tak_terukur",
+       "tutupTutup": "tak_terukur",
+       "persen": null,
+       "tglKeluar": null
+      },
+      {
+       "kode": "ZINC",
+       "tpSl": "gantung",
+       "openTinggi": "tak_terukur",
+       "tutupTutup": "tak_terukur",
+       "persen": null,
+       "tglKeluar": null
+      },
+      {
+       "kode": "WSBP",
+       "tpSl": "gantung",
+       "openTinggi": "tak_terukur",
+       "tutupTutup": "tak_terukur",
+       "persen": null,
+       "tglKeluar": null
+      },
+      {
+       "kode": "TRIL",
+       "tpSl": "gantung",
+       "openTinggi": "tak_terukur",
+       "tutupTutup": "tak_terukur",
+       "persen": null,
+       "tglKeluar": null
+      },
+      {
+       "kode": "IPPE",
+       "tpSl": "gantung",
+       "openTinggi": "tak_terukur",
+       "tutupTutup": "tak_terukur",
+       "persen": null,
+       "tglKeluar": null
+      },
+      {
+       "kode": "TRUK",
+       "tpSl": "gantung",
+       "openTinggi": "tak_terukur",
+       "tutupTutup": "tak_terukur",
+       "persen": null,
+       "tglKeluar": null
+      },
+      {
+       "kode": "DPNS",
+       "tpSl": "gantung",
+       "openTinggi": "tak_terukur",
+       "tutupTutup": "tak_terukur",
+       "persen": null,
+       "tglKeluar": null
+      },
+      {
+       "kode": "TOYS",
+       "tpSl": "gantung",
+       "openTinggi": "tak_terukur",
+       "tutupTutup": "tak_terukur",
+       "persen": null,
+       "tglKeluar": null
+      },
+      {
+       "kode": "LCGP",
+       "tpSl": "gantung",
+       "openTinggi": "tak_terukur",
+       "tutupTutup": "tak_terukur",
+       "persen": null,
+       "tglKeluar": null
+      },
+      {
+       "kode": "DEAL",
+       "tpSl": "gantung",
+       "openTinggi": "tak_terukur",
+       "tutupTutup": "tak_terukur",
+       "persen": null,
+       "tglKeluar": null
+      },
+      {
+       "kode": "BIMA",
+       "tpSl": "gantung",
+       "openTinggi": "tak_terukur",
+       "tutupTutup": "tak_terukur",
+       "persen": null,
+       "tglKeluar": null
+      },
+      {
+       "kode": "GLOB",
+       "tpSl": "gantung",
+       "openTinggi": "tak_terukur",
+       "tutupTutup": "tak_terukur",
+       "persen": null,
+       "tglKeluar": null
+      },
+      {
+       "kode": "INTA",
+       "tpSl": "gantung",
+       "openTinggi": "tak_terukur",
+       "tutupTutup": "tak_terukur",
+       "persen": null,
+       "tglKeluar": null
+      },
+      {
+       "kode": "ALTO",
+       "tpSl": "gantung",
+       "openTinggi": "tak_terukur",
+       "tutupTutup": "tak_terukur",
+       "persen": null,
+       "tglKeluar": null
+      },
+      {
+       "kode": "MTSM",
+       "tpSl": "gantung",
+       "openTinggi": "tak_terukur",
+       "tutupTutup": "tak_terukur",
+       "persen": null,
+       "tglKeluar": null
+      },
+      {
+       "kode": "SMCB",
+       "tpSl": "gantung",
+       "openTinggi": "tak_terukur",
+       "tutupTutup": "tak_terukur",
+       "persen": null,
+       "tglKeluar": null
+      },
+      {
+       "kode": "SMMA",
+       "tpSl": "gantung",
+       "openTinggi": "tak_terukur",
+       "tutupTutup": "tak_terukur",
+       "persen": null,
+       "tglKeluar": null
+      },
+      {
+       "kode": "MFMI",
        "tpSl": "gantung",
        "openTinggi": "tak_terukur",
        "tutupTutup": "tak_terukur",
@@ -31340,87 +33438,7 @@
      "menangDariSemua": 0.0,
      "saham": [
       {
-       "kode": "KETR",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "MEDC",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "BEST",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "ULTJ",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "HMSP",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "PTPP",
-       "tpSl": "gantung",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "BNGA",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "CLPI",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "MLBI",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
        "kode": "DSSA",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "PTBA",
        "tpSl": "tak_masuk",
        "openTinggi": "tak_terukur",
        "tutupTutup": "tak_terukur",
@@ -31436,7 +33454,7 @@
        "tglKeluar": null
       },
       {
-       "kode": "TPIA",
+       "kode": "EMAS",
        "tpSl": "tak_masuk",
        "openTinggi": "tak_terukur",
        "tutupTutup": "tak_terukur",
@@ -31444,23 +33462,7 @@
        "tglKeluar": null
       },
       {
-       "kode": "MMIX",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "SRSN",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "TINS",
+       "kode": "ARCI",
        "tpSl": "tak_masuk",
        "openTinggi": "tak_terukur",
        "tutupTutup": "tak_terukur",
@@ -31476,7 +33478,7 @@
        "tglKeluar": null
       },
       {
-       "kode": "ANTM",
+       "kode": "MEDC",
        "tpSl": "tak_masuk",
        "openTinggi": "tak_terukur",
        "tutupTutup": "tak_terukur",
@@ -31484,7 +33486,7 @@
        "tglKeluar": null
       },
       {
-       "kode": "PCAR",
+       "kode": "SMGR",
        "tpSl": "tak_masuk",
        "openTinggi": "tak_terukur",
        "tutupTutup": "tak_terukur",
@@ -31492,7 +33494,103 @@
        "tglKeluar": null
       },
       {
-       "kode": "BNBR",
+       "kode": "INDF",
+       "tpSl": "tak_masuk",
+       "openTinggi": "tak_terukur",
+       "tutupTutup": "tak_terukur",
+       "persen": null,
+       "tglKeluar": null
+      },
+      {
+       "kode": "AALI",
+       "tpSl": "tak_masuk",
+       "openTinggi": "tak_terukur",
+       "tutupTutup": "tak_terukur",
+       "persen": null,
+       "tglKeluar": null
+      },
+      {
+       "kode": "ULTJ",
+       "tpSl": "tak_masuk",
+       "openTinggi": "tak_terukur",
+       "tutupTutup": "tak_terukur",
+       "persen": null,
+       "tglKeluar": null
+      },
+      {
+       "kode": "MUTU",
+       "tpSl": "tak_masuk",
+       "openTinggi": "tak_terukur",
+       "tutupTutup": "tak_terukur",
+       "persen": null,
+       "tglKeluar": null
+      },
+      {
+       "kode": "HMSP",
+       "tpSl": "tak_masuk",
+       "openTinggi": "tak_terukur",
+       "tutupTutup": "tak_terukur",
+       "persen": null,
+       "tglKeluar": null
+      },
+      {
+       "kode": "PWON",
+       "tpSl": "tak_masuk",
+       "openTinggi": "tak_terukur",
+       "tutupTutup": "tak_terukur",
+       "persen": null,
+       "tglKeluar": null
+      },
+      {
+       "kode": "PTPP",
+       "tpSl": "gantung",
+       "openTinggi": "tak_terukur",
+       "tutupTutup": "tak_terukur",
+       "persen": null,
+       "tglKeluar": null
+      },
+      {
+       "kode": "CMRY",
+       "tpSl": "tak_masuk",
+       "openTinggi": "tak_terukur",
+       "tutupTutup": "tak_terukur",
+       "persen": null,
+       "tglKeluar": null
+      },
+      {
+       "kode": "SCCO",
+       "tpSl": "tak_masuk",
+       "openTinggi": "tak_terukur",
+       "tutupTutup": "tak_terukur",
+       "persen": null,
+       "tglKeluar": null
+      },
+      {
+       "kode": "CLPI",
+       "tpSl": "tak_masuk",
+       "openTinggi": "tak_terukur",
+       "tutupTutup": "tak_terukur",
+       "persen": null,
+       "tglKeluar": null
+      },
+      {
+       "kode": "UCID",
+       "tpSl": "tak_masuk",
+       "openTinggi": "tak_terukur",
+       "tutupTutup": "tak_terukur",
+       "persen": null,
+       "tglKeluar": null
+      },
+      {
+       "kode": "EPMT",
+       "tpSl": "tak_masuk",
+       "openTinggi": "tak_terukur",
+       "tutupTutup": "tak_terukur",
+       "persen": null,
+       "tglKeluar": null
+      },
+      {
+       "kode": "DMND",
        "tpSl": "tak_masuk",
        "openTinggi": "tak_terukur",
        "tutupTutup": "tak_terukur",
@@ -31519,1034 +33617,6 @@
        "kalah": 0,
        "gantung": 1,
        "tak_masuk": 19,
-       "ambigu": 0,
-       "menangDariTuntas": null,
-       "menangDariSemua": 0.0
-      }
-     }
-    }
-   ]
-  },
-  {
-   "tanggal": "2026-10-08",
-   "kelasBukti": "CATATAN",
-   "era": "nilai-transaksi",
-   "dibangun": "2026-10-09T00:02:35+00:00",
-   "hariBursaTersedia": 0,
-   "hariBursaSesudah": 0,
-   "jendelaTutup": false,
-   "n": 100,
-   "menang": 0,
-   "kalah": 0,
-   "gantung": 0,
-   "tak_masuk": 100,
-   "ambigu": 0,
-   "menangDariTuntas": null,
-   "menangDariSemua": 0.0,
-   "definisi": {
-    "openTinggi": {
-     "menang": 0,
-     "kalah": 0,
-     "takTerukur": 100,
-     "winRate": null
-    },
-    "tutupTutup": {
-     "menang": 0,
-     "kalah": 0,
-     "takTerukur": 100,
-     "winRate": null,
-     "rataPersen": null
-    },
-    "tpSl": {
-     "menang": 0,
-     "kalah": 0,
-     "gantung": 0,
-     "tak_masuk": 100,
-     "ambigu": 0,
-     "menangDariTuntas": null,
-     "menangDariSemua": 0.0
-    }
-   },
-   "preset": [
-    {
-     "preset": "scalping",
-     "n": 20,
-     "menang": 0,
-     "kalah": 0,
-     "gantung": 0,
-     "tak_masuk": 20,
-     "ambigu": 0,
-     "menangDariTuntas": null,
-     "menangDariSemua": 0.0,
-     "saham": [
-      {
-       "kode": "TEBE",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "SMCB",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "MFMI",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "POLA",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "PTBA",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "CSMI",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "PPGL",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "BHAT",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "BSWD",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "TRUK",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "DPNS",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "BIMA",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "GLOB",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "UNIT",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "MTSM",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "IBST",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "BBMD",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "FASW",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "SQMI",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "DSSA",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      }
-     ],
-     "definisi": {
-      "openTinggi": {
-       "menang": 0,
-       "kalah": 0,
-       "takTerukur": 20,
-       "winRate": null
-      },
-      "tutupTutup": {
-       "menang": 0,
-       "kalah": 0,
-       "takTerukur": 20,
-       "winRate": null,
-       "rataPersen": null
-      },
-      "tpSl": {
-       "menang": 0,
-       "kalah": 0,
-       "gantung": 0,
-       "tak_masuk": 20,
-       "ambigu": 0,
-       "menangDariTuntas": null,
-       "menangDariSemua": 0.0
-      }
-     }
-    },
-    {
-     "preset": "swing",
-     "n": 20,
-     "menang": 0,
-     "kalah": 0,
-     "gantung": 0,
-     "tak_masuk": 20,
-     "ambigu": 0,
-     "menangDariTuntas": null,
-     "menangDariSemua": 0.0,
-     "saham": [
-      {
-       "kode": "TEBE",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "CSMI",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "POLA",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "PPRI",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "MMIX",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "AYLS",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "PCAR",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "BTEK",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "SMLE",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "OILS",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "BDKR",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "AKKU",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "KREN",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "MITI",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "RSCH",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "VICI",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "SMIL",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "TARA",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "UNSP",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "PGLI",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      }
-     ],
-     "definisi": {
-      "openTinggi": {
-       "menang": 0,
-       "kalah": 0,
-       "takTerukur": 20,
-       "winRate": null
-      },
-      "tutupTutup": {
-       "menang": 0,
-       "kalah": 0,
-       "takTerukur": 20,
-       "winRate": null,
-       "rataPersen": null
-      },
-      "tpSl": {
-       "menang": 0,
-       "kalah": 0,
-       "gantung": 0,
-       "tak_masuk": 20,
-       "ambigu": 0,
-       "menangDariTuntas": null,
-       "menangDariSemua": 0.0
-      }
-     }
-    },
-    {
-     "preset": "whale-tiket",
-     "n": 20,
-     "menang": 0,
-     "kalah": 0,
-     "gantung": 0,
-     "tak_masuk": 20,
-     "ambigu": 0,
-     "menangDariTuntas": null,
-     "menangDariSemua": 0.0,
-     "saham": [
-      {
-       "kode": "TEBE",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "CSMI",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "POLA",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "META",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "ENAK",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "MPXL",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "BDKR",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "ASPI",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "UNIQ",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "ASGR",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "SEMA",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "PSAB",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "MAPI",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "ULTJ",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "PPGL",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "TRIO",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "BHAT",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "IPAC",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "BSWD",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "TRUK",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      }
-     ],
-     "definisi": {
-      "openTinggi": {
-       "menang": 0,
-       "kalah": 0,
-       "takTerukur": 20,
-       "winRate": null
-      },
-      "tutupTutup": {
-       "menang": 0,
-       "kalah": 0,
-       "takTerukur": 20,
-       "winRate": null,
-       "rataPersen": null
-      },
-      "tpSl": {
-       "menang": 0,
-       "kalah": 0,
-       "gantung": 0,
-       "tak_masuk": 20,
-       "ambigu": 0,
-       "menangDariTuntas": null,
-       "menangDariSemua": 0.0
-      }
-     }
-    },
-    {
-     "preset": "whale-akdis",
-     "n": 20,
-     "menang": 0,
-     "kalah": 0,
-     "gantung": 0,
-     "tak_masuk": 20,
-     "ambigu": 0,
-     "menangDariTuntas": null,
-     "menangDariSemua": 0.0,
-     "saham": [
-      {
-       "kode": "TEBE",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "WSKT",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "WIKA",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "PPGL",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "ZINC",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "WSBP",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "TRIL",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "IPPE",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "TRUK",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "DPNS",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "TOYS",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "LCGP",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "DEAL",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "BIMA",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "GLOB",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "INTA",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "ALTO",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "MTSM",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "SMCB",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "MFMI",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      }
-     ],
-     "definisi": {
-      "openTinggi": {
-       "menang": 0,
-       "kalah": 0,
-       "takTerukur": 20,
-       "winRate": null
-      },
-      "tutupTutup": {
-       "menang": 0,
-       "kalah": 0,
-       "takTerukur": 20,
-       "winRate": null,
-       "rataPersen": null
-      },
-      "tpSl": {
-       "menang": 0,
-       "kalah": 0,
-       "gantung": 0,
-       "tak_masuk": 20,
-       "ambigu": 0,
-       "menangDariTuntas": null,
-       "menangDariSemua": 0.0
-      }
-     }
-    },
-    {
-     "preset": "whale-asing",
-     "n": 20,
-     "menang": 0,
-     "kalah": 0,
-     "gantung": 0,
-     "tak_masuk": 20,
-     "ambigu": 0,
-     "menangDariTuntas": null,
-     "menangDariSemua": 0.0,
-     "saham": [
-      {
-       "kode": "KETR",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "MEDC",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "BEST",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "ULTJ",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "HMSP",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "PTPP",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "BNGA",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "CLPI",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "MLBI",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "DSSA",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "PTBA",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "SGER",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "TPIA",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "MMIX",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "SRSN",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "TINS",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "VKTR",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "ANTM",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "PCAR",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      },
-      {
-       "kode": "BNBR",
-       "tpSl": "tak_masuk",
-       "openTinggi": "tak_terukur",
-       "tutupTutup": "tak_terukur",
-       "persen": null,
-       "tglKeluar": null
-      }
-     ],
-     "definisi": {
-      "openTinggi": {
-       "menang": 0,
-       "kalah": 0,
-       "takTerukur": 20,
-       "winRate": null
-      },
-      "tutupTutup": {
-       "menang": 0,
-       "kalah": 0,
-       "takTerukur": 20,
-       "winRate": null,
-       "rataPersen": null
-      },
-      "tpSl": {
-       "menang": 0,
-       "kalah": 0,
-       "gantung": 0,
-       "tak_masuk": 20,
        "ambigu": 0,
        "menangDariTuntas": null,
        "menangDariSemua": 0.0
