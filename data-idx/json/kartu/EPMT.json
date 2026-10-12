@@ -1,16 +1,16 @@
 {
  "kode": "EPMT",
- "tgl": "2026-10-09",
+ "tgl": "2026-10-12",
  "harga": 2650.0,
  "prev": 2650.0,
  "chg": 0.0,
- "n": 5517,
+ "n": 5518,
  "mulai": "2004-01-02",
- "ma20": 2630.5,
- "ma50": 2479.0,
- "ma200": 2360.05,
- "atr": 48.374558562905165,
- "atr_pct": 1.825455040109629,
+ "ma20": 2639.0,
+ "ma50": 2486.4,
+ "ma200": 2361.65,
+ "atr": 45.633518665554796,
+ "atr_pct": 1.7220195722850866,
  "support": [
   {
    "level": 2540.0,
@@ -36,6 +36,13 @@
  ],
  "resistance": [
   {
+   "level": 2690.0,
+   "sentuhan": 1,
+   "terakhir": "2026-10-05",
+   "dalam_atr": true,
+   "harga": 2690
+  },
+  {
    "level": 2900.0,
    "sentuhan": 1,
    "terakhir": "2026-09-11",
@@ -47,54 +54,86 @@
  "stop_asal": "klaster",
  "stop_pct": 4.150943396226415,
  "er": 0.21585903083700442,
- "er_persentil": 60.997732426303855,
- "er_n_populasi": 441,
- "likuiditas_median20": 142546000.0,
+ "er_persentil": 61.12359550561798,
+ "er_n_populasi": 445,
+ "likuiditas_median20": 135839500.0,
  "kualitas": {
   "riwayat": "cukup",
   "likuiditas": "tipis",
-  "lilin": 5517,
-  "nilai20": 142546000.0
+  "lilin": 5518,
+  "nilai20": 135839500.0
  },
  "beku": 0,
  "beku_sejak": null,
- "dihitung": "2026-10-09",
+ "dihitung": "2026-10-12",
  "rsi": 67.58105426673895,
  "stochrsi": [
-  17.206798810206667,
-  30.606192189558016
+  19.322577151845127,
+  23.226292008386505
  ],
  "target": [
+  {
+   "harga": 2690,
+   "pct": 1.509433962264151,
+   "sentuhan": 1,
+   "terakhir": "2026-10-05",
+   "fp": {
+    "n": 5497,
+    "n_efektif": 275,
+    "kena": 3191,
+    "stop": 1690,
+    "lewat": 616,
+    "p_kena": 58.04984537020192,
+    "p_stop": 30.744042204839,
+    "median_hari": 2,
+    "q1": 1,
+    "q3": 6,
+    "harapan": -0.3999437085751747
+   },
+   "fp60": {
+    "n": 5457,
+    "n_efektif": 91,
+    "kena": 3437,
+    "stop": 1949,
+    "lewat": 71,
+    "p_kena": 62.983324170789814,
+    "p_stop": 35.71559464907458,
+    "median_hari": 3,
+    "q1": 1,
+    "q3": 7,
+    "harapan": -0.5318424319119289
+   }
+  },
   {
    "harga": 2900,
    "pct": 9.433962264150944,
    "sentuhan": 1,
    "terakhir": "2026-09-11",
    "fp": {
-    "n": 5496,
+    "n": 5497,
     "n_efektif": 275,
     "kena": 1073,
-    "stop": 2487,
+    "stop": 2488,
     "lewat": 1936,
-    "p_kena": 19.523289665211063,
-    "p_stop": 45.251091703056765,
+    "p_kena": 19.519738038930328,
+    "p_stop": 45.26105148262688,
     "median_hari": 8,
     "q1": 4,
     "q3": 13,
-    "harapan": -0.03652742303150114
+    "harapan": -0.037275906926934166
    },
    "fp60": {
-    "n": 5456,
+    "n": 5457,
     "n_efektif": 91,
-    "kena": 1586,
+    "kena": 1587,
     "stop": 3271,
     "lewat": 599,
-    "p_kena": 29.06891495601173,
-    "p_stop": 59.95234604105571,
-    "median_hari": 13.0,
+    "p_kena": 29.081913139087412,
+    "p_stop": 59.941359721458674,
+    "median_hari": 13,
     "q1": 6,
     "q3": 26,
-    "harapan": 0.2537625186742658
+    "harapan": 0.2554447982684529
    }
   }
  ],
@@ -122,19 +161,19 @@
  },
  "fundamental": {
   "name": "PT Enseval Putera Megatrading Tbk.",
-  "updated": "2026-09-26 01:22",
-  "harga_pada": "2026-10-09",
-  "pe": 8.663811423153627,
-  "pb": 0.8627,
+  "updated": "2026-10-10 02:13",
+  "harga_pada": "2026-10-12",
+  "pe": 8.660130718954248,
+  "pb": 0.8693,
   "pbv": 0.8693030715265848,
-  "eps": 305.87,
+  "eps": 306.0,
   "roe": 0.10543,
   "der": 2.191,
   "npm": 0.023599999,
   "rev_yoy": 18.91,
   "ni_yoy": 48.34,
-  "dividend_yield": 7.89,
-  "beta": -0.0,
+  "dividend_yield": 0.0,
+  "beta": -0.02,
   "shares": 2708640000,
   "float_pct": 7.78,
   "week52_high": 2900,
@@ -152,37 +191,37 @@
    "frekuensi": "kali"
   },
   "mulai": "2020-01-02",
-  "akhir": "2026-10-09",
-  "n_total": 1630,
+  "akhir": "2026-10-12",
+  "n_total": 1631,
   "periode": {
    "5": {
     "n": 5,
-    "beli": 115500,
+    "beli": 117100,
     "jual": 800,
-    "net": 114700,
-    "porsi_beli_pct": 61.963519313304715,
-    "porsi_jual_pct": 0.4291845493562232
+    "net": 116300,
+    "porsi_beli_pct": 93.75500400320256,
+    "porsi_jual_pct": 0.6405124099279423
    },
    "20": {
     "n": 20,
-    "beli": 727500,
-    "jual": 52100,
-    "net": 675400,
-    "porsi_beli_pct": 46.50939777522056,
-    "porsi_jual_pct": 3.3307761155862416
+    "beli": 741200,
+    "jual": 38800,
+    "net": 702400,
+    "porsi_beli_pct": 52.6607460035524,
+    "porsi_jual_pct": 2.7566607460035524
    }
   },
   "isian_stockbit": []
  },
  "ma5": 2652.0,
- "ma100": 2393.9,
- "ma150": 2376.4666666666667,
+ "ma100": 2396.6,
+ "ma150": 2378.8,
  "bb20": {
-  "mid": 2630.5,
-  "atas": 2702.742646684628,
-  "bawah": 2558.257353315372
+  "mid": 2639.0,
+  "atas": 2660.8174242292716,
+  "bawah": 2617.1825757707284
  },
- "posisi_bb": 0.2699,
+ "posisi_bb": 0.5042,
  "ichimoku": {
   "tenkan": 2615.0,
   "kijun": 2630.0,
@@ -191,24 +230,24 @@
   "di_atas_kumo": true
  },
  "regresi60": {
-  "kemiringan": 7.14281744929147,
-  "tengah": 2661.213114754098,
-  "posisi": -0.1977
+  "kemiringan": 7.231731036398999,
+  "tengah": 2669.5027322404367,
+  "posisi": -0.3483
  },
- "freq": 38,
- "ukuran_order": 8.8684,
- "peringkat_value": 617,
- "peringkat_volume": 730,
- "peringkat_freq": 719,
- "porsi_asing": 0.4956,
- "net_asing_rp": 88204000,
- "label_fd": "F 50% : D 50%",
- "tiket_avg": 2342000.0,
+ "freq": 59,
+ "ukuran_order": 5.0,
+ "peringkat_value": 654,
+ "peringkat_volume": 754,
+ "peringkat_freq": 710,
+ "porsi_asing": 0.4932,
+ "net_asing_rp": 77044000,
+ "label_fd": "F 49% : D 51%",
+ "tiket_avg": 1323796.61,
  "tiket_avg_med60": 2342000.0,
- "tiket_lonjakan": 1.0,
- "asing_net_5h": 303375000,
- "asing_net_20h": 1776982000,
- "asing_streak": 17,
+ "tiket_lonjakan": 0.5652,
+ "asing_net_5h": 307544000,
+ "asing_net_20h": 1849657000,
+ "asing_streak": 18,
  "tiket_broker_maks": null,
  "broker_tiket_maks_kode": null,
  "bval_maks": null,
