@@ -1,24 +1,17 @@
 {
  "kode": "WIDI",
- "tgl": "2026-10-12",
- "harga": 33.0,
+ "tgl": "2026-10-13",
+ "harga": 32.0,
  "prev": 33.0,
- "chg": 0.0,
- "n": 777,
+ "chg": -3.0303030303030276,
+ "n": 778,
  "mulai": "2023-07-10",
- "ma20": 28.75,
- "ma50": 27.2,
- "ma200": 31.035,
- "atr": 2.5068496601148156,
- "atr_pct": 7.5965141215600465,
+ "ma20": 28.9,
+ "ma50": 27.32,
+ "ma200": 31.0,
+ "atr": 2.6135032558209006,
+ "atr_pct": 8.167197674440315,
  "support": [
-  {
-   "level": 31.4,
-   "sentuhan": 5,
-   "terakhir": "2026-04-28",
-   "dalam_atr": true,
-   "harga": 31
-  },
   {
    "level": 28.0,
    "sentuhan": 2,
@@ -32,9 +25,23 @@
    "terakhir": "2026-09-28",
    "dalam_atr": false,
    "harga": 24
+  },
+  {
+   "level": 21.0,
+   "sentuhan": 1,
+   "terakhir": "2026-07-01",
+   "dalam_atr": false,
+   "harga": 21
   }
  ],
  "resistance": [
+  {
+   "level": 34.0,
+   "sentuhan": 1,
+   "terakhir": "2026-04-08",
+   "dalam_atr": true,
+   "harga": 34
+  },
   {
    "level": 37.0,
    "sentuhan": 1,
@@ -48,131 +55,124 @@
    "terakhir": "2026-02-20",
    "dalam_atr": false,
    "harga": 40
-  },
-  {
-   "level": 45.0,
-   "sentuhan": 2,
-   "terakhir": "2025-11-11",
-   "dalam_atr": false,
-   "harga": 45
   }
  ],
- "stop": 31,
+ "stop": 28,
  "stop_asal": "klaster",
- "stop_pct": 6.0606060606060606,
+ "stop_pct": 12.5,
  "er": 0.2,
- "er_persentil": 30.786516853932582,
+ "er_persentil": 30.337078651685395,
  "er_n_populasi": 445,
- "likuiditas_median20": 357779800.0,
+ "likuiditas_median20": 307630400.0,
  "kualitas": {
   "riwayat": "cukup",
   "likuiditas": "tipis",
-  "lilin": 777,
-  "nilai20": 357779800.0
+  "lilin": 778,
+  "nilai20": 307630400.0
  },
  "beku": 0,
  "beku_sejak": null,
- "dihitung": "2026-10-12",
- "rsi": 70.15902344325794,
+ "dihitung": "2026-10-13",
+ "rsi": 64.07957181123538,
  "stochrsi": [
-  100.0,
-  92.586574421938
+  90.11084655756986,
+  96.70361551918995
  ],
  "target": [
   {
+   "harga": 34,
+   "pct": 6.25,
+   "sentuhan": 1,
+   "terakhir": "2026-04-08",
+   "fp": {
+    "n": 757,
+    "n_efektif": 38,
+    "kena": 476,
+    "stop": 274,
+    "lewat": 7,
+    "p_kena": 62.87978863936592,
+    "p_stop": 36.19550858652576,
+    "median_hari": 1.0,
+    "q1": 1,
+    "q3": 3,
+    "harapan": -0.5944517833553502
+   },
+   "fp60": {
+    "n": 717,
+    "n_efektif": 12,
+    "kena": 444,
+    "stop": 273,
+    "lewat": 0,
+    "p_kena": 61.92468619246861,
+    "p_stop": 38.07531380753138,
+    "median_hari": 1.0,
+    "q1": 1,
+    "q3": 2,
+    "harapan": -0.8891213389121342
+   }
+  },
+  {
    "harga": 37,
-   "pct": 12.121212121212121,
+   "pct": 15.625,
    "sentuhan": 1,
    "terakhir": "2026-04-17",
    "fp": {
-    "n": 756,
+    "n": 757,
     "n_efektif": 38,
-    "kena": 223,
-    "stop": 532,
-    "lewat": 1,
-    "p_kena": 29.4973544973545,
-    "p_stop": 70.37037037037037,
-    "median_hari": 2,
+    "kena": 318,
+    "stop": 390,
+    "lewat": 49,
+    "p_kena": 42.00792602377807,
+    "p_stop": 51.51915455746368,
+    "median_hari": 4.0,
     "q1": 2,
-    "q3": 5,
-    "harapan": -0.6894340227673559
+    "q3": 8,
+    "harapan": 0.1238441215323638
    },
    "fp60": {
-    "n": 716,
+    "n": 717,
     "n_efektif": 12,
-    "kena": 206,
-    "stop": 510,
-    "lewat": 0,
-    "p_kena": 28.77094972067039,
-    "p_stop": 71.22905027932961,
-    "median_hari": 2.0,
+    "kena": 318,
+    "stop": 397,
+    "lewat": 2,
+    "p_kena": 44.35146443514644,
+    "p_stop": 55.36959553695955,
+    "median_hari": 4.0,
     "q1": 2,
-    "q3": 4,
-    "harapan": -0.8295242932114442
+    "q3": 9,
+    "harapan": 0.00871687587168779
    }
   },
   {
    "harga": 40,
-   "pct": 21.21212121212121,
+   "pct": 25.0,
    "sentuhan": 8,
    "terakhir": "2026-02-20",
    "fp": {
-    "n": 756,
+    "n": 757,
     "n_efektif": 38,
-    "kena": 168,
-    "stop": 574,
-    "lewat": 14,
-    "p_kena": 22.22222222222222,
-    "p_stop": 75.92592592592592,
-    "median_hari": 4.0,
-    "q1": 3,
-    "q3": 8,
-    "harapan": 0.11223344556677883
-   },
-   "fp60": {
-    "n": 716,
-    "n_efektif": 12,
-    "kena": 163,
-    "stop": 553,
-    "lewat": 0,
-    "p_kena": 22.765363128491618,
-    "p_stop": 77.23463687150837,
-    "median_hari": 4,
-    "q1": 3,
-    "q3": 7,
-    "harapan": 0.14812933807347228
-   }
-  },
-  {
-   "harga": 45,
-   "pct": 36.36363636363637,
-   "sentuhan": 2,
-   "terakhir": "2025-11-11",
-   "fp": {
-    "n": 756,
-    "n_efektif": 38,
-    "kena": 101,
-    "stop": 596,
-    "lewat": 59,
-    "p_kena": 13.35978835978836,
-    "p_stop": 78.83597883597884,
+    "kena": 221,
+    "stop": 419,
+    "lewat": 117,
+    "p_kena": 29.194187582562748,
+    "p_stop": 55.35006605019815,
     "median_hari": 6,
-    "q1": 4,
-    "q3": 9,
-    "harapan": 0.08016674683341485
+    "q1": 3,
+    "q3": 11,
+    "harapan": 0.379788639365918
    },
    "fp60": {
-    "n": 716,
+    "n": 717,
     "n_efektif": 12,
-    "kena": 125,
-    "stop": 588,
-    "lewat": 3,
-    "p_kena": 17.45810055865922,
-    "p_stop": 82.12290502793296,
+    "kena": 269,
+    "stop": 439,
+    "lewat": 9,
+    "p_kena": 37.517433751743376,
+    "p_stop": 61.22733612273361,
     "median_hari": 8,
     "q1": 4,
-    "q3": 15,
-    "harapan": 1.3712544438801428
+    "q3": 16,
+    "harapan": 1.7259414225941425
    }
   }
  ],
@@ -201,10 +201,10 @@
  "fundamental": {
   "name": "PT Widiant Jaya Krenindo Tbk",
   "updated": "2026-10-10 02:30",
-  "harga_pada": "2026-10-12",
+  "harga_pada": "2026-10-13",
   "pe": null,
   "pb": 1.2003,
-  "pbv": 1.2003491924923613,
+  "pbv": 1.1639749745380474,
   "eps": -1.11,
   "roe": -0.03963,
   "der": 2.051,
@@ -215,7 +215,7 @@
   "beta": -0.17,
   "shares": 1600031683,
   "float_pct": 41.91,
-  "week52_high": 69,
+  "week52_high": 62,
   "week52_low": 18,
   "pb_keystats": 1.2,
   "pe_keystats": null,
@@ -230,37 +230,37 @@
    "frekuensi": "kali"
   },
   "mulai": "2023-07-10",
-  "akhir": "2026-10-12",
-  "n_total": 777,
+  "akhir": "2026-10-13",
+  "n_total": 778,
   "periode": {
    "5": {
     "n": 5,
-    "beli": 30000,
+    "beli": 0,
     "jual": 58300,
-    "net": -28300,
-    "porsi_beli_pct": 0.017551660387072617,
-    "porsi_jual_pct": 0.034108726685544453
+    "net": -58300,
+    "porsi_beli_pct": 0.0,
+    "porsi_jual_pct": 0.03477161371898214
    },
    "20": {
     "n": 20,
     "beli": 32000,
     "jual": 58300,
     "net": -26300,
-    "porsi_beli_pct": 0.008801245596283013,
-    "porsi_jual_pct": 0.016034769320728115
+    "porsi_beli_pct": 0.009380711790821852,
+    "porsi_jual_pct": 0.017090484293903564
    }
   },
   "isian_stockbit": []
  },
- "ma5": 31.4,
- "ma100": 26.53,
- "ma150": 28.333333333333332,
+ "ma5": 32.2,
+ "ma100": 26.55,
+ "ma150": 28.30666666666667,
  "bb20": {
-  "mid": 28.75,
-  "atas": 32.590572873934306,
-  "bawah": 24.909427126065697
+  "mid": 28.9,
+  "atas": 32.993897898091745,
+  "bawah": 24.806102101908255
  },
- "posisi_bb": 1.1066,
+ "posisi_bb": 0.7572,
  "ichimoku": {
   "tenkan": 31.5,
   "kijun": 30.5,
@@ -269,22 +269,22 @@
   "di_atas_kumo": true
  },
  "regresi60": {
-  "kemiringan": 0.06046123923312031,
-  "tengah": 28.983606557377048,
-  "posisi": 2.5249
+  "kemiringan": 0.06629619338705196,
+  "tengah": 29.255737704918033,
+  "posisi": 1.6831
  },
- "freq": 595,
- "ukuran_order": 210.4101,
- "peringkat_value": 482,
- "peringkat_volume": 254,
- "peringkat_freq": 394,
+ "freq": 262,
+ "ukuran_order": 137.4008,
+ "peringkat_value": 601,
+ "peringkat_volume": 375,
+ "peringkat_freq": 499,
  "porsi_asing": 0.0,
  "net_asing_rp": 0,
  "label_fd": "F 0% : D 100%",
- "tiket_avg": 699984.71,
+ "tiket_avg": 440608.78,
  "tiket_avg_med60": 681646.04,
- "tiket_lonjakan": 1.0269,
- "asing_net_5h": -1083900,
+ "tiket_lonjakan": 0.6464,
+ "asing_net_5h": -1923900,
  "asing_net_20h": -1029900,
  "asing_streak": 0,
  "tiket_broker_maks": null,
