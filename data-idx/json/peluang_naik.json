@@ -1,9 +1,9 @@
 {
- "tanggal": "2026-10-14",
+ "tanggal": "2026-10-15",
  "rezim": "bearish",
  "ihsg": {
-  "close": 5943.024,
-  "ma200": 7064.61
+  "close": 5863.78,
+  "ma200": 7050.64
  },
  "definisi": {
   "target_pct": 5.0,
@@ -11,14 +11,14 @@
   "hari": 20,
   "latih": "2015-01-01 s.d. 2022-12-01",
   "validasi": "2023-01-01 s.d. 2024-06-30",
-  "uji": "2024-07-01 s.d. 2026-09-16",
+  "uji": "2024-07-01 s.d. 2026-09-17",
   "nilai_min": 2000000000.0
  },
  "cakupan": {
-  "observasi": 523265,
-  "emiten": 813,
+  "observasi": 523604,
+  "emiten": 814,
   "sinyal_diuji": 18,
-  "emiten_hari_ini": 334
+  "emiten_hari_ini": 333
  },
  "sinyal": [
   {
@@ -1538,49 +1538,49 @@
   "bearish": [
    {
     "skor": 0,
-    "n": 55645,
-    "p": 0.4609,
+    "n": 55964,
+    "p": 0.4598,
     "ci": [
-     0.4568,
-     0.4651
+     0.4557,
+     0.4639
     ]
    },
    {
     "skor": 1,
-    "n": 11667,
+    "n": 11687,
     "p": 0.464,
     "ci": [
-     0.4549,
-     0.473
+     0.455,
+     0.4731
     ]
    }
   ],
   "bearish_jebakan": [
    {
     "jebakan": 0,
-    "n": 47842,
-    "p": 0.4721,
+    "n": 48036,
+    "p": 0.4711,
     "ci": [
-     0.4676,
-     0.4766
+     0.4666,
+     0.4756
     ]
    },
    {
     "jebakan": 1,
-    "n": 13822,
-    "p": 0.4335,
+    "n": 13914,
+    "p": 0.4324,
     "ci": [
-     0.4253,
-     0.4418
+     0.4242,
+     0.4407
     ]
    },
    {
     "jebakan": "2+",
-    "n": 5648,
-    "p": 0.4396,
+    "n": 5701,
+    "p": 0.4401,
     "ci": [
-     0.4267,
-     0.4526
+     0.4273,
+     0.453
     ]
    }
   ]
@@ -1592,8 +1592,8 @@
  "peringkat": [
   {
    "kode": "BUMI",
-   "harga": 165.0,
-   "nilai20_m": 392.9,
+   "harga": 157.0,
+   "nilai20_m": 383.6,
    "skor": 1,
    "sinyal": [
     "jatuh_dalam"
@@ -1601,29 +1601,14 @@
    "jebakan": [],
    "p": 0.464,
    "ci": [
-    0.4549,
-    0.473
-   ]
-  },
-  {
-   "kode": "TLKM",
-   "harga": 2250.0,
-   "nilai20_m": 361.1,
-   "skor": 1,
-   "sinyal": [
-    "jatuh_dalam"
-   ],
-   "jebakan": [],
-   "p": 0.464,
-   "ci": [
-    0.4549,
-    0.473
+    0.455,
+    0.4731
    ]
   },
   {
    "kode": "GOTO",
-   "harga": 28.0,
-   "nilai20_m": 358.3,
+   "harga": 27.0,
+   "nilai20_m": 365.7,
    "skor": 1,
    "sinyal": [
     "jatuh_dalam"
@@ -1631,44 +1616,14 @@
    "jebakan": [],
    "p": 0.464,
    "ci": [
-    0.4549,
-    0.473
-   ]
-  },
-  {
-   "kode": "AMMN",
-   "harga": 4330.0,
-   "nilai20_m": 344.7,
-   "skor": 1,
-   "sinyal": [
-    "jatuh_dalam"
-   ],
-   "jebakan": [],
-   "p": 0.464,
-   "ci": [
-    0.4549,
-    0.473
-   ]
-  },
-  {
-   "kode": "CUAN",
-   "harga": 665.0,
-   "nilai20_m": 305.3,
-   "skor": 1,
-   "sinyal": [
-    "jatuh_dalam"
-   ],
-   "jebakan": [],
-   "p": 0.464,
-   "ci": [
-    0.4549,
-    0.473
+    0.455,
+    0.4731
    ]
   },
   {
    "kode": "DSSA",
-   "harga": 895.0,
-   "nilai20_m": 302.9,
+   "harga": 840.0,
+   "nilai20_m": 308.7,
    "skor": 1,
    "sinyal": [
     "jatuh_dalam"
@@ -1676,14 +1631,29 @@
    "jebakan": [],
    "p": 0.464,
    "ci": [
-    0.4549,
-    0.473
+    0.455,
+    0.4731
+   ]
+  },
+  {
+   "kode": "CUAN",
+   "harga": 630.0,
+   "nilai20_m": 290.6,
+   "skor": 1,
+   "sinyal": [
+    "jatuh_dalam"
+   ],
+   "jebakan": [],
+   "p": 0.464,
+   "ci": [
+    0.455,
+    0.4731
    ]
   },
   {
    "kode": "PTRO",
-   "harga": 4120.0,
-   "nilai20_m": 211.7,
+   "harga": 3920.0,
+   "nilai20_m": 209.8,
    "skor": 1,
    "sinyal": [
     "jatuh_dalam"
@@ -1691,14 +1661,14 @@
    "jebakan": [],
    "p": 0.464,
    "ci": [
-    0.4549,
-    0.473
+    0.455,
+    0.4731
    ]
   },
   {
    "kode": "TPIA",
-   "harga": 1500.0,
-   "nilai20_m": 186.2,
+   "harga": 1415.0,
+   "nilai20_m": 190.6,
    "skor": 1,
    "sinyal": [
     "jatuh_dalam"
@@ -1706,14 +1676,29 @@
    "jebakan": [],
    "p": 0.464,
    "ci": [
-    0.4549,
-    0.473
+    0.455,
+    0.4731
+   ]
+  },
+  {
+   "kode": "DEWA",
+   "harga": 304.0,
+   "nilai20_m": 153.1,
+   "skor": 1,
+   "sinyal": [
+    "jatuh_dalam"
+   ],
+   "jebakan": [],
+   "p": 0.464,
+   "ci": [
+    0.455,
+    0.4731
    ]
   },
   {
    "kode": "PACK",
-   "harga": 438.0,
-   "nilai20_m": 154.8,
+   "harga": 398.0,
+   "nilai20_m": 147.5,
    "skor": 1,
    "sinyal": [
     "jatuh_dalam"
@@ -1721,29 +1706,14 @@
    "jebakan": [],
    "p": 0.464,
    "ci": [
-    0.4549,
-    0.473
-   ]
-  },
-  {
-   "kode": "BRMS",
-   "harga": 555.0,
-   "nilai20_m": 144.5,
-   "skor": 1,
-   "sinyal": [
-    "jatuh_dalam"
-   ],
-   "jebakan": [],
-   "p": 0.464,
-   "ci": [
-    0.4549,
-    0.473
+    0.455,
+    0.4731
    ]
   },
   {
    "kode": "BULL",
-   "harga": 328.0,
-   "nilai20_m": 115.3,
+   "harga": 318.0,
+   "nilai20_m": 107.1,
    "skor": 1,
    "sinyal": [
     "jatuh_dalam"
@@ -1751,14 +1721,14 @@
    "jebakan": [],
    "p": 0.464,
    "ci": [
-    0.4549,
-    0.473
+    0.455,
+    0.4731
    ]
   },
   {
    "kode": "FORU",
-   "harga": 131.0,
-   "nilai20_m": 100.6,
+   "harga": 127.0,
+   "nilai20_m": 101.7,
    "skor": 1,
    "sinyal": [
     "jatuh_dalam"
@@ -1766,14 +1736,14 @@
    "jebakan": [],
    "p": 0.464,
    "ci": [
-    0.4549,
-    0.473
+    0.455,
+    0.4731
    ]
   },
   {
    "kode": "INET",
-   "harga": 234.0,
-   "nilai20_m": 86.6,
+   "harga": 220.0,
+   "nilai20_m": 81.0,
    "skor": 1,
    "sinyal": [
     "jatuh_dalam"
@@ -1781,29 +1751,14 @@
    "jebakan": [],
    "p": 0.464,
    "ci": [
-    0.4549,
-    0.473
-   ]
-  },
-  {
-   "kode": "JARR",
-   "harga": 2900.0,
-   "nilai20_m": 78.9,
-   "skor": 1,
-   "sinyal": [
-    "jatuh_dalam"
-   ],
-   "jebakan": [],
-   "p": 0.464,
-   "ci": [
-    0.4549,
-    0.473
+    0.455,
+    0.4731
    ]
   },
   {
    "kode": "DOOH",
-   "harga": 300.0,
-   "nilai20_m": 72.0,
+   "harga": 278.0,
+   "nilai20_m": 72.6,
    "skor": 1,
    "sinyal": [
     "jatuh_dalam"
@@ -1811,14 +1766,29 @@
    "jebakan": [],
    "p": 0.464,
    "ci": [
-    0.4549,
-    0.473
+    0.455,
+    0.4731
+   ]
+  },
+  {
+   "kode": "JARR",
+   "harga": 2670.0,
+   "nilai20_m": 64.2,
+   "skor": 1,
+   "sinyal": [
+    "jatuh_dalam"
+   ],
+   "jebakan": [],
+   "p": 0.464,
+   "ci": [
+    0.455,
+    0.4731
    ]
   },
   {
    "kode": "VKTR",
-   "harga": 500.0,
-   "nilai20_m": 60.8,
+   "harga": 440.0,
+   "nilai20_m": 63.9,
    "skor": 1,
    "sinyal": [
     "jatuh_dalam"
@@ -1826,14 +1796,14 @@
    "jebakan": [],
    "p": 0.464,
    "ci": [
-    0.4549,
-    0.473
+    0.455,
+    0.4731
    ]
   },
   {
    "kode": "BUVA",
-   "harga": 520.0,
-   "nilai20_m": 58.8,
+   "harga": 470.0,
+   "nilai20_m": 59.0,
    "skor": 1,
    "sinyal": [
     "jatuh_dalam"
@@ -1841,14 +1811,14 @@
    "jebakan": [],
    "p": 0.464,
    "ci": [
-    0.4549,
-    0.473
+    0.455,
+    0.4731
    ]
   },
   {
    "kode": "BNBR",
-   "harga": 64.0,
-   "nilai20_m": 51.1,
+   "harga": 61.0,
+   "nilai20_m": 49.6,
    "skor": 1,
    "sinyal": [
     "jatuh_dalam"
@@ -1856,14 +1826,14 @@
    "jebakan": [],
    "p": 0.464,
    "ci": [
-    0.4549,
-    0.473
+    0.455,
+    0.4731
    ]
   },
   {
    "kode": "BIPI",
-   "harga": 115.0,
-   "nilai20_m": 45.7,
+   "harga": 109.0,
+   "nilai20_m": 45.0,
    "skor": 1,
    "sinyal": [
     "jatuh_dalam"
@@ -1871,14 +1841,59 @@
    "jebakan": [],
    "p": 0.464,
    "ci": [
-    0.4549,
-    0.473
+    0.455,
+    0.4731
+   ]
+  },
+  {
+   "kode": "IATA",
+   "harga": 97.0,
+   "nilai20_m": 44.0,
+   "skor": 1,
+   "sinyal": [
+    "jatuh_dalam"
+   ],
+   "jebakan": [],
+   "p": 0.464,
+   "ci": [
+    0.455,
+    0.4731
+   ]
+  },
+  {
+   "kode": "COCO",
+   "harga": 113.0,
+   "nilai20_m": 43.5,
+   "skor": 1,
+   "sinyal": [
+    "jatuh_dalam"
+   ],
+   "jebakan": [],
+   "p": 0.464,
+   "ci": [
+    0.455,
+    0.4731
+   ]
+  },
+  {
+   "kode": "MBMA",
+   "harga": 438.0,
+   "nilai20_m": 41.8,
+   "skor": 1,
+   "sinyal": [
+    "jatuh_dalam"
+   ],
+   "jebakan": [],
+   "p": 0.464,
+   "ci": [
+    0.455,
+    0.4731
    ]
   },
   {
    "kode": "BRIS",
-   "harga": 1315.0,
-   "nilai20_m": 40.6,
+   "harga": 1285.0,
+   "nilai20_m": 39.6,
    "skor": 1,
    "sinyal": [
     "jatuh_dalam"
@@ -1886,14 +1901,14 @@
    "jebakan": [],
    "p": 0.464,
    "ci": [
-    0.4549,
-    0.473
+    0.455,
+    0.4731
    ]
   },
   {
    "kode": "WIFI",
-   "harga": 1370.0,
-   "nilai20_m": 37.8,
+   "harga": 1290.0,
+   "nilai20_m": 38.3,
    "skor": 1,
    "sinyal": [
     "jatuh_dalam"
@@ -1901,14 +1916,14 @@
    "jebakan": [],
    "p": 0.464,
    "ci": [
-    0.4549,
-    0.473
+    0.455,
+    0.4731
    ]
   },
   {
-   "kode": "MDIA",
-   "harga": 121.0,
-   "nilai20_m": 34.5,
+   "kode": "KETR",
+   "harga": 770.0,
+   "nilai20_m": 38.2,
    "skor": 1,
    "sinyal": [
     "jatuh_dalam"
@@ -1916,14 +1931,14 @@
    "jebakan": [],
    "p": 0.464,
    "ci": [
-    0.4549,
-    0.473
+    0.455,
+    0.4731
    ]
   },
   {
-   "kode": "KOTA",
-   "harga": 119.0,
-   "nilai20_m": 33.6,
+   "kode": "KIJA",
+   "harga": 140.0,
+   "nilai20_m": 36.6,
    "skor": 1,
    "sinyal": [
     "jatuh_dalam"
@@ -1931,14 +1946,14 @@
    "jebakan": [],
    "p": 0.464,
    "ci": [
-    0.4549,
-    0.473
+    0.455,
+    0.4731
    ]
   },
   {
    "kode": "RAJA",
-   "harga": 595.0,
-   "nilai20_m": 33.6,
+   "harga": 575.0,
+   "nilai20_m": 34.4,
    "skor": 1,
    "sinyal": [
     "jatuh_dalam"
@@ -1946,14 +1961,29 @@
    "jebakan": [],
    "p": 0.464,
    "ci": [
-    0.4549,
-    0.473
+    0.455,
+    0.4731
+   ]
+  },
+  {
+   "kode": "MDIA",
+   "harga": 112.0,
+   "nilai20_m": 33.9,
+   "skor": 1,
+   "sinyal": [
+    "jatuh_dalam"
+   ],
+   "jebakan": [],
+   "p": 0.464,
+   "ci": [
+    0.455,
+    0.4731
    ]
   },
   {
    "kode": "COIN",
-   "harga": 600.0,
-   "nilai20_m": 33.4,
+   "harga": 510.0,
+   "nilai20_m": 33.7,
    "skor": 1,
    "sinyal": [
     "jatuh_dalam"
@@ -1961,14 +1991,29 @@
    "jebakan": [],
    "p": 0.464,
    "ci": [
-    0.4549,
-    0.473
+    0.455,
+    0.4731
+   ]
+  },
+  {
+   "kode": "KOTA",
+   "harga": 109.0,
+   "nilai20_m": 33.5,
+   "skor": 1,
+   "sinyal": [
+    "jatuh_dalam"
+   ],
+   "jebakan": [],
+   "p": 0.464,
+   "ci": [
+    0.455,
+    0.4731
    ]
   },
   {
    "kode": "BREN",
-   "harga": 2320.0,
-   "nilai20_m": 27.7,
+   "harga": 2180.0,
+   "nilai20_m": 28.7,
    "skor": 1,
    "sinyal": [
     "jatuh_dalam"
@@ -1976,14 +2021,14 @@
    "jebakan": [],
    "p": 0.464,
    "ci": [
-    0.4549,
-    0.473
+    0.455,
+    0.4731
    ]
   },
   {
-   "kode": "LUCY",
-   "harga": 135.0,
-   "nilai20_m": 25.7,
+   "kode": "IRSX",
+   "harga": 276.0,
+   "nilai20_m": 25.6,
    "skor": 1,
    "sinyal": [
     "jatuh_dalam"
@@ -1991,61 +2036,16 @@
    "jebakan": [],
    "p": 0.464,
    "ci": [
-    0.4549,
-    0.473
-   ]
-  },
-  {
-   "kode": "CDIA",
-   "harga": 500.0,
-   "nilai20_m": 22.0,
-   "skor": 1,
-   "sinyal": [
-    "jatuh_dalam"
-   ],
-   "jebakan": [],
-   "p": 0.464,
-   "ci": [
-    0.4549,
-    0.473
-   ]
-  },
-  {
-   "kode": "IMPC",
-   "harga": 1175.0,
-   "nilai20_m": 21.7,
-   "skor": 1,
-   "sinyal": [
-    "jatuh_dalam"
-   ],
-   "jebakan": [],
-   "p": 0.464,
-   "ci": [
-    0.4549,
-    0.473
-   ]
-  },
-  {
-   "kode": "KPIG",
-   "harga": 39.0,
-   "nilai20_m": 20.3,
-   "skor": 1,
-   "sinyal": [
-    "jatuh_dalam"
-   ],
-   "jebakan": [],
-   "p": 0.464,
-   "ci": [
-    0.4549,
-    0.473
+    0.455,
+    0.4731
    ]
   }
  ],
  "hindari": [
   {
-   "kode": "AUTO",
-   "harga": 3380.0,
-   "nilai20_m": 9.4,
+   "kode": "IDEA",
+   "harga": 244.0,
+   "nilai20_m": 4.0,
    "skor": 0,
    "sinyal": [],
    "jebakan": [
@@ -2054,16 +2054,16 @@
     "sempit",
     "puncak_95"
    ],
-   "p": 0.4609,
+   "p": 0.4598,
    "ci": [
-    0.4568,
-    0.4651
+    0.4557,
+    0.4639
    ]
   },
   {
    "kode": "MMIX",
    "harga": 975.0,
-   "nilai20_m": 25.3,
+   "nilai20_m": 25.6,
    "skor": 0,
    "sinyal": [],
    "jebakan": [
@@ -2072,16 +2072,16 @@
     "sempit",
     "puncak_95"
    ],
-   "p": 0.4609,
+   "p": 0.4598,
    "ci": [
-    0.4568,
-    0.4651
+    0.4557,
+    0.4639
    ]
   },
   {
    "kode": "NEST",
    "harga": 835.0,
-   "nilai20_m": 9.1,
+   "nilai20_m": 9.2,
    "skor": 0,
    "sinyal": [],
    "jebakan": [
@@ -2090,16 +2090,16 @@
     "sempit",
     "puncak_95"
    ],
-   "p": 0.4609,
+   "p": 0.4598,
    "ci": [
-    0.4568,
-    0.4651
+    0.4557,
+    0.4639
    ]
   },
   {
    "kode": "SGER",
-   "harga": 780.0,
-   "nilai20_m": 35.9,
+   "harga": 770.0,
+   "nilai20_m": 35.8,
    "skor": 0,
    "sinyal": [],
    "jebakan": [
@@ -2108,10 +2108,10 @@
     "sempit",
     "puncak_95"
    ],
-   "p": 0.4609,
+   "p": 0.4598,
    "ci": [
-    0.4568,
-    0.4651
+    0.4557,
+    0.4639
    ]
   },
   {
@@ -2125,16 +2125,33 @@
     "dekat_puncak",
     "puncak_95"
    ],
-   "p": 0.4609,
+   "p": 0.4598,
    "ci": [
-    0.4568,
-    0.4651
+    0.4557,
+    0.4639
+   ]
+  },
+  {
+   "kode": "AKKU",
+   "harga": 105.0,
+   "nilai20_m": 4.5,
+   "skor": 0,
+   "sinyal": [],
+   "jebakan": [
+    "formasi_ma",
+    "dekat_puncak",
+    "puncak_95"
+   ],
+   "p": 0.4598,
+   "ci": [
+    0.4557,
+    0.4639
    ]
   },
   {
    "kode": "AKRA",
-   "harga": 1480.0,
-   "nilai20_m": 19.8,
+   "harga": 1470.0,
+   "nilai20_m": 21.2,
    "skor": 0,
    "sinyal": [],
    "jebakan": [
@@ -2142,16 +2159,50 @@
     "dekat_puncak",
     "sempit"
    ],
-   "p": 0.4609,
+   "p": 0.4598,
    "ci": [
-    0.4568,
-    0.4651
+    0.4557,
+    0.4639
+   ]
+  },
+  {
+   "kode": "ARNA",
+   "harga": 510.0,
+   "nilai20_m": 2.6,
+   "skor": 0,
+   "sinyal": [],
+   "jebakan": [
+    "formasi_ma",
+    "dekat_puncak",
+    "palu_support"
+   ],
+   "p": 0.4598,
+   "ci": [
+    0.4557,
+    0.4639
+   ]
+  },
+  {
+   "kode": "AUTO",
+   "harga": 3340.0,
+   "nilai20_m": 9.4,
+   "skor": 0,
+   "sinyal": [],
+   "jebakan": [
+    "formasi_ma",
+    "dekat_puncak",
+    "sempit"
+   ],
+   "p": 0.4598,
+   "ci": [
+    0.4557,
+    0.4639
    ]
   },
   {
    "kode": "BDMN",
    "harga": 5025.0,
-   "nilai20_m": 19.1,
+   "nilai20_m": 19.4,
    "skor": 0,
    "sinyal": [],
    "jebakan": [
@@ -2159,33 +2210,16 @@
     "dekat_puncak",
     "puncak_95"
    ],
-   "p": 0.4609,
+   "p": 0.4598,
    "ci": [
-    0.4568,
-    0.4651
-   ]
-  },
-  {
-   "kode": "BIKE",
-   "harga": 4160.0,
-   "nilai20_m": 5.2,
-   "skor": 0,
-   "sinyal": [],
-   "jebakan": [
-    "formasi_ma",
-    "dekat_puncak",
-    "puncak_95"
-   ],
-   "p": 0.4609,
-   "ci": [
-    0.4568,
-    0.4651
+    0.4557,
+    0.4639
    ]
   },
   {
    "kode": "BSML",
-   "harga": 555.0,
-   "nilai20_m": 6.2,
+   "harga": 550.0,
+   "nilai20_m": 6.1,
    "skor": 0,
    "sinyal": [],
    "jebakan": [
@@ -2193,16 +2227,16 @@
     "dekat_puncak",
     "sempit"
    ],
-   "p": 0.4609,
+   "p": 0.4598,
    "ci": [
-    0.4568,
-    0.4651
+    0.4557,
+    0.4639
    ]
   },
   {
    "kode": "BSSR",
    "harga": 5250.0,
-   "nilai20_m": 14.0,
+   "nilai20_m": 13.9,
    "skor": 0,
    "sinyal": [],
    "jebakan": [
@@ -2210,50 +2244,16 @@
     "dekat_puncak",
     "puncak_95"
    ],
-   "p": 0.4609,
+   "p": 0.4598,
    "ci": [
-    0.4568,
-    0.4651
-   ]
-  },
-  {
-   "kode": "DEWI",
-   "harga": 258.0,
-   "nilai20_m": 11.7,
-   "skor": 0,
-   "sinyal": [],
-   "jebakan": [
-    "formasi_ma",
-    "dekat_puncak",
-    "puncak_95"
-   ],
-   "p": 0.4609,
-   "ci": [
-    0.4568,
-    0.4651
-   ]
-  },
-  {
-   "kode": "ERAA",
-   "harga": 625.0,
-   "nilai20_m": 54.3,
-   "skor": 0,
-   "sinyal": [],
-   "jebakan": [
-    "formasi_ma",
-    "dekat_puncak",
-    "puncak_95"
-   ],
-   "p": 0.4609,
-   "ci": [
-    0.4568,
-    0.4651
+    0.4557,
+    0.4639
    ]
   },
   {
    "kode": "HATM",
-   "harga": 670.0,
-   "nilai20_m": 6.0,
+   "harga": 665.0,
+   "nilai20_m": 6.8,
    "skor": 0,
    "sinyal": [],
    "jebakan": [
@@ -2261,50 +2261,16 @@
     "dekat_puncak",
     "puncak_95"
    ],
-   "p": 0.4609,
+   "p": 0.4598,
    "ci": [
-    0.4568,
-    0.4651
-   ]
-  },
-  {
-   "kode": "IDEA",
-   "harga": 222.0,
-   "nilai20_m": 3.6,
-   "skor": 0,
-   "sinyal": [],
-   "jebakan": [
-    "formasi_ma",
-    "dekat_puncak",
-    "sempit"
-   ],
-   "p": 0.4609,
-   "ci": [
-    0.4568,
-    0.4651
-   ]
-  },
-  {
-   "kode": "MPXL",
-   "harga": 316.0,
-   "nilai20_m": 7.1,
-   "skor": 0,
-   "sinyal": [],
-   "jebakan": [
-    "formasi_ma",
-    "dekat_puncak",
-    "puncak_95"
-   ],
-   "p": 0.4609,
-   "ci": [
-    0.4568,
-    0.4651
+    0.4557,
+    0.4639
    ]
   },
   {
    "kode": "PKPK",
-   "harga": 7575.0,
-   "nilai20_m": 23.0,
+   "harga": 7650.0,
+   "nilai20_m": 24.0,
    "skor": 0,
    "sinyal": [],
    "jebakan": [
@@ -2312,16 +2278,16 @@
     "dekat_puncak",
     "puncak_95"
    ],
-   "p": 0.4609,
+   "p": 0.4598,
    "ci": [
-    0.4568,
-    0.4651
+    0.4557,
+    0.4639
    ]
   },
   {
    "kode": "PRDA",
-   "harga": 3310.0,
-   "nilai20_m": 2.7,
+   "harga": 3350.0,
+   "nilai20_m": 2.8,
    "skor": 0,
    "sinyal": [],
    "jebakan": [
@@ -2329,16 +2295,16 @@
     "dekat_puncak",
     "puncak_95"
    ],
-   "p": 0.4609,
+   "p": 0.4598,
    "ci": [
-    0.4568,
-    0.4651
+    0.4557,
+    0.4639
    ]
   },
   {
    "kode": "RSCH",
    "harga": 620.0,
-   "nilai20_m": 13.7,
+   "nilai20_m": 13.6,
    "skor": 0,
    "sinyal": [],
    "jebakan": [
@@ -2346,16 +2312,16 @@
     "dekat_puncak",
     "puncak_95"
    ],
-   "p": 0.4609,
+   "p": 0.4598,
    "ci": [
-    0.4568,
-    0.4651
+    0.4557,
+    0.4639
    ]
   },
   {
    "kode": "ULTJ",
-   "harga": 2100.0,
-   "nilai20_m": 57.4,
+   "harga": 2090.0,
+   "nilai20_m": 56.5,
    "skor": 0,
    "sinyal": [],
    "jebakan": [
@@ -2363,31 +2329,15 @@
     "dekat_puncak",
     "puncak_95"
    ],
-   "p": 0.4609,
+   "p": 0.4598,
    "ci": [
-    0.4568,
-    0.4651
-   ]
-  },
-  {
-   "kode": "ARNA",
-   "harga": 515.0,
-   "nilai20_m": 2.5,
-   "skor": 0,
-   "sinyal": [],
-   "jebakan": [
-    "formasi_ma",
-    "dekat_puncak"
-   ],
-   "p": 0.4609,
-   "ci": [
-    0.4568,
-    0.4651
+    0.4557,
+    0.4639
    ]
   },
   {
    "kode": "ASGR",
-   "harga": 2470.0,
+   "harga": 2450.0,
    "nilai20_m": 7.8,
    "skor": 0,
    "sinyal": [],
@@ -2395,161 +2345,160 @@
     "formasi_ma",
     "dekat_puncak"
    ],
-   "p": 0.4609,
+   "p": 0.4598,
    "ci": [
-    0.4568,
-    0.4651
+    0.4557,
+    0.4639
    ]
   },
   {
-   "kode": "ASPI",
-   "harga": 1030.0,
-   "nilai20_m": 3.5,
+   "kode": "CMNT",
+   "harga": 760.0,
+   "nilai20_m": 11.0,
    "skor": 0,
    "sinyal": [],
    "jebakan": [
-    "formasi_ma",
-    "sempit"
-   ],
-   "p": 0.4609,
-   "ci": [
-    0.4568,
-    0.4651
-   ]
-  },
-  {
-   "kode": "AYAM",
-   "harga": 505.0,
-   "nilai20_m": 10.7,
-   "skor": 0,
-   "sinyal": [],
-   "jebakan": [
-    "formasi_ma",
-    "dekat_puncak"
-   ],
-   "p": 0.4609,
-   "ci": [
-    0.4568,
-    0.4651
-   ]
-  },
-  {
-   "kode": "CSMI",
-   "harga": 515.0,
-   "nilai20_m": 21.4,
-   "skor": 0,
-   "sinyal": [],
-   "jebakan": [
-    "formasi_ma",
-    "sempit"
-   ],
-   "p": 0.4609,
-   "ci": [
-    0.4568,
-    0.4651
-   ]
-  },
-  {
-   "kode": "MARK",
-   "harga": 1125.0,
-   "nilai20_m": 16.5,
-   "skor": 0,
-   "sinyal": [],
-   "jebakan": [
-    "formasi_ma",
+    "sempit",
     "palu_support"
    ],
-   "p": 0.4609,
+   "p": 0.4598,
    "ci": [
-    0.4568,
-    0.4651
+    0.4557,
+    0.4639
    ]
   },
   {
-   "kode": "MOLI",
-   "harga": 398.0,
-   "nilai20_m": 4.5,
+   "kode": "DEWI",
+   "harga": 250.0,
+   "nilai20_m": 11.2,
    "skor": 0,
    "sinyal": [],
    "jebakan": [
     "formasi_ma",
     "dekat_puncak"
    ],
-   "p": 0.4609,
+   "p": 0.4598,
    "ci": [
-    0.4568,
-    0.4651
+    0.4557,
+    0.4639
+   ]
+  },
+  {
+   "kode": "ERAA",
+   "harga": 615.0,
+   "nilai20_m": 48.5,
+   "skor": 0,
+   "sinyal": [],
+   "jebakan": [
+    "formasi_ma",
+    "dekat_puncak"
+   ],
+   "p": 0.4598,
+   "ci": [
+    0.4557,
+    0.4639
+   ]
+  },
+  {
+   "kode": "MPIX",
+   "harga": 220.0,
+   "nilai20_m": 5.5,
+   "skor": 0,
+   "sinyal": [],
+   "jebakan": [
+    "formasi_ma",
+    "dekat_puncak"
+   ],
+   "p": 0.4598,
+   "ci": [
+    0.4557,
+    0.4639
+   ]
+  },
+  {
+   "kode": "MPXL",
+   "harga": 310.0,
+   "nilai20_m": 7.6,
+   "skor": 0,
+   "sinyal": [],
+   "jebakan": [
+    "formasi_ma",
+    "dekat_puncak"
+   ],
+   "p": 0.4598,
+   "ci": [
+    0.4557,
+    0.4639
    ]
   },
   {
    "kode": "POWR",
-   "harga": 965.0,
-   "nilai20_m": 5.9,
+   "harga": 960.0,
+   "nilai20_m": 5.5,
    "skor": 0,
    "sinyal": [],
    "jebakan": [
     "formasi_ma",
     "dekat_puncak"
    ],
-   "p": 0.4609,
+   "p": 0.4598,
    "ci": [
-    0.4568,
-    0.4651
+    0.4557,
+    0.4639
    ]
   },
   {
    "kode": "PTBA",
-   "harga": 3270.0,
-   "nilai20_m": 112.5,
+   "harga": 3210.0,
+   "nilai20_m": 110.1,
    "skor": 0,
    "sinyal": [],
    "jebakan": [
     "formasi_ma",
     "dekat_puncak"
    ],
-   "p": 0.4609,
+   "p": 0.4598,
    "ci": [
-    0.4568,
-    0.4651
+    0.4557,
+    0.4639
    ]
   },
   {
    "kode": "SMIL",
-   "harga": 484.0,
-   "nilai20_m": 26.6,
+   "harga": 482.0,
+   "nilai20_m": 26.7,
    "skor": 0,
    "sinyal": [],
    "jebakan": [
     "formasi_ma",
     "sempit"
    ],
-   "p": 0.4609,
+   "p": 0.4598,
    "ci": [
-    0.4568,
-    0.4651
-   ]
-  },
-  {
-   "kode": "SMLE",
-   "harga": 340.0,
-   "nilai20_m": 12.0,
-   "skor": 0,
-   "sinyal": [],
-   "jebakan": [
-    "formasi_ma",
-    "sempit"
-   ],
-   "p": 0.4609,
-   "ci": [
-    0.4568,
-    0.4651
+    0.4557,
+    0.4639
    ]
   }
  ],
  "siaga_bullish": [
   {
-   "kode": "HATM",
-   "harga": 670.0,
+   "kode": "UVCR",
+   "harga": 226.0,
+   "sinyal": [
+    "formasi_ma",
+    "adx_naik",
+    "asing_20",
+    "kuat_relatif",
+    "pembalikan_xs",
+    "momentum_12_1"
+   ],
+   "jebakan_kini": [
+    "formasi_ma"
+   ]
+  },
+  {
+   "kode": "AKKU",
+   "harga": 105.0,
    "sinyal": [
     "formasi_ma",
     "tembus_vol",
@@ -2565,34 +2514,8 @@
    ]
   },
   {
-   "kode": "DPUM",
-   "harga": 112.0,
-   "sinyal": [
-    "jatuh_dalam",
-    "adx_naik",
-    "asing_20",
-    "pembalikan_xs",
-    "momentum_12_1"
-   ],
-   "jebakan_kini": []
-  },
-  {
-   "kode": "CCSI",
-   "harga": 334.0,
-   "sinyal": [
-    "formasi_ma",
-    "jatuh_dalam",
-    "adx_naik",
-    "asing_20",
-    "pembalikan_xs"
-   ],
-   "jebakan_kini": [
-    "formasi_ma"
-   ]
-  },
-  {
    "kode": "HELI",
-   "harga": 240.0,
+   "harga": 230.0,
    "sinyal": [
     "formasi_ma",
     "adx_naik",
@@ -2605,8 +2528,8 @@
    ]
   },
   {
-   "kode": "HOPE",
-   "harga": 260.0,
+   "kode": "MOLI",
+   "harga": 384.0,
    "sinyal": [
     "formasi_ma",
     "adx_naik",
@@ -2620,40 +2543,12 @@
   },
   {
    "kode": "OILS",
-   "harga": 368.0,
+   "harga": 350.0,
    "sinyal": [
     "formasi_ma",
     "adx_naik",
     "asing_20",
     "kuat_relatif",
-    "momentum_12_1"
-   ],
-   "jebakan_kini": [
-    "formasi_ma"
-   ]
-  },
-  {
-   "kode": "SEMA",
-   "harga": 374.0,
-   "sinyal": [
-    "formasi_ma",
-    "adx_naik",
-    "kuat_relatif",
-    "pembalikan_xs",
-    "momentum_12_1"
-   ],
-   "jebakan_kini": [
-    "formasi_ma"
-   ]
-  },
-  {
-   "kode": "SQMI",
-   "harga": 90.0,
-   "sinyal": [
-    "formasi_ma",
-    "adx_naik",
-    "kuat_relatif",
-    "pembalikan_xs",
     "momentum_12_1"
    ],
    "jebakan_kini": [
@@ -2662,7 +2557,7 @@
   },
   {
    "kode": "SRSN",
-   "harga": 127.0,
+   "harga": 124.0,
    "sinyal": [
     "formasi_ma",
     "adx_naik",
@@ -2675,22 +2570,8 @@
    ]
   },
   {
-   "kode": "UVCR",
-   "harga": 252.0,
-   "sinyal": [
-    "formasi_ma",
-    "adx_naik",
-    "asing_20",
-    "kuat_relatif",
-    "momentum_12_1"
-   ],
-   "jebakan_kini": [
-    "formasi_ma"
-   ]
-  },
-  {
-   "kode": "MOLI",
-   "harga": 398.0,
+   "kode": "DEWI",
+   "harga": 250.0,
    "sinyal": [
     "formasi_ma",
     "adx_naik",
@@ -2704,24 +2585,23 @@
    ]
   },
   {
-   "kode": "BIKE",
-   "harga": 4160.0,
+   "kode": "MPIX",
+   "harga": 220.0,
    "sinyal": [
     "formasi_ma",
-    "tembus_vol",
     "adx_naik",
     "asing_20",
-    "kuat_relatif"
+    "kuat_relatif",
+    "momentum_12_1"
    ],
    "jebakan_kini": [
     "formasi_ma",
-    "dekat_puncak",
-    "puncak_95"
+    "dekat_puncak"
    ]
   },
   {
-   "kode": "DEWI",
-   "harga": 258.0,
+   "kode": "HATM",
+   "harga": 665.0,
    "sinyal": [
     "formasi_ma",
     "adx_naik",
@@ -2737,7 +2617,23 @@
   },
   {
    "kode": "PKPK",
-   "harga": 7575.0,
+   "harga": 7650.0,
+   "sinyal": [
+    "formasi_ma",
+    "adx_naik",
+    "asing_20",
+    "kuat_relatif",
+    "momentum_12_1"
+   ],
+   "jebakan_kini": [
+    "formasi_ma",
+    "dekat_puncak",
+    "puncak_95"
+   ]
+  },
+  {
+   "kode": "ULTJ",
+   "harga": 2090.0,
    "sinyal": [
     "formasi_ma",
     "adx_naik",
@@ -2786,8 +2682,19 @@
    ]
   },
   {
+   "kode": "ACES",
+   "harga": 366.0,
+   "sinyal": [
+    "tembus_vol",
+    "adx_naik",
+    "asing_20",
+    "kuat_relatif"
+   ],
+   "jebakan_kini": []
+  },
+  {
    "kode": "AGAR",
-   "harga": 1665.0,
+   "harga": 1610.0,
    "sinyal": [
     "jatuh_dalam",
     "adx_naik",
@@ -2797,19 +2704,8 @@
    "jebakan_kini": []
   },
   {
-   "kode": "ARKO",
-   "harga": 2330.0,
-   "sinyal": [
-    "jatuh_dalam",
-    "asing_20",
-    "pembalikan_xs",
-    "momentum_12_1"
-   ],
-   "jebakan_kini": []
-  },
-  {
    "kode": "ASMI",
-   "harga": 27.0,
+   "harga": 26.0,
    "sinyal": [
     "adx_naik",
     "asing_20",
@@ -2819,8 +2715,8 @@
    "jebakan_kini": []
   },
   {
-   "kode": "BUVA",
-   "harga": 520.0,
+   "kode": "BAJA",
+   "harga": 230.0,
    "sinyal": [
     "jatuh_dalam",
     "asing_20",
@@ -2828,18 +2724,43 @@
     "momentum_12_1"
    ],
    "jebakan_kini": []
+  },
+  {
+   "kode": "BUVA",
+   "harga": 470.0,
+   "sinyal": [
+    "jatuh_dalam",
+    "asing_20",
+    "pembalikan_xs",
+    "momentum_12_1"
+   ],
+   "jebakan_kini": []
+  },
+  {
+   "kode": "CCSI",
+   "harga": 324.0,
+   "sinyal": [
+    "jatuh_dalam",
+    "adx_naik",
+    "asing_20",
+    "pembalikan_xs"
+   ],
+   "jebakan_kini": []
+  },
+  {
+   "kode": "DKHH",
+   "harga": 116.0,
+   "sinyal": [
+    "tembus_vol",
+    "adx_naik",
+    "asing_20",
+    "kuat_relatif"
+   ],
+   "jebakan_kini": []
   }
  ],
  "peringkat_semua": {
   "BUMI": [
-   1,
-   0.464,
-   [
-    "jatuh_dalam"
-   ],
-   []
-  ],
-  "TLKM": [
    1,
    0.464,
    [
@@ -2855,7 +2776,7 @@
    ],
    []
   ],
-  "AMMN": [
+  "DSSA": [
    1,
    0.464,
    [
@@ -2864,14 +2785,6 @@
    []
   ],
   "CUAN": [
-   1,
-   0.464,
-   [
-    "jatuh_dalam"
-   ],
-   []
-  ],
-  "DSSA": [
    1,
    0.464,
    [
@@ -2895,7 +2808,7 @@
    ],
    []
   ],
-  "PACK": [
+  "DEWA": [
    1,
    0.464,
    [
@@ -2903,7 +2816,7 @@
    ],
    []
   ],
-  "BRMS": [
+  "PACK": [
    1,
    0.464,
    [
@@ -2935,7 +2848,7 @@
    ],
    []
   ],
-  "JARR": [
+  "DOOH": [
    1,
    0.464,
    [
@@ -2943,7 +2856,7 @@
    ],
    []
   ],
-  "DOOH": [
+  "JARR": [
    1,
    0.464,
    [
@@ -2983,6 +2896,30 @@
    ],
    []
   ],
+  "IATA": [
+   1,
+   0.464,
+   [
+    "jatuh_dalam"
+   ],
+   []
+  ],
+  "COCO": [
+   1,
+   0.464,
+   [
+    "jatuh_dalam"
+   ],
+   []
+  ],
+  "MBMA": [
+   1,
+   0.464,
+   [
+    "jatuh_dalam"
+   ],
+   []
+  ],
   "BRIS": [
    1,
    0.464,
@@ -2999,7 +2936,7 @@
    ],
    []
   ],
-  "MDIA": [
+  "KETR": [
    1,
    0.464,
    [
@@ -3007,7 +2944,7 @@
    ],
    []
   ],
-  "KOTA": [
+  "KIJA": [
    1,
    0.464,
    [
@@ -3023,7 +2960,23 @@
    ],
    []
   ],
+  "MDIA": [
+   1,
+   0.464,
+   [
+    "jatuh_dalam"
+   ],
+   []
+  ],
   "COIN": [
+   1,
+   0.464,
+   [
+    "jatuh_dalam"
+   ],
+   []
+  ],
+  "KOTA": [
    1,
    0.464,
    [
@@ -3039,7 +2992,7 @@
    ],
    []
   ],
-  "LUCY": [
+  "IRSX": [
    1,
    0.464,
    [
@@ -3048,6 +3001,14 @@
    []
   ],
   "CDIA": [
+   1,
+   0.464,
+   [
+    "jatuh_dalam"
+   ],
+   []
+  ],
+  "EXCL": [
    1,
    0.464,
    [
@@ -3071,7 +3032,7 @@
    ],
    []
   ],
-  "RMKE": [
+  "RATU": [
    1,
    0.464,
    [
@@ -3079,7 +3040,7 @@
    ],
    []
   ],
-  "RATU": [
+  "RMKE": [
    1,
    0.464,
    [
@@ -3103,14 +3064,6 @@
    ],
    []
   ],
-  "EMTK": [
-   1,
-   0.464,
-   [
-    "jatuh_dalam"
-   ],
-   []
-  ],
   "MNCN": [
    1,
    0.464,
@@ -3119,7 +3072,7 @@
    ],
    []
   ],
-  "PADI": [
+  "SOCI": [
    1,
    0.464,
    [
@@ -3159,7 +3112,15 @@
    ],
    []
   ],
-  "FILM": [
+  "BAJA": [
+   1,
+   0.464,
+   [
+    "jatuh_dalam"
+   ],
+   []
+  ],
+  "ARTO": [
    1,
    0.464,
    [
@@ -3175,7 +3136,7 @@
    ],
    []
   ],
-  "PIPA": [
+  "NASI": [
    1,
    0.464,
    [
@@ -3184,6 +3145,14 @@
    []
   ],
   "LPKR": [
+   1,
+   0.464,
+   [
+    "jatuh_dalam"
+   ],
+   []
+  ],
+  "PIPA": [
    1,
    0.464,
    [
@@ -3207,7 +3176,7 @@
    ],
    []
   ],
-  "MINA": [
+  "FILM": [
    1,
    0.464,
    [
@@ -3223,15 +3192,7 @@
    ],
    []
   ],
-  "DPUM": [
-   1,
-   0.464,
-   [
-    "jatuh_dalam"
-   ],
-   []
-  ],
-  "FUTR": [
+  "MINA": [
    1,
    0.464,
    [
@@ -3247,7 +3208,39 @@
    ],
    []
   ],
+  "DPUM": [
+   1,
+   0.464,
+   [
+    "jatuh_dalam"
+   ],
+   []
+  ],
+  "KDTN": [
+   1,
+   0.464,
+   [
+    "jatuh_dalam"
+   ],
+   []
+  ],
+  "FUTR": [
+   1,
+   0.464,
+   [
+    "jatuh_dalam"
+   ],
+   []
+  ],
   "SDMU": [
+   1,
+   0.464,
+   [
+    "jatuh_dalam"
+   ],
+   []
+  ],
+  "JAWA": [
    1,
    0.464,
    [
@@ -3263,14 +3256,6 @@
    ],
    []
   ],
-  "WIRG": [
-   1,
-   0.464,
-   [
-    "jatuh_dalam"
-   ],
-   []
-  ],
   "FOLK": [
    1,
    0.464,
@@ -3279,7 +3264,7 @@
    ],
    []
   ],
-  "ICON": [
+  "GMFI": [
    1,
    0.464,
    [
@@ -3287,7 +3272,7 @@
    ],
    []
   ],
-  "KKES": [
+  "WIRG": [
    1,
    0.464,
    [
@@ -3303,14 +3288,6 @@
    ],
    []
   ],
-  "HEXA": [
-   1,
-   0.464,
-   [
-    "jatuh_dalam"
-   ],
-   []
-  ],
   "TOOL": [
    1,
    0.464,
@@ -3319,7 +3296,7 @@
    ],
    []
   ],
-  "DEFI": [
+  "LAPD": [
    1,
    0.464,
    [
@@ -3327,7 +3304,7 @@
    ],
    []
   ],
-  "GPSO": [
+  "DEFI": [
    1,
    0.464,
    [
@@ -3351,7 +3328,7 @@
    ],
    []
   ],
-  "DFAM": [
+  "CCSI": [
    1,
    0.464,
    [
@@ -3375,7 +3352,63 @@
    ],
    []
   ],
+  "FAST": [
+   1,
+   0.464,
+   [
+    "jatuh_dalam"
+   ],
+   []
+  ],
+  "HEXA": [
+   1,
+   0.464,
+   [
+    "jatuh_dalam"
+   ],
+   []
+  ],
+  "REAL": [
+   1,
+   0.464,
+   [
+    "jatuh_dalam"
+   ],
+   []
+  ],
+  "DFAM": [
+   1,
+   0.464,
+   [
+    "jatuh_dalam"
+   ],
+   []
+  ],
   "AGAR": [
+   1,
+   0.464,
+   [
+    "jatuh_dalam"
+   ],
+   []
+  ],
+  "TRON": [
+   1,
+   0.464,
+   [
+    "jatuh_dalam"
+   ],
+   []
+  ],
+  "DIVA": [
+   1,
+   0.464,
+   [
+    "jatuh_dalam"
+   ],
+   []
+  ],
+  "ESIP": [
    1,
    0.464,
    [
@@ -3399,22 +3432,6 @@
    ],
    []
   ],
-  "LAND": [
-   1,
-   0.464,
-   [
-    "jatuh_dalam"
-   ],
-   []
-  ],
-  "PADA": [
-   1,
-   0.464,
-   [
-    "jatuh_dalam"
-   ],
-   []
-  ],
   "WMUU": [
    1,
    0.464,
@@ -3423,63 +3440,7 @@
    ],
    []
   ],
-  "ESIP": [
-   1,
-   0.464,
-   [
-    "jatuh_dalam"
-   ],
-   []
-  ],
-  "MLPT": [
-   1,
-   0.464,
-   [
-    "jatuh_dalam"
-   ],
-   []
-  ],
-  "YELO": [
-   1,
-   0.464,
-   [
-    "jatuh_dalam"
-   ],
-   []
-  ],
-  "GIAA": [
-   1,
-   0.464,
-   [
-    "jatuh_dalam"
-   ],
-   []
-  ],
-  "GTSI": [
-   1,
-   0.464,
-   [
-    "jatuh_dalam"
-   ],
-   []
-  ],
-  "HOKI": [
-   1,
-   0.464,
-   [
-    "jatuh_dalam"
-   ],
-   []
-  ],
-  "RODA": [
-   1,
-   0.464,
-   [
-    "jatuh_dalam"
-   ],
-   []
-  ],
-  "SLIS": [
+  "LAND": [
    1,
    0.464,
    [
@@ -3495,7 +3456,39 @@
    ],
    []
   ],
-  "VISI": [
+  "PADA": [
+   1,
+   0.464,
+   [
+    "jatuh_dalam"
+   ],
+   []
+  ],
+  "GTSI": [
+   1,
+   0.464,
+   [
+    "jatuh_dalam"
+   ],
+   []
+  ],
+  "GIAA": [
+   1,
+   0.464,
+   [
+    "jatuh_dalam"
+   ],
+   []
+  ],
+  "RODA": [
+   1,
+   0.464,
+   [
+    "jatuh_dalam"
+   ],
+   []
+  ],
+  "MLPT": [
    1,
    0.464,
    [
@@ -3511,7 +3504,7 @@
    ],
    []
   ],
-  "UANG": [
+  "YELO": [
    1,
    0.464,
    [
@@ -3535,6 +3528,14 @@
    ],
    []
   ],
+  "ICON": [
+   1,
+   0.464,
+   [
+    "jatuh_dalam"
+   ],
+   []
+  ],
   "KAQI": [
    1,
    0.464,
@@ -3543,7 +3544,7 @@
    ],
    []
   ],
-  "WMPP": [
+  "SLIS": [
    1,
    0.464,
    [
@@ -3575,6 +3576,14 @@
    ],
    []
   ],
+  "VISI": [
+   1,
+   0.464,
+   [
+    "jatuh_dalam"
+   ],
+   []
+  ],
   "SOFA": [
    1,
    0.464,
@@ -3583,7 +3592,7 @@
    ],
    []
   ],
-  "IRSX": [
+  "BRMS": [
    1,
    0.464,
    [
@@ -3593,17 +3602,7 @@
     "palu_support"
    ]
   ],
-  "SOCI": [
-   1,
-   0.464,
-   [
-    "jatuh_dalam"
-   ],
-   [
-    "palu_support"
-   ]
-  ],
-  "CCSI": [
+  "SINI": [
    1,
    0.464,
    [
@@ -3611,6 +3610,66 @@
    ],
    [
     "formasi_ma"
+   ]
+  ],
+  "LUCY": [
+   1,
+   0.464,
+   [
+    "jatuh_dalam"
+   ],
+   [
+    "palu_support"
+   ]
+  ],
+  "EMTK": [
+   1,
+   0.464,
+   [
+    "jatuh_dalam"
+   ],
+   [
+    "palu_support"
+   ]
+  ],
+  "PADI": [
+   1,
+   0.464,
+   [
+    "jatuh_dalam"
+   ],
+   [
+    "palu_support"
+   ]
+  ],
+  "KKES": [
+   1,
+   0.464,
+   [
+    "jatuh_dalam"
+   ],
+   [
+    "formasi_ma"
+   ]
+  ],
+  "GRPH": [
+   1,
+   0.464,
+   [
+    "jatuh_dalam"
+   ],
+   [
+    "formasi_ma"
+   ]
+  ],
+  "DSFI": [
+   1,
+   0.464,
+   [
+    "jatuh_dalam"
+   ],
+   [
+    "palu_support"
    ]
   ],
   "BAPA": [
@@ -3623,971 +3682,831 @@
     "palu_support"
    ]
   ],
+  "WMPP": [
+   1,
+   0.464,
+   [
+    "jatuh_dalam"
+   ],
+   [
+    "palu_support"
+   ]
+  ],
   "BBCA": [
    0,
-   0.4609,
+   0.4598,
    [],
    []
   ],
   "BBRI": [
    0,
-   0.4609,
+   0.4598,
    [],
    []
   ],
-  "BMRI": [
+  "AMMN": [
    0,
-   0.4609,
+   0.4598,
    [],
    []
   ],
   "ANTM": [
    0,
-   0.4609,
+   0.4598,
    [],
    []
   ],
   "ASII": [
    0,
-   0.4609,
+   0.4598,
    [],
    []
   ],
   "TINS": [
    0,
-   0.4609,
-   [],
-   []
-  ],
-  "DEWA": [
-   0,
-   0.4609,
-   [],
-   []
-  ],
-  "ENRG": [
-   0,
-   0.4609,
+   0.4598,
    [],
    []
   ],
   "BBNI": [
    0,
-   0.4609,
+   0.4598,
    [],
    []
   ],
   "ISAT": [
    0,
-   0.4609,
-   [],
-   []
-  ],
-  "MDKA": [
-   0,
-   0.4609,
+   0.4598,
    [],
    []
   ],
   "ADRO": [
    0,
-   0.4609,
+   0.4598,
    [],
    []
   ],
   "UNTR": [
    0,
-   0.4609,
+   0.4598,
    [],
    []
   ],
   "BRPT": [
    0,
-   0.4609,
+   0.4598,
    [],
    []
   ],
   "INCO": [
    0,
-   0.4609,
-   [],
-   []
-  ],
-  "ASLI": [
-   0,
-   0.4609,
-   [],
-   []
-  ],
-  "CPIN": [
-   0,
-   0.4609,
-   [],
-   []
-  ],
-  "IATA": [
-   0,
-   0.4609,
-   [],
-   []
-  ],
-  "COCO": [
-   0,
-   0.4609,
-   [],
-   []
-  ],
-  "MBMA": [
-   0,
-   0.4609,
+   0.4598,
    [],
    []
   ],
   "AMRT": [
    0,
-   0.4609,
-   [],
-   []
-  ],
-  "BYAN": [
-   0,
-   0.4609,
-   [],
-   []
-  ],
-  "KETR": [
-   0,
-   0.4609,
+   0.4598,
    [],
    []
   ],
   "INDY": [
    0,
-   0.4609,
-   [],
-   []
-  ],
-  "KIJA": [
-   0,
-   0.4609,
+   0.4598,
    [],
    []
   ],
   "PGAS": [
    0,
-   0.4609,
-   [],
-   []
-  ],
-  "PSAB": [
-   0,
-   0.4609,
-   [],
-   []
-  ],
-  "ITMG": [
-   0,
-   0.4609,
-   [],
-   []
-  ],
-  "INDF": [
-   0,
-   0.4609,
-   [],
-   []
-  ],
-  "ADMR": [
-   0,
-   0.4609,
+   0.4598,
    [],
    []
   ],
   "TOWR": [
    0,
-   0.4609,
+   0.4598,
+   [],
+   []
+  ],
+  "INDF": [
+   0,
+   0.4598,
+   [],
+   []
+  ],
+  "ADMR": [
+   0,
+   0.4598,
    [],
    []
   ],
   "TRUE": [
    0,
-   0.4609,
+   0.4598,
    [],
    []
   ],
   "ESSA": [
    0,
-   0.4609,
+   0.4598,
    [],
    []
   ],
   "ARCI": [
    0,
-   0.4609,
+   0.4598,
    [],
    []
   ],
   "PANI": [
    0,
-   0.4609,
+   0.4598,
+   [],
+   []
+  ],
+  "TAPG": [
+   0,
+   0.4598,
    [],
    []
   ],
   "INKP": [
    0,
-   0.4609,
+   0.4598,
    [],
    []
   ],
   "CARE": [
    0,
-   0.4609,
+   0.4598,
    [],
    []
   ],
   "BSDE": [
    0,
-   0.4609,
+   0.4598,
    [],
    []
   ],
   "ICBP": [
    0,
-   0.4609,
-   [],
-   []
-  ],
-  "NCKL": [
-   0,
-   0.4609,
+   0.4598,
    [],
    []
   ],
   "SMGR": [
    0,
-   0.4609,
-   [],
-   []
-  ],
-  "EXCL": [
-   0,
-   0.4609,
-   [],
-   []
-  ],
-  "JPFA": [
-   0,
-   0.4609,
+   0.4598,
    [],
    []
   ],
   "HRTA": [
    0,
-   0.4609,
+   0.4598,
    [],
    []
   ],
   "SSIA": [
    0,
-   0.4609,
+   0.4598,
    [],
    []
   ],
   "UNVR": [
    0,
-   0.4609,
+   0.4598,
    [],
    []
   ],
   "LSIP": [
    0,
-   0.4609,
+   0.4598,
    [],
    []
   ],
-  "BFIN": [
+  "MARK": [
    0,
-   0.4609,
+   0.4598,
    [],
    []
   ],
   "GGRM": [
    0,
-   0.4609,
+   0.4598,
    [],
    []
   ],
   "MYOR": [
    0,
-   0.4609,
+   0.4598,
    [],
    []
   ],
   "CYBR": [
    0,
-   0.4609,
+   0.4598,
    [],
    []
   ],
-  "TKIM": [
+  "MGLV": [
    0,
-   0.4609,
+   0.4598,
    [],
    []
   ],
-  "BBTN": [
+  "GULA": [
    0,
-   0.4609,
-   [],
-   []
-  ],
-  "PGEO": [
-   0,
-   0.4609,
+   0.4598,
    [],
    []
   ],
   "SMRA": [
    0,
-   0.4609,
+   0.4598,
+   [],
+   []
+  ],
+  "BBTN": [
+   0,
+   0.4598,
+   [],
+   []
+  ],
+  "TKIM": [
+   0,
+   0.4598,
    [],
    []
   ],
   "SCMA": [
    0,
-   0.4609,
-   [],
-   []
-  ],
-  "SSMS": [
-   0,
-   0.4609,
-   [],
-   []
-  ],
-  "POLA": [
-   0,
-   0.4609,
-   [],
-   []
-  ],
-  "CMRY": [
-   0,
-   0.4609,
-   [],
-   []
-  ],
-  "ARTO": [
-   0,
-   0.4609,
-   [],
-   []
-  ],
-  "BAJA": [
-   0,
-   0.4609,
-   [],
-   []
-  ],
-  "BUKA": [
-   0,
-   0.4609,
-   [],
-   []
-  ],
-  "HMSP": [
-   0,
-   0.4609,
-   [],
-   []
-  ],
-  "ELSA": [
-   0,
-   0.4609,
-   [],
-   []
-  ],
-  "NASI": [
-   0,
-   0.4609,
-   [],
-   []
-  ],
-  "TCPI": [
-   0,
-   0.4609,
-   [],
-   []
-  ],
-  "JSMR": [
-   0,
-   0.4609,
-   [],
-   []
-  ],
-  "MAPA": [
-   0,
-   0.4609,
-   [],
-   []
-  ],
-  "BTPS": [
-   0,
-   0.4609,
-   [],
-   []
-  ],
-  "PWON": [
-   0,
-   0.4609,
-   [],
-   []
-  ],
-  "STRK": [
-   0,
-   0.4609,
-   [],
-   []
-  ],
-  "BBSS": [
-   0,
-   0.4609,
-   [],
-   []
-  ],
-  "MITI": [
-   0,
-   0.4609,
-   [],
-   []
-  ],
-  "MGNA": [
-   0,
-   0.4609,
-   [],
-   []
-  ],
-  "PNLF": [
-   0,
-   0.4609,
-   [],
-   []
-  ],
-  "CBDK": [
-   0,
-   0.4609,
-   [],
-   []
-  ],
-  "KDTN": [
-   0,
-   0.4609,
-   [],
-   []
-  ],
-  "BIPP": [
-   0,
-   0.4609,
-   [],
-   []
-  ],
-  "CTRA": [
-   0,
-   0.4609,
-   [],
-   []
-  ],
-  "FAST": [
-   0,
-   0.4609,
-   [],
-   []
-  ],
-  "JAWA": [
-   0,
-   0.4609,
-   [],
-   []
-  ],
-  "UNSP": [
-   0,
-   0.4609,
-   [],
-   []
-  ],
-  "BEKS": [
-   0,
-   0.4609,
-   [],
-   []
-  ],
-  "LAPD": [
-   0,
-   0.4609,
-   [],
-   []
-  ],
-  "PART": [
-   0,
-   0.4609,
+   0.4598,
    [],
    []
   ],
   "ACES": [
    0,
-   0.4609,
+   0.4598,
+   [],
+   []
+  ],
+  "HOPE": [
+   0,
+   0.4598,
+   [],
+   []
+  ],
+  "SSMS": [
+   0,
+   0.4598,
+   [],
+   []
+  ],
+  "BUKA": [
+   0,
+   0.4598,
+   [],
+   []
+  ],
+  "HMSP": [
+   0,
+   0.4598,
+   [],
+   []
+  ],
+  "CBRE": [
+   0,
+   0.4598,
+   [],
+   []
+  ],
+  "TCPI": [
+   0,
+   0.4598,
+   [],
+   []
+  ],
+  "ELSA": [
+   0,
+   0.4598,
+   [],
+   []
+  ],
+  "POLA": [
+   0,
+   0.4598,
+   [],
+   []
+  ],
+  "PWON": [
+   0,
+   0.4598,
+   [],
+   []
+  ],
+  "STRK": [
+   0,
+   0.4598,
+   [],
+   []
+  ],
+  "BTPS": [
+   0,
+   0.4598,
    [],
    []
   ],
   "BAIK": [
    0,
-   0.4609,
+   0.4598,
+   [],
+   []
+  ],
+  "JSMR": [
+   0,
+   0.4598,
+   [],
+   []
+  ],
+  "MITI": [
+   0,
+   0.4598,
+   [],
+   []
+  ],
+  "PNLF": [
+   0,
+   0.4598,
+   [],
+   []
+  ],
+  "BBSS": [
+   0,
+   0.4598,
+   [],
+   []
+  ],
+  "CBDK": [
+   0,
+   0.4598,
+   [],
+   []
+  ],
+  "BEKS": [
+   0,
+   0.4598,
+   [],
+   []
+  ],
+  "BIPP": [
+   0,
+   0.4598,
+   [],
+   []
+  ],
+  "CTRA": [
+   0,
+   0.4598,
+   [],
+   []
+  ],
+  "UNSP": [
+   0,
+   0.4598,
+   [],
+   []
+  ],
+  "PART": [
+   0,
+   0.4598,
    [],
    []
   ],
   "BTEK": [
    0,
-   0.4609,
-   [],
-   []
-  ],
-  "AYLS": [
-   0,
-   0.4609,
+   0.4598,
    [],
    []
   ],
   "TMPO": [
    0,
-   0.4609,
+   0.4598,
    [],
    []
   ],
   "HRUM": [
    0,
-   0.4609,
-   [],
-   []
-  ],
-  "INTP": [
-   0,
-   0.4609,
-   [],
-   []
-  ],
-  "MEDS": [
-   0,
-   0.4609,
-   [],
-   []
-  ],
-  "MUTU": [
-   0,
-   0.4609,
-   [],
-   []
-  ],
-  "DSNG": [
-   0,
-   0.4609,
-   [],
-   []
-  ],
-  "STAA": [
-   0,
-   0.4609,
-   [],
-   []
-  ],
-  "BJBR": [
-   0,
-   0.4609,
-   [],
-   []
-  ],
-  "DYAN": [
-   0,
-   0.4609,
+   0.4598,
    [],
    []
   ],
   "ASMI": [
    0,
-   0.4609,
+   0.4598,
    [],
    []
   ],
-  "GMFI": [
+  "MGNA": [
    0,
-   0.4609,
+   0.4598,
    [],
    []
   ],
-  "KEEN": [
+  "DYAN": [
    0,
-   0.4609,
+   0.4598,
    [],
    []
   ],
-  "VIVA": [
+  "MUTU": [
    0,
-   0.4609,
-   [],
-   []
-  ],
-  "HEAL": [
-   0,
-   0.4609,
-   [],
-   []
-  ],
-  "GPRA": [
-   0,
-   0.4609,
-   [],
-   []
-  ],
-  "MTEL": [
-   0,
-   0.4609,
-   [],
-   []
-  ],
-  "EURO": [
-   0,
-   0.4609,
-   [],
-   []
-  ],
-  "BLTA": [
-   0,
-   0.4609,
-   [],
-   []
-  ],
-  "SIMP": [
-   0,
-   0.4609,
-   [],
-   []
-  ],
-  "BNGA": [
-   0,
-   0.4609,
-   [],
-   []
-  ],
-  "FPNI": [
-   0,
-   0.4609,
-   [],
-   []
-  ],
-  "NISP": [
-   0,
-   0.4609,
-   [],
-   []
-  ],
-  "UDNG": [
-   0,
-   0.4609,
-   [],
-   []
-  ],
-  "INDO": [
-   0,
-   0.4609,
-   [],
-   []
-  ],
-  "ASPR": [
-   0,
-   0.4609,
-   [],
-   []
-  ],
-  "DIVA": [
-   0,
-   0.4609,
-   [],
-   []
-  ],
-  "TOTL": [
-   0,
-   0.4609,
-   [],
-   []
-  ],
-  "WIIM": [
-   0,
-   0.4609,
-   [],
-   []
-  ],
-  "AVIA": [
-   0,
-   0.4609,
-   [],
-   []
-  ],
-  "PPRO": [
-   0,
-   0.4609,
-   [],
-   []
-  ],
-  "EPAC": [
-   0,
-   0.4609,
-   [],
-   []
-  ],
-  "KREN": [
-   0,
-   0.4609,
-   [],
-   []
-  ],
-  "REAL": [
-   0,
-   0.4609,
-   [],
-   []
-  ],
-  "ASSA": [
-   0,
-   0.4609,
+   0.4598,
    [],
    []
   ],
   "DKHH": [
    0,
-   0.4609,
+   0.4598,
+   [],
+   []
+  ],
+  "STAA": [
+   0,
+   0.4598,
+   [],
+   []
+  ],
+  "DSNG": [
+   0,
+   0.4598,
+   [],
+   []
+  ],
+  "VIVA": [
+   0,
+   0.4598,
+   [],
+   []
+  ],
+  "AYLS": [
+   0,
+   0.4598,
+   [],
+   []
+  ],
+  "HEAL": [
+   0,
+   0.4598,
+   [],
+   []
+  ],
+  "BLTA": [
+   0,
+   0.4598,
+   [],
+   []
+  ],
+  "KEEN": [
+   0,
+   0.4598,
+   [],
+   []
+  ],
+  "SIMP": [
+   0,
+   0.4598,
+   [],
+   []
+  ],
+  "GPRA": [
+   0,
+   0.4598,
+   [],
+   []
+  ],
+  "BNGA": [
+   0,
+   0.4598,
+   [],
+   []
+  ],
+  "FPNI": [
+   0,
+   0.4598,
+   [],
+   []
+  ],
+  "NISP": [
+   0,
+   0.4598,
+   [],
+   []
+  ],
+  "ASPR": [
+   0,
+   0.4598,
+   [],
+   []
+  ],
+  "EURO": [
+   0,
+   0.4598,
+   [],
+   []
+  ],
+  "INDO": [
+   0,
+   0.4598,
+   [],
+   []
+  ],
+  "MEDS": [
+   0,
+   0.4598,
+   [],
+   []
+  ],
+  "TOTL": [
+   0,
+   0.4598,
+   [],
+   []
+  ],
+  "PPRO": [
+   0,
+   0.4598,
+   [],
+   []
+  ],
+  "AVIA": [
+   0,
+   0.4598,
+   [],
+   []
+  ],
+  "EPAC": [
+   0,
+   0.4598,
+   [],
+   []
+  ],
+  "GPSO": [
+   0,
+   0.4598,
+   [],
+   []
+  ],
+  "KREN": [
+   0,
+   0.4598,
+   [],
+   []
+  ],
+  "SILO": [
+   0,
+   0.4598,
+   [],
+   []
+  ],
+  "UDNG": [
+   0,
+   0.4598,
    [],
    []
   ],
   "HUMI": [
    0,
-   0.4609,
-   [],
-   []
-  ],
-  "NOBU": [
-   0,
-   0.4609,
-   [],
-   []
-  ],
-  "SNLK": [
-   0,
-   0.4609,
-   [],
-   []
-  ],
-  "DSFI": [
-   0,
-   0.4609,
+   0.4598,
    [],
    []
   ],
   "PURA": [
    0,
-   0.4609,
+   0.4598,
+   [],
+   []
+  ],
+  "SNLK": [
+   0,
+   0.4598,
    [],
    []
   ],
   "GJTL": [
    0,
-   0.4609,
-   [],
-   []
-  ],
-  "TRON": [
-   0,
-   0.4609,
-   [],
-   []
-  ],
-  "AISA": [
-   0,
-   0.4609,
+   0.4598,
    [],
    []
   ],
   "PYFA": [
    0,
-   0.4609,
+   0.4598,
    [],
    []
   ],
-  "LPPF": [
+  "WIIM": [
    0,
-   0.4609,
+   0.4598,
    [],
    []
   ],
-  "MIKA": [
+  "AISA": [
    0,
-   0.4609,
-   [],
-   []
-  ],
-  "DGWG": [
-   0,
-   0.4609,
+   0.4598,
    [],
    []
   ],
   "GEMS": [
    0,
-   0.4609,
+   0.4598,
+   [],
+   []
+  ],
+  "LPPF": [
+   0,
+   0.4598,
    [],
    []
   ],
   "MAHA": [
    0,
-   0.4609,
+   0.4598,
    [],
    []
   ],
-  "BEST": [
+  "VERN": [
    0,
-   0.4609,
-   [],
-   []
-  ],
-  "BINA": [
-   0,
-   0.4609,
-   [],
-   []
-  ],
-  "SMSM": [
-   0,
-   0.4609,
-   [],
-   []
-  ],
-  "TAXI": [
-   0,
-   0.4609,
+   0.4598,
    [],
    []
   ],
   "DAAZ": [
    0,
-   0.4609,
+   0.4598,
+   [],
+   []
+  ],
+  "TAXI": [
+   0,
+   0.4598,
+   [],
+   []
+  ],
+  "DGWG": [
+   0,
+   0.4598,
+   [],
+   []
+  ],
+  "MIKA": [
+   0,
+   0.4598,
+   [],
+   []
+  ],
+  "BEST": [
+   0,
+   0.4598,
+   [],
+   []
+  ],
+  "NOBU": [
+   0,
+   0.4598,
    [],
    []
   ],
   "SRTG": [
    0,
-   0.4609,
+   0.4598,
    [],
    []
   ],
   "OMED": [
    0,
-   0.4609,
+   0.4598,
    [],
    []
   ],
   "GDST": [
    0,
-   0.4609,
+   0.4598,
    [],
    []
   ],
-  "FORE": [
+  "HOKI": [
    0,
-   0.4609,
+   0.4598,
    [],
    []
   ],
-  "BJTM": [
+  "NRCA": [
    0,
-   0.4609,
-   [],
-   []
-  ],
-  "DKFT": [
-   0,
-   0.4609,
+   0.4598,
    [],
    []
   ],
   "ESTI": [
    0,
-   0.4609,
+   0.4598,
+   [],
+   []
+  ],
+  "MPMX": [
+   0,
+   0.4598,
    [],
    []
   ],
   "IKAI": [
    0,
-   0.4609,
-   [],
-   []
-  ],
-  "PNBN": [
-   0,
-   0.4609,
-   [],
-   []
-  ],
-  "KKGI": [
-   0,
-   0.4609,
-   [],
-   []
-  ],
-  "MKAP": [
-   0,
-   0.4609,
-   [],
-   []
-  ],
-  "PBSA": [
-   0,
-   0.4609,
-   [],
-   []
-  ],
-  "PSKT": [
-   0,
-   0.4609,
+   0.4598,
    [],
    []
   ],
   "BPTR": [
    0,
-   0.4609,
+   0.4598,
    [],
    []
   ],
-  "JATI": [
+  "KKGI": [
    0,
-   0.4609,
+   0.4598,
    [],
    []
   ],
-  "NSSS": [
+  "PBSA": [
    0,
-   0.4609,
+   0.4598,
    [],
    []
   ],
-  "SINI": [
+  "PICO": [
    0,
-   0.4609,
+   0.4598,
+   [],
+   []
+  ],
+  "WAPO": [
+   0,
+   0.4598,
+   [],
+   []
+  ],
+  "KBLV": [
+   0,
+   0.4598,
+   [],
+   []
+  ],
+  "MKAP": [
+   0,
+   0.4598,
+   [],
+   []
+  ],
+  "PSKT": [
+   0,
+   0.4598,
+   [],
+   []
+  ],
+  "BMRI": [
+   0,
+   0.4598,
    [],
    [
-    "formasi_ma"
+    "palu_support"
+   ]
+  ],
+  "TLKM": [
+   0,
+   0.4598,
+   [],
+   [
+    "palu_support"
+   ]
+  ],
+  "ENRG": [
+   0,
+   0.4598,
+   [],
+   [
+    "palu_support"
+   ]
+  ],
+  "MDKA": [
+   0,
+   0.4598,
+   [],
+   [
+    "palu_support"
    ]
   ],
   "AADI": [
    0,
-   0.4609,
+   0.4598,
    [],
    [
     "formasi_ma"
@@ -4595,7 +4514,7 @@
   ],
   "MEDC": [
    0,
-   0.4609,
+   0.4598,
    [],
    [
     "sempit"
@@ -4603,15 +4522,15 @@
   ],
   "TEBE": [
    0,
-   0.4609,
+   0.4598,
    [],
    [
     "formasi_ma"
    ]
   ],
-  "SRSN": [
+  "ASLI": [
    0,
-   0.4609,
+   0.4598,
    [],
    [
     "formasi_ma"
@@ -4619,31 +4538,79 @@
   ],
   "SQMI": [
    0,
-   0.4609,
+   0.4598,
    [],
    [
     "formasi_ma"
    ]
   ],
+  "SRSN": [
+   0,
+   0.4598,
+   [],
+   [
+    "formasi_ma"
+   ]
+  ],
+  "CPIN": [
+   0,
+   0.4598,
+   [],
+   [
+    "palu_support"
+   ]
+  ],
+  "BYAN": [
+   0,
+   0.4598,
+   [],
+   [
+    "palu_support"
+   ]
+  ],
+  "PSAB": [
+   0,
+   0.4598,
+   [],
+   [
+    "palu_support"
+   ]
+  ],
   "KLBF": [
    0,
-   0.4609,
+   0.4598,
    [],
    [
     "sempit"
    ]
   ],
-  "TAPG": [
+  "ITMG": [
    0,
-   0.4609,
+   0.4598,
+   [],
+   [
+    "palu_support"
+   ]
+  ],
+  "UVCR": [
+   0,
+   0.4598,
    [],
    [
     "formasi_ma"
    ]
   ],
-  "UVCR": [
+  "NCKL": [
    0,
-   0.4609,
+   0.4598,
+   [],
+   [
+    "palu_support"
+   ]
+  ],
+  "MBSS": [
+   0,
+   0.4598,
    [],
    [
     "formasi_ma"
@@ -4651,15 +4618,7 @@
   ],
   "DMAS": [
    0,
-   0.4609,
-   [],
-   [
-    "formasi_ma"
-   ]
-  ],
-  "MBSS": [
-   0,
-   0.4609,
+   0.4598,
    [],
    [
     "formasi_ma"
@@ -4667,15 +4626,31 @@
   ],
   "MEJA": [
    0,
-   0.4609,
+   0.4598,
    [],
    [
     "formasi_ma"
    ]
   ],
+  "JPFA": [
+   0,
+   0.4598,
+   [],
+   [
+    "palu_support"
+   ]
+  ],
+  "BFIN": [
+   0,
+   0.4598,
+   [],
+   [
+    "palu_support"
+   ]
+  ],
   "MAPI": [
    0,
-   0.4609,
+   0.4598,
    [],
    [
     "formasi_ma"
@@ -4683,7 +4658,7 @@
   ],
   "SEMA": [
    0,
-   0.4609,
+   0.4598,
    [],
    [
     "formasi_ma"
@@ -4691,15 +4666,7 @@
   ],
   "MSJA": [
    0,
-   0.4609,
-   [],
-   [
-    "formasi_ma"
-   ]
-  ],
-  "MGLV": [
-   0,
-   0.4609,
+   0.4598,
    [],
    [
     "formasi_ma"
@@ -4707,63 +4674,63 @@
   ],
   "SMDR": [
    0,
-   0.4609,
+   0.4598,
    [],
    [
     "formasi_ma"
    ]
   ],
-  "GULA": [
+  "PGEO": [
    0,
-   0.4609,
+   0.4598,
    [],
    [
-    "dekat_puncak"
+    "palu_support"
    ]
   ],
-  "HOPE": [
+  "CMRY": [
    0,
-   0.4609,
+   0.4598,
+   [],
+   [
+    "sempit"
+   ]
+  ],
+  "AYAM": [
+   0,
+   0.4598,
    [],
    [
     "formasi_ma"
-   ]
-  ],
-  "CMNT": [
-   0,
-   0.4609,
-   [],
-   [
-    "sempit"
-   ]
-  ],
-  "CBRE": [
-   0,
-   0.4609,
-   [],
-   [
-    "sempit"
    ]
   ],
   "NAYZ": [
    0,
-   0.4609,
+   0.4598,
    [],
    [
     "formasi_ma"
+   ]
+  ],
+  "MAPA": [
+   0,
+   0.4598,
+   [],
+   [
+    "palu_support"
    ]
   ],
   "VICI": [
    0,
-   0.4609,
+   0.4598,
    [],
    [
     "formasi_ma"
    ]
   ],
-  "BDKR": [
+  "BIKE": [
    0,
-   0.4609,
+   0.4598,
    [],
    [
     "formasi_ma"
@@ -4771,47 +4738,63 @@
   ],
   "PCAR": [
    0,
-   0.4609,
+   0.4598,
    [],
    [
     "formasi_ma"
    ]
   ],
-  "CLEO": [
+  "BDKR": [
    0,
-   0.4609,
+   0.4598,
    [],
    [
     "formasi_ma"
    ]
   ],
-  "MPIX": [
+  "INTP": [
    0,
-   0.4609,
-   [],
-   [
-    "formasi_ma"
-   ]
-  ],
-  "SIDO": [
-   0,
-   0.4609,
+   0.4598,
    [],
    [
     "sempit"
    ]
   ],
-  "GRPH": [
+  "BJBR": [
    0,
-   0.4609,
+   0.4598,
+   [],
+   [
+    "palu_support"
+   ]
+  ],
+  "CLEO": [
+   0,
+   0.4598,
    [],
    [
     "formasi_ma"
    ]
   ],
+  "MTEL": [
+   0,
+   0.4598,
+   [],
+   [
+    "palu_support"
+   ]
+  ],
+  "SIDO": [
+   0,
+   0.4598,
+   [],
+   [
+    "sempit"
+   ]
+  ],
   "ELIT": [
    0,
-   0.4609,
+   0.4598,
    [],
    [
     "formasi_ma"
@@ -4819,15 +4802,39 @@
   ],
   "SMMT": [
    0,
-   0.4609,
+   0.4598,
    [],
    [
     "formasi_ma"
    ]
   ],
+  "MOLI": [
+   0,
+   0.4598,
+   [],
+   [
+    "formasi_ma"
+   ]
+  ],
+  "ASSA": [
+   0,
+   0.4598,
+   [],
+   [
+    "palu_support"
+   ]
+  ],
   "SAPX": [
    0,
-   0.4609,
+   0.4598,
+   [],
+   [
+    "formasi_ma"
+   ]
+  ],
+  "ASPI": [
+   0,
+   0.4598,
    [],
    [
     "formasi_ma"
@@ -4835,15 +4842,15 @@
   ],
   "TUGU": [
    0,
-   0.4609,
+   0.4598,
    [],
    [
     "formasi_ma"
    ]
   ],
-  "SILO": [
+  "BINA": [
    0,
-   0.4609,
+   0.4598,
    [],
    [
     "palu_support"
@@ -4851,23 +4858,15 @@
   ],
   "MGRO": [
    0,
-   0.4609,
+   0.4598,
    [],
    [
     "dekat_puncak"
    ]
   ],
-  "NRCA": [
-   0,
-   0.4609,
-   [],
-   [
-    "sempit"
-   ]
-  ],
   "OILS": [
    0,
-   0.4609,
+   0.4598,
    [],
    [
     "formasi_ma"
@@ -4875,47 +4874,63 @@
   ],
   "KICI": [
    0,
-   0.4609,
+   0.4598,
    [],
    [
     "formasi_ma"
    ]
   ],
-  "AKKU": [
+  "SMSM": [
    0,
-   0.4609,
+   0.4598,
    [],
    [
-    "formasi_ma"
+    "palu_support"
    ]
   ],
-  "BKDP": [
+  "BJTM": [
    0,
-   0.4609,
+   0.4598,
    [],
    [
-    "formasi_ma"
+    "palu_support"
+   ]
+  ],
+  "FORE": [
+   0,
+   0.4598,
+   [],
+   [
+    "palu_support"
    ]
   ],
   "KING": [
    0,
-   0.4609,
+   0.4598,
    [],
    [
     "formasi_ma"
    ]
   ],
-  "MPMX": [
+  "PNBN": [
    0,
-   0.4609,
+   0.4598,
    [],
    [
-    "formasi_ma"
+    "palu_support"
+   ]
+  ],
+  "SBMA": [
+   0,
+   0.4598,
+   [],
+   [
+    "dekat_puncak"
    ]
   ],
   "SMAR": [
    0,
-   0.4609,
+   0.4598,
    [],
    [
     "formasi_ma"
@@ -4923,7 +4938,7 @@
   ],
   "HELI": [
    0,
-   0.4609,
+   0.4598,
    [],
    [
     "formasi_ma"
@@ -4931,7 +4946,15 @@
   ],
   "ALKA": [
    0,
-   0.4609,
+   0.4598,
+   [],
+   [
+    "formasi_ma"
+   ]
+  ],
+  "BKDP": [
+   0,
+   0.4598,
    [],
    [
     "formasi_ma"
@@ -4939,15 +4962,32 @@
   ],
   "BLES": [
    0,
-   0.4609,
+   0.4598,
    [],
    [
     "formasi_ma"
    ]
   ],
+  "DKFT": [
+   0,
+   0.4598,
+   [],
+   [
+    "palu_support"
+   ]
+  ],
   "PTBA": [
    0,
-   0.4609,
+   0.4598,
+   [],
+   [
+    "formasi_ma",
+    "dekat_puncak"
+   ]
+  ],
+  "ERAA": [
+   0,
+   0.4598,
    [],
    [
     "formasi_ma",
@@ -4956,52 +4996,52 @@
   ],
   "SMIL": [
    0,
-   0.4609,
+   0.4598,
    [],
    [
     "formasi_ma",
     "sempit"
    ]
   ],
-  "CSMI": [
+  "DEWI": [
    0,
-   0.4609,
-   [],
-   [
-    "formasi_ma",
-    "sempit"
-   ]
-  ],
-  "MARK": [
-   0,
-   0.4609,
-   [],
-   [
-    "formasi_ma",
-    "palu_support"
-   ]
-  ],
-  "SMLE": [
-   0,
-   0.4609,
-   [],
-   [
-    "formasi_ma",
-    "sempit"
-   ]
-  ],
-  "AYAM": [
-   0,
-   0.4609,
+   0.4598,
    [],
    [
     "formasi_ma",
     "dekat_puncak"
    ]
   ],
+  "CMNT": [
+   0,
+   0.4598,
+   [],
+   [
+    "sempit",
+    "palu_support"
+   ]
+  ],
   "ASGR": [
    0,
-   0.4609,
+   0.4598,
+   [],
+   [
+    "formasi_ma",
+    "dekat_puncak"
+   ]
+  ],
+  "MPXL": [
+   0,
+   0.4598,
+   [],
+   [
+    "formasi_ma",
+    "dekat_puncak"
+   ]
+  ],
+  "MPIX": [
+   0,
+   0.4598,
    [],
    [
     "formasi_ma",
@@ -5010,43 +5050,7 @@
   ],
   "POWR": [
    0,
-   0.4609,
-   [],
-   [
-    "formasi_ma",
-    "dekat_puncak"
-   ]
-  ],
-  "MOLI": [
-   0,
-   0.4609,
-   [],
-   [
-    "formasi_ma",
-    "dekat_puncak"
-   ]
-  ],
-  "ASPI": [
-   0,
-   0.4609,
-   [],
-   [
-    "formasi_ma",
-    "sempit"
-   ]
-  ],
-  "VERN": [
-   0,
-   0.4609,
-   [],
-   [
-    "formasi_ma",
-    "dekat_puncak"
-   ]
-  ],
-  "ARNA": [
-   0,
-   0.4609,
+   0.4598,
    [],
    [
     "formasi_ma",
@@ -5055,17 +5059,7 @@
   ],
   "ULTJ": [
    0,
-   0.4609,
-   [],
-   [
-    "formasi_ma",
-    "dekat_puncak",
-    "puncak_95"
-   ]
-  ],
-  "ERAA": [
-   0,
-   0.4609,
+   0.4598,
    [],
    [
     "formasi_ma",
@@ -5075,17 +5069,7 @@
   ],
   "PKPK": [
    0,
-   0.4609,
-   [],
-   [
-    "formasi_ma",
-    "dekat_puncak",
-    "puncak_95"
-   ]
-  ],
-  "AALI": [
-   0,
-   0.4609,
+   0.4598,
    [],
    [
     "formasi_ma",
@@ -5095,7 +5079,7 @@
   ],
   "AKRA": [
    0,
-   0.4609,
+   0.4598,
    [],
    [
     "formasi_ma",
@@ -5103,9 +5087,19 @@
     "sempit"
    ]
   ],
+  "AALI": [
+   0,
+   0.4598,
+   [],
+   [
+    "formasi_ma",
+    "dekat_puncak",
+    "puncak_95"
+   ]
+  ],
   "BDMN": [
    0,
-   0.4609,
+   0.4598,
    [],
    [
     "formasi_ma",
@@ -5115,7 +5109,7 @@
   ],
   "BSSR": [
    0,
-   0.4609,
+   0.4598,
    [],
    [
     "formasi_ma",
@@ -5125,7 +5119,7 @@
   ],
   "RSCH": [
    0,
-   0.4609,
+   0.4598,
    [],
    [
     "formasi_ma",
@@ -5133,29 +5127,9 @@
     "puncak_95"
    ]
   ],
-  "DEWI": [
+  "AUTO": [
    0,
-   0.4609,
-   [],
-   [
-    "formasi_ma",
-    "dekat_puncak",
-    "puncak_95"
-   ]
-  ],
-  "MPXL": [
-   0,
-   0.4609,
-   [],
-   [
-    "formasi_ma",
-    "dekat_puncak",
-    "puncak_95"
-   ]
-  ],
-  "BSML": [
-   0,
-   0.4609,
+   0.4598,
    [],
    [
     "formasi_ma",
@@ -5165,7 +5139,7 @@
   ],
   "HATM": [
    0,
-   0.4609,
+   0.4598,
    [],
    [
     "formasi_ma",
@@ -5173,19 +5147,9 @@
     "puncak_95"
    ]
   ],
-  "BIKE": [
+  "BSML": [
    0,
-   0.4609,
-   [],
-   [
-    "formasi_ma",
-    "dekat_puncak",
-    "puncak_95"
-   ]
-  ],
-  "IDEA": [
-   0,
-   0.4609,
+   0.4598,
    [],
    [
     "formasi_ma",
@@ -5193,9 +5157,9 @@
     "sempit"
    ]
   ],
-  "PRDA": [
+  "AKKU": [
    0,
-   0.4609,
+   0.4598,
    [],
    [
     "formasi_ma",
@@ -5203,9 +5167,29 @@
     "puncak_95"
    ]
   ],
+  "PRDA": [
+   0,
+   0.4598,
+   [],
+   [
+    "formasi_ma",
+    "dekat_puncak",
+    "puncak_95"
+   ]
+  ],
+  "ARNA": [
+   0,
+   0.4598,
+   [],
+   [
+    "formasi_ma",
+    "dekat_puncak",
+    "palu_support"
+   ]
+  ],
   "SGER": [
    0,
-   0.4609,
+   0.4598,
    [],
    [
     "formasi_ma",
@@ -5216,18 +5200,7 @@
   ],
   "MMIX": [
    0,
-   0.4609,
-   [],
-   [
-    "formasi_ma",
-    "dekat_puncak",
-    "sempit",
-    "puncak_95"
-   ]
-  ],
-  "AUTO": [
-   0,
-   0.4609,
+   0.4598,
    [],
    [
     "formasi_ma",
@@ -5238,7 +5211,18 @@
   ],
   "NEST": [
    0,
-   0.4609,
+   0.4598,
+   [],
+   [
+    "formasi_ma",
+    "dekat_puncak",
+    "sempit",
+    "puncak_95"
+   ]
+  ],
+  "IDEA": [
+   0,
+   0.4598,
    [],
    [
     "formasi_ma",
