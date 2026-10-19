@@ -1,169 +1,58 @@
 {
  "kode": "MKNT",
- "tgl": "2024-07-01",
- "harga": 1.0,
+ "tgl": "2026-10-19",
+ "harga": 2.0,
  "prev": 1.0,
- "chg": 0.0,
- "n": 2099,
+ "chg": 100.0,
+ "n": 2650,
  "mulai": "2015-10-26",
- "ma20": 1.55,
- "ma50": 1.72,
- "ma200": 2.335,
- "atr": 0.877689136802629,
- "atr_pct": 87.76891368026291,
- "support": [],
- "resistance": [
+ "ma20": 1.05,
+ "ma50": 1.02,
+ "ma200": 1.005,
+ "atr": 0.07142857142857142,
+ "atr_pct": 3.571428571428571,
+ "support": [
   {
-   "level": 2.0,
-   "sentuhan": 104,
-   "terakhir": "2024-06-24",
+   "level": 1.0,
+   "sentuhan": 490,
+   "terakhir": "2026-10-12",
    "dalam_atr": false,
-   "harga": 2
-  },
-  {
-   "level": 3.0,
-   "sentuhan": 18,
-   "terakhir": "2024-02-19",
-   "dalam_atr": false,
-   "harga": 3
-  },
-  {
-   "level": 5.0,
-   "sentuhan": 1,
-   "terakhir": "2023-08-15",
-   "dalam_atr": false,
-   "harga": 5
+   "harga": 1
   }
  ],
- "stop": 0,
- "stop_asal": "fallback5pct",
- "stop_pct": 100.0,
- "er": 0.18518518518518517,
- "er_persentil": 20.0,
- "er_n_populasi": 445,
- "likuiditas_median20": 5695650.0,
+ "resistance": [],
+ "stop": 1,
+ "stop_asal": "klaster",
+ "stop_pct": 50.0,
+ "er": 0.18340961098398167,
+ "er_persentil": 19.090909090909093,
+ "er_n_populasi": 440,
+ "likuiditas_median20": 0.0,
  "kualitas": {
   "riwayat": "cukup",
   "likuiditas": "tipis",
-  "lilin": 2099,
-  "nilai20": 5695650.0
+  "lilin": 2650,
+  "nilai20": 0.0
  },
- "beku": 548,
- "beku_sejak": "2024-07-01",
- "dihitung": "2024-07-01",
- "rsi": 44.783862738275126,
+ "beku": 0,
+ "beku_sejak": null,
+ "dihitung": "2026-10-19",
+ "rsi": 100.0,
  "stochrsi": [
-  47.635013275812874,
-  65.52103895303925
+  33.333333333333336,
+  22.222222222222225
  ],
- "target": [
-  {
-   "harga": 2,
-   "pct": 100.0,
-   "sentuhan": 104,
-   "terakhir": "2024-06-24",
-   "fp": {
-    "n": 2078,
-    "n_efektif": 104,
-    "kena": 23,
-    "stop": 0,
-    "lewat": 2055,
-    "p_kena": 1.1068334937439845,
-    "p_stop": 0.0,
-    "median_hari": 9,
-    "q1": 1,
-    "q3": 12,
-    "harapan": 1.1068334937439845
-   },
-   "fp60": {
-    "n": 2038,
-    "n_efektif": 34,
-    "kena": 75,
-    "stop": 0,
-    "lewat": 1963,
-    "p_kena": 3.680078508341511,
-    "p_stop": 0.0,
-    "median_hari": 30,
-    "q1": 21,
-    "q3": 46,
-    "harapan": 3.680078508341511
-   }
-  },
-  {
-   "harga": 3,
-   "pct": 200.0,
-   "sentuhan": 18,
-   "terakhir": "2024-02-19",
-   "fp": {
-    "n": 2078,
-    "n_efektif": 104,
-    "kena": 9,
-    "stop": 0,
-    "lewat": 2069,
-    "p_kena": 0.43310875842155916,
-    "p_stop": 0.0,
-    "median_hari": 16,
-    "q1": 14,
-    "q3": 18,
-    "harapan": 0.8662175168431183
-   },
-   "fp60": {
-    "n": 2038,
-    "n_efektif": 34,
-    "kena": 50,
-    "stop": 0,
-    "lewat": 1988,
-    "p_kena": 2.4533856722276743,
-    "p_stop": 0.0,
-    "median_hari": 40.5,
-    "q1": 27,
-    "q3": 53,
-    "harapan": 4.906771344455349
-   }
-  },
-  {
-   "harga": 5,
-   "pct": 400.0,
-   "sentuhan": 1,
-   "terakhir": "2023-08-15",
-   "fp": {
-    "n": 2078,
-    "n_efektif": 104,
-    "kena": 0,
-    "stop": 0,
-    "lewat": 2078,
-    "p_kena": 0.0,
-    "p_stop": 0.0,
-    "median_hari": null,
-    "q1": null,
-    "q3": null,
-    "harapan": 0.0
-   },
-   "fp60": {
-    "n": 2038,
-    "n_efektif": 34,
-    "kena": 0,
-    "stop": 0,
-    "lewat": 2038,
-    "p_kena": 0.0,
-    "p_stop": 0.0,
-    "median_hari": null,
-    "q1": null,
-    "q3": null,
-    "harapan": 0.0
-   }
-  }
- ],
+ "target": [],
  "musiman": {
-  "n": 9,
-  "naik": 0,
-  "mentah": 0.0,
-  "tersusut": 6.857142857142858,
-  "bawah": 0,
-  "atas": 29.91527535509594,
-  "median": -3.809523809523807,
-  "dasar": 17.142857142857142,
-  "total_bulan": 105
+  "n": 11,
+  "naik": 2,
+  "mentah": 18.181818181818183,
+  "tersusut": 16.844919786096256,
+  "bawah": 5.136660067100062,
+  "atas": 47.69861375782449,
+  "median": 0.0,
+  "dasar": 14.393939393939394,
+  "total_bulan": 132
  },
  "sektor": {
   "nama": "PT Mitra Komunikasi Nusantara Tbk.",
@@ -178,8 +67,8 @@
  },
  "fundamental": {
   "name": "PT Mitra Komunikasi Nusantara Tbk",
-  "updated": "2026-10-10 02:21",
-  "harga_pada": "2024-07-01",
+  "updated": "2026-10-17 01:25",
+  "harga_pada": "2026-10-19",
   "pe": null,
   "pb": -0.4032,
   "pbv": null,
@@ -192,8 +81,8 @@
   "dividend_yield": null,
   "beta": -0.17,
   "shares": 1029990000000,
-  "float_pct": 71.12,
-  "week52_high": 1,
+  "float_pct": 0.38,
+  "week52_high": 2,
   "week52_low": 1,
   "pb_keystats": -75.5,
   "pe_keystats": null,
@@ -208,69 +97,69 @@
    "frekuensi": "kali"
   },
   "mulai": "2020-01-02",
-  "akhir": "2026-10-15",
-  "n_total": 1634,
+  "akhir": "2026-10-19",
+  "n_total": 1636,
   "periode": {
    "5": {
     "n": 5,
     "beli": 0,
     "jual": 0,
     "net": 0,
-    "porsi_beli_pct": null,
-    "porsi_jual_pct": null
+    "porsi_beli_pct": 0.0,
+    "porsi_jual_pct": 0.0
    },
    "20": {
     "n": 20,
     "beli": 0,
     "jual": 0,
     "net": 0,
-    "porsi_beli_pct": null,
-    "porsi_jual_pct": null
+    "porsi_beli_pct": 0.0,
+    "porsi_jual_pct": 0.0
    }
   },
   "isian_stockbit": []
  },
- "ma5": 1.4,
- "ma100": 1.92,
- "ma150": 1.96,
+ "ma5": 1.2,
+ "ma100": 1.01,
+ "ma150": 1.0066666666666666,
  "bb20": {
-  "mid": 1.55,
-  "atas": 2.54498743710662,
-  "bawah": 0.5550125628933801
+  "mid": 1.05,
+  "atas": 1.4858898943540675,
+  "bawah": 0.6141101056459327
  },
- "posisi_bb": -0.5528,
+ "posisi_bb": 2.1794,
  "ichimoku": {
   "tenkan": 1.5,
   "kijun": 1.5,
   "senkou_a": 1.5,
   "senkou_b": 1.5,
-  "di_atas_kumo": false
+  "di_atas_kumo": true
  },
  "regresi60": {
-  "kemiringan": -0.009502639622117256,
-  "tengah": 1.4863387978142075,
-  "posisi": -1.2482
+  "kemiringan": 0.001639344262295082,
+  "tengah": 1.0650273224043716,
+  "posisi": 7.4899
  },
- "freq": 11117,
- "ukuran_order": 3.8733,
- "peringkat_value": 4,
- "peringkat_volume": 3,
- "peringkat_freq": 1,
+ "freq": 37,
+ "ukuran_order": 2371.2162,
+ "peringkat_value": 802,
+ "peringkat_volume": 216,
+ "peringkat_freq": 779,
  "porsi_asing": 0.0,
  "net_asing_rp": 0,
  "label_fd": "F 0% : D 100%",
- "tiket_avg": 490.61,
- "tiket_avg_med60": 1783.98,
- "tiket_lonjakan": 0.275,
+ "tiket_avg": 474243.24,
+ "tiket_avg_med60": 474243.24,
+ "tiket_lonjakan": 1.0,
  "asing_net_5h": 0,
  "asing_net_20h": 0,
  "asing_streak": 0,
- "tiket_broker_maks": 149400.0,
- "broker_tiket_maks_kode": "BQ",
- "bval_maks": 1257200.0,
- "nego_blok_rp": 0.0,
+ "tiket_broker_maks": null,
+ "broker_tiket_maks_kode": null,
+ "bval_maks": null,
+ "nego_blok_rp": null,
  "nego_broker_maks_kode": null,
- "top3_pct": 111.33,
- "number_broker_buysell": 0,
- "label_accdist": "Dist"
+ "top3_pct": null,
+ "number_broker_buysell": null,
+ "label_accdist": null
 }

@@ -1,16 +1,16 @@
 {
  "kode": "AIMS",
- "tgl": "2026-10-07",
- "harga": 990.0,
- "prev": 825.0,
- "chg": 19.999999999999996,
- "n": 6153,
+ "tgl": "2026-10-19",
+ "harga": 925.0,
+ "prev": 990.0,
+ "chg": -6.565656565656564,
+ "n": 6161,
  "mulai": "2001-07-20",
- "ma20": 574.3,
- "ma50": 480.4,
- "ma200": 442.415,
- "atr": 74.92888690915652,
- "atr_pct": 7.568574435268335,
+ "ma20": 769.45,
+ "ma50": 575.46,
+ "ma200": 464.56,
+ "atr": 46.059206378972966,
+ "atr_pct": 4.979373662591672,
  "support": [
   {
    "level": 341.2,
@@ -20,29 +20,70 @@
    "harga": 340
   }
  ],
- "resistance": [],
+ "resistance": [
+  {
+   "level": 1022.5,
+   "sentuhan": 2,
+   "terakhir": "2026-10-07",
+   "dalam_atr": false,
+   "harga": 1025
+  }
+ ],
  "stop": 340,
  "stop_asal": "klaster",
- "stop_pct": 65.65656565656566,
- "er": 0.23809523809523808,
- "er_persentil": 79.7752808988764,
- "er_n_populasi": 445,
- "likuiditas_median20": 388001100.0,
+ "stop_pct": 63.24324324324324,
+ "er": 0.23919711923179515,
+ "er_persentil": 80.45454545454545,
+ "er_n_populasi": 440,
+ "likuiditas_median20": 158689200.0,
  "kualitas": {
   "riwayat": "cukup",
   "likuiditas": "tipis",
-  "lilin": 6153,
-  "nilai20": 388001100.0
+  "lilin": 6161,
+  "nilai20": 158689200.0
  },
- "beku": 5,
- "beku_sejak": "2026-10-07",
- "dihitung": "2026-10-07",
- "rsi": 88.3728294853438,
+ "beku": 0,
+ "beku_sejak": null,
+ "dihitung": "2026-10-19",
+ "rsi": 73.22845057292143,
  "stochrsi": [
-  100.0,
-  100.0
+  71.3383311633679,
+  90.4461103877893
  ],
- "target": [],
+ "target": [
+  {
+   "harga": 1025,
+   "pct": 10.81081081081081,
+   "sentuhan": 2,
+   "terakhir": "2026-10-07",
+   "fp": {
+    "n": 6140,
+    "n_efektif": 307,
+    "kena": 2899,
+    "stop": 9,
+    "lewat": 3232,
+    "p_kena": 47.214983713355046,
+    "p_stop": 0.1465798045602606,
+    "median_hari": 5,
+    "q1": 2,
+    "q3": 10,
+    "harapan": 5.011620741262435
+   },
+   "fp60": {
+    "n": 6100,
+    "n_efektif": 102,
+    "kena": 3911,
+    "stop": 27,
+    "lewat": 2162,
+    "p_kena": 64.11475409836066,
+    "p_stop": 0.4426229508196721,
+    "median_hari": 8,
+    "q1": 3,
+    "q3": 22,
+    "harapan": 6.651395657953035
+   }
+  }
+ ],
  "musiman": {
   "n": 26,
   "naik": 7,
@@ -67,11 +108,11 @@
  },
  "fundamental": {
   "name": "PT Artha Mahiya Investama Tbk",
-  "updated": "2026-10-10 02:06",
-  "harga_pada": "2026-10-07",
-  "pe": 53.074572454833,
+  "updated": "2026-10-17 01:06",
+  "harga_pada": "2026-10-19",
+  "pe": 49.58987830375811,
   "pb": 764.4788,
-  "pbv": 764.4787644787646,
+  "pbv": 714.2857142857143,
   "eps": 18.653,
   "roe": 2.81473,
   "der": 482.391,
@@ -97,69 +138,69 @@
    "frekuensi": "kali"
   },
   "mulai": "2020-01-02",
-  "akhir": "2026-10-15",
-  "n_total": 1634,
+  "akhir": "2026-10-19",
+  "n_total": 1636,
   "periode": {
    "5": {
     "n": 5,
     "beli": 0,
     "jual": 0,
     "net": 0,
-    "porsi_beli_pct": null,
-    "porsi_jual_pct": null
+    "porsi_beli_pct": 0.0,
+    "porsi_jual_pct": 0.0
    },
    "20": {
     "n": 20,
     "beli": 24800,
     "jual": 55700,
     "net": -30900,
-    "porsi_beli_pct": 0.07929123863785326,
-    "porsi_jual_pct": 0.17808556419872687
+    "porsi_beli_pct": 0.08249370486546541,
+    "porsi_jual_pct": 0.1852782000405816
    }
   },
   "isian_stockbit": []
  },
- "ma5": 811.0,
- "ma100": 438.46,
- "ma150": 439.0933333333333,
+ "ma5": 977.0,
+ "ma100": 484.21,
+ "ma150": 467.23333333333335,
  "bb20": {
-  "mid": 574.3,
-  "atas": 872.0220851734045,
-  "bawah": 276.5779148265953
+  "mid": 769.45,
+  "atas": 1208.019253368268,
+  "bawah": 330.8807466317321
  },
- "posisi_bb": 1.3963,
+ "posisi_bb": 0.3547,
  "ichimoku": {
-  "tenkan": 731.0,
+  "tenkan": 930.0,
   "kijun": 731.0,
-  "senkou_a": 731.0,
-  "senkou_b": 681.0,
+  "senkou_a": 830.5,
+  "senkou_b": 696.0,
   "di_atas_kumo": true
  },
  "regresi60": {
-  "kemiringan": 5.294081689358155,
-  "tengah": 619.1420765027322,
-  "posisi": 4.4168
+  "kemiringan": 10.015921089191442,
+  "tengah": 839.053005464481,
+  "posisi": 0.7362
  },
- "freq": 3743,
- "ukuran_order": 18.6725,
- "peringkat_value": 1,
- "peringkat_volume": 1,
- "peringkat_freq": 1,
- "porsi_asing": 0.0004,
- "net_asing_rp": -2864000,
+ "freq": 27,
+ "ukuran_order": 33.5556,
+ "peringkat_value": 631,
+ "peringkat_volume": 729,
+ "peringkat_freq": 798,
+ "porsi_asing": 0.0,
+ "net_asing_rp": 0,
  "label_fd": "F 0% : D 100%",
- "tiket_avg": 1809893.13,
- "tiket_avg_med60": 1118453.95,
- "tiket_lonjakan": 1.6182,
- "asing_net_5h": -21472000,
- "asing_net_20h": 68528000,
- "asing_streak": -1,
- "tiket_broker_maks": 6180889.0,
- "broker_tiket_maks_kode": "DU",
- "bval_maks": 2167880500.0,
- "nego_blok_rp": 0.0,
+ "tiket_avg": 3103888.89,
+ "tiket_avg_med60": 1135712.95,
+ "tiket_lonjakan": 2.733,
+ "asing_net_5h": 0,
+ "asing_net_20h": -21472000,
+ "asing_streak": 0,
+ "tiket_broker_maks": null,
+ "broker_tiket_maks_kode": null,
+ "bval_maks": null,
+ "nego_blok_rp": null,
  "nego_broker_maks_kode": null,
- "top3_pct": 108.13,
- "number_broker_buysell": 2,
- "label_accdist": "Dist"
+ "top3_pct": null,
+ "number_broker_buysell": null,
+ "label_accdist": null
 }
