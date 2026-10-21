@@ -1,16 +1,16 @@
 {
  "kode": "RSCH",
- "tgl": "2026-10-20",
- "harga": 560.0,
- "prev": 494.0,
- "chg": 13.36032388663968,
- "n": 750,
+ "tgl": "2026-10-21",
+ "harga": 580.0,
+ "prev": 560.0,
+ "chg": 3.571428571428581,
+ "n": 751,
  "mulai": "2023-08-28",
- "ma20": 548.85,
- "ma50": 443.38,
- "ma200": 364.185,
- "atr": 36.28232979705042,
- "atr_pct": 6.478987463759005,
+ "ma20": 554.95,
+ "ma50": 448.62,
+ "ma200": 364.765,
+ "atr": 36.19073481154682,
+ "atr_pct": 6.239781864059797,
  "support": [
   {
    "level": 450.0,
@@ -27,29 +27,70 @@
    "harga": 302
   }
  ],
- "resistance": [],
+ "resistance": [
+  {
+   "level": 635.0,
+   "sentuhan": 1,
+   "terakhir": "2026-10-14",
+   "dalam_atr": false,
+   "harga": 635
+  }
+ ],
  "stop": 450,
  "stop_asal": "klaster",
- "stop_pct": 19.642857142857142,
- "er": 0.21251080380293863,
- "er_persentil": 56.152125279642064,
- "er_n_populasi": 447,
+ "stop_pct": 22.413793103448278,
+ "er": 0.21348314606741572,
+ "er_persentil": 56.884875846501124,
+ "er_n_populasi": 443,
  "likuiditas_median20": 13390387000.0,
  "kualitas": {
   "riwayat": "cukup",
   "likuiditas": "cukup",
-  "lilin": 750,
+  "lilin": 751,
   "nilai20": 13390387000.0
  },
  "beku": 0,
  "beku_sejak": null,
- "dihitung": "2026-10-20",
- "rsi": 57.06743805963292,
+ "dihitung": "2026-10-21",
+ "rsi": 60.08521702648592,
  "stochrsi": [
-  8.969990032716225,
-  28.949665986210743
+  20.030977538459556,
+  17.87813901003146
  ],
- "target": [],
+ "target": [
+  {
+   "harga": 635,
+   "pct": 9.482758620689655,
+   "sentuhan": 1,
+   "terakhir": "2026-10-14",
+   "fp": {
+    "n": 730,
+    "n_efektif": 36,
+    "kena": 457,
+    "stop": 38,
+    "lewat": 235,
+    "p_kena": 62.6027397260274,
+    "p_stop": 5.205479452054795,
+    "median_hari": 6,
+    "q1": 3,
+    "q3": 11,
+    "harapan": 4.769721303731696
+   },
+   "fp60": {
+    "n": 690,
+    "n_efektif": 12,
+    "kena": 505,
+    "stop": 155,
+    "lewat": 30,
+    "p_kena": 73.18840579710145,
+    "p_stop": 22.463768115942027,
+    "median_hari": 8,
+    "q1": 3,
+    "q3": 16,
+    "harapan": 1.9052973513243376
+   }
+  }
+ ],
  "musiman": {
   "n": 4,
   "naik": 4,
@@ -75,10 +116,10 @@
  "fundamental": {
   "name": "PT Charlie Hospital Semarang Tbk",
   "updated": "2026-10-17 01:32",
-  "harga_pada": "2026-10-20",
+  "harga_pada": "2026-10-21",
   "pe": null,
   "pb": 11.6563,
-  "pbv": 12.316083485451626,
+  "pbv": 12.755943609932041,
   "eps": -5.85,
   "roe": -0.12072,
   "der": 51.346,
@@ -104,63 +145,63 @@
    "frekuensi": "kali"
   },
   "mulai": "2023-08-28",
-  "akhir": "2026-10-20",
-  "n_total": 750,
+  "akhir": "2026-10-21",
+  "n_total": 751,
   "periode": {
    "5": {
     "n": 5,
-    "beli": 8440500,
-    "jual": 4841900,
-    "net": 3598600,
-    "porsi_beli_pct": 12.469050812803951,
-    "porsi_jual_pct": 7.152881598307618
+    "beli": 10537000,
+    "jual": 4630000,
+    "net": 5907000,
+    "porsi_beli_pct": 15.641607239346131,
+    "porsi_jual_pct": 6.8729848645888385
    },
    "20": {
     "n": 20,
-    "beli": 62907400,
-    "jual": 41153500,
-    "net": 21753900,
-    "porsi_beli_pct": 13.192227357754607,
-    "porsi_jual_pct": 8.630245862447888
+    "beli": 65155400,
+    "jual": 41136100,
+    "net": 24019300,
+    "porsi_beli_pct": 13.83663505634537,
+    "porsi_jual_pct": 8.735810129955903
    }
   },
   "isian_stockbit": []
  },
- "ma5": 564.8,
- "ma100": 368.93,
- "ma150": 350.0733333333333,
+ "ma5": 556.8,
+ "ma100": 372.03,
+ "ma150": 351.4066666666667,
  "bb20": {
-  "mid": 548.85,
-  "atas": 662.8171443881964,
-  "bawah": 434.8828556118036
+  "mid": 554.95,
+  "atas": 661.6410961608325,
+  "bawah": 448.2589038391676
  },
- "posisi_bb": 0.0978,
+ "posisi_bb": 0.2348,
  "ichimoku": {
   "tenkan": 547.5,
-  "kijun": 529.5,
-  "senkou_a": 538.5,
+  "kijun": 530.5,
+  "senkou_a": 539.0,
   "senkou_b": 468.5,
   "di_atas_kumo": true
  },
  "regresi60": {
-  "kemiringan": 5.720005557099194,
-  "tengah": 590.2234972677595,
-  "posisi": -0.8685
+  "kemiringan": 5.746846346207279,
+  "tengah": 595.9486338797815,
+  "posisi": -0.4608
  },
- "freq": 1867,
- "ukuran_order": 130.3964,
- "peringkat_value": 134,
- "peringkat_volume": 198,
- "peringkat_freq": 209,
- "porsi_asing": 0.1528,
- "net_asing_rp": 1320664100,
- "label_fd": "F 15% : D 85%",
- "tiket_avg": 6837151.37,
- "tiket_avg_med60": 5414123.3,
- "tiket_lonjakan": 1.2628,
- "asing_net_5h": 1969033400,
- "asing_net_20h": 11684660200,
- "asing_streak": 1,
+ "freq": 2647,
+ "ukuran_order": 74.4567,
+ "peringkat_value": 124,
+ "peringkat_volume": 178,
+ "peringkat_freq": 141,
+ "porsi_asing": 0.1409,
+ "net_asing_rp": 1486961000,
+ "label_fd": "F 14% : D 86%",
+ "tiket_avg": 4191945.41,
+ "tiket_avg_med60": 5385239.43,
+ "tiket_lonjakan": 0.7784,
+ "asing_net_5h": 3237466900,
+ "asing_net_20h": 12991557400,
+ "asing_streak": 2,
  "tiket_broker_maks": null,
  "broker_tiket_maks_kode": null,
  "bval_maks": null,
