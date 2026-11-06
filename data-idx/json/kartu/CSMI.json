@@ -1,23 +1,30 @@
 {
  "kode": "CSMI",
- "tgl": "2026-10-06",
- "harga": 515.0,
- "prev": 412.0,
- "chg": 25.0,
- "n": 1558,
+ "tgl": "2026-11-06",
+ "harga": 480.0,
+ "prev": 515.0,
+ "chg": -6.796116504854366,
+ "n": 1581,
  "mulai": "2020-04-09",
- "ma20": 244.25,
- "ma50": 174.3,
- "ma200": 135.855,
- "atr": 40.83627920366579,
- "atr_pct": 7.929374602653551,
+ "ma20": 513.25,
+ "ma50": 359.52,
+ "ma200": 168.995,
+ "atr": 9.926743878787562,
+ "atr_pct": 2.0680716414140754,
  "support": [
   {
-   "level": 402.0,
-   "sentuhan": 3,
+   "level": 408.0,
+   "sentuhan": 1,
+   "terakhir": "2025-07-31",
+   "dalam_atr": false,
+   "harga": 408
+  },
+  {
+   "level": 399.0,
+   "sentuhan": 2,
    "terakhir": "2025-08-12",
    "dalam_atr": false,
-   "harga": 402
+   "harga": 398
   },
   {
    "level": 323.3333333333333,
@@ -25,16 +32,16 @@
    "terakhir": "2025-10-07",
    "dalam_atr": false,
    "harga": 322
-  },
-  {
-   "level": 197.5,
-   "sentuhan": 8,
-   "terakhir": "2026-09-16",
-   "dalam_atr": false,
-   "harga": 197
   }
  ],
  "resistance": [
+  {
+   "level": 515.0,
+   "sentuhan": 19,
+   "terakhir": "2026-10-30",
+   "dalam_atr": false,
+   "harga": 515
+  },
   {
    "level": 640.0,
    "sentuhan": 1,
@@ -48,144 +55,137 @@
    "terakhir": "2025-07-01",
    "dalam_atr": false,
    "harga": 2080
-  },
-  {
-   "level": 2350.0,
-   "sentuhan": 1,
-   "terakhir": "2025-04-30",
-   "dalam_atr": false,
-   "harga": 2350
   }
  ],
- "stop": 402,
+ "stop": 408,
  "stop_asal": "klaster",
- "stop_pct": 21.941747572815533,
- "er": 0.4155574762316335,
- "er_persentil": 99.51690821256038,
- "er_n_populasi": 414,
- "likuiditas_median20": 7017954800.0,
+ "stop_pct": 15.0,
+ "er": 0.42857142857142855,
+ "er_persentil": 99.74937343358395,
+ "er_n_populasi": 399,
+ "likuiditas_median20": 0.0,
  "kualitas": {
   "riwayat": "cukup",
-  "likuiditas": "cukup",
-  "lilin": 1558,
-  "nilai20": 7017954800.0
+  "likuiditas": "tipis",
+  "lilin": 1581,
+  "nilai20": 0.0
  },
- "beku": 20,
- "beku_sejak": "2026-10-06",
- "dihitung": "2026-10-06",
- "rsi": 85.71856531467878,
+ "beku": 0,
+ "beku_sejak": null,
+ "dihitung": "2026-11-06",
+ "rsi": 58.27164085663604,
  "stochrsi": [
-  100.0,
-  91.4844051160677
+  0.0,
+  0.0
  ],
  "target": [
   {
+   "harga": 515,
+   "pct": 7.291666666666667,
+   "sentuhan": 19,
+   "terakhir": "2026-10-30",
+   "fp": {
+    "n": 1560,
+    "n_efektif": 78,
+    "kena": 676,
+    "stop": 219,
+    "lewat": 665,
+    "p_kena": 43.333333333333336,
+    "p_stop": 14.038461538461538,
+    "median_hari": 2.0,
+    "q1": 1,
+    "q3": 7,
+    "harapan": 1.0539529914529915
+   },
+   "fp60": {
+    "n": 1520,
+    "n_efektif": 25,
+    "kena": 746,
+    "stop": 320,
+    "lewat": 454,
+    "p_kena": 49.078947368421055,
+    "p_stop": 21.052631578947366,
+    "median_hari": 3.0,
+    "q1": 1,
+    "q3": 11,
+    "harapan": 0.42077850877193024
+   }
+  },
+  {
    "harga": 640,
-   "pct": 24.271844660194176,
+   "pct": 33.33333333333333,
    "sentuhan": 1,
    "terakhir": "2025-09-29",
    "fp": {
-    "n": 1537,
-    "n_efektif": 77,
-    "kena": 368,
-    "stop": 191,
-    "lewat": 978,
-    "p_kena": 23.94274560832791,
-    "p_stop": 12.426805465191933,
-    "median_hari": 9.0,
-    "q1": 4,
-    "q3": 14,
-    "harapan": 3.084687734901555
+    "n": 1560,
+    "n_efektif": 78,
+    "kena": 269,
+    "stop": 338,
+    "lewat": 953,
+    "p_kena": 17.243589743589745,
+    "p_stop": 21.666666666666668,
+    "median_hari": 10,
+    "q1": 5,
+    "q3": 15,
+    "harapan": 2.497863247863247
    },
    "fp60": {
-    "n": 1497,
+    "n": 1520,
     "n_efektif": 25,
-    "kena": 483,
-    "stop": 315,
-    "lewat": 699,
-    "p_kena": 32.26452905811623,
-    "p_stop": 21.04208416833667,
-    "median_hari": 14,
-    "q1": 6,
-    "q3": 24,
-    "harapan": 3.2141953810533694
+    "kena": 390,
+    "stop": 471,
+    "lewat": 659,
+    "p_kena": 25.657894736842106,
+    "p_stop": 30.986842105263158,
+    "median_hari": 16.0,
+    "q1": 8,
+    "q3": 27,
+    "harapan": 3.9046052631578947
    }
   },
   {
    "harga": 2080,
-   "pct": 303.88349514563106,
+   "pct": 333.33333333333337,
    "sentuhan": 1,
    "terakhir": "2025-07-01",
    "fp": {
-    "n": 1537,
-    "n_efektif": 77,
+    "n": 1560,
+    "n_efektif": 78,
     "kena": 0,
-    "stop": 209,
-    "lewat": 1328,
+    "stop": 354,
+    "lewat": 1206,
     "p_kena": 0.0,
-    "p_stop": 13.597918022121014,
+    "p_stop": 22.692307692307693,
     "median_hari": null,
     "q1": null,
     "q3": null,
-    "harapan": -2.9836208475721837
+    "harapan": -3.4038461538461537
    },
    "fp60": {
-    "n": 1497,
+    "n": 1520,
     "n_efektif": 25,
-    "kena": 5,
-    "stop": 423,
-    "lewat": 1069,
-    "p_kena": 0.33400133600534404,
-    "p_stop": 28.256513026052104,
-    "median_hari": 59,
-    "q1": 59,
-    "q3": 60,
-    "harapan": -5.18499782736995
-   }
-  },
-  {
-   "harga": 2350,
-   "pct": 356.3106796116505,
-   "sentuhan": 1,
-   "terakhir": "2025-04-30",
-   "fp": {
-    "n": 1537,
-    "n_efektif": 77,
-    "kena": 0,
-    "stop": 209,
-    "lewat": 1328,
-    "p_kena": 0.0,
-    "p_stop": 13.597918022121014,
-    "median_hari": null,
-    "q1": null,
-    "q3": null,
-    "harapan": -2.9836208475721837
-   },
-   "fp60": {
-    "n": 1497,
-    "n_efektif": 25,
-    "kena": 3,
-    "stop": 423,
-    "lewat": 1071,
-    "p_kena": 0.2004008016032064,
-    "p_stop": 28.256513026052104,
-    "median_hari": 59,
-    "q1": 58,
-    "q3": 60,
-    "harapan": -5.485923302916513
+    "kena": 28,
+    "stop": 536,
+    "lewat": 956,
+    "p_kena": 1.8421052631578945,
+    "p_stop": 35.26315789473684,
+    "median_hari": 49.5,
+    "q1": 43,
+    "q3": 57,
+    "harapan": 0.8508771929824572
    }
   }
  ],
  "musiman": {
   "n": 7,
-  "naik": 3,
-  "mentah": 42.857142857142854,
-  "tersusut": 42.01183431952663,
-  "bawah": 15.821692226262678,
-  "atas": 74.95457695909742,
-  "median": 0.0,
-  "dasar": 41.02564102564102,
-  "total_bulan": 78
+  "naik": 2,
+  "mentah": 28.57142857142857,
+  "tersusut": 34.07984420642649,
+  "bawah": 8.221716570901547,
+  "atas": 64.10709098517873,
+  "median": -0.6349206349206327,
+  "dasar": 40.50632911392405,
+  "total_bulan": 79
  },
  "sektor": {
   "nama": "PT Cipta Selera Murni Tbk.",
@@ -201,10 +201,10 @@
  "fundamental": {
   "name": "PT Cipta Selera Murni Tbk",
   "updated": "2026-10-31 02:10",
-  "harga_pada": "2026-10-06",
+  "harga_pada": "2026-11-06",
   "pe": null,
   "pb": 128.7178,
-  "pbv": 128.71782054486377,
+  "pbv": 119.97000749812545,
   "eps": -1.05,
   "roe": -0.20631,
   "der": 234.256,
@@ -230,69 +230,69 @@
    "frekuensi": "kali"
   },
   "mulai": "2020-04-09",
-  "akhir": "2026-11-03",
-  "n_total": 1578,
+  "akhir": "2026-11-06",
+  "n_total": 1581,
   "periode": {
    "5": {
     "n": 5,
     "beli": 0,
     "jual": 0,
     "net": 0,
-    "porsi_beli_pct": null,
-    "porsi_jual_pct": null
+    "porsi_beli_pct": 0.0,
+    "porsi_jual_pct": 0.0
    },
    "20": {
     "n": 20,
     "beli": 0,
     "jual": 0,
     "net": 0,
-    "porsi_beli_pct": null,
-    "porsi_jual_pct": null
+    "porsi_beli_pct": 0.0,
+    "porsi_jual_pct": 0.0
    }
   },
   "isian_stockbit": []
  },
- "ma5": 356.6,
- "ma100": 126.71,
- "ma150": 117.07333333333334,
+ "ma5": 508.0,
+ "ma100": 224.99,
+ "ma150": 180.56666666666666,
  "bb20": {
-  "mid": 244.25,
-  "atas": 412.1688792244636,
-  "bawah": 76.33112077553639
+  "mid": 513.25,
+  "atas": 528.5061463023924,
+  "bawah": 497.9938536976076
  },
- "posisi_bb": 1.6124,
+ "posisi_bb": -2.1794,
  "ichimoku": {
-  "tenkan": 344.0,
-  "kijun": 340.0,
-  "senkou_a": 342.0,
-  "senkou_b": 292.5,
+  "tenkan": 497.5,
+  "kijun": 403.5,
+  "senkou_a": 450.5,
+  "senkou_b": 332.0,
   "di_atas_kumo": true
  },
  "regresi60": {
-  "kemiringan": 4.317588218949708,
-  "tengah": 285.36885245901635,
-  "posisi": 5.3749
+  "kemiringan": 8.507113086968602,
+  "tengah": 575.1765027322404,
+  "posisi": -1.4778
  },
- "freq": 18423,
- "ukuran_order": 59.4629,
- "peringkat_value": 1,
- "peringkat_volume": 1,
- "peringkat_freq": 1,
- "porsi_asing": 0.1221,
- "net_asing_rp": 2334798200,
- "label_fd": "F 12% : D 88%",
- "tiket_avg": 2888735.09,
- "tiket_avg_med60": 1315457.27,
- "tiket_lonjakan": 2.196,
- "asing_net_5h": 4900633800,
- "asing_net_20h": 3824496700,
- "asing_streak": 2,
- "tiket_broker_maks": 36488333.0,
- "broker_tiket_maks_kode": "DU",
- "bval_maks": 17441969500.0,
- "nego_blok_rp": 0.0,
+ "freq": 118,
+ "ukuran_order": 22.6102,
+ "peringkat_value": 510,
+ "peringkat_volume": 586,
+ "peringkat_freq": 549,
+ "porsi_asing": 0.0,
+ "net_asing_rp": 0,
+ "label_fd": "F 0% : D 100%",
+ "tiket_avg": 1085288.14,
+ "tiket_avg_med60": 2027105.6,
+ "tiket_lonjakan": 0.5354,
+ "asing_net_5h": 0,
+ "asing_net_20h": 0,
+ "asing_streak": 0,
+ "tiket_broker_maks": null,
+ "broker_tiket_maks_kode": null,
+ "bval_maks": null,
+ "nego_blok_rp": null,
  "nego_broker_maks_kode": null,
- "top3_pct": 119.43,
- "number_broker_buysell": 3,
- "label_accdist": "Dist"
+ "top3_pct": null,
+ "number_broker_buysell": null,
+ "label_accdist": null
 }
