@@ -1,16 +1,16 @@
 {
  "kode": "KINO",
- "tgl": "2026-11-09",
- "harga": 1570.0,
+ "tgl": "2026-11-10",
+ "harga": 1555.0,
  "prev": 1570.0,
- "chg": 0.0,
- "n": 2632,
+ "chg": -0.9554140127388533,
+ "n": 2633,
  "mulai": "2015-12-11",
- "ma20": 1424.25,
- "ma50": 1399.5,
- "ma200": 1243.05,
- "atr": 105.02314552140876,
- "atr_pct": 6.6893723262043805,
+ "ma20": 1431.25,
+ "ma50": 1403.6,
+ "ma200": 1244.075,
+ "atr": 100.37863512702243,
+ "atr_pct": 6.455217693056105,
  "support": [
   {
    "level": 1148.695652173913,
@@ -20,29 +20,70 @@
    "harga": 1145
   }
  ],
- "resistance": [],
+ "resistance": [
+  {
+   "level": 1770.0,
+   "sentuhan": 1,
+   "terakhir": "2026-11-03",
+   "dalam_atr": false,
+   "harga": 1770
+  }
+ ],
  "stop": 1145,
  "stop_asal": "klaster",
- "stop_pct": 27.070063694267514,
+ "stop_pct": 26.366559485530544,
  "er": 0.23076923076923078,
- "er_persentil": 71.2468193384224,
- "er_n_populasi": 393,
- "likuiditas_median20": 121473000.0,
+ "er_persentil": 71.64948453608247,
+ "er_n_populasi": 388,
+ "likuiditas_median20": 154561500.0,
  "kualitas": {
   "riwayat": "cukup",
   "likuiditas": "tipis",
-  "lilin": 2632,
-  "nilai20": 121473000.0
+  "lilin": 2633,
+  "nilai20": 154561500.0
  },
  "beku": 0,
  "beku_sejak": null,
- "dihitung": "2026-11-09",
- "rsi": 61.696602848772955,
+ "dihitung": "2026-11-10",
+ "rsi": 60.1513925425034,
  "stochrsi": [
-  66.22629397906304,
-  68.8352111205726
+  69.78096228075553,
+  67.12190554397664
  ],
- "target": [],
+ "target": [
+  {
+   "harga": 1770,
+   "pct": 13.826366559485532,
+   "sentuhan": 1,
+   "terakhir": "2026-11-03",
+   "fp": {
+    "n": 2612,
+    "n_efektif": 131,
+    "kena": 574,
+    "stop": 52,
+    "lewat": 1986,
+    "p_kena": 21.975497702909646,
+    "p_stop": 1.9908116385911179,
+    "median_hari": 9.0,
+    "q1": 5,
+    "q3": 14,
+    "harapan": 2.513504330741618
+   },
+   "fp60": {
+    "n": 2572,
+    "n_efektif": 43,
+    "kena": 1038,
+    "stop": 283,
+    "lewat": 1251,
+    "p_kena": 40.35769828926905,
+    "p_stop": 11.003110419906688,
+    "median_hari": 19.0,
+    "q1": 8,
+    "q3": 33,
+    "harapan": 2.678861646322254
+   }
+  }
+ ],
  "musiman": {
   "n": 11,
   "naik": 4,
@@ -68,10 +109,10 @@
  "fundamental": {
   "name": "PT Kino Indonesia Tbk",
   "updated": "2026-11-07 02:47",
-  "harga_pada": "2026-11-09",
-  "pe": 9.282800212854017,
+  "harga_pada": "2026-11-10",
+  "pe": 9.19411103884586,
   "pb": 1.1347,
-  "pbv": 1.1347160969235461,
+  "pbv": 1.1238748603287352,
   "eps": 169.13,
   "roe": 0.15180999,
   "der": 69.877,
@@ -97,37 +138,37 @@
    "frekuensi": "kali"
   },
   "mulai": "2020-01-02",
-  "akhir": "2026-11-09",
-  "n_total": 1651,
+  "akhir": "2026-11-10",
+  "n_total": 1652,
   "periode": {
    "5": {
     "n": 5,
-    "beli": 147800,
-    "jual": 72700,
-    "net": 75100,
-    "porsi_beli_pct": 7.1153475832851925,
-    "porsi_jual_pct": 3.4999037165414983
+    "beli": 81700,
+    "jual": 13500,
+    "net": 68200,
+    "porsi_beli_pct": 6.26677916698627,
+    "porsi_jual_pct": 1.0355143054383678
    },
    "20": {
     "n": 20,
-    "beli": 242700,
+    "beli": 253200,
     "jual": 134600,
-    "net": 108100,
-    "porsi_beli_pct": 7.188981042654029,
-    "porsi_jual_pct": 3.9869668246445498
+    "net": 118600,
+    "porsi_beli_pct": 7.279418106546301,
+    "porsi_jual_pct": 3.8697064658022597
    }
   },
   "isian_stockbit": []
  },
- "ma5": 1559.0,
- "ma100": 1306.8,
- "ma150": 1249.2333333333333,
+ "ma5": 1544.0,
+ "ma100": 1311.4,
+ "ma150": 1251.8,
  "bb20": {
-  "mid": 1424.25,
-  "atas": 1599.8425681798635,
-  "bawah": 1248.6574318201365
+  "mid": 1431.25,
+  "atas": 1615.7459349145665,
+  "bawah": 1246.7540650854335
  },
- "posisi_bb": 0.83,
+ "posisi_bb": 0.6707,
  "ichimoku": {
   "tenkan": 1527.5,
   "kijun": 1515.0,
@@ -136,24 +177,24 @@
   "di_atas_kumo": true
  },
  "regresi60": {
-  "kemiringan": 2.0941928313420393,
-  "tengah": 1450.7786885245903,
-  "posisi": 2.289
+  "kemiringan": 2.266323978883023,
+  "tengah": 1459.606557377049,
+  "posisi": 1.7791
  },
- "freq": 87,
- "ukuran_order": 26.7011,
- "peringkat_value": 376,
- "peringkat_volume": 592,
- "peringkat_freq": 615,
- "porsi_asing": 0.0232,
- "net_asing_rp": 16916000,
- "label_fd": "F 2% : D 98%",
- "tiket_avg": 4183735.63,
- "tiket_avg_med60": 1191159.42,
- "tiket_lonjakan": 3.5123,
- "asing_net_5h": 111400500,
- "asing_net_20h": 152537500,
- "asing_streak": 5,
+ "freq": 76,
+ "ukuran_order": 1478.9474,
+ "peringkat_value": 485,
+ "peringkat_volume": 640,
+ "peringkat_freq": 614,
+ "porsi_asing": 0.0463,
+ "net_asing_rp": 16263000,
+ "label_fd": "F 5% : D 95%",
+ "tiket_avg": 2312855.26,
+ "tiket_avg_med60": 1195897.06,
+ "tiket_lonjakan": 1.934,
+ "asing_net_5h": 104552500,
+ "asing_net_20h": 168800500,
+ "asing_streak": 6,
  "tiket_broker_maks": null,
  "broker_tiket_maks_kode": null,
  "bval_maks": null,
