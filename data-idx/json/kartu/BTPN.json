@@ -1,16 +1,16 @@
 {
  "kode": "BTPN",
- "tgl": "2026-11-17",
- "harga": 2450.0,
- "prev": 2410.0,
- "chg": 1.6597510373443924,
- "n": 4530,
+ "tgl": "2026-11-18",
+ "harga": 2440.0,
+ "prev": 2450.0,
+ "chg": -0.40816326530612734,
+ "n": 4531,
  "mulai": "2008-03-12",
- "ma20": 2410.0,
- "ma50": 2392.8,
- "ma200": 2202.375,
- "atr": 80.0473532311455,
- "atr_pct": 3.2672389073936934,
+ "ma20": 2418.5,
+ "ma50": 2393.2,
+ "ma200": 2203.975,
+ "atr": 78.61539942892081,
+ "atr_pct": 3.221942599545935,
  "support": [
   {
    "level": 2360.0,
@@ -34,29 +34,70 @@
    "harga": 1800
   }
  ],
- "resistance": [],
+ "resistance": [
+  {
+   "level": 2595.0,
+   "sentuhan": 2,
+   "terakhir": "2026-10-05",
+   "dalam_atr": false,
+   "harga": 2600
+  }
+ ],
  "stop": 2360,
  "stop_asal": "klaster",
- "stop_pct": 3.6734693877551026,
+ "stop_pct": 3.278688524590164,
  "er": 0.2,
- "er_persentil": 27.93733681462141,
- "er_n_populasi": 383,
- "likuiditas_median20": 131545000.0,
+ "er_persentil": 27.659574468085108,
+ "er_n_populasi": 376,
+ "likuiditas_median20": 157882500.0,
  "kualitas": {
   "riwayat": "cukup",
   "likuiditas": "tipis",
-  "lilin": 4530,
-  "nilai20": 131545000.0
+  "lilin": 4531,
+  "nilai20": 157882500.0
  },
  "beku": 0,
  "beku_sejak": null,
- "dihitung": "2026-11-17",
- "rsi": 56.073078955542904,
+ "dihitung": "2026-11-18",
+ "rsi": 54.406685384649506,
  "stochrsi": [
-  21.070978884724386,
-  29.74765228680772
+  35.91492946705665,
+  26.569967003449097
  ],
- "target": [],
+ "target": [
+  {
+   "harga": 2600,
+   "pct": 6.557377049180328,
+   "sentuhan": 2,
+   "terakhir": "2026-10-05",
+   "fp": {
+    "n": 4510,
+    "n_efektif": 226,
+    "kena": 1108,
+    "stop": 2543,
+    "lewat": 859,
+    "p_kena": 24.56762749445676,
+    "p_stop": 56.38580931263858,
+    "median_hari": 6.0,
+    "q1": 3,
+    "q3": 11,
+    "harapan": -0.23772309258114932
+   },
+   "fp60": {
+    "n": 4470,
+    "n_efektif": 74,
+    "kena": 1347,
+    "stop": 2978,
+    "lewat": 145,
+    "p_kena": 30.134228187919465,
+    "p_stop": 66.62192393736018,
+    "median_hari": 8,
+    "q1": 4,
+    "q3": 16,
+    "harapan": -0.2083104118531558
+   }
+  }
+ ],
  "musiman": {
   "n": 19,
   "naik": 7,
@@ -98,8 +139,8 @@
   "float_pct": 8.84,
   "week52_high": 2600,
   "week52_low": 1900,
-  "pb_keystats": 0.53,
-  "pe_keystats": 28.23,
+  "pb_keystats": 0.54,
+  "pe_keystats": 28.7,
   "roe_keystats": 1.87
  },
  "asing": {
@@ -111,37 +152,37 @@
    "frekuensi": "kali"
   },
   "mulai": "2020-01-02",
-  "akhir": "2026-11-17",
-  "n_total": 1657,
+  "akhir": "2026-11-18",
+  "n_total": 1658,
   "periode": {
    "5": {
     "n": 5,
-    "beli": 0,
-    "jual": 5100,
-    "net": -5100,
-    "porsi_beli_pct": 0.0,
-    "porsi_jual_pct": 0.9161128076163104
+    "beli": 2500,
+    "jual": 3000,
+    "net": -500,
+    "porsi_beli_pct": 0.4335009537020981,
+    "porsi_jual_pct": 0.5202011444425177
    },
    "20": {
     "n": 20,
-    "beli": 14000,
-    "jual": 23800,
-    "net": -9800,
-    "porsi_beli_pct": 0.6093579978237215,
-    "porsi_jual_pct": 1.0359085963003265
+    "beli": 16500,
+    "jual": 20900,
+    "net": -4400,
+    "porsi_beli_pct": 0.7056710289966641,
+    "porsi_jual_pct": 0.8938499700624412
    }
   },
   "isian_stockbit": []
  },
- "ma5": 2434.0,
- "ma100": 2301.4,
- "ma150": 2244.366666666667,
+ "ma5": 2432.0,
+ "ma100": 2304.8,
+ "ma150": 2247.3333333333335,
  "bb20": {
-  "mid": 2410.0,
-  "atas": 2493.1865373723417,
-  "bawah": 2326.8134626276583
+  "mid": 2418.5,
+  "atas": 2472.2680202350803,
+  "bawah": 2364.7319797649197
  },
- "posisi_bb": 0.4808,
+ "posisi_bb": 0.3999,
  "ichimoku": {
   "tenkan": 2410.0,
   "kijun": 2285.0,
@@ -150,9 +191,9 @@
   "di_atas_kumo": true
  },
  "regresi60": {
-  "kemiringan": 1.9158099472075576,
-  "tengah": 2439.016393442623,
-  "posisi": 0.1703
+  "kemiringan": 1.7007502083912198,
+  "tengah": 2436.672131147541,
+  "posisi": 0.0534
  },
  "freq": 11,
  "ukuran_order": 19.9091,
