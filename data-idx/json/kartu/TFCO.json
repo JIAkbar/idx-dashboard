@@ -1,26 +1,33 @@
 {
  "kode": "TFCO",
- "tgl": "2026-11-26",
- "harga": 1115.0,
- "prev": 1155.0,
- "chg": -3.463203463203468,
- "n": 6477,
+ "tgl": "2026-11-27",
+ "harga": 1090.0,
+ "prev": 1115.0,
+ "chg": -2.2421524663677084,
+ "n": 6478,
  "mulai": "2000-06-14",
- "ma20": 1626.75,
- "ma50": 1453.3,
- "ma200": 942.025,
- "atr": 125.98190185387776,
- "atr_pct": 11.298825278374688,
+ "ma20": 1581.25,
+ "ma50": 1459.1,
+ "ma200": 942.225,
+ "atr": 125.55462315002934,
+ "atr_pct": 11.518772766057737,
  "support": [
   {
-   "level": 546.319298245614,
-   "sentuhan": 285,
+   "level": 546.0070422535211,
+   "sentuhan": 284,
    "terakhir": "2026-10-01",
    "dalam_atr": false,
    "harga": 545
   }
  ],
  "resistance": [
+  {
+   "level": 1165.0,
+   "sentuhan": 1,
+   "terakhir": "2026-01-27",
+   "dalam_atr": true,
+   "harga": 1165
+  },
   {
    "level": 2000.5882352941176,
    "sentuhan": 17,
@@ -31,56 +38,88 @@
  ],
  "stop": 545,
  "stop_asal": "klaster",
- "stop_pct": 51.12107623318386,
+ "stop_pct": 50.0,
  "er": 0.3076923076923077,
- "er_persentil": 97.953216374269,
- "er_n_populasi": 342,
+ "er_persentil": 98.52941176470588,
+ "er_n_populasi": 340,
  "likuiditas_median20": 45012000.0,
  "kualitas": {
   "riwayat": "cukup",
   "likuiditas": "tipis",
-  "lilin": 6477,
+  "lilin": 6478,
   "nilai20": 45012000.0
  },
  "beku": 0,
  "beku_sejak": null,
- "dihitung": "2026-11-26",
- "rsi": 26.434851062613234,
+ "dihitung": "2026-11-27",
+ "rsi": 25.667780238008888,
  "stochrsi": [
-  4.788440570008904,
-  9.343615410185512
+  2.3453834792603887,
+  5.305479108440861
  ],
  "target": [
   {
+   "harga": 1165,
+   "pct": 6.8807339449541285,
+   "sentuhan": 1,
+   "terakhir": "2026-01-27",
+   "fp": {
+    "n": 6457,
+    "n_efektif": 323,
+    "kena": 3015,
+    "stop": 43,
+    "lewat": 3399,
+    "p_kena": 46.693510918383154,
+    "p_stop": 0.6659439368127613,
+    "median_hari": 4,
+    "q1": 1,
+    "q3": 9,
+    "harapan": 2.8798842874456714
+   },
+   "fp60": {
+    "n": 6417,
+    "n_efektif": 107,
+    "kena": 3969,
+    "stop": 135,
+    "lewat": 2313,
+    "p_kena": 61.85133239831697,
+    "p_stop": 2.1037868162692845,
+    "median_hari": 7,
+    "q1": 2,
+    "q3": 20,
+    "harapan": 3.203932215602764
+   }
+  },
+  {
    "harga": 2010,
-   "pct": 80.26905829596413,
+   "pct": 84.40366972477065,
    "sentuhan": 17,
    "terakhir": "2026-11-13",
    "fp": {
-    "n": 6456,
+    "n": 6457,
     "n_efektif": 323,
-    "kena": 240,
-    "stop": 24,
-    "lewat": 6192,
-    "p_kena": 3.717472118959108,
-    "p_stop": 0.37174721189591076,
+    "kena": 228,
+    "stop": 57,
+    "lewat": 6172,
+    "p_kena": 3.5310515719374322,
+    "p_stop": 0.8827628929843581,
     "median_hari": 9.0,
     "q1": 4,
     "q3": 14,
-    "harapan": 2.7939386867154554
+    "harapan": 2.538955660097214
    },
    "fp60": {
-    "n": 6416,
+    "n": 6417,
     "n_efektif": 107,
-    "kena": 565,
-    "stop": 149,
-    "lewat": 5702,
-    "p_kena": 8.806109725685786,
-    "p_stop": 2.3223192019950125,
-    "median_hari": 28,
+    "kena": 542,
+    "stop": 236,
+    "lewat": 5639,
+    "p_kena": 8.446314477170016,
+    "p_stop": 3.6777310269596386,
+    "median_hari": 28.0,
     "q1": 12,
-    "q3": 45,
-    "harapan": 5.881386779687554
+    "q3": 44,
+    "harapan": 5.29013386174625
    }
   }
  ],
@@ -109,10 +148,10 @@
  "fundamental": {
   "name": "PT Tifico Fiber Indonesia Tbk",
   "updated": "2026-11-21 04:12",
-  "harga_pada": "2026-11-26",
+  "harga_pada": "2026-11-27",
   "pe": null,
   "pb": 1.2036,
-  "pbv": 0.938496889913894,
+  "pbv": 0.9174543587499053,
   "eps": -10.96,
   "roe": -0.0091699995,
   "der": 0.343,
@@ -125,8 +164,8 @@
   "float_pct": 14.16,
   "week52_high": 2010,
   "week52_low": 500,
-  "pb_keystats": 0.99,
-  "pe_keystats": -111.32,
+  "pb_keystats": 0.95,
+  "pe_keystats": -107.46,
   "roe_keystats": -0.89
  },
  "asing": {
@@ -138,61 +177,61 @@
    "frekuensi": "kali"
   },
   "mulai": "2020-01-02",
-  "akhir": "2026-11-26",
-  "n_total": 1664,
+  "akhir": "2026-11-27",
+  "n_total": 1665,
   "periode": {
    "5": {
     "n": 5,
-    "beli": 7500,
-    "jual": 3900,
+    "beli": 6000,
+    "jual": 2400,
     "net": 3600,
-    "porsi_beli_pct": 1.1820330969267139,
-    "porsi_jual_pct": 0.6146572104018913
+    "porsi_beli_pct": 2.5434506146672318,
+    "porsi_jual_pct": 1.0173802458668928
    },
    "20": {
     "n": 20,
     "beli": 10500,
     "jual": 6900,
     "net": 3600,
-    "porsi_beli_pct": 0.3978176858376904,
-    "porsi_jual_pct": 0.26142305069333943
+    "porsi_beli_pct": 0.39522716151616666,
+    "porsi_jual_pct": 0.25972070613919523
    }
   },
   "isian_stockbit": []
  },
- "ma5": 1254.0,
- "ma100": 1126.45,
- "ma150": 969.9333333333333,
+ "ma5": 1186.0,
+ "ma100": 1130.65,
+ "ma150": 972.1,
  "bb20": {
-  "mid": 1626.75,
-  "atas": 2272.708783514862,
-  "bawah": 980.7912164851383
+  "mid": 1581.25,
+  "atas": 2243.6235728423953,
+  "bawah": 918.8764271576047
  },
- "posisi_bb": -0.7922,
+ "posisi_bb": -0.7417,
  "ichimoku": {
-  "tenkan": 1387.5,
-  "kijun": 1552.5,
-  "senkou_a": 1470.0,
+  "tenkan": 1385.0,
+  "kijun": 1550.0,
+  "senkou_a": 1467.5,
   "senkou_b": 1372.5,
   "di_atas_kumo": false
  },
  "regresi60": {
-  "kemiringan": 18.555848846901917,
-  "tengah": 1895.6475409836066,
-  "posisi": -2.0128
+  "kemiringan": 17.355793275909974,
+  "tengah": 1863.5792349726776,
+  "posisi": -1.9283
  },
- "freq": 83,
- "ukuran_order": 4.3735,
- "peringkat_value": 612,
- "peringkat_volume": 696,
- "peringkat_freq": 579,
+ "freq": 77,
+ "ukuran_order": 2.2468,
+ "peringkat_value": 680,
+ "peringkat_volume": 726,
+ "peringkat_freq": 597,
  "porsi_asing": 0.0,
  "net_asing_rp": 0,
  "label_fd": "F 0% : D 100%",
- "tiket_avg": 502066.27,
- "tiket_avg_med60": 508351.65,
- "tiket_lonjakan": 0.9876,
- "asing_net_5h": 4753000,
+ "tiket_avg": 250266.23,
+ "tiket_avg_med60": 502066.27,
+ "tiket_lonjakan": 0.4985,
+ "asing_net_5h": 4955500,
  "asing_net_20h": 4663000,
  "asing_streak": 0,
  "tiket_broker_maks": null,
