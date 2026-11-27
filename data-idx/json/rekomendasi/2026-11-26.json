@@ -1,0 +1,1909 @@
+{
+ "tanggal": "2026-11-26",
+ "dibangun": "2026-11-27T00:53:07+00:00",
+ "backtest": false,
+ "presets": [
+  {
+   "preset": "scalping",
+   "saham": [
+    {
+     "kode": "SMCB",
+     "close": 775.0,
+     "entry": null,
+     "tp1": 785,
+     "tp2": 795,
+     "sl": 760,
+     "ringkas": {
+      "freq": 9,
+      "ukuran_order": 12.0,
+      "fd": "F 0% : D 100%",
+      "bandar_top1_kode": null,
+      "bandar_top1_avg": null,
+      "label_accdist": "Acc"
+     },
+     "skor": 0.8571
+    },
+    {
+     "kode": "MFMI",
+     "close": 1300.0,
+     "entry": null,
+     "tp1": 1320,
+     "tp2": 1335,
+     "sl": 1275,
+     "ringkas": {
+      "freq": 5,
+      "ukuran_order": 7.4,
+      "fd": "F 0% : D 100%",
+      "bandar_top1_kode": null,
+      "bandar_top1_avg": null,
+      "label_accdist": "Acc"
+     },
+     "skor": 0.8571
+    },
+    {
+     "kode": "BUMI",
+     "close": 131.0,
+     "entry": [
+      129.0,
+      131.0
+     ],
+     "tp1": 141,
+     "tp2": 150,
+     "sl": 117,
+     "ringkas": {
+      "freq": 36161,
+      "ukuran_order": 852.8489,
+      "fd": "F 12% : D 88%",
+      "bandar_top1_kode": null,
+      "bandar_top1_avg": null,
+      "label_accdist": null
+     },
+     "skor": 0.8333
+    },
+    {
+     "kode": "BBCA",
+     "close": 5900.0,
+     "entry": [
+      5800.0,
+      5900.0
+     ],
+     "tp1": 6125,
+     "tp2": 6325,
+     "sl": 5425,
+     "ringkas": {
+      "freq": 28942,
+      "ukuran_order": 75.1982,
+      "fd": "F 48% : D 52%",
+      "bandar_top1_kode": null,
+      "bandar_top1_avg": null,
+      "label_accdist": null
+     },
+     "skor": 0.8333
+    },
+    {
+     "kode": "BMRI",
+     "close": 3990.0,
+     "entry": [
+      3970.0,
+      3990.0
+     ],
+     "tp1": 4100,
+     "tp2": 4210,
+     "sl": 3790,
+     "ringkas": {
+      "freq": 24225,
+      "ukuran_order": 44.8483,
+      "fd": "F 54% : D 46%",
+      "bandar_top1_kode": null,
+      "bandar_top1_avg": null,
+      "label_accdist": null
+     },
+     "skor": 0.8333
+    },
+    {
+     "kode": "IRSX",
+     "close": 222.0,
+     "entry": [
+      178.0,
+      222.0
+     ],
+     "tp1": 246,
+     "tp2": 268,
+     "sl": 178,
+     "ringkas": {
+      "freq": 23954,
+      "ukuran_order": 123.2594,
+      "fd": "F 7% : D 93%",
+      "bandar_top1_kode": null,
+      "bandar_top1_avg": null,
+      "label_accdist": null
+     },
+     "skor": 0.8333
+    },
+    {
+     "kode": "CDIA",
+     "close": 400.0,
+     "entry": [
+      376.0,
+      400.0
+     ],
+     "tp1": 434,
+     "tp2": 468,
+     "sl": 306,
+     "ringkas": {
+      "freq": 20579,
+      "ukuran_order": 128.8987,
+      "fd": "F 12% : D 88%",
+      "bandar_top1_kode": null,
+      "bandar_top1_avg": null,
+      "label_accdist": null
+     },
+     "skor": 0.8333
+    },
+    {
+     "kode": "ITMG",
+     "close": 24800.0,
+     "entry": [
+      24500.0,
+      24800.0
+     ],
+     "tp1": 25450,
+     "tp2": 26100,
+     "sl": 23825,
+     "ringkas": {
+      "freq": 1573,
+      "ukuran_order": 8.0191,
+      "fd": "F 21% : D 79%",
+      "bandar_top1_kode": null,
+      "bandar_top1_avg": null,
+      "label_accdist": null
+     },
+     "skor": 0.8333
+    },
+    {
+     "kode": "YULE",
+     "close": 3600.0,
+     "entry": null,
+     "tp1": 3740,
+     "tp2": 3880,
+     "sl": 3390,
+     "ringkas": {
+      "freq": 4,
+      "ukuran_order": 1.5,
+      "fd": "F 0% : D 100%",
+      "bandar_top1_kode": null,
+      "bandar_top1_avg": null,
+      "label_accdist": null
+     },
+     "skor": 0.8333
+    },
+    {
+     "kode": "BHAT",
+     "close": 1770.0,
+     "entry": null,
+     "tp1": 1950,
+     "tp2": 2130,
+     "sl": 1505,
+     "ringkas": {
+      "freq": 376,
+      "ukuran_order": 2.6011,
+      "fd": "F 8% : D 92%",
+      "bandar_top1_kode": null,
+      "bandar_top1_avg": null,
+      "label_accdist": "Dist"
+     },
+     "skor": 0.7143
+    },
+    {
+     "kode": "TRUK",
+     "close": 6025.0,
+     "entry": null,
+     "tp1": 6300,
+     "tp2": 6550,
+     "sl": 5625,
+     "ringkas": {
+      "freq": 321,
+      "ukuran_order": 19.3707,
+      "fd": "F 0% : D 100%",
+      "bandar_top1_kode": null,
+      "bandar_top1_avg": null,
+      "label_accdist": "Acc"
+     },
+     "skor": 0.7143
+    },
+    {
+     "kode": "IGAR",
+     "close": 510.0,
+     "entry": null,
+     "tp1": 525,
+     "tp2": 540,
+     "sl": 486,
+     "ringkas": {
+      "freq": 267,
+      "ukuran_order": 17.3933,
+      "fd": "F 5% : D 95%",
+      "bandar_top1_kode": null,
+      "bandar_top1_avg": null,
+      "label_accdist": "Acc"
+     },
+     "skor": 0.7143
+    },
+    {
+     "kode": "DPNS",
+     "close": 310.0,
+     "entry": null,
+     "tp1": 330,
+     "tp2": 350,
+     "sl": 280,
+     "ringkas": {
+      "freq": 47,
+      "ukuran_order": 57.9787,
+      "fd": "F 18% : D 82%",
+      "bandar_top1_kode": null,
+      "bandar_top1_avg": null,
+      "label_accdist": "Acc"
+     },
+     "skor": 0.7143
+    },
+    {
+     "kode": "BIMA",
+     "close": 82.0,
+     "entry": null,
+     "tp1": 85,
+     "tp2": 88,
+     "sl": 77,
+     "ringkas": {
+      "freq": 27,
+      "ukuran_order": 18.7778,
+      "fd": "F 0% : D 100%",
+      "bandar_top1_kode": null,
+      "bandar_top1_avg": null,
+      "label_accdist": "Acc"
+     },
+     "skor": 0.7143
+    },
+    {
+     "kode": "GLOB",
+     "close": 155.0,
+     "entry": null,
+     "tp1": 164,
+     "tp2": 173,
+     "sl": 142,
+     "ringkas": {
+      "freq": 26,
+      "ukuran_order": 47.6923,
+      "fd": "F 0% : D 100%",
+      "bandar_top1_kode": null,
+      "bandar_top1_avg": null,
+      "label_accdist": "Acc"
+     },
+     "skor": 0.7143
+    },
+    {
+     "kode": "UNIT",
+     "close": 316.0,
+     "entry": null,
+     "tp1": 350,
+     "tp2": 382,
+     "sl": 266,
+     "ringkas": {
+      "freq": 26,
+      "ukuran_order": 3.8846,
+      "fd": "F 0% : D 100%",
+      "bandar_top1_kode": null,
+      "bandar_top1_avg": null,
+      "label_accdist": "Dist"
+     },
+     "skor": 0.7143
+    },
+    {
+     "kode": "MTSM",
+     "close": 500.0,
+     "entry": null,
+     "tp1": 530,
+     "tp2": 555,
+     "sl": 460,
+     "ringkas": {
+      "freq": 10,
+      "ukuran_order": 8.7,
+      "fd": "F 0% : D 100%",
+      "bandar_top1_kode": null,
+      "bandar_top1_avg": null,
+      "label_accdist": "Acc"
+     },
+     "skor": 0.7143
+    },
+    {
+     "kode": "IBST",
+     "close": 8475.0,
+     "entry": null,
+     "tp1": 8800,
+     "tp2": 9100,
+     "sl": 8000,
+     "ringkas": {
+      "freq": 7,
+      "ukuran_order": 1.2857,
+      "fd": "F 0% : D 100%",
+      "bandar_top1_kode": null,
+      "bandar_top1_avg": null,
+      "label_accdist": "Dist"
+     },
+     "skor": 0.7143
+    },
+    {
+     "kode": "FASW",
+     "close": 5275.0,
+     "entry": null,
+     "tp1": 5400,
+     "tp2": 5525,
+     "sl": 5075,
+     "ringkas": {
+      "freq": 1,
+      "ukuran_order": 1.03,
+      "fd": "F 50% : D 50%",
+      "bandar_top1_kode": null,
+      "bandar_top1_avg": null,
+      "label_accdist": "Dist"
+     },
+     "skor": 0.7143
+    },
+    {
+     "kode": "IHSG",
+     "close": 5242.172,
+     "entry": [
+      5214.57,
+      5242.172
+     ],
+     "tp1": 5375,
+     "tp2": 5525,
+     "sl": 5025,
+     "ringkas": {
+      "freq": 1091132,
+      "ukuran_order": 194.5116,
+      "fd": "F 34% : D 66%",
+      "bandar_top1_kode": null,
+      "bandar_top1_avg": null,
+      "label_accdist": null
+     },
+     "skor": 0.6667
+    }
+   ],
+   "n_lolos": 923,
+   "n_sempurna": 0,
+   "ditampilkan": 20
+  },
+  {
+   "preset": "swing",
+   "saham": [
+    {
+     "kode": "BBCA",
+     "close": 5900.0,
+     "entry": [
+      5800.0,
+      5900.0
+     ],
+     "tp1": 6125,
+     "tp2": 6325,
+     "sl": 5425,
+     "ringkas": {
+      "freq": 28942,
+      "ukuran_order": 75.1982,
+      "fd": "F 48% : D 52%",
+      "bandar_top1_kode": null,
+      "bandar_top1_avg": null,
+      "label_accdist": null
+     },
+     "skor": 1.0
+    },
+    {
+     "kode": "BBRI",
+     "close": 3080.0,
+     "entry": [
+      3050.0,
+      3080.0
+     ],
+     "tp1": 3190,
+     "tp2": 3290,
+     "sl": 2920,
+     "ringkas": {
+      "freq": 20805,
+      "ukuran_order": 67.4019,
+      "fd": "F 40% : D 60%",
+      "bandar_top1_kode": null,
+      "bandar_top1_avg": null,
+      "label_accdist": null
+     },
+     "skor": 1.0
+    },
+    {
+     "kode": "ASII",
+     "close": 5675.0,
+     "entry": [
+      5500.0,
+      5675.0
+     ],
+     "tp1": 5900,
+     "tp2": 6100,
+     "sl": 5200,
+     "ringkas": {
+      "freq": 8575,
+      "ukuran_order": 42.8233,
+      "fd": "F 47% : D 53%",
+      "bandar_top1_kode": null,
+      "bandar_top1_avg": null,
+      "label_accdist": null
+     },
+     "skor": 1.0
+    },
+    {
+     "kode": "BIKE",
+     "close": 5150.0,
+     "entry": null,
+     "tp1": 5600,
+     "tp2": 6025,
+     "sl": 4490,
+     "ringkas": {
+      "freq": 6939,
+      "ukuran_order": 13.5558,
+      "fd": "F 17% : D 83%",
+      "bandar_top1_kode": null,
+      "bandar_top1_avg": null,
+      "label_accdist": "Dist"
+     },
+     "skor": 1.0
+    },
+    {
+     "kode": "UNVR",
+     "close": 1650.0,
+     "entry": [
+      1605.0,
+      1650.0
+     ],
+     "tp1": 1700,
+     "tp2": 1745,
+     "sl": 1505,
+     "ringkas": {
+      "freq": 6261,
+      "ukuran_order": 54.4217,
+      "fd": "F 40% : D 60%",
+      "bandar_top1_kode": null,
+      "bandar_top1_avg": null,
+      "label_accdist": null
+     },
+     "skor": 1.0
+    },
+    {
+     "kode": "MANG",
+     "close": 66.0,
+     "entry": [
+      59.0,
+      66.0
+     ],
+     "tp1": 70,
+     "tp2": 73,
+     "sl": 43,
+     "ringkas": {
+      "freq": 3961,
+      "ukuran_order": 404.4062,
+      "fd": "F 1% : D 99%",
+      "bandar_top1_kode": null,
+      "bandar_top1_avg": null,
+      "label_accdist": null
+     },
+     "skor": 1.0
+    },
+    {
+     "kode": "IDEA",
+     "close": 476.0,
+     "entry": [
+      414.0,
+      476.0
+     ],
+     "tp1": 515,
+     "tp2": 550,
+     "sl": 332,
+     "ringkas": {
+      "freq": 3821,
+      "ukuran_order": 66.1303,
+      "fd": "F 16% : D 84%",
+      "bandar_top1_kode": null,
+      "bandar_top1_avg": null,
+      "label_accdist": null
+     },
+     "skor": 1.0
+    },
+    {
+     "kode": "KLBF",
+     "close": 805.0,
+     "entry": [
+      800.0,
+      805.0
+     ],
+     "tp1": 835,
+     "tp2": 860,
+     "sl": 760,
+     "ringkas": {
+      "freq": 3475,
+      "ukuran_order": 86.8938,
+      "fd": "F 58% : D 42%",
+      "bandar_top1_kode": null,
+      "bandar_top1_avg": null,
+      "label_accdist": null
+     },
+     "skor": 1.0
+    },
+    {
+     "kode": "MKNT",
+     "close": 32.0,
+     "entry": null,
+     "tp1": 34,
+     "tp2": 36,
+     "sl": 29,
+     "ringkas": {
+      "freq": 3460,
+      "ukuran_order": 748.2312,
+      "fd": "F 1% : D 99%",
+      "bandar_top1_kode": null,
+      "bandar_top1_avg": null,
+      "label_accdist": "Acc"
+     },
+     "skor": 1.0
+    },
+    {
+     "kode": "PGAS",
+     "close": 1545.0,
+     "entry": [
+      1520.0,
+      1545.0
+     ],
+     "tp1": 1595,
+     "tp2": 1645,
+     "sl": 1470,
+     "ringkas": {
+      "freq": 3431,
+      "ukuran_order": 62.7578,
+      "fd": "F 36% : D 64%",
+      "bandar_top1_kode": null,
+      "bandar_top1_avg": null,
+      "label_accdist": null
+     },
+     "skor": 1.0
+    },
+    {
+     "kode": "MYOR",
+     "close": 1540.0,
+     "entry": [
+      1495.0,
+      1540.0
+     ],
+     "tp1": 1595,
+     "tp2": 1650,
+     "sl": 1410,
+     "ringkas": {
+      "freq": 3198,
+      "ukuran_order": 38.3821,
+      "fd": "F 47% : D 53%",
+      "bandar_top1_kode": null,
+      "bandar_top1_avg": null,
+      "label_accdist": null
+     },
+     "skor": 1.0
+    },
+    {
+     "kode": "WMUU",
+     "close": 47.0,
+     "entry": [
+      46.0,
+      47.0
+     ],
+     "tp1": 53,
+     "tp2": 58,
+     "sl": 39,
+     "ringkas": {
+      "freq": 3143,
+      "ukuran_order": 335.2778,
+      "fd": "F 4% : D 96%",
+      "bandar_top1_kode": null,
+      "bandar_top1_avg": null,
+      "label_accdist": null
+     },
+     "skor": 1.0
+    },
+    {
+     "kode": "PWON",
+     "close": 308.0,
+     "entry": [
+      300.0,
+      308.0
+     ],
+     "tp1": 318,
+     "tp2": 328,
+     "sl": 274,
+     "ringkas": {
+      "freq": 1971,
+      "ukuran_order": 178.7428,
+      "fd": "F 54% : D 46%",
+      "bandar_top1_kode": null,
+      "bandar_top1_avg": null,
+      "label_accdist": null
+     },
+     "skor": 1.0
+    },
+    {
+     "kode": "INDF",
+     "close": 7125.0,
+     "entry": [
+      7025.0,
+      7125.0
+     ],
+     "tp1": 7350,
+     "tp2": 7550,
+     "sl": 6800,
+     "ringkas": {
+      "freq": 1828,
+      "ukuran_order": 17.9081,
+      "fd": "F 69% : D 31%",
+      "bandar_top1_kode": null,
+      "bandar_top1_avg": null,
+      "label_accdist": null
+     },
+     "skor": 1.0
+    },
+    {
+     "kode": "AYAM",
+     "close": 520.0,
+     "entry": [
+      505.0,
+      520.0
+     ],
+     "tp1": 540,
+     "tp2": 560,
+     "sl": 492,
+     "ringkas": {
+      "freq": 1792,
+      "ukuran_order": 187.9107,
+      "fd": "F 9% : D 91%",
+      "bandar_top1_kode": null,
+      "bandar_top1_avg": null,
+      "label_accdist": null
+     },
+     "skor": 1.0
+    },
+    {
+     "kode": "ITMG",
+     "close": 24800.0,
+     "entry": [
+      24500.0,
+      24800.0
+     ],
+     "tp1": 25450,
+     "tp2": 26100,
+     "sl": 23825,
+     "ringkas": {
+      "freq": 1573,
+      "ukuran_order": 8.0191,
+      "fd": "F 21% : D 79%",
+      "bandar_top1_kode": null,
+      "bandar_top1_avg": null,
+      "label_accdist": null
+     },
+     "skor": 1.0
+    },
+    {
+     "kode": "ICBP",
+     "close": 7150.0,
+     "entry": [
+      7100.0,
+      7150.0
+     ],
+     "tp1": 7375,
+     "tp2": 7600,
+     "sl": 6800,
+     "ringkas": {
+      "freq": 1563,
+      "ukuran_order": 22.7089,
+      "fd": "F 46% : D 54%",
+      "bandar_top1_kode": null,
+      "bandar_top1_avg": null,
+      "label_accdist": null
+     },
+     "skor": 1.0
+    },
+    {
+     "kode": "GULA",
+     "close": 770.0,
+     "entry": [
+      730.0,
+      770.0
+     ],
+     "tp1": 800,
+     "tp2": 825,
+     "sl": 715,
+     "ringkas": {
+      "freq": 1453,
+      "ukuran_order": 176.6284,
+      "fd": "F 13% : D 87%",
+      "bandar_top1_kode": null,
+      "bandar_top1_avg": null,
+      "label_accdist": null
+     },
+     "skor": 1.0
+    },
+    {
+     "kode": "ACES",
+     "close": 356.0,
+     "entry": [
+      354.0,
+      356.0
+     ],
+     "tp1": 368,
+     "tp2": 378,
+     "sl": 340,
+     "ringkas": {
+      "freq": 1433,
+      "ukuran_order": 61.3224,
+      "fd": "F 30% : D 70%",
+      "bandar_top1_kode": null,
+      "bandar_top1_avg": null,
+      "label_accdist": null
+     },
+     "skor": 1.0
+    },
+    {
+     "kode": "INTP",
+     "close": 6200.0,
+     "entry": [
+      6150.0,
+      6200.0
+     ],
+     "tp1": 6425,
+     "tp2": 6625,
+     "sl": 5875,
+     "ringkas": {
+      "freq": 1423,
+      "ukuran_order": 3.9438,
+      "fd": "F 40% : D 60%",
+      "bandar_top1_kode": null,
+      "bandar_top1_avg": null,
+      "label_accdist": null
+     },
+     "skor": 1.0
+    }
+   ],
+   "n_lolos": 784,
+   "n_sempurna": 38,
+   "ditampilkan": 20
+  },
+  {
+   "preset": "whale-tiket",
+   "saham": [
+    {
+     "kode": "META",
+     "close": 238.0,
+     "entry": null,
+     "tp1": 266,
+     "tp2": 292,
+     "sl": 198,
+     "ringkas": {
+      "freq": 10153,
+      "ukuran_order": 237.4004,
+      "fd": "F 9% : D 91%",
+      "bandar_top1_kode": null,
+      "bandar_top1_avg": null,
+      "label_accdist": "Dist"
+     },
+     "skor": 1.0
+    },
+    {
+     "kode": "BIKE",
+     "close": 5150.0,
+     "entry": null,
+     "tp1": 5600,
+     "tp2": 6025,
+     "sl": 4490,
+     "ringkas": {
+      "freq": 6939,
+      "ukuran_order": 13.5558,
+      "fd": "F 17% : D 83%",
+      "bandar_top1_kode": null,
+      "bandar_top1_avg": null,
+      "label_accdist": "Dist"
+     },
+     "skor": 1.0
+    },
+    {
+     "kode": "YUPI",
+     "close": 1285.0,
+     "entry": [
+      1265.0,
+      1285.0
+     ],
+     "tp1": 1420,
+     "tp2": 1555,
+     "sl": 995,
+     "ringkas": {
+      "freq": 2054,
+      "ukuran_order": 8.2249,
+      "fd": "F 5% : D 95%",
+      "bandar_top1_kode": null,
+      "bandar_top1_avg": null,
+      "label_accdist": null
+     },
+     "skor": 1.0
+    },
+    {
+     "kode": "AVIA",
+     "close": 334.0,
+     "entry": [
+      328.0,
+      334.0
+     ],
+     "tp1": 346,
+     "tp2": 358,
+     "sl": 302,
+     "ringkas": {
+      "freq": 1351,
+      "ukuran_order": 202.2983,
+      "fd": "F 70% : D 30%",
+      "bandar_top1_kode": null,
+      "bandar_top1_avg": null,
+      "label_accdist": null
+     },
+     "skor": 1.0
+    },
+    {
+     "kode": "MIKA",
+     "close": 1485.0,
+     "entry": [
+      1430.0,
+      1485.0
+     ],
+     "tp1": 1540,
+     "tp2": 1595,
+     "sl": 1400,
+     "ringkas": {
+      "freq": 828,
+      "ukuran_order": 146.3527,
+      "fd": "F 33% : D 67%",
+      "bandar_top1_kode": null,
+      "bandar_top1_avg": null,
+      "label_accdist": null
+     },
+     "skor": 1.0
+    },
+    {
+     "kode": "AIMS",
+     "close": 815.0,
+     "entry": [
+      685.0,
+      815.0
+     ],
+     "tp1": 930,
+     "tp2": 1045,
+     "sl": 640,
+     "ringkas": {
+      "freq": 803,
+      "ukuran_order": 55.2989,
+      "fd": "F 2% : D 98%",
+      "bandar_top1_kode": null,
+      "bandar_top1_avg": null,
+      "label_accdist": null
+     },
+     "skor": 1.0
+    },
+    {
+     "kode": "TRIO",
+     "close": 426.0,
+     "entry": null,
+     "tp1": 450,
+     "tp2": 472,
+     "sl": 392,
+     "ringkas": {
+      "freq": 591,
+      "ukuran_order": 47.1489,
+      "fd": "F 0% : D 100%",
+      "bandar_top1_kode": null,
+      "bandar_top1_avg": null,
+      "label_accdist": "Dist"
+     },
+     "skor": 1.0
+    },
+    {
+     "kode": "HBAT",
+     "close": 328.0,
+     "entry": [
+      308.0,
+      328.0
+     ],
+     "tp1": 362,
+     "tp2": 394,
+     "sl": 278,
+     "ringkas": {
+      "freq": 380,
+      "ukuran_order": 283.6105,
+      "fd": "F 1% : D 99%",
+      "bandar_top1_kode": null,
+      "bandar_top1_avg": null,
+      "label_accdist": null
+     },
+     "skor": 1.0
+    },
+    {
+     "kode": "BHAT",
+     "close": 1770.0,
+     "entry": null,
+     "tp1": 1950,
+     "tp2": 2130,
+     "sl": 1505,
+     "ringkas": {
+      "freq": 376,
+      "ukuran_order": 2.6011,
+      "fd": "F 8% : D 92%",
+      "bandar_top1_kode": null,
+      "bandar_top1_avg": null,
+      "label_accdist": "Dist"
+     },
+     "skor": 1.0
+    },
+    {
+     "kode": "BBHI",
+     "close": 620.0,
+     "entry": [
+      595.0,
+      620.0
+     ],
+     "tp1": 655,
+     "tp2": 690,
+     "sl": 565,
+     "ringkas": {
+      "freq": 324,
+      "ukuran_order": 386.2315,
+      "fd": "F 0% : D 100%",
+      "bandar_top1_kode": null,
+      "bandar_top1_avg": null,
+      "label_accdist": null
+     },
+     "skor": 1.0
+    },
+    {
+     "kode": "TRUK",
+     "close": 6025.0,
+     "entry": null,
+     "tp1": 6300,
+     "tp2": 6550,
+     "sl": 5625,
+     "ringkas": {
+      "freq": 321,
+      "ukuran_order": 19.3707,
+      "fd": "F 0% : D 100%",
+      "bandar_top1_kode": null,
+      "bandar_top1_avg": null,
+      "label_accdist": "Acc"
+     },
+     "skor": 1.0
+    },
+    {
+     "kode": "MPXL",
+     "close": 302.0,
+     "entry": [
+      302.0,
+      302.0
+     ],
+     "tp1": 328,
+     "tp2": 354,
+     "sl": 262,
+     "ringkas": {
+      "freq": 242,
+      "ukuran_order": 488.0083,
+      "fd": "F 0% : D 100%",
+      "bandar_top1_kode": null,
+      "bandar_top1_avg": null,
+      "label_accdist": null
+     },
+     "skor": 1.0
+    },
+    {
+     "kode": "IPAC",
+     "close": 189.0,
+     "entry": null,
+     "tp1": 200,
+     "tp2": 212,
+     "sl": 172,
+     "ringkas": {
+      "freq": 190,
+      "ukuran_order": 23.0316,
+      "fd": "F 0% : D 100%",
+      "bandar_top1_kode": null,
+      "bandar_top1_avg": null,
+      "label_accdist": "Dist"
+     },
+     "skor": 1.0
+    },
+    {
+     "kode": "ADMF",
+     "close": 7775.0,
+     "entry": [
+      7775.0,
+      7775.0
+     ],
+     "tp1": 7900,
+     "tp2": 8025,
+     "sl": 7600,
+     "ringkas": {
+      "freq": 93,
+      "ukuran_order": 61.3763,
+      "fd": "F 37% : D 63%",
+      "bandar_top1_kode": null,
+      "bandar_top1_avg": null,
+      "label_accdist": null
+     },
+     "skor": 1.0
+    },
+    {
+     "kode": "MTPS",
+     "close": 81.0,
+     "entry": null,
+     "tp1": 87,
+     "tp2": 93,
+     "sl": 72,
+     "ringkas": {
+      "freq": 54,
+      "ukuran_order": 316.8148,
+      "fd": "F 0% : D 100%",
+      "bandar_top1_kode": null,
+      "bandar_top1_avg": null,
+      "label_accdist": "Dist"
+     },
+     "skor": 1.0
+    },
+    {
+     "kode": "DPNS",
+     "close": 310.0,
+     "entry": null,
+     "tp1": 330,
+     "tp2": 350,
+     "sl": 280,
+     "ringkas": {
+      "freq": 47,
+      "ukuran_order": 57.9787,
+      "fd": "F 18% : D 82%",
+      "bandar_top1_kode": null,
+      "bandar_top1_avg": null,
+      "label_accdist": "Acc"
+     },
+     "skor": 1.0
+    },
+    {
+     "kode": "GLOB",
+     "close": 155.0,
+     "entry": null,
+     "tp1": 164,
+     "tp2": 173,
+     "sl": 142,
+     "ringkas": {
+      "freq": 26,
+      "ukuran_order": 47.6923,
+      "fd": "F 0% : D 100%",
+      "bandar_top1_kode": null,
+      "bandar_top1_avg": null,
+      "label_accdist": "Acc"
+     },
+     "skor": 1.0
+    },
+    {
+     "kode": "KOIN",
+     "close": 78.0,
+     "entry": null,
+     "tp1": 81,
+     "tp2": 84,
+     "sl": 73,
+     "ringkas": {
+      "freq": 24,
+      "ukuran_order": 25.625,
+      "fd": "F 0% : D 100%",
+      "bandar_top1_kode": null,
+      "bandar_top1_avg": null,
+      "label_accdist": "Dist"
+     },
+     "skor": 1.0
+    },
+    {
+     "kode": "IHSG",
+     "close": 5242.172,
+     "entry": [
+      5214.57,
+      5242.172
+     ],
+     "tp1": 5375,
+     "tp2": 5525,
+     "sl": 5025,
+     "ringkas": {
+      "freq": 1091132,
+      "ukuran_order": 194.5116,
+      "fd": "F 34% : D 66%",
+      "bandar_top1_kode": null,
+      "bandar_top1_avg": null,
+      "label_accdist": null
+     },
+     "skor": 0.6667
+    },
+    {
+     "kode": "BRPT",
+     "close": 730.0,
+     "entry": [
+      645.0,
+      730.0
+     ],
+     "tp1": 815,
+     "tp2": 900,
+     "sl": 605,
+     "ringkas": {
+      "freq": 37301,
+      "ukuran_order": 161.084,
+      "fd": "F 39% : D 61%",
+      "bandar_top1_kode": null,
+      "bandar_top1_avg": null,
+      "label_accdist": null
+     },
+     "skor": 0.6667
+    }
+   ],
+   "n_lolos": 883,
+   "n_sempurna": 18,
+   "ditampilkan": 20
+  },
+  {
+   "preset": "whale-akdis",
+   "saham": [
+    {
+     "kode": "MKNT",
+     "close": 32.0,
+     "entry": null,
+     "tp1": 34,
+     "tp2": 36,
+     "sl": 29,
+     "ringkas": {
+      "freq": 3460,
+      "ukuran_order": 748.2312,
+      "fd": "F 1% : D 99%",
+      "bandar_top1_kode": null,
+      "bandar_top1_avg": null,
+      "label_accdist": "Acc"
+     },
+     "skor": 1.0
+    },
+    {
+     "kode": "WSKT",
+     "close": 202.0,
+     "entry": null,
+     "tp1": 216,
+     "tp2": 228,
+     "sl": 183,
+     "ringkas": {
+      "freq": 1826,
+      "ukuran_order": 101.6062,
+      "fd": "F 14% : D 86%",
+      "bandar_top1_kode": null,
+      "bandar_top1_avg": null,
+      "label_accdist": "Acc"
+     },
+     "skor": 1.0
+    },
+    {
+     "kode": "WIKA",
+     "close": 204.0,
+     "entry": null,
+     "tp1": 220,
+     "tp2": 234,
+     "sl": 182,
+     "ringkas": {
+      "freq": 1563,
+      "ukuran_order": 127.8106,
+      "fd": "F 33% : D 67%",
+      "bandar_top1_kode": null,
+      "bandar_top1_avg": null,
+      "label_accdist": "Acc"
+     },
+     "skor": 1.0
+    },
+    {
+     "kode": "TRUK",
+     "close": 6025.0,
+     "entry": null,
+     "tp1": 6300,
+     "tp2": 6550,
+     "sl": 5625,
+     "ringkas": {
+      "freq": 321,
+      "ukuran_order": 19.3707,
+      "fd": "F 0% : D 100%",
+      "bandar_top1_kode": null,
+      "bandar_top1_avg": null,
+      "label_accdist": "Acc"
+     },
+     "skor": 1.0
+    },
+    {
+     "kode": "IGAR",
+     "close": 510.0,
+     "entry": null,
+     "tp1": 525,
+     "tp2": 540,
+     "sl": 486,
+     "ringkas": {
+      "freq": 267,
+      "ukuran_order": 17.3933,
+      "fd": "F 5% : D 95%",
+      "bandar_top1_kode": null,
+      "bandar_top1_avg": null,
+      "label_accdist": "Acc"
+     },
+     "skor": 1.0
+    },
+    {
+     "kode": "ZINC",
+     "close": 30.0,
+     "entry": null,
+     "tp1": 32,
+     "tp2": 34,
+     "sl": 27,
+     "ringkas": {
+      "freq": 233,
+      "ukuran_order": 226.1416,
+      "fd": "F 0% : D 100%",
+      "bandar_top1_kode": null,
+      "bandar_top1_avg": null,
+      "label_accdist": "Acc"
+     },
+     "skor": 1.0
+    },
+    {
+     "kode": "WSBP",
+     "close": 14.0,
+     "entry": null,
+     "tp1": 15,
+     "tp2": 16,
+     "sl": 12,
+     "ringkas": {
+      "freq": 193,
+      "ukuran_order": 1054.5233,
+      "fd": "F 0% : D 100%",
+      "bandar_top1_kode": null,
+      "bandar_top1_avg": null,
+      "label_accdist": "Acc"
+     },
+     "skor": 1.0
+    },
+    {
+     "kode": "TRIL",
+     "close": 50.0,
+     "entry": null,
+     "tp1": 51,
+     "tp2": 51,
+     "sl": 49,
+     "ringkas": {
+      "freq": 119,
+      "ukuran_order": 259.7815,
+      "fd": "F 0% : D 100%",
+      "bandar_top1_kode": null,
+      "bandar_top1_avg": null,
+      "label_accdist": "Acc"
+     },
+     "skor": 1.0
+    },
+    {
+     "kode": "IPPE",
+     "close": 14.0,
+     "entry": null,
+     "tp1": 15,
+     "tp2": 16,
+     "sl": 12,
+     "ringkas": {
+      "freq": 101,
+      "ukuran_order": 259.5248,
+      "fd": "F 0% : D 100%",
+      "bandar_top1_kode": null,
+      "bandar_top1_avg": null,
+      "label_accdist": "Acc"
+     },
+     "skor": 1.0
+    },
+    {
+     "kode": "DPNS",
+     "close": 310.0,
+     "entry": null,
+     "tp1": 330,
+     "tp2": 350,
+     "sl": 280,
+     "ringkas": {
+      "freq": 47,
+      "ukuran_order": 57.9787,
+      "fd": "F 18% : D 82%",
+      "bandar_top1_kode": null,
+      "bandar_top1_avg": null,
+      "label_accdist": "Acc"
+     },
+     "skor": 1.0
+    },
+    {
+     "kode": "TOYS",
+     "close": 8.0,
+     "entry": null,
+     "tp1": 9,
+     "tp2": 10,
+     "sl": 6,
+     "ringkas": {
+      "freq": 41,
+      "ukuran_order": 516.8537,
+      "fd": "F 0% : D 100%",
+      "bandar_top1_kode": null,
+      "bandar_top1_avg": null,
+      "label_accdist": "Acc"
+     },
+     "skor": 1.0
+    },
+    {
+     "kode": "LCGP",
+     "close": 114.0,
+     "entry": null,
+     "tp1": 119,
+     "tp2": 124,
+     "sl": 106,
+     "ringkas": {
+      "freq": 38,
+      "ukuran_order": 383.0263,
+      "fd": "F 0% : D 100%",
+      "bandar_top1_kode": null,
+      "bandar_top1_avg": null,
+      "label_accdist": "Acc"
+     },
+     "skor": 1.0
+    },
+    {
+     "kode": "DEAL",
+     "close": 6.0,
+     "entry": null,
+     "tp1": 7,
+     "tp2": 8,
+     "sl": 4,
+     "ringkas": {
+      "freq": 34,
+      "ukuran_order": 495.2353,
+      "fd": "F 0% : D 100%",
+      "bandar_top1_kode": null,
+      "bandar_top1_avg": null,
+      "label_accdist": "Acc"
+     },
+     "skor": 1.0
+    },
+    {
+     "kode": "BIMA",
+     "close": 82.0,
+     "entry": null,
+     "tp1": 85,
+     "tp2": 88,
+     "sl": 77,
+     "ringkas": {
+      "freq": 27,
+      "ukuran_order": 18.7778,
+      "fd": "F 0% : D 100%",
+      "bandar_top1_kode": null,
+      "bandar_top1_avg": null,
+      "label_accdist": "Acc"
+     },
+     "skor": 1.0
+    },
+    {
+     "kode": "GLOB",
+     "close": 155.0,
+     "entry": null,
+     "tp1": 164,
+     "tp2": 173,
+     "sl": 142,
+     "ringkas": {
+      "freq": 26,
+      "ukuran_order": 47.6923,
+      "fd": "F 0% : D 100%",
+      "bandar_top1_kode": null,
+      "bandar_top1_avg": null,
+      "label_accdist": "Acc"
+     },
+     "skor": 1.0
+    },
+    {
+     "kode": "INTA",
+     "close": 61.0,
+     "entry": null,
+     "tp1": 66,
+     "tp2": 70,
+     "sl": 54,
+     "ringkas": {
+      "freq": 20,
+      "ukuran_order": 62.2,
+      "fd": "F 0% : D 100%",
+      "bandar_top1_kode": null,
+      "bandar_top1_avg": null,
+      "label_accdist": "Acc"
+     },
+     "skor": 1.0
+    },
+    {
+     "kode": "ALTO",
+     "close": 18.0,
+     "entry": null,
+     "tp1": 19,
+     "tp2": 20,
+     "sl": 16,
+     "ringkas": {
+      "freq": 13,
+      "ukuran_order": 34.4615,
+      "fd": "F 0% : D 100%",
+      "bandar_top1_kode": null,
+      "bandar_top1_avg": null,
+      "label_accdist": "Acc"
+     },
+     "skor": 1.0
+    },
+    {
+     "kode": "MTSM",
+     "close": 500.0,
+     "entry": null,
+     "tp1": 530,
+     "tp2": 555,
+     "sl": 460,
+     "ringkas": {
+      "freq": 10,
+      "ukuran_order": 8.7,
+      "fd": "F 0% : D 100%",
+      "bandar_top1_kode": null,
+      "bandar_top1_avg": null,
+      "label_accdist": "Acc"
+     },
+     "skor": 1.0
+    },
+    {
+     "kode": "SMCB",
+     "close": 775.0,
+     "entry": null,
+     "tp1": 785,
+     "tp2": 795,
+     "sl": 760,
+     "ringkas": {
+      "freq": 9,
+      "ukuran_order": 12.0,
+      "fd": "F 0% : D 100%",
+      "bandar_top1_kode": null,
+      "bandar_top1_avg": null,
+      "label_accdist": "Acc"
+     },
+     "skor": 1.0
+    },
+    {
+     "kode": "MFMI",
+     "close": 1300.0,
+     "entry": null,
+     "tp1": 1320,
+     "tp2": 1335,
+     "sl": 1275,
+     "ringkas": {
+      "freq": 5,
+      "ukuran_order": 7.4,
+      "fd": "F 0% : D 100%",
+      "bandar_top1_kode": null,
+      "bandar_top1_avg": null,
+      "label_accdist": "Acc"
+     },
+     "skor": 1.0
+    }
+   ],
+   "n_lolos": 123,
+   "n_sempurna": 21,
+   "ditampilkan": 20
+  },
+  {
+   "preset": "whale-asing",
+   "saham": [
+    {
+     "kode": "BBCA",
+     "close": 5900.0,
+     "entry": [
+      5800.0,
+      5900.0
+     ],
+     "tp1": 6125,
+     "tp2": 6325,
+     "sl": 5425,
+     "ringkas": {
+      "freq": 28942,
+      "ukuran_order": 75.1982,
+      "fd": "F 48% : D 52%",
+      "bandar_top1_kode": null,
+      "bandar_top1_avg": null,
+      "label_accdist": null
+     },
+     "skor": 1.0
+    },
+    {
+     "kode": "AMMN",
+     "close": 3220.0,
+     "entry": [
+      3200.0,
+      3220.0
+     ],
+     "tp1": 3430,
+     "tp2": 3630,
+     "sl": 2910,
+     "ringkas": {
+      "freq": 6603,
+      "ukuran_order": 37.1207,
+      "fd": "F 29% : D 71%",
+      "bandar_top1_kode": null,
+      "bandar_top1_avg": null,
+      "label_accdist": null
+     },
+     "skor": 1.0
+    },
+    {
+     "kode": "UNVR",
+     "close": 1650.0,
+     "entry": [
+      1605.0,
+      1650.0
+     ],
+     "tp1": 1700,
+     "tp2": 1745,
+     "sl": 1505,
+     "ringkas": {
+      "freq": 6261,
+      "ukuran_order": 54.4217,
+      "fd": "F 40% : D 60%",
+      "bandar_top1_kode": null,
+      "bandar_top1_avg": null,
+      "label_accdist": null
+     },
+     "skor": 1.0
+    },
+    {
+     "kode": "AMRT",
+     "close": 1045.0,
+     "entry": [
+      1030.0,
+      1045.0
+     ],
+     "tp1": 1100,
+     "tp2": 1155,
+     "sl": 965,
+     "ringkas": {
+      "freq": 4679,
+      "ukuran_order": 109.1229,
+      "fd": "F 49% : D 51%",
+      "bandar_top1_kode": null,
+      "bandar_top1_avg": null,
+      "label_accdist": null
+     },
+     "skor": 1.0
+    },
+    {
+     "kode": "CYBR",
+     "close": 368.0,
+     "entry": [
+      336.0,
+      368.0
+     ],
+     "tp1": 388,
+     "tp2": 408,
+     "sl": 324,
+     "ringkas": {
+      "freq": 3051,
+      "ukuran_order": 142.5238,
+      "fd": "F 20% : D 80%",
+      "bandar_top1_kode": null,
+      "bandar_top1_avg": null,
+      "label_accdist": null
+     },
+     "skor": 1.0
+    },
+    {
+     "kode": "INDY",
+     "close": 1490.0,
+     "entry": [
+      1470.0,
+      1490.0
+     ],
+     "tp1": 1610,
+     "tp2": 1730,
+     "sl": 1310,
+     "ringkas": {
+      "freq": 3022,
+      "ukuran_order": 38.8024,
+      "fd": "F 35% : D 65%",
+      "bandar_top1_kode": null,
+      "bandar_top1_avg": null,
+      "label_accdist": null
+     },
+     "skor": 1.0
+    },
+    {
+     "kode": "PWON",
+     "close": 308.0,
+     "entry": [
+      300.0,
+      308.0
+     ],
+     "tp1": 318,
+     "tp2": 328,
+     "sl": 274,
+     "ringkas": {
+      "freq": 1971,
+      "ukuran_order": 178.7428,
+      "fd": "F 54% : D 46%",
+      "bandar_top1_kode": null,
+      "bandar_top1_avg": null,
+      "label_accdist": null
+     },
+     "skor": 1.0
+    },
+    {
+     "kode": "ACES",
+     "close": 356.0,
+     "entry": [
+      354.0,
+      356.0
+     ],
+     "tp1": 368,
+     "tp2": 378,
+     "sl": 340,
+     "ringkas": {
+      "freq": 1433,
+      "ukuran_order": 61.3224,
+      "fd": "F 30% : D 70%",
+      "bandar_top1_kode": null,
+      "bandar_top1_avg": null,
+      "label_accdist": null
+     },
+     "skor": 1.0
+    },
+    {
+     "kode": "INTP",
+     "close": 6200.0,
+     "entry": [
+      6150.0,
+      6200.0
+     ],
+     "tp1": 6425,
+     "tp2": 6625,
+     "sl": 5875,
+     "ringkas": {
+      "freq": 1423,
+      "ukuran_order": 3.9438,
+      "fd": "F 40% : D 60%",
+      "bandar_top1_kode": null,
+      "bandar_top1_avg": null,
+      "label_accdist": null
+     },
+     "skor": 1.0
+    },
+    {
+     "kode": "MAPA",
+     "close": 615.0,
+     "entry": [
+      610.0,
+      615.0
+     ],
+     "tp1": 645,
+     "tp2": 670,
+     "sl": 575,
+     "ringkas": {
+      "freq": 1336,
+      "ukuran_order": 98.4618,
+      "fd": "F 57% : D 43%",
+      "bandar_top1_kode": null,
+      "bandar_top1_avg": null,
+      "label_accdist": null
+     },
+     "skor": 1.0
+    },
+    {
+     "kode": "HEAL",
+     "close": 490.0,
+     "entry": [
+      488.0,
+      490.0
+     ],
+     "tp1": 515,
+     "tp2": 535,
+     "sl": 456,
+     "ringkas": {
+      "freq": 1316,
+      "ukuran_order": 15.4073,
+      "fd": "F 41% : D 59%",
+      "bandar_top1_kode": null,
+      "bandar_top1_avg": null,
+      "label_accdist": null
+     },
+     "skor": 1.0
+    },
+    {
+     "kode": "MNCN",
+     "close": 80.0,
+     "entry": [
+      79.0,
+      80.0
+     ],
+     "tp1": 86,
+     "tp2": 91,
+     "sl": 70,
+     "ringkas": {
+      "freq": 1135,
+      "ukuran_order": 251.0308,
+      "fd": "F 45% : D 55%",
+      "bandar_top1_kode": null,
+      "bandar_top1_avg": null,
+      "label_accdist": null
+     },
+     "skor": 1.0
+    },
+    {
+     "kode": "SILO",
+     "close": 1615.0,
+     "entry": [
+      1580.0,
+      1615.0
+     ],
+     "tp1": 1685,
+     "tp2": 1750,
+     "sl": 1475,
+     "ringkas": {
+      "freq": 858,
+      "ukuran_order": 13.0,
+      "fd": "F 75% : D 25%",
+      "bandar_top1_kode": null,
+      "bandar_top1_avg": null,
+      "label_accdist": null
+     },
+     "skor": 1.0
+    },
+    {
+     "kode": "DSNG",
+     "close": 1345.0,
+     "entry": [
+      1325.0,
+      1345.0
+     ],
+     "tp1": 1405,
+     "tp2": 1460,
+     "sl": 1255,
+     "ringkas": {
+      "freq": 817,
+      "ukuran_order": 17.9767,
+      "fd": "F 31% : D 69%",
+      "bandar_top1_kode": null,
+      "bandar_top1_avg": null,
+      "label_accdist": null
+     },
+     "skor": 1.0
+    },
+    {
+     "kode": "MIDI",
+     "close": 246.0,
+     "entry": [
+      244.0,
+      246.0
+     ],
+     "tp1": 258,
+     "tp2": 268,
+     "sl": 228,
+     "ringkas": {
+      "freq": 764,
+      "ukuran_order": 59.4359,
+      "fd": "F 36% : D 64%",
+      "bandar_top1_kode": null,
+      "bandar_top1_avg": null,
+      "label_accdist": null
+     },
+     "skor": 1.0
+    },
+    {
+     "kode": "ASSA",
+     "close": 484.0,
+     "entry": [
+      474.0,
+      484.0
+     ],
+     "tp1": 505,
+     "tp2": 525,
+     "sl": 452,
+     "ringkas": {
+      "freq": 662,
+      "ukuran_order": 122.5393,
+      "fd": "F 23% : D 77%",
+      "bandar_top1_kode": null,
+      "bandar_top1_avg": null,
+      "label_accdist": null
+     },
+     "skor": 1.0
+    },
+    {
+     "kode": "PTPP",
+     "close": 161.0,
+     "entry": null,
+     "tp1": 170,
+     "tp2": 178,
+     "sl": 148,
+     "ringkas": {
+      "freq": 602,
+      "ukuran_order": 82.6246,
+      "fd": "F 20% : D 80%",
+      "bandar_top1_kode": null,
+      "bandar_top1_avg": null,
+      "label_accdist": "Dist"
+     },
+     "skor": 1.0
+    },
+    {
+     "kode": "WBSA",
+     "close": 436.0,
+     "entry": [
+      424.0,
+      436.0
+     ],
+     "tp1": 470,
+     "tp2": 505,
+     "sl": 386,
+     "ringkas": {
+      "freq": 522,
+      "ukuran_order": 12.8851,
+      "fd": "F 39% : D 61%",
+      "bandar_top1_kode": null,
+      "bandar_top1_avg": null,
+      "label_accdist": null
+     },
+     "skor": 1.0
+    },
+    {
+     "kode": "CPRO",
+     "close": 32.0,
+     "entry": [
+      32.0,
+      32.0
+     ],
+     "tp1": 35,
+     "tp2": 37,
+     "sl": 28,
+     "ringkas": {
+      "freq": 497,
+      "ukuran_order": 381.0543,
+      "fd": "F 23% : D 77%",
+      "bandar_top1_kode": null,
+      "bandar_top1_avg": null,
+      "label_accdist": null
+     },
+     "skor": 1.0
+    },
+    {
+     "kode": "SSMS",
+     "close": 955.0,
+     "entry": [
+      945.0,
+      955.0
+     ],
+     "tp1": 1000,
+     "tp2": 1040,
+     "sl": 890,
+     "ringkas": {
+      "freq": 461,
+      "ukuran_order": 48.6464,
+      "fd": "F 26% : D 74%",
+      "bandar_top1_kode": null,
+      "bandar_top1_avg": null,
+      "label_accdist": null
+     },
+     "skor": 1.0
+    }
+   ],
+   "n_lolos": 418,
+   "n_sempurna": 28,
+   "ditampilkan": 20
+  }
+ ]
+}
